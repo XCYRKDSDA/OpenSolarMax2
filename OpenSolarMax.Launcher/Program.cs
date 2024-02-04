@@ -1,10 +1,12 @@
-﻿namespace OpenSolarMax.Launcher
+﻿using OpenSolarMax.Game;
+
+namespace OpenSolarMax.Launcher;
+
+internal class Program
 {
-    internal class Program
+    static void Main(string[] _)
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello, World!");
-        }
+        using var game = new SolarMax();
+        game.Run();
     }
 }
