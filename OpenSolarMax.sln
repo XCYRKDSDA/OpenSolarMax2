@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Launcher", "Op
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Game", "OpenSolarMax.Game\OpenSolarMax.Game.csproj", "{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Core", "OpenSolarMax.Core\OpenSolarMax.Core.csproj", "{451AED7A-362C-4229-AFCB-E089DA0BB40D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{451AED7A-362C-4229-AFCB-E089DA0BB40D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{451AED7A-362C-4229-AFCB-E089DA0BB40D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{451AED7A-362C-4229-AFCB-E089DA0BB40D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{451AED7A-362C-4229-AFCB-E089DA0BB40D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
