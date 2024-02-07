@@ -1,0 +1,119 @@
+﻿using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Core.Components;
+
+namespace OpenSolarMax.Core.Systems;
+
+public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice)
+    : BaseSystem<World, GameTime>(world)
+{
+
+    private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
+    private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
+    private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
+
+    private readonly BasicEffect _effect = new(graphicsDevice)
+    {
+        World = Matrix.Identity,
+        VertexColorEnabled = true,
+        TextureEnabled = true,
+    };
+
+    private void DrawEntity(in Sprite sprite, in AbsoluteTransform absoluteTransform)
+    {
+        if (sprite.Texture is null)
+            return;
+
+        // 将实体投影到二维XY平面
+        var rotatedUnitX = Vector3.Transform(Vector3.UnitX, absoluteTransform.Rotation);
+        var frameToWorld = Matrix.CreateRotationZ(MathF.Atan2(rotatedUnitX.Y, rotatedUnitX.X))
+                           * Matrix.CreateTranslation(absoluteTransform.Translation);
+
+        // 计算精灵纹理锚点到世界的变换
+        var anchorToWorld = Matrix.CreateScale(sprite.Scale.X, sprite.Scale.Y, 1)
+                            * Matrix.CreateRotationZ(sprite.Rotation)
+                            * Matrix.CreateTranslation(sprite.Position.X, sprite.Position.Y, 0)
+                            * frameToWorld;
+
+        // 计算四个顶点的坐标
+        _vertices[0].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
+        _vertices[1].Position = Vector3.Transform(new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
+        _vertices[2].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0), anchorToWorld);
+        _vertices[3].Position = Vector3.Transform(new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0), anchorToWorld);
+
+        // 计算四个顶点对应的原始纹理的UV坐标
+        _vertices[0].TextureCoordinate = new(sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
+                                             sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height);
+        _vertices[1].TextureCoordinate = new(sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
+                                             sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height);
+        _vertices[2].TextureCoordinate = new(sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
+                                             sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height);
+        _vertices[3].TextureCoordinate = new(sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
+                                             sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height);
+
+        // 设置四个顶点的颜色
+        _vertices[0].Color = _vertices[1].Color = _vertices[2].Color = _vertices[3].Color = sprite.Color;
+
+        // 设置混合模式
+        _graphicsDevice.BlendState = sprite.Blend switch
+        {
+            SpriteBlend.Alpha => BlendState.AlphaBlend,
+            SpriteBlend.Additive => BlendState.Additive,
+            SpriteBlend.Opaque => BlendState.Opaque,
+            SpriteBlend.NonPremultiplied => BlendState.NonPremultiplied,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        // 设置Shader纹理
+        _effect.Texture = sprite.Texture.Texture;
+
+        // 绘制图元
+        foreach (var pass in _effect.CurrentTechnique.Passes)
+        {
+            pass.Apply();
+            _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2);
+        }
+    }
+
+    [Query]
+    [All<Camera, AbsoluteTransform>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
+    {
+        // 计算相机参数
+        _effect.View = Matrix.Invert(pose.TransformToRoot);
+        _effect.Projection = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+
+        // 设置绘图区域
+        _graphicsDevice.Viewport = camera.Output;
+
+        // 设置绘图设备参数
+        _graphicsDevice.RasterizerState = new() { CullMode = CullMode.None };
+        _graphicsDevice.BlendState = BlendState.AlphaBlend;
+
+        // 逐个绘制
+        foreach (var entity in entities)
+        {
+            var refs = entity.Get<Sprite, AbsoluteTransform>();
+            DrawEntity(in refs.t0, in refs.t1);
+        }
+    }
+
+    private static readonly QueryDescription _drawableDesc
+        = new QueryDescription().WithAll<Sprite, AbsoluteTransform>();
+
+    public override void Update(in GameTime t)
+    {
+        var drawableEntities = new List<Entity>();
+        World.GetEntities(in _drawableDesc, drawableEntities);
+        drawableEntities.Sort(
+            (l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
+                                                      r.Get<AbsoluteTransform>().Translation.Z)
+        );
+
+        RenderToCameraQuery(World, drawableEntities);
+    }
+}

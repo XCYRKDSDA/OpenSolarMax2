@@ -15,4 +15,8 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Nine\Nine\Nine.MG.csproj" />
+	</ItemGroup>
+
 </Project>
