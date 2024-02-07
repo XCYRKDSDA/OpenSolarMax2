@@ -7,32 +7,28 @@ namespace OpenSolarMax.Core.Components;
 /// </summary>
 public struct AbsoluteTransform
 {
-    private Vector3 _translation = Vector3.Zero;
+    public Vector3 Translation = Vector3.Zero;
 
-    private Quaternion _rotation = Quaternion.Identity;
-
-    public Vector3 Translation { readonly get => _translation; set => _translation = value; }
-
-    public Quaternion Rotation { readonly get => _rotation; set => _rotation = value; }
+    public Quaternion Rotation = Quaternion.Identity;
 
     /// <summary>
     /// 当前坐标系到根坐标系的三维变换
     /// </summary>
     public Matrix TransformToRoot
     {
-        readonly get => Matrix.CreateFromQuaternion(_rotation) * Matrix.CreateTranslation(_translation);
-        set => value.Decompose(out _, out _rotation, out _translation);
+        readonly get => Matrix.CreateFromQuaternion(Rotation) * Matrix.CreateTranslation(Translation);
+        set => value.Decompose(out _, out Rotation, out Translation);
     }
 
     public AbsoluteTransform() { }
 
     public AbsoluteTransform(in Vector3 translation, in Quaternion rotation)
     {
-        _translation = translation;
-        _rotation = rotation;
+        Translation = translation;
+        Rotation = rotation;
     }
 
-    public AbsoluteTransform(in Matrix matrix) { matrix.Decompose(out _, out _rotation, out _translation); }
+    public AbsoluteTransform(in Matrix matrix) { matrix.Decompose(out _, out Rotation, out Translation); }
 
     public override readonly string? ToString() => $"Translation: {Translation}, Rotation: {Rotation}";
 }
@@ -42,32 +38,28 @@ public struct AbsoluteTransform
 /// </summary>
 public struct RelativeTransform
 {
-    private Vector3 _translation = Vector3.Zero;
+    public Vector3 Translation = Vector3.Zero;
 
-    private Quaternion _rotation = Quaternion.Identity;
-
-    public Vector3 Translation { readonly get => _translation; set => _translation = value; }
-
-    public Quaternion Rotation { readonly get => _rotation; set => _rotation = value; }
+    public Quaternion Rotation = Quaternion.Identity;
 
     /// <summary>
     /// 当前坐标系到父坐标系的三维变换
     /// </summary>
     public Matrix TransformToParent
     {
-        readonly get => Matrix.CreateFromQuaternion(_rotation) * Matrix.CreateTranslation(_translation);
-        set => value.Decompose(out _, out _rotation, out _translation);
+        readonly get => Matrix.CreateFromQuaternion(Rotation) * Matrix.CreateTranslation(Translation);
+        set => value.Decompose(out _, out Rotation, out Translation);
     }
 
     public RelativeTransform() { }
 
     public RelativeTransform(in Vector3 translation, in Quaternion rotation)
     {
-        _translation = translation;
-        _rotation = rotation;
+        Translation = translation;
+        Rotation = rotation;
     }
 
-    public RelativeTransform(in Matrix matrix) { matrix.Decompose(out _, out _rotation, out _translation); }
+    public RelativeTransform(in Matrix matrix) { matrix.Decompose(out _, out Rotation, out Translation); }
 
     public override readonly string? ToString() => $"Translation: {Translation}, Rotation: {Rotation}";
 }
