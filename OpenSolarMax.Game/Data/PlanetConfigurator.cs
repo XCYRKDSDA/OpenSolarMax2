@@ -25,7 +25,7 @@ internal class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         // 随机填充默认纹理
         var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
         sprite.Texture = _defaultPlanetTextures[randomIndex];
-        sprite.Anchor = new(0.5f);
+        sprite.Anchor = sprite.Texture.Bounds.Size.ToVector2() / 2;
         sprite.Position = Vector2.Zero;
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
@@ -37,9 +37,14 @@ internal class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         var planetConfig = (configuration as PlanetConfiguration)!;
 
         ref var sprite = ref entity.Get<Sprite>();
+        ref var relativeTransform = ref entity.Get<RelativeTransform>();
 
         // 设置星球的尺寸
         if (planetConfig.Radius.HasValue)
             sprite.Scale = Vector2.One * planetConfig.Radius.Value / 64;
+
+        // 设置星球的位置
+        if (planetConfig.Position.HasValue)
+            relativeTransform.Translation = new(planetConfig.Position.Value, 0);
     }
 }
