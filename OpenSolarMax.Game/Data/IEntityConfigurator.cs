@@ -22,12 +22,14 @@ internal interface IEntityConfigurator
     /// 对已经按照指定原型分配好内存的实体进行初始化，使实体各项组件的数据满足该配置器所需的默认值
     /// </summary>
     /// <param name="entity"></param>
-    void Initialize(in Entity entity);
+    /// <param name="otherEntities"></param>
+    void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities);
 
     /// <summary>
     /// 根据具体的配置数据，对已经初始化过的实体进行配置
     /// </summary>
     /// <param name="configuration"></param>
     /// <param name="entity"></param>
-    void Configure(IEntityConfiguration configuration, in Entity entity);
+    /// <param name="otherEntities"></param>
+    void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities);
 }

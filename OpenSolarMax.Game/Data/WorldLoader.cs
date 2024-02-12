@@ -48,6 +48,8 @@ internal sealed class WorldLoader
 
     public void Load(Level level, World world)
     {
+        var namedEntities = new Dictionary<string, Entity>();
+
         foreach (var (optionalId, entityStatment) in level.Entities)
         {
             // 解析引用关系，获得所有配置项
@@ -64,13 +66,15 @@ internal sealed class WorldLoader
 
             // 创造实体
             var entity = world.Construct(unionArchetype);
+            if (optionalId != null)
+                namedEntities.Add(optionalId, entity);
 
             // 初始化实体
             foreach (var configType in allConfigTypes)
-                _configurators[configType].Initialize(in entity);
+                _configurators[configType].Initialize(in entity, namedEntities);
 
             foreach (var config in entityStatment.Configs)
-                _configurators[config.GetType()].Configure(config, in entity);
+                _configurators[config.GetType()].Configure(config, in entity, namedEntities);
         }
     }
 }
