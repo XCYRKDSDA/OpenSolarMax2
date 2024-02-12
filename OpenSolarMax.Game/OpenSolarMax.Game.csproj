@@ -7,9 +7,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Content\Textures\PlanetsAtlas.json" />
+		<EmbeddedResource Include="Content\Textures\PlanetsAtlas.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Arch" Version="1.2.7" />
+		<PackageReference Include="Arch.System" Version="1.0.2" />
 		<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
 			<PrivateAssets>All</PrivateAssets>
 		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Nine\Nine\Nine.MG.csproj" />
+		<ProjectReference Include="..\OpenSolarMax.Core\OpenSolarMax.Core.csproj" />
 	</ItemGroup>
 
 </Project>
