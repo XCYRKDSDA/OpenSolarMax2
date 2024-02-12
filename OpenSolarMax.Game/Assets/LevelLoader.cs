@@ -81,7 +81,7 @@ internal class LevelLoader : IAssetLoader<Level>
             var id = entityElement.TryGetProperty("id", out var prop) ? prop.GetString() : null;
 
             // 构造并添加新的实体语句
-            level.Entities.Add((id, new LevelStatement(@base, configs)));
+            level.Entities.Add((id, new LevelStatement(@base == typeKey ? null : @base, configs)));
         }
 
         return level;
