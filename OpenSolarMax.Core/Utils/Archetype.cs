@@ -81,7 +81,7 @@ public readonly struct Archetype(params Type[] types)
     /// <param name="right"></param>
     /// <returns></returns>
     public static Archetype operator +(in Archetype left, in Archetype right)
-        => new(Enumerable.Union(left._rawTypes, right._rawTypes).ToArray());
+        => new(Enumerable.Union(left._rawTypes ?? [], right._rawTypes ?? []).ToArray());
 }
 
 public static class ArchetypeExtensions
