@@ -17,6 +17,16 @@ public static class Archetypes
         typeof(TreeRelationship<RelativeTransform>),
         typeof(Sprite),
         typeof(RevolutionOrbit),
+        typeof(RevolutionState),
+        typeof(PlanetGeostationaryOrbit)
+    );
+
+    public static readonly Archetype Ship = new(
+        typeof(AbsoluteTransform),
+        typeof(RelativeTransform),
+        typeof(TreeRelationship<RelativeTransform>),
+        typeof(Sprite),
+        typeof(RevolutionOrbit),
         typeof(RevolutionState)
     );
 

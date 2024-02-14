@@ -5,6 +5,39 @@ namespace OpenSolarMax.Core.Utils;
 public static class Revolution
 {
     /// <summary>
+    /// 根据星球同步轨道随机生成单位公转轨道
+    /// </summary>
+    /// <param name="planetOrbit">星球同步轨道组件</param>
+    /// <param name="random">随机引擎</param>
+    /// <param name="radiusRange">单位半径偏差范围</param>
+    /// <returns>单位公转轨道组件</returns>
+    public static RevolutionOrbit CreateRandomRevolutionOrbit(in PlanetGeostationaryOrbit planetOrbit,
+                                                              Random random, float radiusRange)
+    {
+        float offset = ((float)random.NextDouble() - 0.5f) * radiusRange + 1;
+
+        return new RevolutionOrbit
+        {
+            Rotation = planetOrbit.Rotation,
+            Shape = new(planetOrbit.Radius * offset * 2, planetOrbit.Radius * offset * 2),
+            Period = planetOrbit.Period * MathF.Pow(offset, 1.5f),
+            Mode = RevolutionMode.TranslationAndRotation
+        };
+    }
+
+    /// <summary>
+    /// 随机生成单位公转状态
+    /// </summary>
+    /// <param name="random">随机引擎</param>
+    /// <returns>单位公转状态组件</returns>
+    public static RevolutionState CreateRandomState(Random random)
+    {
+        float phase = (float)random.NextDouble() * 2 * MathF.PI;
+
+        return new RevolutionState { Phase = phase };
+    }
+
+    /// <summary>
     /// 计算实体绕其所在轨道公转的相对位姿
     /// </summary>
     /// <param name="orbit">实体所在轨道</param>
