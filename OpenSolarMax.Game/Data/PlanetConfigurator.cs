@@ -20,10 +20,21 @@ internal class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
     private readonly TextureRegion[] _defaultPlanetTextures = (from key in Content.Textures.DefaultPlanetTextures
                                                                select assets.Load<TextureRegion>(key)).ToArray();
 
+    private const float _defaultRadius = 32;
+    private const float _defaultOrbitRadius = 64;
+    private const float _defaultOrbitPeriod = 10;
+    private const float _defaultOrbitMinPitch = -MathF.PI * 11 / 24;
+    private const float _defaultOrbitMaxPitch = _defaultOrbitMinPitch + -MathF.PI / 12;
+    private const float _defaultOrbitMinRoll = 0;
+    private const float _defaultOrbitMaxRoll = _defaultOrbitMinRoll + MathF.PI / 24;
+
     public void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
     {
+        var random = new Random();
+
         ref var sprite = ref entity.Get<Sprite>();
         ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
+        ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
 
         // 随机填充默认纹理
         var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
@@ -36,6 +47,13 @@ internal class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 默认采用平动
         revolutionOrbit.Mode = RevolutionMode.TranslationOnly;
+
+        // 随机生成同步轨道
+        float pitch = (float)random.NextDouble() * (_defaultOrbitMaxPitch - _defaultOrbitMinPitch) + _defaultOrbitMinPitch;
+        float roll = (float)random.NextDouble() * (_defaultOrbitMaxRoll - _defaultOrbitMinRoll) + _defaultOrbitMinRoll;
+        geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
+        geostationaryOrbit.Radius = _defaultOrbitRadius;
+        geostationaryOrbit.Period = _defaultOrbitPeriod;
     }
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
@@ -46,10 +64,18 @@ internal class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         ref var relativeTransform = ref entity.Get<RelativeTransform>();
         ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
         ref var revolutionState = ref entity.Get<RevolutionState>();
+        ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
 
         // 设置星球的尺寸
         if (planetConfig.Radius.HasValue)
-            sprite.Scale = Vector2.One * planetConfig.Radius.Value / 64;
+        {
+            var scale = planetConfig.Radius.Value / _defaultRadius;
+
+            sprite.Scale = new(scale);
+
+            geostationaryOrbit.Radius = _defaultOrbitRadius * scale;
+            geostationaryOrbit.Period = _defaultOrbitPeriod * scale;
+        }
 
         // 设置星球的位置
         if (planetConfig.Position.HasValue)
