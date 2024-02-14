@@ -9,7 +9,7 @@ namespace OpenSolarMax.Core.Systems;
 /// <summary>
 /// 处理实体绕其轨道公转的系统
 /// </summary>
-internal sealed partial class RevolveEntitiesAroundOrbitsSystem(World world) : BaseSystem<World, GameTime>(world)
+public sealed partial class RevolveEntitiesAroundOrbitsSystem(World world) : BaseSystem<World, GameTime>(world)
 {
     /// <summary>
     /// 计算实体绕其所在轨道公转的相对位姿
