@@ -7,8 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Content\Axis.png" />
+		<EmbeddedResource Include="Content\Levels\Test.json" />
 		<EmbeddedResource Include="Content\Textures\PlanetsAtlas.json" />
 		<EmbeddedResource Include="Content\Textures\PlanetsAtlas.png" />
+		<EmbeddedResource Include="Content\Textures\ShipAtlas.json" />
+		<EmbeddedResource Include="Content\Textures\ShipAtlas.png" />
 	</ItemGroup>
 
 	<ItemGroup>
