@@ -48,7 +48,7 @@ internal class LevelLoader : IAssetLoader<Level>
         foreach (var (templateName, templateElement) in jsonLevel.Templates)
         {
             // 根据base字段寻找配置类型
-            var @base = templateElement.GetProperty("base").GetString()!;
+            var @base = templateElement.GetProperty("$base").GetString()!;
             var configurationKey = templateConfigurationKeysCache[@base];
 
             // 从json文件解析当前模板语句本身的配置
@@ -68,7 +68,7 @@ internal class LevelLoader : IAssetLoader<Level>
         foreach (var entityElement in jsonLevel.Entities)
         {
             // 根据base字段寻找配置类型
-            var @base = entityElement.GetProperty("base").GetString()!;
+            var @base = entityElement.GetProperty("$base").GetString()!;
             var typeKey = templateConfigurationKeysCache[@base];
 
             // 从json文件解析当前实体语句本身的配置
@@ -78,10 +78,13 @@ internal class LevelLoader : IAssetLoader<Level>
             ).ToArray();
 
             // 获取id, 如果有的话
-            var id = entityElement.TryGetProperty("id", out var prop) ? prop.GetString() : null;
+            var id = entityElement.TryGetProperty("$id", out var idProp) ? idProp.GetString() : null;
+
+            // 获取实体构建个数
+            int num = entityElement.TryGetProperty("$num", out var numProp) ? numProp.GetInt32() : 1;
 
             // 构造并添加新的实体语句
-            level.Entities.Add((id, new LevelStatement(@base == typeKey ? null : @base, configs)));
+            level.Entities.Add((id, new LevelStatement(@base == typeKey ? null : @base, configs), num));
         }
 
         return level;

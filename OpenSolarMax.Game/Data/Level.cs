@@ -4,5 +4,5 @@ internal class Level
 {
     public Dictionary<string, LevelStatement> Templates { get; } = [];
 
-    public List<(string?, LevelStatement)> Entities { get; } = [];
+    public List<(string?, LevelStatement, int)> Entities { get; } = [];
 }

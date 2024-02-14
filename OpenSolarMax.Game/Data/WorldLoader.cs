@@ -50,7 +50,7 @@ internal sealed class WorldLoader
     {
         var namedEntities = new Dictionary<string, Entity>();
 
-        foreach (var (optionalId, entityStatment) in level.Entities)
+        foreach (var (optionalId, entityStatment, num) in level.Entities)
         {
             // 解析引用关系，获得所有配置项
             var allConfigs = GetAllConfigs(entityStatment, level.Templates);
@@ -64,17 +64,25 @@ internal sealed class WorldLoader
                 unionArchetype += configurator.Archetype;
             }
 
-            // 创造实体
-            var entity = world.Construct(unionArchetype);
-            if (optionalId != null)
-                namedEntities.Add(optionalId, entity);
+            for (var i = 0; i < num; i++)
+            {
+                // 创造实体
+                var entity = world.Construct(unionArchetype);
 
-            // 初始化实体
-            foreach (var configType in allConfigTypes)
-                _configurators[configType].Initialize(in entity, namedEntities);
+                // 记录实体
+                if (optionalId != null)
+                {
+                    if (!namedEntities.TryAdd(optionalId, entity))
+                        namedEntities[optionalId] = entity;
+                }
 
-            foreach (var config in entityStatment.Configs)
-                _configurators[config.GetType()].Configure(config, in entity, namedEntities);
+                // 初始化实体
+                foreach (var configType in allConfigTypes)
+                    _configurators[configType].Initialize(in entity, namedEntities);
+
+                foreach (var config in allConfigs)
+                    _configurators[config.GetType()].Configure(config, in entity, namedEntities);
+            }
         }
     }
 }
