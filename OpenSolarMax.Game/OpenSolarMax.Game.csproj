@@ -7,15 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Content\Axis.png" />
-		<EmbeddedResource Include="Content\Levels\Test.json" />
-		<EmbeddedResource Include="Content\Textures\PlanetsAtlas.json" />
-		<EmbeddedResource Include="Content\Textures\PlanetsAtlas.png" />
-		<EmbeddedResource Include="Content\Textures\ShipAtlas.json" />
-		<EmbeddedResource Include="Content\Textures\ShipAtlas.png" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Arch" Version="1.2.7" />
 		<PackageReference Include="Arch.System" Version="1.0.2" />
 		<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
@@ -25,7 +16,12 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Nine\Nine\Nine.MG.csproj" />
-		<ProjectReference Include="..\OpenSolarMax.Core\OpenSolarMax.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Levels\Demo.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

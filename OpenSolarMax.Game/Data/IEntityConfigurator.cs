@@ -1,12 +1,12 @@
 ﻿using Arch.Core;
-using Archetype = OpenSolarMax.Core.Utils.Archetype;
+using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Game.Data;
 
 /// <summary>
 /// 实体配置器的接口。提供了创建并配置一个实体的所有方法
 /// </summary>
-internal interface IEntityConfigurator
+public interface IEntityConfigurator
 {
     /// <summary>
     /// 实体需要满足的原型

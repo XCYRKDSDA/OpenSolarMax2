@@ -1,0 +1,10 @@
+{
+    "name": "OpenSolarMax.Mods.Core",
+    "author": "XCY",
+    "version": "0.0.1",
+    "description": "",
+    "link": "",
+    "uuid": "e714518b-6827-4d93-b356-2d26b530a336",
+    "assembly": "OpenSolarMax.Mods.Core.dll",
+    "content": "Content"
+}

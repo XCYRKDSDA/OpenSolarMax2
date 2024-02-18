@@ -1,6 +1,6 @@
 ﻿using Arch.Core;
-using OpenSolarMax.Core.Utils;
-using Archetype = OpenSolarMax.Core.Utils.Archetype;
+using OpenSolarMax.Game.Utils;
+using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Game.Data;
 
@@ -10,9 +10,9 @@ internal sealed class WorldLoader
 
     private readonly Dictionary<Type, IEntityConfigurator> _configurators = [];
 
-    public void RegisterConfigurator<T>(T configurator) where T : IEntityConfigurator
+    public void RegisterConfigurator(IEntityConfigurator configurator)
     {
-        if (_configurators.ContainsKey(typeof(T)))
+        if (_configurators.ContainsKey(configurator.GetType()))
             _configurators[configurator.ConfigurationType] = configurator;
         else
             _configurators.Add(configurator.ConfigurationType, configurator);
