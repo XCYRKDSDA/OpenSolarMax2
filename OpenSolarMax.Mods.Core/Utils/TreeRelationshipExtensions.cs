@@ -16,7 +16,7 @@ public static class TreeRelationshipExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Entity GetParent<T>(in this Entity child)
-        => child.Get<TreeRelationship<T>>()._parent;
+        => child.Get<Tree<T>.Child>()._parent;
 
     /// <summary>
     /// 设置某个实体的父实体
@@ -26,16 +26,16 @@ public static class TreeRelationshipExtensions
     /// <param name="parent">父实体。若为<see cref="Entity.Null"/>则代表移除子实体当前的父实体</param>
     public static void SetParent<T>(in this Entity child, in Entity parent)
     {
-        ref var childRelationship = ref child.Get<TreeRelationship<T>>();
+        ref var childRelationship = ref child.Get<Tree<T>.Child>();
 
         var oldParent = childRelationship._parent;
         if (oldParent != Entity.Null && oldParent != parent)
-            oldParent.Get<TreeRelationship<T>>()._children.Remove(child);
+            oldParent.Get<Tree<T>.Parent>()._children.Remove(child);
 
         childRelationship._parent = parent;
 
         if (parent != Entity.Null)
-            parent.Get<TreeRelationship<T>>()._children.Add(child);
+            parent.Get<Tree<T>.Parent>()._children.Add(child);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -47,8 +47,8 @@ public static class TreeRelationshipExtensions
     #region 父实体视角
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IReadOnlySet<Entity> GetChildren<T>(in this Entity parent)
-        => parent.Get<TreeRelationship<T>>()._children;
+    public static IReadOnlyList<Entity> GetChildren<T>(in this Entity parent)
+        => parent.Get<Tree<T>.Parent>()._children;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddChild<T>(in this Entity parent, in Entity child)

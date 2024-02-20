@@ -17,7 +17,7 @@ public sealed partial class RevolveEntitiesAroundOrbitsSystem(World world, IAsse
     : BaseSystem<World, GameTime>(world), IUpdateSystem
 {
     [Query]
-    [All<TreeRelationship<RelativeTransform>, RelativeTransform, RevolutionOrbit, RevolutionState>]
+    [All<Tree<RelativeTransform>.Child, RelativeTransform, RevolutionOrbit, RevolutionState>]
     private static void UpdateRevolution([Data] GameTime time, in RevolutionOrbit orbit, ref RevolutionState state, ref RelativeTransform transform)
     {
         // 更新旋转状态

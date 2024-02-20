@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相对变换<see cref="RelativeTransform"/>及其树型关系计算每个实体的绝对变换
 /// </summary>
-/// <param name="world"></param>
+[ExecuteAfter(typeof(UpdateTransformTreeSystems))] //需要在更新完坐标变换树后再执行
 public sealed partial class CalculateAbsoluteTransformSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), IUpdateSystem
 {
@@ -30,12 +30,14 @@ public sealed partial class CalculateAbsoluteTransformSystem(World world, IAsset
     }
 
     [Query]
-    [All(typeof(TreeRelationship<RelativeTransform>), typeof(RelativeTransform), typeof(AbsoluteTransform))]
-    private static void UpdateAbsoluteTransform(in TreeRelationship<RelativeTransform> relationship,
+    [All(typeof(Tree<RelativeTransform>.Parent), typeof(RelativeTransform), typeof(AbsoluteTransform))]
+    private static void UpdateAbsoluteTransform(in Entity entity,
+                                                in Tree<RelativeTransform>.Parent relationship,
                                                 in RelativeTransform relativeTransform,
                                                 ref AbsoluteTransform absoluteTransform)
     {
-        if (relationship.Parent != Entity.Null)
+        // 如果该实体支持作为变换树中的子方且其父实体非空，则该实体不是根实体，需要跳过
+        if (entity.TryGet<Tree<RelativeTransform>.Child>(out var asChild) && asChild.Parent != Entity.Null)
             return;
 
         absoluteTransform.TransformToRoot = relativeTransform.TransformToParent;

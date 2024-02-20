@@ -8,13 +8,15 @@ public static class Archetypes
     public static readonly Archetype Transformable = new(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(TreeRelationship<RelativeTransform>)
+        typeof(Tree<RelativeTransform>.Child),
+        typeof(Tree<RelativeTransform>.Parent)
     );
 
     public static readonly Archetype Planet = new(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(TreeRelationship<RelativeTransform>),
+        typeof(Tree<RelativeTransform>.Child),
+        typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
@@ -24,7 +26,8 @@ public static class Archetypes
     public static readonly Archetype Ship = new(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(TreeRelationship<RelativeTransform>),
+        typeof(Tree<RelativeTransform>.Child),
+        typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),
         typeof(RevolutionOrbit),
         typeof(RevolutionState)
@@ -33,7 +36,8 @@ public static class Archetypes
     public static readonly Archetype Camera = new(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(TreeRelationship<RelativeTransform>),
+        typeof(Tree<RelativeTransform>.Child),
+        typeof(Tree<RelativeTransform>.Parent),
         typeof(Camera)
     );
 }
