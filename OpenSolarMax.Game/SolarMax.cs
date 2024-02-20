@@ -3,7 +3,10 @@ using System.Reflection;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Myra;
+using Myra.Graphics2D.UI;
 using Nine.Assets;
+using Nine.Graphics;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.System;
@@ -12,6 +15,10 @@ using Zio.FileSystems;
 using XNAGame = Microsoft.Xna.Framework.Game;
 
 namespace OpenSolarMax.Game;
+
+public record class LevelUIContext(StackPanel TopBar, StackPanel BottomBar,
+                                   StackPanel LeftBar, StackPanel RightBar,
+                                   Widget WorldPad);
 
 public class SolarMax : XNAGame
 {
@@ -28,6 +35,8 @@ public class SolarMax : XNAGame
         _graphics.PreparingDeviceSettings += PreparingDeviceSettings;
 
         IsMouseVisible = true;
+
+        MyraEnvironment.Game = this;
     }
 
     private void PreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
@@ -35,9 +44,55 @@ public class SolarMax : XNAGame
         e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 8;
     }
 
+    private static readonly float[] _updateSpeedOptions = [0.5f, 1, 2];
+    private const int _defaultSpeedOptionIndex = 1;
+
+    #region Model
+
     private readonly World _world = World.Create();
     private readonly Arch.System.Group<GameTime> _systems = new();
     private readonly Arch.System.Group<GameTime> _uiSystems = new();
+
+    private float _updateSpeed;
+
+    #endregion
+
+    #region View
+
+    private Desktop _desktop;
+    private LevelUIContext _uiContext;
+
+    private ImageButton[] _speedButtons;
+
+    private static Myra.Graphics2D.TextureAtlases.TextureRegion ToMyra(TextureRegion region)
+        => new(region.Texture, region.Bounds);
+
+    #endregion
+
+    #region Controller
+
+    private void OnSpeedOptionChanged(object? sender, EventArgs e)
+    {
+        if (sender is not ImageButton senderButton)
+            return;
+
+        // 锁定当前按键
+        senderButton.Enabled = false;
+
+        // 将其他按键归零并解锁
+        foreach (var (button, speed) in Enumerable.Zip(_speedButtons, _updateSpeedOptions))
+        {
+            if (button == sender)
+                _updateSpeed = speed;
+            else
+            {
+                button.IsPressed = false;
+                button.Enabled = true;
+            }
+        }
+    }
+
+    #endregion
 
     protected override void LoadContent()
     {
@@ -56,6 +111,182 @@ public class SolarMax : XNAGame
         globalAssets.RegisterLoader(new TextureAtlasLoader());
         globalAssets.RegisterLoader(new TextureRegionLoader());
         globalAssets.RegisterLoader(new FontSystemLoader());
+
+        #region 初始化UI
+
+        _desktop = new();
+
+        // 整体的布局网格
+        var grid = new Grid()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            RowsProportions =
+            {
+                new() { Type = ProportionType.Auto },
+                new() { Type = ProportionType.Fill },
+                new() { Type = ProportionType.Auto }
+            },
+            ColumnsProportions =
+            {
+                new() { Type = ProportionType.Part, Value = 1 },
+                new() { Type = ProportionType.Part, Value = 3 },
+                new() { Type = ProportionType.Part, Value = 1 }
+            },
+            //ShowGridLines = true,
+            //GridLinesColor = Color.White,
+        };
+        _desktop.Widgets.Add(grid);
+
+        /**** 添加关卡通用界面 ****/
+
+        // 关卡UI结构如下:
+        //
+        // +-------+-------+-------+
+        // |          Top          |
+        // +-------+-------+-------+
+        // | Left  | World | Right |
+        // +-------+-------+-------+
+        // |        Bottom         |
+        // +-------+-------+-------+
+
+        // 上方工具栏
+        var topPanel = new HorizontalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new(20, 20, 20, 0),
+        };
+        Grid.SetRow(topPanel, 0);
+        Grid.SetColumn(topPanel, 0);
+        Grid.SetColumnSpan(topPanel, 3);
+        grid.Widgets.Add(topPanel);
+
+        // 底部工具栏
+        var bottomPanel = new HorizontalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new(20, 0, 20, 20),
+        };
+        Grid.SetRow(bottomPanel, 2);
+        Grid.SetColumn(bottomPanel, 0);
+        Grid.SetColumnSpan(bottomPanel, 3);
+        grid.Widgets.Add(bottomPanel);
+
+        // 左侧工具栏
+        var leftPanel = new VerticalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new(20, 0, 0, 0),
+        };
+        Grid.SetRow(leftPanel, 1);
+        Grid.SetColumn(leftPanel, 0);
+        grid.Widgets.Add(leftPanel);
+
+        // 右侧工具栏
+        var rightPanel = new VerticalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new(0, 0, 20, 0),
+        };
+        Grid.SetRow(rightPanel, 1);
+        Grid.SetColumn(rightPanel, 2);
+        grid.Widgets.Add(rightPanel);
+
+        // 世界输入组件
+        var worldView = new Widget()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        Grid.SetRow(worldView, 1);
+        Grid.SetColumn(worldView, 0);
+        Grid.SetColumnSpan(worldView, 3);
+        grid.Widgets.Add(worldView);
+
+        _uiContext = new(topPanel, bottomPanel, leftPanel, rightPanel, worldView);
+
+        /**** 添加关卡固定控件 ****/
+
+        // 左上侧按键堆栈
+        var leftStack = new HorizontalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new(20, 20, 0, 0),
+        };
+        Grid.SetColumnSpan(leftStack, 3);
+        var exitButton = new ImageButton(null)
+        {
+            Margin = new(0, 0, 20, 0),
+            Image = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.ExitBtn_Idle)),
+            OverImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.ExitBtn_Pressed)),
+            PressedImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.ExitBtn_Pressed)),
+        };
+        //exitButton.Click += OnExitButtonClicked;
+        var pauseButton = new ImageButton(null)
+        {
+            Image = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.PauseBtn_Idle)),
+            OverImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.PauseBtn_Pressed)),
+            PressedImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.PauseBtn_Pressed)),
+        };
+        //pauseButton.Click += OnPauseButtonClicked;
+        leftStack.Widgets.Add(exitButton);
+        leftStack.Widgets.Add(pauseButton);
+        grid.Widgets.Add(leftStack);
+
+        // 右上侧速度按键堆栈
+        var rightStack = new HorizontalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new(0, 20, 20, 0),
+        };
+        Grid.SetColumnSpan(rightStack, 3);
+        var slowButton = new ImageButton(null)
+        {
+            Margin = new(0, 0, 20, 0),
+            Image = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.SlowSpeedBtn_Idle)),
+            OverImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.SlowSpeedBtn_Pressed)),
+            PressedImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.SlowSpeedBtn_Pressed)),
+            Toggleable = true,
+            Tag = 0,
+        };
+        slowButton.Click += OnSpeedOptionChanged;
+        var normalButton = new ImageButton(null)
+        {
+            Margin = new(0, 0, 20, 0),
+            Image = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.NormalSpeedBtn_Idle)),
+            OverImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.NormalSpeedBtn_Pressed)),
+            PressedImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.NormalSpeedBtn_Pressed)),
+            Toggleable = true,
+            Tag = 1,
+        };
+        normalButton.Click += OnSpeedOptionChanged;
+        var fastButton = new ImageButton(null)
+        {
+            Image = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.FastSpeedBtn_Idle)),
+            OverImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.FastSpeedBtn_Pressed)),
+            PressedImage = ToMyra(globalAssets.Load<TextureRegion>(Game.Content.UIs.Icons.FastSpeedBtn_Pressed)),
+            Toggleable = true,
+            Tag = 2,
+        };
+        fastButton.Click += OnSpeedOptionChanged;
+        rightStack.Widgets.Add(slowButton);
+        rightStack.Widgets.Add(normalButton);
+        rightStack.Widgets.Add(fastButton);
+        _speedButtons = [slowButton, normalButton, fastButton];
+        grid.Widgets.Add(rightStack);
+
+        _uiContext = new(topPanel, bottomPanel, leftPanel, rightPanel, worldView);
+
+        // 初始化UI状态
+        normalButton.DoClick();
+
+        #endregion
 
         // 扫描所有的模组
         var modsDirectory = currentDirectory.EnumerateDirectories(Paths.Mods).First()!;
@@ -198,6 +429,8 @@ public class SolarMax : XNAGame
             || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
+        //_desktop.UpdateInput();
+
         _systems.BeforeUpdate(in gameTime);
         _systems.Update(in gameTime);
         _systems.AfterUpdate(in gameTime);
@@ -210,6 +443,13 @@ public class SolarMax : XNAGame
         GraphicsDevice.Clear(Color.Black);
 
         _uiSystems.Update(in gameTime);
+
+        //_desktop.UpdateLayout();
+        //_desktop.RenderVisual();
+
+        GraphicsDevice.Viewport = new(0, 0, 1920, 1080);
+
+        _desktop.Render();
 
         base.Draw(gameTime);
     }
