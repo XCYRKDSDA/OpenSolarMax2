@@ -17,6 +17,9 @@ internal static partial class Moddings
 
         foreach (var type in assembly.GetExportedTypes())
         {
+            if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters)
+                continue;
+
             if (type.GetInterfaces().Contains(typeof(IUpdateSystem)))
                 updateSystemsTypes.Add(type);
             else if (type.GetInterfaces().Contains(typeof(IDrawSystem)))
