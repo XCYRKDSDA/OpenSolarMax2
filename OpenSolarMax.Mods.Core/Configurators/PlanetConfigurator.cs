@@ -48,6 +48,11 @@ public class PlanetConfiguration : IEntityConfiguration
     }
 
     public OrbitConfiguration? Orbit { get; set; }
+
+    /// <summary>
+    /// 星球所属的阵营
+    /// </summary>
+    public string? Party { get; set; }
 }
 
 [ConfiguratorKey("planet")]
@@ -143,5 +148,9 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
             if (planetConfig.Orbit.Phase.HasValue)
                 revolutionState.Phase = planetConfig.Orbit.Phase.Value;
         }
+
+        // 设置所属阵营
+        if (planetConfig.Party != null)
+            entity.SetParent<Party>(otherEntities[planetConfig.Party]);
     }
 }

@@ -14,6 +14,8 @@ namespace OpenSolarMax.Mods.Core.Configurators;
 public class ShipConfiguration : IEntityConfiguration
 {
     public string? Planet { get; set; }
+
+    public string? Party { get; set; }
 }
 
 [ConfiguratorKey("ship")]
@@ -59,5 +61,9 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
             // 随机初始化公转状态
             entity.Get<RevolutionState>() = Revolution.CreateRandomState(random);
         }
+
+        // 设置所属阵营
+        if (unitConfig.Party != null)
+            entity.SetParent<Party>(otherEntities[unitConfig.Party]);
     }
 }

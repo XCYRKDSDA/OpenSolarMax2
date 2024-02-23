@@ -20,7 +20,8 @@ public static class Archetypes
         typeof(Sprite),
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
-        typeof(PlanetGeostationaryOrbit)
+        typeof(PlanetGeostationaryOrbit),
+        typeof(Tree<Party>.Child)
     );
 
     public static readonly Archetype Ship = new(
@@ -30,7 +31,8 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),
         typeof(RevolutionOrbit),
-        typeof(RevolutionState)
+        typeof(RevolutionState),
+        typeof(Tree<Party>.Child)
     );
 
     public static readonly Archetype PredefinedOrbit = new(
@@ -39,6 +41,11 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Child),
         typeof(Tree<RelativeTransform>.Parent),
         typeof(PredefinedOrbit)
+    );
+
+    public static readonly Archetype Party = new(
+        typeof(Tree<Party>.Parent),
+        typeof(PartyReferenceColor)
     );
 
     public static readonly Archetype Camera = new(
