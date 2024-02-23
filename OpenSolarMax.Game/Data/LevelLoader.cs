@@ -47,8 +47,16 @@ internal class LevelLoader : IAssetLoader<Level>
         foreach (var (templateName, templateElement) in jsonLevel.Templates)
         {
             // 根据base字段寻找配置类型
-            var @base = templateElement.GetProperty("$base").GetString()!;
-            var configurationKey = templateConfigurationKeysCache[@base];
+            var baseProp = templateElement.GetProperty("$base");
+            var bases = baseProp.ValueKind switch
+            {
+                JsonValueKind.String => [baseProp.GetString()!],
+                JsonValueKind.Array => baseProp.EnumerateArray().Select(x => x.GetString()!).ToArray(),
+                _ => throw new JsonException(),
+            };
+            var configurationKey = templateConfigurationKeysCache[bases[0]];
+            if (bases.Any(@base => templateConfigurationKeysCache[@base] != configurationKey))
+                throw new Exception("All base template should have the same configuration key");
 
             // 从json文件解析当前模板语句本身的配置
             var configs = (
@@ -57,7 +65,7 @@ internal class LevelLoader : IAssetLoader<Level>
             ).ToArray();
 
             // 构造并添加新的模板语句
-            level.Templates.Add(templateName, new LevelStatement(@base == configurationKey ? null : @base, configs));
+            level.Templates.Add(templateName, new LevelStatement(bases.Where(@base => @base != configurationKey).ToArray(), configs));
 
             // 将该模板语句的配置类型加入到缓存中
             templateConfigurationKeysCache.Add(templateName, configurationKey);
@@ -67,12 +75,20 @@ internal class LevelLoader : IAssetLoader<Level>
         foreach (var entityElement in jsonLevel.Entities)
         {
             // 根据base字段寻找配置类型
-            var @base = entityElement.GetProperty("$base").GetString()!;
-            var typeKey = templateConfigurationKeysCache[@base];
+            var baseProp = entityElement.GetProperty("$base");
+            var bases = baseProp.ValueKind switch
+            {
+                JsonValueKind.String => [baseProp.GetString()!],
+                JsonValueKind.Array => baseProp.EnumerateArray().Select(x => x.GetString()!).ToArray(),
+                _ => throw new JsonException(),
+            };
+            var configurationKey = templateConfigurationKeysCache[bases[0]];
+            if (bases.Any(@base => templateConfigurationKeysCache[@base] != configurationKey))
+                throw new Exception("All base template should have the same configuration key");
 
             // 从json文件解析当前实体语句本身的配置
             var configs = (
-                from configuratorType in ConfigurationTypes[typeKey]
+                from configuratorType in ConfigurationTypes[configurationKey]
                 select (IEntityConfiguration)entityElement.Deserialize(configuratorType, options)!
             ).ToArray();
 
@@ -83,7 +99,7 @@ internal class LevelLoader : IAssetLoader<Level>
             int num = entityElement.TryGetProperty("$num", out var numProp) ? numProp.GetInt32() : 1;
 
             // 构造并添加新的实体语句
-            level.Entities.Add((id, new LevelStatement(@base == typeKey ? null : @base, configs), num));
+            level.Entities.Add((id, new LevelStatement(bases.Where(@base => @base != configurationKey).ToArray(), configs), num));
         }
 
         return level;

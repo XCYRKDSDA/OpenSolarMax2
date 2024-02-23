@@ -24,7 +24,12 @@ internal sealed class WorldLoader
         if (statement.Base == null)
             return statement.Configs;
 
-        return Enumerable.Concat(GetAllConfigs(templates[statement.Base], templates), statement.Configs);
+        var configs = Enumerable.Empty<IEntityConfiguration>();
+
+        foreach (var @base in statement.Base)
+            configs = Enumerable.Concat(configs, GetAllConfigs(templates[@base], templates));
+
+        return Enumerable.Concat(configs, statement.Configs);
     }
 
     private static List<Type> GetAllTypes(IEnumerable<IEntityConfiguration> configs)
