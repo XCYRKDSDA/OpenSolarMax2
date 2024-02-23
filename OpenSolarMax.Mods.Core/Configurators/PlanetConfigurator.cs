@@ -64,7 +64,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
     private const float _defaultOrbitRadius = 64;
     private const float _defaultOrbitPeriod = 10;
     private const float _defaultOrbitMinPitch = -MathF.PI * 11 / 24;
-    private const float _defaultOrbitMaxPitch = _defaultOrbitMinPitch + -MathF.PI / 12;
+    private const float _defaultOrbitMaxPitch = _defaultOrbitMinPitch + MathF.PI / 12;
     private const float _defaultOrbitMinRoll = 0;
     private const float _defaultOrbitMaxRoll = _defaultOrbitMinRoll + MathF.PI / 24;
 
@@ -125,7 +125,14 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         if (planetConfig.Orbit != null)
         {
             if (planetConfig.Orbit.Parent != null)
-                entity.SetParent<RelativeTransform>(otherEntities[planetConfig.Orbit.Parent]);
+            {
+                var parentEntity = otherEntities[planetConfig.Orbit.Parent];
+                entity.SetParent<RelativeTransform>(parentEntity);
+
+                // 如果指定了一个有预定义轨道的实体作为公转的父级，则采用预定义轨道作为基础值
+                if (parentEntity.Has<PredefinedOrbit>())
+                    revolutionOrbit = parentEntity.Get<PredefinedOrbit>().Template;
+            }
 
             if (planetConfig.Orbit.Shape.HasValue)
                 revolutionOrbit.Shape = (SizeF)planetConfig.Orbit.Shape.Value;

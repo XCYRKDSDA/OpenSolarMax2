@@ -33,6 +33,14 @@ public static class Archetypes
         typeof(RevolutionState)
     );
 
+    public static readonly Archetype PredefinedOrbit = new(
+        typeof(AbsoluteTransform),
+        typeof(RelativeTransform),
+        typeof(Tree<RelativeTransform>.Child),
+        typeof(Tree<RelativeTransform>.Parent),
+        typeof(PredefinedOrbit)
+    );
+
     public static readonly Archetype Camera = new(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
