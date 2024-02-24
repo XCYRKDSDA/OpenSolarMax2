@@ -9,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 public class UpdateTreeSystem<T>(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), IUpdateSystem
+    : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly QueryDescription _parentDesc = new QueryDescription().WithAll<Tree<T>.Parent>();
     private readonly QueryDescription _childDesc = new QueryDescription().WithAll<Tree<T>.Child>();

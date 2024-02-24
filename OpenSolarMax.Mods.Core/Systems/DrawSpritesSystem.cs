@@ -10,8 +10,9 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
+[DrawSystem]
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), IDrawSystem
+    : BaseSystem<World, GameTime>(world), ISystem
 {
 
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;

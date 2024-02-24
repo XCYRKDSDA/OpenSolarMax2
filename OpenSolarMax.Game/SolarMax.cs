@@ -50,8 +50,9 @@ public class SolarMax : XNAGame
     #region Model
 
     private readonly World _world = World.Create();
-    private readonly Arch.System.Group<GameTime> _systems = new();
-    private readonly Arch.System.Group<GameTime> _uiSystems = new();
+    private readonly Arch.System.Group<GameTime> _updateSystems = new();
+    private readonly Arch.System.Group<GameTime> _lateUpdateSystems = new();
+    private readonly Arch.System.Group<GameTime> _drawSystems = new();
 
     private float _updateSpeed;
 
@@ -389,26 +390,41 @@ public class SolarMax : XNAGame
 
         // 在加载世界前，需要先构建所有系统，以防有些系统使用响应式策略。
         // 首先寻找所有系统
-        var updateSystemsTypes = new HashSet<Type>();
-        var drawSystemsTypes = new HashSet<Type>();
+        var systemTypes = new HashSet<Type>();
         foreach (var (path, manifest, assembly) in loadedBehaviorMods)
-        {
-            var (modUpdateSystemsTypes, modDrawSystemsTypes) = Moddings.FindSystemTypes(assembly);
-            updateSystemsTypes.UnionWith(modUpdateSystemsTypes);
-            drawSystemsTypes.UnionWith(modDrawSystemsTypes);
-        }
+            systemTypes.UnionWith(Moddings.FindSystemTypes(assembly));
 
-        // 对系统进行排序，然后进行构造
+        // 按照系统指定的特性对系统进行分类
+        var systemTypesTable = systemTypes.ToLookup((type) =>
+        {
+            if (type.GetCustomAttribute<UpdateSystemAttribute>() != null)
+                return SystemTypes.Update;
+            else if (type.GetCustomAttribute<LateUpdateSystemAttribute>() != null)
+                return SystemTypes.LateUpdate;
+            else if (type.GetCustomAttribute<DrawSystemAttribute>() != null)
+                return SystemTypes.Draw;
+            else
+                throw new Exception("A system must specify a type");
+        });
+
+        // 对系统进行分别排序，然后进行构造
         var updateSystemsConstructParams = new object[] { _world, localAssets };
-        _systems.Add((
-            from type in Moddings.TopologicalSortSystems(updateSystemsTypes)
-            select Activator.CreateInstance(type, updateSystemsConstructParams) as IUpdateSystem
-        ).ToArray());
+        _updateSystems.Add(
+            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.Update])
+            .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+            .ToArray()
+        );
+        _lateUpdateSystems.Add(
+            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.LateUpdate])
+            .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+            .ToArray()
+        );
         var drawSystemsConstructParams = new object[] { _world, GraphicsDevice, localAssets };
-        _uiSystems.Add((
-            from type in Moddings.TopologicalSortSystems(drawSystemsTypes)
-            select Activator.CreateInstance(type, drawSystemsConstructParams) as IDrawSystem
-        ).ToArray());
+        _drawSystems.Add(
+            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.Draw])
+            .Select((type) => Activator.CreateInstance(type, drawSystemsConstructParams) as ISystem)
+            .ToArray()
+        );
 
         // 构造世界加载器
         var worldLoader = new WorldLoader();
@@ -421,6 +437,11 @@ public class SolarMax : XNAGame
         // 将关卡加载到世界中
         var level = levelsAssets.Load<Level>(targetLevelFile);
         worldLoader.Load(level, _world);
+
+        // 对新加入的实体进行事后求解
+        _lateUpdateSystems.BeforeUpdate(null);
+        _lateUpdateSystems.Update(null);
+        _lateUpdateSystems.AfterUpdate(null);
     }
 
     protected override void Update(GameTime gameTime)
@@ -431,9 +452,13 @@ public class SolarMax : XNAGame
 
         //_desktop.UpdateInput();
 
-        _systems.BeforeUpdate(in gameTime);
-        _systems.Update(in gameTime);
-        _systems.AfterUpdate(in gameTime);
+        _updateSystems.BeforeUpdate(in gameTime);
+        _updateSystems.Update(in gameTime);
+        _updateSystems.AfterUpdate(in gameTime);
+
+        _lateUpdateSystems.BeforeUpdate(in gameTime);
+        _lateUpdateSystems.Update(in gameTime);
+        _lateUpdateSystems.AfterUpdate(in gameTime);
 
         base.Update(gameTime);
     }
@@ -442,7 +467,9 @@ public class SolarMax : XNAGame
     {
         GraphicsDevice.Clear(Color.Black);
 
-        _uiSystems.Update(in gameTime);
+        _drawSystems.BeforeUpdate(in gameTime);
+        _drawSystems.Update(in gameTime);
+        _drawSystems.AfterUpdate(in gameTime);
 
         //_desktop.UpdateLayout();
         //_desktop.RenderVisual();

@@ -9,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
-    : BaseSystem<World, GameTime>(world), IUpdateSystem
+    : BaseSystem<World, GameTime>(world), ISystem
 {
     protected abstract void ApplyPartyReferenceImpl(in R reference, ref T target);
 

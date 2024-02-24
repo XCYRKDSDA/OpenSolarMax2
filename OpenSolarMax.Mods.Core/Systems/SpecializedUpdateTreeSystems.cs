@@ -5,6 +5,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
+[LateUpdateSystem]
 public sealed class UpdateTransformTreeSystems(World world, IAssetsManager assets)
     : UpdateTreeSystem<RelativeTransform>(world, assets)
 { }

@@ -9,9 +9,10 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
+[DrawSystem]
 [ExecuteBefore(typeof(DrawSpritesSystem))]
 public sealed partial class UpdateCameraOutputSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), IDrawSystem
+    : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
     [All<Camera>]

@@ -12,9 +12,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 处理实体绕其轨道公转的系统
 /// </summary>
+[UpdateSystem]
 [ExecuteBefore(typeof(CalculateAbsoluteTransformSystem))]
 public sealed partial class RevolveEntitiesAroundOrbitsSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), IUpdateSystem
+    : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
     [All<Tree<RelativeTransform>.Child, RelativeTransform, RevolutionOrbit, RevolutionState>]

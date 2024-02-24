@@ -12,9 +12,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相对变换<see cref="RelativeTransform"/>及其树型关系计算每个实体的绝对变换
 /// </summary>
+[LateUpdateSystem]
 [ExecuteAfter(typeof(UpdateTransformTreeSystems))] //需要在更新完坐标变换树后再执行
 public sealed partial class CalculateAbsoluteTransformSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), IUpdateSystem
+    : BaseSystem<World, GameTime>(world), ISystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(in Entity entity, in Matrix parentTransformToRoot)
     {
