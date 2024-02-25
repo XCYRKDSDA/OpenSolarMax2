@@ -89,6 +89,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         var random = new Random();
 
         ref var sprite = ref entity.Get<Sprite>();
+        ref var planetSize = ref entity.Get<ReferenceSize>();
         ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
         ref var productionAbility = ref entity.Get<ProductionAbility>();
@@ -101,6 +102,9 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Alpha;
+
+        // 默认直径为纹理的长边长度
+        planetSize.Radius = _defaultRadius;
 
         // 默认采用平动
         revolutionOrbit.Mode = RevolutionMode.TranslationOnly;
@@ -123,6 +127,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         var planetConfig = (configuration as PlanetConfiguration)!;
 
         ref var sprite = ref entity.Get<Sprite>();
+        ref var planetSize = ref entity.Get<ReferenceSize>();
         ref var relativeTransform = ref entity.Get<RelativeTransform>();
         ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
         ref var revolutionState = ref entity.Get<RevolutionState>();
@@ -131,6 +136,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         // 设置星球的尺寸
         if (planetConfig.Radius.HasValue)
         {
+            planetSize.Radius = planetConfig.Radius.Value;
             var scale = planetConfig.Radius.Value / _defaultRadius;
 
             sprite.Scale = new(scale);

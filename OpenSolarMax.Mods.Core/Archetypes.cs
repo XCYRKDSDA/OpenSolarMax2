@@ -25,7 +25,8 @@ public static class Archetypes
         typeof(Tree<Anchorage>.Parent),
         typeof(AnchoredShipsRegistry),
         typeof(ProductionAbility),
-        typeof(ProductionState)
+        typeof(ProductionState),
+        typeof(ReferenceSize)
     );
 
     public static readonly Archetype Ship = new(
