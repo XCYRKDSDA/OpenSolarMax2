@@ -50,16 +50,7 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
         if (unitConfig.Planet != null)
         {
             var planetEntity = ctx.OtherEntities[unitConfig.Planet];
-            entity.SetParent<RelativeTransform>(planetEntity);
-
-            var random = new Random();
-
-            // 随机生成轨道
-            entity.Get<RevolutionOrbit>() = Revolution.CreateRandomRevolutionOrbit(
-                in planetEntity.Get<PlanetGeostationaryOrbit>(), random, _defaultRevolutionOffsetRange);
-
-            // 随机初始化公转状态
-            entity.Get<RevolutionState>() = Revolution.CreateRandomState(random);
+            entity.AnchorTo(planetEntity);
         }
 
         // 设置所属阵营

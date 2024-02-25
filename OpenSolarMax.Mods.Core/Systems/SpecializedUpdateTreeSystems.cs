@@ -9,3 +9,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed class UpdateTransformTreeSystems(World world, IAssetsManager assets)
     : UpdateTreeSystem<RelativeTransform>(world, assets)
 { }
+
+[LateUpdateSystem]
+public sealed class UpdateAnchorageTreeSystem(World world, IAssetsManager assets)
+    : UpdateTreeSystem<Anchorage>(world, assets)
+{ }

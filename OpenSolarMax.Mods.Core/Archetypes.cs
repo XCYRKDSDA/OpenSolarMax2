@@ -21,7 +21,9 @@ public static class Archetypes
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
         typeof(PlanetGeostationaryOrbit),
-        typeof(Tree<Party>.Child)
+        typeof(Tree<Party>.Child),
+        typeof(Tree<Anchorage>.Parent),
+        typeof(AnchoredShipsRegistry)
     );
 
     public static readonly Archetype Ship = new(
@@ -32,7 +34,8 @@ public static class Archetypes
         typeof(Sprite),
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
-        typeof(Tree<Party>.Child)
+        typeof(Tree<Party>.Child),
+        typeof(Tree<Anchorage>.Child)
     );
 
     public static readonly Archetype PredefinedOrbit = new(
