@@ -29,7 +29,7 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
 
     private const float _defaultRevolutionOffsetRange = 0.3f;
 
-    public void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         ref var sprite = ref entity.Get<Sprite>();
 
@@ -42,14 +42,14 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
         sprite.Blend = SpriteBlend.Additive;
     }
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         var unitConfig = (ShipConfiguration)configuration;
 
         // 设置所属星球
         if (unitConfig.Planet != null)
         {
-            var planetEntity = otherEntities[unitConfig.Planet];
+            var planetEntity = ctx.OtherEntities[unitConfig.Planet];
             entity.SetParent<RelativeTransform>(planetEntity);
 
             var random = new Random();
@@ -64,6 +64,6 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (unitConfig.Party != null)
-            entity.SetParent<Party>(otherEntities[unitConfig.Party]);
+            entity.SetParent<Party>(ctx.OtherEntities[unitConfig.Party]);
     }
 }

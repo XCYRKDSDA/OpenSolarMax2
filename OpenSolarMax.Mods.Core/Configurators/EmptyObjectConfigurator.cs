@@ -21,10 +21,10 @@ public class EmptyObjectConfigurator(IAssetsManager assets) : IEntityConfigurato
 
     public Type ConfigurationType => typeof(EmptyObjectConfiguration);
 
-    public void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     { }
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         var basicConfig = (configuration as EmptyObjectConfiguration)!;
 

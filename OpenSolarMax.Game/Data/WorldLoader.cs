@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using System.Reflection;
+using Arch.Core;
 using OpenSolarMax.Game.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
@@ -8,6 +9,7 @@ internal sealed class WorldLoader
 {
     public IReadOnlyCollection<IEntityConfigurator> Configurators => _configurators.Values;
 
+    // 从配置类型到配置器的映射
     private readonly Dictionary<Type, IEntityConfigurator> _configurators = [];
 
     public void RegisterConfigurator(IEntityConfigurator configurator)
@@ -55,6 +57,11 @@ internal sealed class WorldLoader
     {
         var namedEntities = new Dictionary<string, Entity>();
 
+        var configuratorsTable = _configurators.Values.ToLookup((c) => c.GetType().GetCustomAttribute<ConfiguratorKeyAttribute>()!.Key);
+
+        var ctx = new WorldLoadingContext(namedEntities);
+        var env = new WorldLoadingEnvironment(configuratorsTable);
+
         foreach (var (optionalId, entityStatment, num) in level.Entities)
         {
             // 解析引用关系，获得所有配置项
@@ -83,10 +90,10 @@ internal sealed class WorldLoader
 
                 // 初始化实体
                 foreach (var configType in allConfigTypes)
-                    _configurators[configType].Initialize(in entity, namedEntities);
+                    _configurators[configType].Initialize(in entity, ctx, env);
 
                 foreach (var config in allConfigs)
-                    _configurators[config.GetType()].Configure(config, in entity, namedEntities);
+                    _configurators[config.GetType()].Configure(config, in entity, ctx, env);
             }
         }
     }

@@ -45,7 +45,7 @@ public class PredefinedOrbitConfigurator(IAssetsManager assets) : IEntityConfigu
 
     public Type ConfigurationType => typeof(PredefinedOrbitConfiguration);
 
-    public void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         ref var orbit = ref entity.Get<PredefinedOrbit>();
         orbit.Template.Rotation = Quaternion.Identity;
@@ -54,12 +54,12 @@ public class PredefinedOrbitConfigurator(IAssetsManager assets) : IEntityConfigu
         orbit.Template.Mode = RevolutionMode.TranslationOnly;
     }
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         var orbitConfig = (configuration as PredefinedOrbitConfiguration) ?? throw new ArgumentException("Unexpected configuration type");
 
         if (orbitConfig.Parent is not null)
-            entity.SetParent<RelativeTransform>(otherEntities[orbitConfig.Parent]);
+            entity.SetParent<RelativeTransform>(ctx.OtherEntities[orbitConfig.Parent]);
 
         if (orbitConfig.Shape is not null)
         {

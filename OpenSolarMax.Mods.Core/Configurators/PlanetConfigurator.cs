@@ -73,7 +73,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
     private const float _defaultOrbitMinRoll = 0;
     private const float _defaultOrbitMaxRoll = _defaultOrbitMinRoll + MathF.PI / 24;
 
-    public void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         var random = new Random();
 
@@ -101,7 +101,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         geostationaryOrbit.Period = _defaultOrbitPeriod;
     }
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         var planetConfig = (configuration as PlanetConfiguration)!;
 
@@ -131,7 +131,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         {
             if (planetConfig.Orbit.Parent != null)
             {
-                var parentEntity = otherEntities[planetConfig.Orbit.Parent];
+                var parentEntity = ctx.OtherEntities[planetConfig.Orbit.Parent];
                 entity.SetParent<RelativeTransform>(parentEntity);
 
                 // 如果指定了一个有预定义轨道的实体作为公转的父级，则采用预定义轨道作为基础值
@@ -151,6 +151,6 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (planetConfig.Party != null)
-            entity.SetParent<Party>(otherEntities[planetConfig.Party]);
+            entity.SetParent<Party>(ctx.OtherEntities[planetConfig.Party]);
     }
 }

@@ -24,12 +24,12 @@ public class PartyReferenceConfigurator(IAssetsManager assets) : IEntityConfigur
 
     public Type ConfigurationType => typeof(PartyReferenceConfiguration);
 
-    public void Initialize(in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         entity.Get<PartyReferenceColor>().Value = Color.White;
     }
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, IReadOnlyDictionary<string, Entity> otherEntities)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         var partyConfig = configuration as PartyReferenceConfiguration ?? throw new ArgumentException("Unexpected configuration type");
 
