@@ -39,7 +39,10 @@ internal static partial class Moddings
             if (executeAfterAttributes != null)
             {
                 foreach (var executeAfterAttribute in executeAfterAttributes)
-                    graph[systemType].Add(executeAfterAttribute.TheOther);
+                {
+                    if (graph.ContainsKey(executeAfterAttribute.TheOther))
+                        graph[systemType].Add(executeAfterAttribute.TheOther);
+                }
             }
 
             var executeBeforeAttributes = systemType.GetCustomAttributes<ExecuteBeforeAttribute>();
