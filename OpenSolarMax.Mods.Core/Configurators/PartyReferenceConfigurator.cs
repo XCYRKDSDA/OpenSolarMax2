@@ -15,6 +15,11 @@ public class PartyReferenceConfiguration : IEntityConfiguration
     /// 阵营的代表色
     /// </summary>
     public Color? Color { get; set; }
+
+    /// <summary>
+    /// 生产一个该阵营单位需要的工作量
+    /// </summary>
+    public float? Workload { get; set; }
 }
 
 [ConfiguratorKey("party")]
@@ -27,6 +32,7 @@ public class PartyReferenceConfigurator(IAssetsManager assets) : IEntityConfigur
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
         entity.Get<PartyReferenceColor>().Value = Color.White;
+        entity.Get<Producible>().WorkloadPerShip = float.PositiveInfinity;
     }
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
@@ -35,5 +41,8 @@ public class PartyReferenceConfigurator(IAssetsManager assets) : IEntityConfigur
 
         if (partyConfig.Color.HasValue)
             entity.Get<PartyReferenceColor>().Value = partyConfig.Color.Value;
+
+        if (partyConfig.Workload.HasValue)
+            entity.Get<Producible>().WorkloadPerShip = partyConfig.Workload.Value;
     }
 }

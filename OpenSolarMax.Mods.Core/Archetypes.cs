@@ -23,7 +23,9 @@ public static class Archetypes
         typeof(PlanetGeostationaryOrbit),
         typeof(Tree<Party>.Child),
         typeof(Tree<Anchorage>.Parent),
-        typeof(AnchoredShipsRegistry)
+        typeof(AnchoredShipsRegistry),
+        typeof(ProductionAbility),
+        typeof(ProductionState)
     );
 
     public static readonly Archetype Ship = new(
@@ -48,7 +50,8 @@ public static class Archetypes
 
     public static readonly Archetype Party = new(
         typeof(Tree<Party>.Parent),
-        typeof(PartyReferenceColor)
+        typeof(PartyReferenceColor),
+        typeof(Producible)
     );
 
     public static readonly Archetype Camera = new(

@@ -53,6 +53,16 @@ public class PlanetConfiguration : IEntityConfiguration
     /// 星球所属的阵营
     /// </summary>
     public string? Party { get; set; }
+
+    /// <summary>
+    /// 该星球可为其阵营提供的人口
+    /// </summary>
+    public int? Population { get; set; }
+
+    /// <summary>
+    /// 该星球生产单位的速度
+    /// </summary>
+    public float? ProduceSpeed { get; set; }
 }
 
 [ConfiguratorKey("planet")]
@@ -72,6 +82,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
     private const float _defaultOrbitMaxPitch = _defaultOrbitMinPitch + MathF.PI / 12;
     private const float _defaultOrbitMinRoll = 0;
     private const float _defaultOrbitMaxRoll = _defaultOrbitMinRoll + MathF.PI / 24;
+    private const string _defaultProductKey = "ship";
 
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
@@ -80,6 +91,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         ref var sprite = ref entity.Get<Sprite>();
         ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
+        ref var productionAbility = ref entity.Get<ProductionAbility>();
 
         // 随机填充默认纹理
         var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
@@ -99,6 +111,11 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
         geostationaryOrbit.Radius = _defaultOrbitRadius;
         geostationaryOrbit.Period = _defaultOrbitPeriod;
+
+        // 默认生成ship单位，但是速度为0
+        productionAbility.Population = 0;
+        productionAbility.ProgressPerSecond = 0;
+        productionAbility.ProductConfigurators = env.Configurators[_defaultProductKey].ToArray();
     }
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
@@ -152,5 +169,13 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         // 设置所属阵营
         if (planetConfig.Party != null)
             entity.SetParent<Party>(ctx.OtherEntities[planetConfig.Party]);
+
+        // 设置人口
+        if (planetConfig.Population.HasValue)
+            entity.Get<ProductionAbility>().Population = planetConfig.Population.Value;
+
+        // 设置生产能力
+        if (planetConfig.ProduceSpeed.HasValue)
+            entity.Get<ProductionAbility>().ProgressPerSecond = planetConfig.ProduceSpeed.Value;
     }
 }
