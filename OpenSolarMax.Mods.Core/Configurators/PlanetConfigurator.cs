@@ -75,8 +75,8 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
     private readonly TextureRegion[] _defaultPlanetTextures = (from key in Content.Textures.DefaultPlanetTextures
                                                                select assets.Load<TextureRegion>(key)).ToArray();
 
-    private const float _defaultRadius = 32;
-    private const float _defaultOrbitRadius = 64;
+    private const float _defaultRadius = 60;
+    private const float _defaultOrbitRadius = 120;
     private const float _defaultOrbitPeriod = 10;
     private const float _defaultOrbitMinPitch = -MathF.PI * 11 / 24;
     private const float _defaultOrbitMaxPitch = _defaultOrbitMinPitch + MathF.PI / 12;

@@ -1,12 +1,12 @@
 {
 	"templates": {
-		"planet60": { "$base": "planet", "radius": 30, "population": 60, "produceSpeed": 1 }
+		"planet60": { "$base": "planet", "radius": 60, "population": 60, "produceSpeed": 1 }
 	},
 
 	"entities": [
 		{ "$base": "camera", "size": [ 1920, 1080 ], "depth": [ -1000, 1000 ] },
 
-		{ "$id": "orbit01", "$base": "orbit", "shape": [ 600, 400 ], "period": 30 },
+		{ "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
 
 		{ "$id": "blue", "$base": "party", "color": "#5FB6FF", "workload": 1 },
 
