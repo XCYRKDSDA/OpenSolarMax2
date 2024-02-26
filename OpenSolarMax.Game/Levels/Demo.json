@@ -1,6 +1,7 @@
 {
 	"templates": {
-		"planet60": { "$base": "planet", "radius": 60, "population": 60, "produceSpeed": 1 }
+		"planet60": { "$base": "planet", "radius": 60, "population": 60, "produceSpeed": 1 },
+		"blue": { "$base": "party", "color": "#5FB6FF", "workload": 1 }
 	},
 
 	"entities": [
@@ -8,10 +9,12 @@
 
 		{ "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
 
-		{ "$id": "blue", "$base": "party", "color": "#5FB6FF", "workload": 1 },
+		{ "$id": "blue", "$base": "blue" },
+		{ "$id": "red", "$base": "blue", "color": "#FF5D93" },
 
 		{ "$id": "planet01", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0 } },
 
-		{ "$base": "ship", "party": "blue", "planet": "planet01", "$num": 30 }
+		{ "$base": "ship", "party": "blue", "planet": "planet01", "$num": 30 },
+		{ "$base": "ship", "party": "red", "planet": "planet01", "$num": 30 }
 	]
 }
