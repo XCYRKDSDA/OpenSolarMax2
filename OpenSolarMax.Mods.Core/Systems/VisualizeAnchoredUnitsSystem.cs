@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Arch.Core;
+﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -24,18 +23,16 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
     private const float _shadowDensity = 0.618f;
 
     private const float _labelXOffsetFactor = 0.6f;
-    private const float _labelYOffsetFactor = -0.72f;
+    private const float _labelYOffsetFactor = 0.72f;
 
     private const float _ringRadiusFactor = 1.8f;
     private const float _ringThickness = 3;
-    private const int _ringSides = 60;
     private const float _labelRadiusFactor = 1.25f;
 
     private class FontStashRenderer(GraphicsDevice graphicsDevice) : IFontStashRenderer2
     {
-        private static readonly int[] _indices = [0, 1, 2, 3];
-
         private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
+        private static readonly int[] _indices = [0, 1, 2, 3];
 
         public BasicEffect Effect { get; } = new(graphicsDevice)
         {
@@ -54,14 +51,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         {
             Effect.Texture = texture;
 
-            // 暂存数组
             _vertices[0] = topLeft; _vertices[1] = topRight;
             _vertices[2] = bottomLeft; _vertices[3] = bottomRight;
-
-            // 翻转纹理
-            var originalTopY = _vertices[0].Position.Y;
-            _vertices[0].Position.Y = _vertices[1].Position.Y = _vertices[2].Position.Y;
-            _vertices[2].Position.Y = _vertices[3].Position.Y = originalTopY;
 
             // 绘制图元
             foreach (var pass in Effect.CurrentTechnique.Passes)
@@ -72,50 +63,48 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         }
     }
 
+    private class RingRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+    {
+        private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
+        private static readonly int[] _indices = [0, 1, 2, 3];
+        private static readonly Vector3[] _square = [new(-1, 1, 0), new(1, 1, 0), new(-1, -1, 0), new(1, -1, 0)];
+
+        public Effect Effect { get; } = new(graphicsDevice, assets.Load<byte[]>("Effects/UIRing.mgfxo"));
+
+        public GraphicsDevice GraphicsDevice => graphicsDevice;
+
+        public void DrawArc(Vector2 center, float radius, float head, float radians, Color color, float thickness)
+        {
+            Effect.Parameters["center"].SetValue(center);
+            Effect.Parameters["radius"].SetValue(radius);
+            Effect.Parameters["thickness"].SetValue(thickness);
+            Effect.Parameters["inferior"].SetValue(radians < MathF.PI);
+
+            var (headY, headX) = MathF.SinCos(head);
+            Effect.Parameters["head_vector"].SetValue(new Vector2(headX, headY));
+
+            var (tailY, tailX) = MathF.SinCos(head + radians);
+            Effect.Parameters["tail_vector"].SetValue(new Vector2(tailX, tailY));
+
+            var boundaryRadius = radius + thickness / 2;
+            for (int i = 0; i < 4; i++)
+            {
+                _vertices[i].Position = _square[i] * boundaryRadius + new Vector3(center, 0);
+                _vertices[i].Color = color;
+            }
+
+            foreach (var pass in Effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
+            }
+        }
+    }
+
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
     private readonly FontStashRenderer _fontRenderer = new(graphicsDevice);
+    private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
     private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
-
-    // 画圆相关
-    private readonly VertexPositionColor[] _vertices = new VertexPositionColor[_ringSides * 2 + 2];
-    private static readonly short[] _indices;
-    private readonly BasicEffect _ringEffect = new(graphicsDevice)
-    {
-        World = Matrix.Identity,
-        VertexColorEnabled = true,
-        TextureEnabled = false,
-    };
-
-    static VisualizeAnchoredUnitsSystem()
-    {
-        _indices = new short[_ringSides * 2 + 2];
-        for (short i = 0; i < _ringSides * 2; i++)
-            _indices[i] = i;
-        _indices[^2] = 0;
-        _indices[^1] = 1;
-    }
-
-    private void DrawArc(Vector3 center, float radius, int sides, float headAngle, float tailAngle, Color color, float thickness)
-    {
-        Debug.Assert(sides <= _ringSides);
-
-        var radians = tailAngle - headAngle;
-        for (int i = 0; i <= sides; i++)
-        {
-            float angle = i * radians / sides + headAngle;
-            var dir = Vector3.Zero;
-            (dir.Y, dir.X) = MathF.SinCos(angle);
-            _vertices[2 * i].Position = dir * (radius - thickness / 2) + center;
-            _vertices[2 * i + 1].Position = dir * (radius + thickness / 2) + center;
-            _vertices[2 * i].Color = _vertices[2 * i + 1].Color = color;
-        }
-
-        foreach (var pass in _ringEffect.CurrentTechnique.Passes)
-        {
-            pass.Apply();
-            _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 2 * sides, _indices, 0, 2 * sides);
-        }
-    }
 
     /// <summary>
     /// 根据权重计算每段弧线的启停角度。
@@ -152,7 +141,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         return arcsAngles;
     }
 
-    private void VisualizeOnePlanet(in AnchoredShipsRegistry registry, in ReferenceSize refSize, in AbsoluteTransform pose)
+    private void VisualizeOnePlanet(in AnchoredShipsRegistry registry, in ReferenceSize refSize, in AbsoluteTransform pose, in Matrix worldToCanvas)
     {
         // 如果没有停泊任何单位则跳过绘制
         if (registry.Ships.Count == 0)
@@ -162,13 +151,18 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
 
         if (parties.Length == 1)
         {
+            // 计算从世界到UI画布的缩放
+            var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
+            var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+
             // 更新文字
             var text = string.Format(_textFormat, registry.Ships[parties[0]].Count());
 
             // 计算文字位置
             var textSize = _font.MeasureString(text);
-            var position = new Vector2(pose.Translation.X, pose.Translation.Y)
-                           + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius
+            var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
+            var position = new Vector2(planetInCanvas.X, planetInCanvas.Y)
+                           + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius * scale
                            - textSize / 2;
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
 
@@ -176,17 +170,21 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
             var color = parties[0].Get<PartyReferenceColor>().Value;
             var shadowColor = Color.Lerp(color, Color.Black, _shadowDensity) * _shadowDensity;
 
-            // 绘制文字
             _font.DrawText(_fontRenderer, text, shadowPosition, shadowColor);
             _font.DrawText(_fontRenderer, text, position, color);
         }
         else
         {
+            // 计算从世界到UI画布的缩放
+            var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
+            var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+
             // 计算战斗环的尺寸
-            var ringRadius = refSize.Radius * _ringRadiusFactor;
+            var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 获得战斗环的圆心
-            var ringCenter = pose.Translation;
+            var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
+            var ringCenter = new Vector2(planetInCanvas.X, planetInCanvas.Y);
 
             // 获得各阵营的单位数目、颜色和标签
             var weights = registry.Ships.Select((g) => g.Count()).ToArray();
@@ -200,12 +198,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
             for (int i = 0; i < parties.Length; i++)
             {
                 var radians = arcs[i + 1] - arcs[i];
-                var sides = (int)MathF.Ceiling(radians / (2 * MathF.PI) * _ringSides);
 
-                var startingAngle = arcs[i];
-                while (startingAngle < 0) startingAngle += 2 * MathF.PI;
-
-                DrawArc(ringCenter, ringRadius, sides, arcs[i], arcs[i + 1], colors[i], _ringThickness);
+                _ringRenderer.DrawArc(ringCenter, ringRadius, arcs[i], radians, colors[i], _ringThickness);
             }
 
             // 绘制各个阵营的单位数目文字
@@ -214,8 +208,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
                 var textSize = _font.MeasureString(labels[i]);
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
-                var textPosition = new Vector2(ringCenter.X, ringCenter.Y)
-                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius * _labelRadiusFactor
+                var textPosition = ringCenter
+                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius * _labelRadiusFactor * scale
                                    - textSize / 2;
                 var shadowPosition = textPosition with { Y = textPosition.Y + _shadowDistance };
 
@@ -233,21 +227,30 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
     [All<Camera, AbsoluteTransform>]
     private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
     {
+        // 根据相机和视口状态计算变换矩阵
+        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
+        var projectionMatrix = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var canvas = camera.Output.Bounds;
+        var ndcToCanvas = Matrix.CreateScale(canvas.Width * 0.5f, canvas.Height * -0.5f, 1)
+                          * Matrix.CreateTranslation(canvas.Width * 0.5f, canvas.Height * 0.5f, 0);
+        var worldToCanvas = viewMatrix * projectionMatrix * ndcToCanvas;
+        var canvasToNDC = Matrix.Invert(ndcToCanvas);
+
         // 设置绘图区域
-        var viewport = _graphicsDevice.Viewport = camera.Output;
+        _graphicsDevice.Viewport = camera.Output;
 
-        // 计算相机参数
-        _ringEffect.Projection = _fontRenderer.Effect.Projection = Matrix.CreateOrthographic(viewport.Width, viewport.Height, -1, 1);
-
-        // 设置绘图设备参数
-        _graphicsDevice.RasterizerState = new() { CullMode = CullMode.None };
+        // 设置绘图参数
         _graphicsDevice.BlendState = BlendState.AlphaBlend;
+
+        // 设置着色器坐标变换参数
+        _fontRenderer.Effect.Projection = canvasToNDC;
+        _ringRenderer.Effect.Parameters["to_ndc"].SetValue(canvasToNDC);
 
         // 逐个绘制
         foreach (var entity in entities)
         {
             var refs = entity.Get<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
-            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2);
+            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in worldToCanvas);
         }
     }
 

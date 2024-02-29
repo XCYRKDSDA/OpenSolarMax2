@@ -112,6 +112,7 @@ public class SolarMax : XNAGame
         globalAssets.RegisterLoader(new TextureAtlasLoader());
         globalAssets.RegisterLoader(new TextureRegionLoader());
         globalAssets.RegisterLoader(new FontSystemLoader());
+        globalAssets.RegisterLoader(new ByteArrayLoader());
 
         #region 初始化UI
 
@@ -356,6 +357,7 @@ public class SolarMax : XNAGame
         localAssets.RegisterLoader(new TextureAtlasLoader());
         localAssets.RegisterLoader(new TextureRegionLoader());
         localAssets.RegisterLoader(new FontSystemLoader());
+        localAssets.RegisterLoader(new ByteArrayLoader());
 
         // 从行为包中寻找配置器类型并实例化
         var configurators = new Dictionary<string, List<IEntityConfigurator>>();

@@ -9,6 +9,18 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<MGFXProfile>OpenGL</MGFXProfile>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Effect Include="Content\Effects\UIRing.fx" />
+	</ItemGroup>
+
+	<Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">
+		<Copy SourceFiles="@(CompiledEffect)" DestinationFiles="$(OutputPath)%(CompiledEffect.Name)" />
+	</Target>
+
 	<ItemGroup>
 		<PackageReference Include="Arch.System.SourceGenerator" Version="1.1.2">
 			<PrivateAssets>runtime</PrivateAssets>
@@ -46,5 +58,7 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+	<Import Project="mgfx.targets" />
 
 </Project>
