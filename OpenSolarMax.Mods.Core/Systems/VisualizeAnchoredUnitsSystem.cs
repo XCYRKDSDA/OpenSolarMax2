@@ -3,7 +3,6 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FontStashSharp;
-using FontStashSharp.Interfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -172,8 +171,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         _graphicsDevice.BlendState = BlendState.AlphaBlend;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = canvasToNDC;
-        _ringRenderer.Effect.Parameters["to_ndc"].SetValue(canvasToNDC);
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNDC;
 
         // 逐个绘制
         foreach (var entity in entities)
