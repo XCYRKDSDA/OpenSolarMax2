@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.System;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -29,80 +30,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
     private const float _ringThickness = 3;
     private const float _labelRadiusFactor = 1.25f;
 
-    private class FontStashRenderer(GraphicsDevice graphicsDevice) : IFontStashRenderer2
-    {
-        private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
-        private static readonly int[] _indices = [0, 1, 2, 3];
-
-        public BasicEffect Effect { get; } = new(graphicsDevice)
-        {
-            World = Matrix.Identity,
-            View = Matrix.Identity,
-            Projection = Matrix.Identity,
-            VertexColorEnabled = true,
-            TextureEnabled = true,
-        };
-
-        public GraphicsDevice GraphicsDevice => graphicsDevice;
-
-        public void DrawQuad(Texture2D texture,
-                             ref VertexPositionColorTexture topLeft, ref VertexPositionColorTexture topRight,
-                             ref VertexPositionColorTexture bottomLeft, ref VertexPositionColorTexture bottomRight)
-        {
-            Effect.Texture = texture;
-
-            _vertices[0] = topLeft; _vertices[1] = topRight;
-            _vertices[2] = bottomLeft; _vertices[3] = bottomRight;
-
-            // 绘制图元
-            foreach (var pass in Effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
-            }
-        }
-    }
-
-    private class RingRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
-    {
-        private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
-        private static readonly int[] _indices = [0, 1, 2, 3];
-        private static readonly Vector3[] _square = [new(-1, 1, 0), new(1, 1, 0), new(-1, -1, 0), new(1, -1, 0)];
-
-        public Effect Effect { get; } = new(graphicsDevice, assets.Load<byte[]>("Effects/UIRing.mgfxo"));
-
-        public GraphicsDevice GraphicsDevice => graphicsDevice;
-
-        public void DrawArc(Vector2 center, float radius, float head, float radians, Color color, float thickness)
-        {
-            Effect.Parameters["center"].SetValue(center);
-            Effect.Parameters["radius"].SetValue(radius);
-            Effect.Parameters["thickness"].SetValue(thickness);
-            Effect.Parameters["inferior"].SetValue(radians < MathF.PI);
-
-            var (headY, headX) = MathF.SinCos(head);
-            Effect.Parameters["head_vector"].SetValue(new Vector2(headX, headY));
-
-            var (tailY, tailX) = MathF.SinCos(head + radians);
-            Effect.Parameters["tail_vector"].SetValue(new Vector2(tailX, tailY));
-
-            var boundaryRadius = radius + thickness / 2;
-            for (int i = 0; i < 4; i++)
-            {
-                _vertices[i].Position = _square[i] * boundaryRadius + new Vector3(center, 0);
-                _vertices[i].Color = color;
-            }
-
-            foreach (var pass in Effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
-            }
-        }
-    }
-
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
-    private readonly FontStashRenderer _fontRenderer = new(graphicsDevice);
+    private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
     private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
 

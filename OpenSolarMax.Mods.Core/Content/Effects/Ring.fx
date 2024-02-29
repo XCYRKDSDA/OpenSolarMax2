@@ -101,7 +101,7 @@ float4 ps_main(PixelInput p) : SV_TARGET
  * 效果定义
  *************************************/
 
-technique UIRing
+technique Ring
 {
     pass
     {

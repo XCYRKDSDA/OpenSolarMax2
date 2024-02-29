@@ -1,0 +1,61 @@
+﻿using System.Diagnostics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Nine.Assets;
+
+namespace OpenSolarMax.Mods.Core.Graphics;
+
+/// <summary>
+/// 直接使用<see cref="Microsoft.Xna.Framework.Graphics.GraphicsDevice"/>、
+/// 并使用内置效果Ring.fx来绘制圆环的渲染器
+/// </summary>
+/// <param name="graphicsDevice"></param>
+/// <param name="assets"></param>
+internal class RingRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+{
+    private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
+    private static readonly int[] _indices = [0, 1, 2, 3];
+    private static readonly Vector3[] _square = [new(-1, 1, 0), new(1, 1, 0), new(-1, -1, 0), new(1, -1, 0)];
+
+    public Effect Effect { get; } = new(graphicsDevice, assets.Load<byte[]>("Effects/UIRing.mgfxo"));
+
+    public GraphicsDevice GraphicsDevice => graphicsDevice;
+
+    public void DrawArc(Vector2 center, float radius, float head, float radians, Color color, float thickness)
+    {
+        // 统一方向
+        if (radians < 0)
+        {
+            head += radians;
+            radians *= -1;
+        }
+
+        // 归一化角度
+        head %= 2 * MathF.PI;
+        Debug.Assert(radians >= 0 && radians < 2 * MathF.PI);
+
+        Effect.Parameters["center"].SetValue(center);
+        Effect.Parameters["radius"].SetValue(radius);
+        Effect.Parameters["thickness"].SetValue(thickness);
+        Effect.Parameters["inferior"].SetValue(radians < MathF.PI);
+
+        var (headY, headX) = MathF.SinCos(head);
+        Effect.Parameters["head_vector"].SetValue(new Vector2(headX, headY));
+
+        var (tailY, tailX) = MathF.SinCos(head + radians);
+        Effect.Parameters["tail_vector"].SetValue(new Vector2(tailX, tailY));
+
+        var boundaryRadius = radius + thickness / 2;
+        for (int i = 0; i < 4; i++)
+        {
+            _vertices[i].Position = _square[i] * boundaryRadius + new Vector3(center, 0);
+            _vertices[i].Color = color;
+        }
+
+        foreach (var pass in Effect.CurrentTechnique.Passes)
+        {
+            pass.Apply();
+            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
+        }
+    }
+}
