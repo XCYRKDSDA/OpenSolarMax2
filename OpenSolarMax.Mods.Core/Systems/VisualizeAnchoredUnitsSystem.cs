@@ -159,10 +159,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
         var projectionMatrix = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
         var canvas = camera.Output.Bounds;
-        var ndcToCanvas = Matrix.CreateScale(canvas.Width * 0.5f, canvas.Height * -0.5f, 1)
-                          * Matrix.CreateTranslation(canvas.Width * 0.5f, canvas.Height * 0.5f, 0);
-        var worldToCanvas = viewMatrix * projectionMatrix * ndcToCanvas;
-        var canvasToNDC = Matrix.Invert(ndcToCanvas);
+        var canvasToNdc = Matrix.CreateOrthographicOffCenter(0, canvas.Width, canvas.Height, 0, 0, -1);
+        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
         _graphicsDevice.Viewport = camera.Output;
@@ -171,7 +169,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         _graphicsDevice.BlendState = BlendState.AlphaBlend;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNDC;
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNdc;
 
         // 逐个绘制
         foreach (var entity in entities)
