@@ -94,8 +94,10 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         _graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图设备参数
-        _graphicsDevice.RasterizerState = new() { CullMode = CullMode.None };
         _graphicsDevice.BlendState = BlendState.AlphaBlend;
+        _graphicsDevice.DepthStencilState = DepthStencilState.None;
+        _graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 逐个绘制
         foreach (var entity in entities)
