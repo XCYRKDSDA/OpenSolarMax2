@@ -4,7 +4,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Modeling.Systems;
 using OpenSolarMax.Game.System;
 using OpenSolarMax.Mods.Core.Components;
 

@@ -10,7 +10,7 @@ using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
-namespace OpenSolarMax.Game.Modeling.Systems;
+namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
 /// 更新生产系统. 在所有可生产部队的星球上推进生产
