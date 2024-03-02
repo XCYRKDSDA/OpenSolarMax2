@@ -9,6 +9,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 将阵营参考颜色设置到属于阵营的实体的系统
 /// </summary>
 [LateUpdateSystem]
+[ExecuteBefore(typeof(AnimateSystem))]
 public sealed class ApplyPartyColorSystem(World world, IAssetsManager assets)
     : ApplyPartyReferenceSystem<Sprite, PartyReferenceColor>(world)
 {

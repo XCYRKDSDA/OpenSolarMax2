@@ -11,6 +11,7 @@ using Anchorage = OpenSolarMax.Mods.Core.Components.Anchorage;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [LateUpdateSystem]
+[ExecuteBefore(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(UpdateAnchorageTreeSystem))]
 public sealed partial class UpdateShipRegistrySystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem

@@ -27,7 +27,8 @@ public static class Archetypes
         typeof(ProductionAbility),
         typeof(ProductionState),
         typeof(ReferenceSize),
-        typeof(Battlefield)
+        typeof(Battlefield),
+        typeof(Animation)
     );
 
     public static readonly Archetype Ship = new(
@@ -39,7 +40,8 @@ public static class Archetypes
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
         typeof(Tree<Party>.Child),
-        typeof(Tree<Anchorage>.Child)
+        typeof(Tree<Anchorage>.Child),
+        typeof(Animation)
     );
 
     public static readonly Archetype PredefinedOrbit = new(
