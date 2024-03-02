@@ -26,7 +26,8 @@ public static class Archetypes
         typeof(AnchoredShipsRegistry),
         typeof(ProductionAbility),
         typeof(ProductionState),
-        typeof(ReferenceSize)
+        typeof(ReferenceSize),
+        typeof(Battlefield)
     );
 
     public static readonly Archetype Ship = new(
@@ -52,7 +53,8 @@ public static class Archetypes
     public static readonly Archetype Party = new(
         typeof(Tree<Party>.Parent),
         typeof(PartyReferenceColor),
-        typeof(Producible)
+        typeof(Producible),
+        typeof(Combatable)
     );
 
     public static readonly Archetype Camera = new(

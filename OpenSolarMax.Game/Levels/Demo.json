@@ -1,7 +1,7 @@
 {
 	"templates": {
 		"planet60": { "$base": "planet", "radius": 60, "population": 60, "produceSpeed": 1 },
-		"blue": { "$base": "party", "color": "#5FB6FF", "workload": 1 }
+		"blue": { "$base": "party", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
 	},
 
 	"entities": [
