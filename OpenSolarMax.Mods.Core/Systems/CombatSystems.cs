@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Core;
 using OpenSolarMax.Game.System;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;

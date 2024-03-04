@@ -1,7 +1,7 @@
 ﻿using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 
-namespace OpenSolarMax.Core;
+namespace OpenSolarMax.Mods.Core;
 
 public static class Archetypes
 {

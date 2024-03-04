@@ -3,7 +3,6 @@ using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Core;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;

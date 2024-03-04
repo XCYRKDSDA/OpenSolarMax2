@@ -1,7 +1,6 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Nine.Assets;
-using OpenSolarMax.Core;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
