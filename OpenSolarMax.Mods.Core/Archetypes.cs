@@ -66,4 +66,13 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Camera)
     );
+
+    public static readonly Archetype Animation = new(
+        typeof(AbsoluteTransform),
+        typeof(RelativeTransform),
+        typeof(Tree<RelativeTransform>.Child),
+        typeof(Tree<RelativeTransform>.Parent),
+        typeof(Sprite),
+        typeof(Animation)
+    );
 }
