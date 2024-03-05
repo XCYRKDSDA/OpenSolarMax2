@@ -3,9 +3,10 @@ using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Drawing;
-using Nine.Graphics;
 using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
@@ -71,54 +72,33 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
     public Type ConfigurationType => typeof(PlanetConfiguration);
 
-    private readonly TextureRegion[] _defaultPlanetTextures = (from key in Content.Textures.DefaultPlanetTextures
-                                                               select assets.Load<TextureRegion>(key)).ToArray();
-
-    private const float _defaultRadius = 60;
-    private const float _defaultOrbitRadius = 120;
-    private const float _defaultOrbitPeriod = 10;
-    private const float _defaultOrbitMinPitch = -MathF.PI * 11 / 24;
-    private const float _defaultOrbitMaxPitch = _defaultOrbitMinPitch + MathF.PI / 12;
-    private const float _defaultOrbitMinRoll = 0;
-    private const float _defaultOrbitMaxRoll = _defaultOrbitMinRoll + MathF.PI / 24;
     private const string _defaultProductKey = "ship";
+
+    private readonly PlanetTemplate _template = new(assets);
+
+    /// <summary>
+    /// 将一个<see cref="IEntityConfigurator"/>及其运行时包装在其中的实体模板
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <param name="ctx"></param>
+    /// <param name="env"></param>
+    private class ConfiguratorWrapperTemplate(IEntityConfigurator configurator,
+                                              WorldLoadingContext ctx, WorldLoadingEnvironment env)
+        : ITemplate
+    {
+        public Archetype Archetype => configurator.Archetype;
+
+        public void Apply(Entity entity) => configurator.Initialize(entity, ctx, env);
+    }
 
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
-        var random = new Random();
+        _template.Apply(entity);
 
-        ref var sprite = ref entity.Get<Sprite>();
-        ref var planetSize = ref entity.Get<ReferenceSize>();
-        ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
-        ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
+        // 设置星球能够生产的单位的配置器
         ref var productionAbility = ref entity.Get<ProductionAbility>();
-
-        // 随机填充默认纹理
-        var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
-        sprite.Texture = _defaultPlanetTextures[randomIndex];
-        sprite.Anchor = sprite.Texture.Bounds.Size.ToVector2() / 2;
-        sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
-        sprite.Scale = Vector2.One;
-        sprite.Blend = SpriteBlend.Alpha;
-
-        // 默认直径为纹理的长边长度
-        planetSize.Radius = _defaultRadius;
-
-        // 默认采用平动
-        revolutionOrbit.Mode = RevolutionMode.TranslationOnly;
-
-        // 随机生成同步轨道
-        float pitch = (float)random.NextDouble() * (_defaultOrbitMaxPitch - _defaultOrbitMinPitch) + _defaultOrbitMinPitch;
-        float roll = (float)random.NextDouble() * (_defaultOrbitMaxRoll - _defaultOrbitMinRoll) + _defaultOrbitMinRoll;
-        geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
-        geostationaryOrbit.Radius = _defaultOrbitRadius;
-        geostationaryOrbit.Period = _defaultOrbitPeriod;
-
-        // 默认生成ship单位，但是速度为0
-        productionAbility.Population = 0;
-        productionAbility.ProgressPerSecond = 0;
-        productionAbility.ProductConfigurators = env.Configurators[_defaultProductKey].ToArray();
+        productionAbility.ProductTemplates = env.Configurators[_defaultProductKey]
+            .Select((c) => new ConfiguratorWrapperTemplate(c, ctx, env) as ITemplate).ToArray();
     }
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
@@ -132,16 +112,16 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         ref var revolutionState = ref entity.Get<RevolutionState>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
 
-        // 设置星球的尺寸
+        // 修改星球的尺寸
         if (planetConfig.Radius.HasValue)
         {
+            var scale = planetConfig.Radius.Value / planetSize.Radius;
             planetSize.Radius = planetConfig.Radius.Value;
-            var scale = planetConfig.Radius.Value / _defaultRadius;
 
-            sprite.Scale = new(scale);
+            sprite.Scale *= scale;
 
-            geostationaryOrbit.Radius = _defaultOrbitRadius * scale;
-            geostationaryOrbit.Period = _defaultOrbitPeriod * scale;
+            geostationaryOrbit.Radius *= scale;
+            geostationaryOrbit.Period *= scale;
         }
 
         // 设置星球的位置

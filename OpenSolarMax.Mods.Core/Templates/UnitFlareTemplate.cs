@@ -4,17 +4,15 @@ using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
-namespace OpenSolarMax.Mods.Core.Configurators;
+namespace OpenSolarMax.Mods.Core.Templates;
 
-internal class UnitFlareConfigurator(IAssetsManager assets) : IEntityConfigurator
+public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 {
     public Archetype Archetype => Archetypes.Animation;
-
-    public Type ConfigurationType => throw new NotImplementedException();
 
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipFlare");
     private static readonly AnimationClip<Entity> _flareAnimation = new();
@@ -33,7 +31,7 @@ internal class UnitFlareConfigurator(IAssetsManager assets) : IEntityConfigurato
         public void Set(ref Entity obj, in Vector2 value) => obj.Get<Sprite>().Scale = value;
     }
 
-    static UnitFlareConfigurator()
+    static UnitFlareTemplate()
     {
         _flareAnimation.LoopMode = AnimationLoopMode.RunOnce;
         _flareAnimation.Length = 0.3f;
@@ -50,15 +48,15 @@ internal class UnitFlareConfigurator(IAssetsManager assets) : IEntityConfigurato
         _flareAnimation.Tracks.Add((new SpriteAlphaProperty(), typeof(float)), flareAlphaCurve);
     }
 
-    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    public void Apply(Entity entity)
     {
         // 设置纹理
         ref var sprite = ref entity.Get<Sprite>();
         sprite.Texture = _flareTexture;
+        sprite.Color = Color.White;
         sprite.Anchor = new(148, 148);
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;
-        sprite.Color = Color.White;
 
         // 设置位姿
         ref var transform = ref entity.Get<RelativeTransform>();
@@ -69,10 +67,5 @@ internal class UnitFlareConfigurator(IAssetsManager assets) : IEntityConfigurato
         ref var animation = ref entity.Get<Animation>();
         animation.Clip = _flareAnimation;
         animation.LocalTime = 0;
-    }
-
-    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
-    {
-        throw new NotImplementedException();
     }
 }

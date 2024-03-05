@@ -78,11 +78,11 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
         if (state.Progress >= producible.WorkloadPerShip)
         {
             var unionArchetype = new Archetype();
-            foreach (var configurator in ability.ProductConfigurators)
-                unionArchetype += configurator.Archetype;
+            foreach (var template in ability.ProductTemplates)
+                unionArchetype += template.Archetype;
             var newShip = World.Worlds[planet.WorldId].Construct(in unionArchetype);
-            foreach (var configurator in ability.ProductConfigurators)
-                configurator.Initialize(newShip, null, null);
+            foreach (var template in ability.ProductTemplates)
+                template.Apply(newShip);
 
             // 设置单位阵营
             newShip.SetParent<Party>(party);

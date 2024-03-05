@@ -1,4 +1,4 @@
-﻿using OpenSolarMax.Game.Data;
+﻿using OpenSolarMax.Game.Utils;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
@@ -21,9 +21,9 @@ public struct Producible
 public struct ProductionAbility
 {
     /// <summary>
-    /// 星球可以生产的单位类型。由一组配置器来描述
+    /// 星球可以生产的单位类型。由一组模板来描述
     /// </summary>
-    public IEntityConfigurator[] ProductConfigurators;
+    public ITemplate[] ProductTemplates;
 
     /// <summary>
     /// 星球提供的人口数目

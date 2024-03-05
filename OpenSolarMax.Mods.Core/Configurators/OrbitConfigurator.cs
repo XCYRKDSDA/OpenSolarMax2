@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
@@ -44,14 +45,10 @@ public class PredefinedOrbitConfigurator(IAssetsManager assets) : IEntityConfigu
 
     public Type ConfigurationType => typeof(PredefinedOrbitConfiguration);
 
+    private readonly OrbitTemplate _template = new();
+
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
-    {
-        ref var orbit = ref entity.Get<PredefinedOrbit>();
-        orbit.Template.Rotation = Quaternion.Identity;
-        orbit.Template.Shape = new(0, 0);
-        orbit.Template.Period = float.PositiveInfinity;
-        orbit.Template.Mode = RevolutionMode.TranslationOnly;
-    }
+        => _template.Apply(entity);
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {

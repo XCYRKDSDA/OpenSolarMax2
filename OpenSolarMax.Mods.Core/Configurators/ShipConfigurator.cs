@@ -1,10 +1,8 @@
 ﻿using Arch.Core;
-using Arch.Core.Extensions;
-using Microsoft.Xna.Framework;
 using Nine.Assets;
-using Nine.Graphics;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
@@ -24,22 +22,10 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
 
     public Type ConfigurationType => typeof(ShipConfiguration);
 
-    private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(Content.Textures.DefaultShip);
-
-    private const float _defaultRevolutionOffsetRange = 0.3f;
+    private readonly ShipTemplate _template = new(assets);
 
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
-    {
-        ref var sprite = ref entity.Get<Sprite>();
-
-        // 填充默认纹理
-        sprite.Texture = _defaultTexture;
-        sprite.Anchor = sprite.Texture.Bounds.Size.ToVector2() / 2;
-        sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
-        sprite.Scale = Vector2.One;
-        sprite.Blend = SpriteBlend.Additive;
-    }
+        => _template.Apply(entity);
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {

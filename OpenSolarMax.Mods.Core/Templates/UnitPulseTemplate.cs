@@ -4,17 +4,15 @@ using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
-namespace OpenSolarMax.Mods.Core.Configurators;
+namespace OpenSolarMax.Mods.Core.Templates;
 
-internal class UnitPulseConfigurator(IAssetsManager assets) : IEntityConfigurator
+public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
 {
     public Archetype Archetype => Archetypes.Animation;
-
-    public Type ConfigurationType => throw new NotImplementedException();
 
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipPulse");
     private static readonly AnimationClip<Entity> _pulseAnimation = new();
@@ -33,7 +31,7 @@ internal class UnitPulseConfigurator(IAssetsManager assets) : IEntityConfigurato
         public void Set(ref Entity obj, in Vector2 value) => obj.Get<Sprite>().Scale = value;
     }
 
-    static UnitPulseConfigurator()
+    static UnitPulseTemplate()
     {
         _pulseAnimation.LoopMode = AnimationLoopMode.RunOnce;
         _pulseAnimation.Length = 0.6f;
@@ -50,15 +48,15 @@ internal class UnitPulseConfigurator(IAssetsManager assets) : IEntityConfigurato
         _pulseAnimation.Tracks.Add((new SpriteAlphaProperty(), typeof(float)), pulseAlphaCurve);
     }
 
-    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    public void Apply(Entity entity)
     {
         // 设置颜色
         ref var sprite = ref entity.Get<Sprite>();
         sprite.Texture = _pulseTexture;
+        sprite.Color = Color.White;
         sprite.Anchor = new(86, 86);
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;
-        sprite.Color = Color.White;
 
         // 设置位姿
         ref var transform = ref entity.Get<RelativeTransform>();
@@ -69,10 +67,5 @@ internal class UnitPulseConfigurator(IAssetsManager assets) : IEntityConfigurato
         ref var animation = ref entity.Get<Animation>();
         animation.Clip = _pulseAnimation;
         animation.LocalTime = 0;
-    }
-
-    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
-    {
-        throw new NotImplementedException();
     }
 }

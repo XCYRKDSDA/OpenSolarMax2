@@ -3,6 +3,7 @@ using Arch.Core.Extensions;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
@@ -23,8 +24,10 @@ public class CameraConfigurator(IAssetsManager assets) : IEntityConfigurator
 
     public Type ConfigurationType => typeof(CameraConfiguration);
 
+    private readonly CameraTemplate _template = new();
+
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
-    { }
+        => _template.Apply(entity);
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {

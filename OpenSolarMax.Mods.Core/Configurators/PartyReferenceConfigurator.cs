@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
@@ -38,15 +39,10 @@ public class PartyReferenceConfigurator(IAssetsManager assets) : IEntityConfigur
 
     public Type ConfigurationType => typeof(PartyReferenceConfiguration);
 
-    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
-    {
-        entity.Get<PartyReferenceColor>().Value = Color.White;
-        entity.Get<Producible>().WorkloadPerShip = float.PositiveInfinity;
+    private readonly PartyTemplate _template = new();
 
-        ref var combatable = ref entity.Get<Combatable>();
-        combatable.AttackPerUnitPerSecond = 0;
-        combatable.MaximumDamagePerUnit = float.PositiveInfinity;
-    }
+    public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+        => _template.Apply(entity);
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {

@@ -7,7 +7,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.System;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Configurators;
+using OpenSolarMax.Mods.Core.Templates;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -74,8 +74,8 @@ public sealed partial class UpdateCombatSystem(World world, IAssetsManager asset
 public sealed partial class SettleCombatSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly UnitFlareConfigurator _unitFlareConfigurator = new(assets);
-    private readonly UnitPulseConfigurator _unitPulseConfigurator = new(assets);
+    private readonly UnitFlareTemplate _unitFlareConfigurator = new(assets);
+    private readonly UnitPulseTemplate _unitPulseConfigurator = new(assets);
 
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
@@ -97,15 +97,15 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
 
                 // 生成闪光
                 var flare = World.Construct(_unitFlareConfigurator.Archetype);
-                _unitFlareConfigurator.Initialize(flare, null, null);
+                _unitFlareConfigurator.Apply(flare);
                 flare.Get<Sprite>().Color = ship.Get<Sprite>().Color;
-                flare.Get<RelativeTransform>() = new(ship.Get<AbsoluteTransform>().Translation, Quaternion.Identity);
+                flare.Get<RelativeTransform>().Translation = ship.Get<AbsoluteTransform>().Translation;
 
                 // 生成冲击波
                 var pulse = World.Construct(_unitPulseConfigurator.Archetype);
-                _unitPulseConfigurator.Initialize(pulse, null, null);
+                _unitPulseConfigurator.Apply(pulse);
                 pulse.Get<Sprite>().Color = ship.Get<Sprite>().Color;
-                pulse.Get<RelativeTransform>() = new(ship.Get<AbsoluteTransform>().Translation, Quaternion.Identity);
+                pulse.Get<RelativeTransform>().Translation = ship.Get<AbsoluteTransform>().Translation;
 
                 // 移除单位
                 World.Destroy(ship);
