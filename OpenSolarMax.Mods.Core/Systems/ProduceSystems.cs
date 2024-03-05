@@ -61,7 +61,7 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
 /// <summary>
 /// 结算生产系统. 在所有推进了生产的星球上计算是否产生新单位
 /// </summary>
-[LateUpdateSystem]
+[UpdateSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]
 public sealed partial class SettleProductionSystem(World world, IAssetsManager assets)
