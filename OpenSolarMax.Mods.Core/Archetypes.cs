@@ -73,6 +73,7 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Child),
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),
-        typeof(Animation)
+        typeof(Animation),
+        typeof(ExpiredAfterTimeout)
     );
 }
