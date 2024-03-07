@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新生产系统. 在所有可生产部队的星球上推进生产
 /// </summary>
-[UpdateSystem]
+[CoreUpdateSystem]
 [ExecuteBefore(typeof(SettleProductionSystem))]
 public sealed partial class UpdateProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
@@ -61,7 +61,7 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
 /// <summary>
 /// 结算生产系统. 在所有推进了生产的星球上计算是否产生新单位
 /// </summary>
-[UpdateSystem]
+[StructuralChangeSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]
 public sealed partial class SettleProductionSystem(World world, IAssetsManager assets)

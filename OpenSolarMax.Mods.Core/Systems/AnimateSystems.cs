@@ -9,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[UpdateSystem]
+[CoreUpdateSystem]
 public sealed partial class UpdateAnimationTimeSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

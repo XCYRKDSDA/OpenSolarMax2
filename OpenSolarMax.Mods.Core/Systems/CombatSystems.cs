@@ -14,7 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 战斗更新系统。对所有同在一个星球上的不同阵营部队更新战斗值
 /// </summary>
-[UpdateSystem]
+[CoreUpdateSystem]
 [ExecuteBefore(typeof(SettleCombatSystem))]
 [ExecuteBefore(typeof(SettleProductionSystem))]
 public sealed partial class UpdateCombatSystem(World world, IAssetsManager assets)
@@ -66,7 +66,7 @@ public sealed partial class UpdateCombatSystem(World world, IAssetsManager asset
 /// <summary>
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
-[UpdateSystem]
+[StructuralChangeSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(UpdateCombatSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]

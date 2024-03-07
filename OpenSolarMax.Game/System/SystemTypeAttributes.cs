@@ -4,7 +4,14 @@
 /// 更新核心状态的系统
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class UpdateSystemAttribute : Attribute
+public sealed class CoreUpdateSystemAttribute : Attribute
+{ }
+
+/// <summary>
+/// 对世界状态做出结构性变化的系统
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class StructuralChangeSystemAttribute : Attribute
 { }
 
 /// <summary>

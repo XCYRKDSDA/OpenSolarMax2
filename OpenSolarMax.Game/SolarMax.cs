@@ -50,7 +50,8 @@ public class SolarMax : XNAGame
     #region Model
 
     private readonly World _world = World.Create();
-    private readonly Arch.System.Group<GameTime> _updateSystems = new();
+    private readonly Arch.System.Group<GameTime> _coreUpdateSystems = new();
+    private readonly Arch.System.Group<GameTime> _structuralChangeSystems = new();
     private readonly Arch.System.Group<GameTime> _lateUpdateSystems = new();
     private readonly Arch.System.Group<GameTime> _drawSystems = new();
 
@@ -399,8 +400,10 @@ public class SolarMax : XNAGame
         // 按照系统指定的特性对系统进行分类
         var systemTypesTable = systemTypes.ToLookup((type) =>
         {
-            if (type.GetCustomAttribute<UpdateSystemAttribute>() != null)
-                return SystemTypes.Update;
+            if (type.GetCustomAttribute<CoreUpdateSystemAttribute>() != null)
+                return SystemTypes.CoreUpdate;
+            else if (type.GetCustomAttribute<StructuralChangeSystemAttribute>() != null)
+                return SystemTypes.StructuralChange;
             else if (type.GetCustomAttribute<LateUpdateSystemAttribute>() != null)
                 return SystemTypes.LateUpdate;
             else if (type.GetCustomAttribute<DrawSystemAttribute>() != null)
@@ -411,8 +414,13 @@ public class SolarMax : XNAGame
 
         // 对系统进行分别排序，然后进行构造
         var updateSystemsConstructParams = new object[] { _world, localAssets };
-        _updateSystems.Add(
-            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.Update])
+        _coreUpdateSystems.Add(
+            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.CoreUpdate])
+            .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+            .ToArray()
+        );
+        _structuralChangeSystems.Add(
+            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.StructuralChange])
             .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
             .ToArray()
         );
@@ -454,9 +462,13 @@ public class SolarMax : XNAGame
 
         //_desktop.UpdateInput();
 
-        _updateSystems.BeforeUpdate(in gameTime);
-        _updateSystems.Update(in gameTime);
-        _updateSystems.AfterUpdate(in gameTime);
+        _coreUpdateSystems.BeforeUpdate(in gameTime);
+        _coreUpdateSystems.Update(in gameTime);
+        _coreUpdateSystems.AfterUpdate(in gameTime);
+
+        _structuralChangeSystems.BeforeUpdate(in gameTime);
+        _structuralChangeSystems.Update(in gameTime);
+        _structuralChangeSystems.AfterUpdate(in gameTime);
 
         _lateUpdateSystems.BeforeUpdate(in gameTime);
         _lateUpdateSystems.Update(in gameTime);
