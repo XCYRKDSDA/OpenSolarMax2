@@ -14,7 +14,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Effect Include="Content\Effects\Ring.fx" />
+		<Effect Include="Content\Effects\Ring.fx" />
+		<Effect Include="Content\Effects\Tint.fx" />
 	</ItemGroup>
 
 	<Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">

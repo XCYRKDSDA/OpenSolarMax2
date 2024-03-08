@@ -19,12 +19,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
 
-    private readonly BasicEffect _effect = new(graphicsDevice)
-    {
-        World = Matrix.Identity,
-        VertexColorEnabled = true,
-        TextureEnabled = true,
-    };
+    private readonly Effect _effect = new(graphicsDevice, assets.Load<byte[]>("Effects/Tint.mgfxo"));
 
     private void DrawEntity(in Sprite sprite, in AbsoluteTransform absoluteTransform)
     {
@@ -72,7 +67,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         };
 
         // 设置Shader纹理
-        _effect.Texture = sprite.Texture.Texture;
+        _effect.Parameters["tex_sampler+tex"].SetValue(sprite.Texture.Texture);
 
         // 绘制图元
         foreach (var pass in _effect.CurrentTechnique.Passes)
@@ -87,8 +82,9 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
     {
         // 计算相机参数
-        _effect.View = Matrix.Invert(pose.TransformToRoot);
-        _effect.Projection = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var view = Matrix.Invert(pose.TransformToRoot);
+        var projection = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        _effect.Parameters["to_ndc"].SetValue(view * projection);
 
         // 设置绘图区域
         _graphicsDevice.Viewport = camera.Output;
