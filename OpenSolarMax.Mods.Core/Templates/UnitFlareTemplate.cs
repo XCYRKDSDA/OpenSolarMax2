@@ -54,6 +54,7 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
         ref var sprite = ref entity.Get<Sprite>();
         sprite.Texture = _flareTexture;
         sprite.Color = Color.White;
+        sprite.Alpha = 1;
         sprite.Anchor = new(148, 148);
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;

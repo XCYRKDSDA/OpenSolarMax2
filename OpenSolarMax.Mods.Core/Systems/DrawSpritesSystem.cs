@@ -54,7 +54,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
                                              sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height);
 
         // 设置四个顶点的颜色
-        _vertices[0].Color = _vertices[1].Color = _vertices[2].Color = _vertices[3].Color = sprite.Color;
+        _vertices[0].Color = _vertices[1].Color = _vertices[2].Color = _vertices[3].Color = sprite.Color * sprite.Alpha;
 
         // 设置混合模式
         _graphicsDevice.BlendState = sprite.Blend switch

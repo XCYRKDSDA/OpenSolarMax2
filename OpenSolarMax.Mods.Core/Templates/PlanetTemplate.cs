@@ -47,6 +47,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
         // 随机填充默认纹理
         var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
         sprite.Texture = _defaultPlanetTextures[randomIndex];
+        sprite.Alpha = 1;
         sprite.Anchor = sprite.Texture.Bounds.Size.ToVector2() / 2;
         sprite.Position = Vector2.Zero;
         sprite.Rotation = 0;

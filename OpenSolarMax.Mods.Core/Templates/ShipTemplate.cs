@@ -32,6 +32,7 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         // 填充默认纹理
         sprite.Texture = _defaultTexture;
         sprite.Color = Color.White;
+        sprite.Alpha = 1;
         sprite.Anchor = sprite.Texture.Bounds.Size.ToVector2() / 2;
         sprite.Position = Vector2.Zero;
         sprite.Rotation = 0;

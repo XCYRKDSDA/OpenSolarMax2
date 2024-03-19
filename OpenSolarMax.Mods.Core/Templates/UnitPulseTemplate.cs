@@ -54,6 +54,7 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
         ref var sprite = ref entity.Get<Sprite>();
         sprite.Texture = _pulseTexture;
         sprite.Color = Color.White;
+        sprite.Alpha = 1;
         sprite.Anchor = new(86, 86);
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;

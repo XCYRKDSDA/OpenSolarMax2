@@ -29,6 +29,11 @@ public struct Sprite()
     public Color Color = Color.White;
 
     /// <summary>
+    /// 精灵的透明度
+    /// </summary>
+    public float Alpha = 1.0f;
+
+    /// <summary>
     /// 精灵纹理的锚点在纹理图片坐标系中的相对位置
     /// </summary>
     public Vector2 Anchor = Vector2.Zero;
