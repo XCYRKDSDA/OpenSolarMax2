@@ -15,38 +15,7 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
     public Archetype Archetype => Archetypes.Animation;
 
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipFlare");
-    private static readonly AnimationClip<Entity> _flareAnimation = new();
-
-    private class SpriteAlphaProperty : IProperty<Entity, float>
-    {
-        public float Get(in Entity obj) => obj.Get<Sprite>().Color.A / 255f;
-
-        public void Set(ref Entity obj, in float value) => obj.Get<Sprite>().Color.A = (byte)(value * 255);
-    }
-
-    private class SpriteScaleProperty : IProperty<Entity, Vector2>
-    {
-        public Vector2 Get(in Entity obj) => obj.Get<Sprite>().Scale;
-
-        public void Set(ref Entity obj, in Vector2 value) => obj.Get<Sprite>().Scale = value;
-    }
-
-    static UnitFlareTemplate()
-    {
-        _flareAnimation.LoopMode = AnimationLoopMode.RunOnce;
-        _flareAnimation.Length = 0.3f;
-
-        var flareScaleCurve = new CubicCurve<Vector2>();
-        flareScaleCurve.Keys.Add(new(0, Vector2.One * 0.001f));
-        flareScaleCurve.Keys.Add(new(0.1f, Vector2.One, Vector2.Zero));
-        _flareAnimation.Tracks.Add((new SpriteScaleProperty(), typeof(Vector2)), flareScaleCurve);
-
-        var flareAlphaCurve = new CubicCurve<float>();
-        flareAlphaCurve.Keys.Add(new(0, 0.25f));
-        flareAlphaCurve.Keys.Add(new(0.1f, 0.5f, 0));
-        flareAlphaCurve.Keys.Add(new(0.3f, 0, 0));
-        _flareAnimation.Tracks.Add((new SpriteAlphaProperty(), typeof(float)), flareAlphaCurve);
-    }
+    private readonly AnimationClip<Entity> _flareAnimation = assets.Load<AnimationClip<Entity>>("Animations/UnitFlare.json");
 
     public void Apply(Entity entity)
     {

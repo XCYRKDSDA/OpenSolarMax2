@@ -43,6 +43,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\Animations\UnitFlare.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Content\Animations\UnitPulse.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Content\Textures\PlanetsAtlas.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

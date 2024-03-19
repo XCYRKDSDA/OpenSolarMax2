@@ -15,38 +15,7 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
     public Archetype Archetype => Archetypes.Animation;
 
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipPulse");
-    private static readonly AnimationClip<Entity> _pulseAnimation = new();
-
-    private class SpriteAlphaProperty : IProperty<Entity, float>
-    {
-        public float Get(in Entity obj) => obj.Get<Sprite>().Color.A / 255f;
-
-        public void Set(ref Entity obj, in float value) => obj.Get<Sprite>().Color.A = (byte)(value * 255);
-    }
-
-    private class SpriteScaleProperty : IProperty<Entity, Vector2>
-    {
-        public Vector2 Get(in Entity obj) => obj.Get<Sprite>().Scale;
-
-        public void Set(ref Entity obj, in Vector2 value) => obj.Get<Sprite>().Scale = value;
-    }
-
-    static UnitPulseTemplate()
-    {
-        _pulseAnimation.LoopMode = AnimationLoopMode.RunOnce;
-        _pulseAnimation.Length = 0.6f;
-
-        var pulseScaleCurve = new CubicCurve<Vector2>();
-        pulseScaleCurve.Keys.Add(new(0.067f, Vector2.One * 0.001f));
-        pulseScaleCurve.Keys.Add(new(0.2f, Vector2.One * 0.3f));
-        pulseScaleCurve.Keys.Add(new(0.6f, Vector2.One * 0.6f));
-        _pulseAnimation.Tracks.Add((new SpriteScaleProperty(), typeof(Vector2)), pulseScaleCurve);
-
-        var pulseAlphaCurve = new CubicCurve<float>();
-        pulseAlphaCurve.Keys.Add(new(0.2f, 0.5f, 0));
-        pulseAlphaCurve.Keys.Add(new(0.6f, 0, 0));
-        _pulseAnimation.Tracks.Add((new SpriteAlphaProperty(), typeof(float)), pulseAlphaCurve);
-    }
+    private readonly AnimationClip<Entity> _pulseAnimation = assets.Load<AnimationClip<Entity>>("Animations/UnitPulse.json");
 
     public void Apply(Entity entity)
     {

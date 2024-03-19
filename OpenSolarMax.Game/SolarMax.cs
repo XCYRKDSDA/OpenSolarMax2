@@ -7,6 +7,7 @@ using Myra;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
 using Nine.Graphics;
+using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.System;
@@ -359,6 +360,12 @@ public class SolarMax : XNAGame
         localAssets.RegisterLoader(new TextureRegionLoader());
         localAssets.RegisterLoader(new FontSystemLoader());
         localAssets.RegisterLoader(new ByteArrayLoader());
+        localAssets.RegisterLoader(new EntityAnimationClipLoader()
+        {
+            ComponentTypes = loadedBehaviorMods.SelectMany((t) => t.Item3.ExportedTypes)
+                                               .Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
+                                               .ToList()
+        });
 
         // 从行为包中寻找配置器类型并实例化
         var configurators = new Dictionary<string, List<IEntityConfigurator>>();
