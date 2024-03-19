@@ -1,9 +1,12 @@
-﻿namespace OpenSolarMax.Mods.Core.Components;
+﻿using OpenSolarMax.Game.System;
+
+namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 定时销毁组件。
 /// 拥有该组件的实体将在一段时间后销毁
 /// </summary>
+[Component]
 public struct ExpiredAfterTimeout
 {
     /// <summary>

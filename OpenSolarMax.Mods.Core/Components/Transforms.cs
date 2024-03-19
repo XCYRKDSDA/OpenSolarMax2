@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.System;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 实体在世界坐标系中的位姿和变换
 /// </summary>
+[Component]
 public struct AbsoluteTransform
 {
     public Vector3 Translation = Vector3.Zero;
@@ -36,6 +38,7 @@ public struct AbsoluteTransform
 /// <summary>
 /// 实体相对其父实体的位姿和变换
 /// </summary>
+[Component]
 public struct RelativeTransform
 {
     public Vector3 Translation = Vector3.Zero;

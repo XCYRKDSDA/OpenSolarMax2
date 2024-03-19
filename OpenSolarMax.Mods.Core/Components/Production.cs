@@ -1,4 +1,5 @@
-﻿using OpenSolarMax.Game.Utils;
+﻿using OpenSolarMax.Game.System;
+using OpenSolarMax.Game.Utils;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
@@ -7,6 +8,7 @@ namespace OpenSolarMax.Mods.Core.Components;
 /// 拥有该组件的阵营可以进行生产。
 /// 字段描述生产一个该阵营单位需要的工作量
 /// </summary>
+[Component]
 public struct Producible
 {
     /// <summary>
@@ -18,6 +20,7 @@ public struct Producible
 /// <summary>
 /// 产能组件。描述星球的生产能力
 /// </summary>
+[Component]
 public struct ProductionAbility
 {
     /// <summary>
@@ -39,6 +42,7 @@ public struct ProductionAbility
 /// <summary>
 /// 生产状态组件。描述星球当前的生产进度
 /// </summary>
+[Component]
 public struct ProductionState
 {
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Nine.Drawing;
+using OpenSolarMax.Game.System;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
@@ -15,6 +16,7 @@ public enum RevolutionMode
 /// <summary>
 /// 轨道组件。描述当前实体正在运行的轨道
 /// </summary>
+[Component]
 public struct RevolutionOrbit()
 {
     /// <summary>
@@ -41,6 +43,7 @@ public struct RevolutionOrbit()
 /// <summary>
 /// 公转状态组件。描述当前实体绕其当前轨道公转的实时状态
 /// </summary>
+[Component]
 public struct RevolutionState
 {
     /// <summary>

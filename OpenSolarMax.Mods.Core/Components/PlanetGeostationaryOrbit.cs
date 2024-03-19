@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.System;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 同步轨道组件。描述某个星球的同步轨道的姿态、半径和转速
 /// </summary>
+[Component]
 public struct PlanetGeostationaryOrbit
 {
     /// <summary>

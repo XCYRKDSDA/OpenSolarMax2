@@ -1,8 +1,11 @@
-﻿namespace OpenSolarMax.Mods.Core.Components;
+﻿using OpenSolarMax.Game.System;
+
+namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 记录星球的参照尺寸的组件
 /// </summary>
+[Component]
 public struct ReferenceSize
 {
     public float Radius;

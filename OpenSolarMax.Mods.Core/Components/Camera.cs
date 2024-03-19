@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.System;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 相机组件。描述成像参数和输出位置
 /// </summary>
+[Component]
 public struct Camera
 {
     public float Width, Height;

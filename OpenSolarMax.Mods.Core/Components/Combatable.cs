@@ -1,9 +1,12 @@
-﻿namespace OpenSolarMax.Mods.Core.Components;
+﻿using OpenSolarMax.Game.System;
+
+namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 战斗能力组件。拥有该组件的阵营可以参与战斗。
 /// 字段描述阵营的战斗能力
 /// </summary>
+[Component]
 public struct Combatable
 {
     /// <summary>

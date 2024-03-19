@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Nine.Graphics;
+using OpenSolarMax.Game.System;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
@@ -14,6 +15,7 @@ public enum SpriteBlend
 /// <summary>
 /// 实体纹理组件
 /// </summary>
+[Component]
 public struct Sprite()
 {
     /// <summary>
