@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.System;
+﻿namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
 /// 更新核心状态的系统

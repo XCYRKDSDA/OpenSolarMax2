@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.System;
+﻿namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
 /// 

@@ -1,5 +1,5 @@
 ﻿using Arch.Core;
-using OpenSolarMax.Game.System;
+using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;
 

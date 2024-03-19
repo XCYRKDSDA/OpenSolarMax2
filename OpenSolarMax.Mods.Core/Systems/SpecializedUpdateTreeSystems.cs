@@ -1,6 +1,6 @@
 ﻿using Arch.Core;
 using Nine.Assets;
-using OpenSolarMax.Game.System;
+using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;

@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using OpenSolarMax.Game.System;
+using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 

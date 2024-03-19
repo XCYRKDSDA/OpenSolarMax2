@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.System;
+﻿namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
 /// 描述当前系统是纯响应式的系统，无所谓更新顺序
