@@ -8,7 +8,7 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
 
-public class CameraConfiguration : IEntityConfiguration
+public class ViewConfiguration : IEntityConfiguration
 {
     public float[]? Size { get; set; }
 
@@ -17,21 +17,21 @@ public class CameraConfiguration : IEntityConfiguration
     public float[]? Position { get; set; }
 }
 
-[ConfiguratorKey("camera")]
-public class CameraConfigurator(IAssetsManager assets) : IEntityConfigurator
+[ConfiguratorKey("view")]
+public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
 {
-    public Archetype Archetype => Archetypes.Camera;
+    public Archetype Archetype => Archetypes.View;
 
-    public Type ConfigurationType => typeof(CameraConfiguration);
+    public Type ConfigurationType => typeof(ViewConfiguration);
 
-    private readonly CameraTemplate _template = new();
+    private readonly ViewTemplate _template = new();
 
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
         => _template.Apply(entity);
 
     public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
     {
-        var cameraConfig = (configuration as CameraConfiguration)!;
+        var cameraConfig = (configuration as ViewConfiguration)!;
 
         ref var camera = ref entity.Get<Camera>();
         ref var transform = ref entity.Get<RelativeTransform>();

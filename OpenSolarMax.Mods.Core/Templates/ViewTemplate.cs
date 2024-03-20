@@ -8,12 +8,13 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 namespace OpenSolarMax.Mods.Core.Templates;
 
 /// <summary>
-/// 相机模板。
-/// 将实体配置为一个位于世界系原点的宽1920、高1080、纵深±1000的相机
+/// 视图模板。
+/// 将实体配置为一个描述视图的对象。
+/// 默认该视图拥有位于世界系原点的宽1920、高1080、纵深±1000的相机
 /// </summary>
-public class CameraTemplate : ITemplate
+public class ViewTemplate : ITemplate
 {
-    public Archetype Archetype => Archetypes.Camera;
+    public Archetype Archetype => Archetypes.View;
 
     public void Apply(Entity entity)
     {

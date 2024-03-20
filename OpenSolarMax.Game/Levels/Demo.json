@@ -5,7 +5,7 @@
 	},
 
 	"entities": [
-		{ "$base": "camera", "size": [ 1920, 1080 ], "depth": [ -1000, 1000 ] },
+		{ "$base": "view", "size": [ 1920, 1080 ], "depth": [ -1000, 1000 ] },
 
 		{ "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
 

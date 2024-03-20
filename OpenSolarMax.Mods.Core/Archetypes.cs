@@ -59,7 +59,7 @@ public static class Archetypes
         typeof(Combatable)
     );
 
-    public static readonly Archetype Camera = new(
+    public static readonly Archetype View = new(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(Tree<RelativeTransform>.Child),
