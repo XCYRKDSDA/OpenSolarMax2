@@ -131,6 +131,9 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         // 设置星球所在的轨道
         if (planetConfig.Orbit != null)
         {
+            // 开启公转
+            revolutionState.Revolving = true;
+
             if (planetConfig.Orbit.Parent != null)
             {
                 var parentEntity = ctx.OtherEntities[planetConfig.Orbit.Parent];

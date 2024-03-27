@@ -26,7 +26,8 @@ public static class Revolution
     }
 
     /// <summary>
-    /// 随机生成单位公转状态
+    /// 随机生成单位公转状态。
+    /// 注意，因为认为调用该函数者希望操作的对象进行公转，因此状态中的<see cref="RevolutionState.Revolving"/>设置为了<c>true</c>
     /// </summary>
     /// <param name="random">随机引擎</param>
     /// <returns>单位公转状态组件</returns>
@@ -34,7 +35,7 @@ public static class Revolution
     {
         float phase = (float)random.NextDouble() * 2 * MathF.PI;
 
-        return new RevolutionState { Phase = phase };
+        return new RevolutionState { Revolving = true, Phase = phase };
     }
 
     /// <summary>

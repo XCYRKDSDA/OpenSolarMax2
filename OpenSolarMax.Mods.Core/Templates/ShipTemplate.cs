@@ -24,6 +24,7 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
     {
         ref var transform = ref entity.Get<RelativeTransform>();
         ref var sprite = ref entity.Get<Sprite>();
+        ref var revolutionState = ref entity.Get<RevolutionState>();
 
         // 置于世界系原点
         transform.Translation = Vector3.Zero;
@@ -38,5 +39,8 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
+
+        // 默认进行公转
+        revolutionState.Revolving = true;
     }
 }
