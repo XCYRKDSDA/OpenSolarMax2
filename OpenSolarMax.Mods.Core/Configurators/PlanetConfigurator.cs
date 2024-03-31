@@ -108,8 +108,6 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         ref var sprite = ref entity.Get<Sprite>();
         ref var planetSize = ref entity.Get<ReferenceSize>();
         ref var relativeTransform = ref entity.Get<RelativeTransform>();
-        ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
-        ref var revolutionState = ref entity.Get<RevolutionState>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
 
         // 修改星球的尺寸
@@ -131,8 +129,10 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         // 设置星球所在的轨道
         if (planetConfig.Orbit != null)
         {
-            // 开启公转
-            revolutionState.Revolving = true;
+            if (!entity.Has<RevolutionOrbit, RevolutionState>())
+                entity.Add<RevolutionOrbit, RevolutionState>();
+            ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
+            ref var revolutionState = ref entity.Get<RevolutionState>();
 
             if (planetConfig.Orbit.Parent != null)
             {

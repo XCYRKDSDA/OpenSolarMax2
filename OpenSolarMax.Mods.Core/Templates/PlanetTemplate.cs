@@ -36,8 +36,6 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
         ref var transform = ref entity.Get<RelativeTransform>();
         ref var sprite = ref entity.Get<Sprite>();
         ref var refSize = ref entity.Get<ReferenceSize>();
-        ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
-        ref var revolutionState = ref entity.Get<RevolutionState>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
         ref var productionAbility = ref entity.Get<ProductionAbility>();
 
@@ -57,13 +55,6 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
 
         // 默认半径为60
         refSize.Radius = _defaultRadius;
-
-        // 默认采用平动，但尺寸为0；且默认不进行公转
-        revolutionOrbit.Rotation = Quaternion.Identity;
-        revolutionOrbit.Shape = new(0, 0);
-        revolutionOrbit.Period = float.PositiveInfinity;
-        revolutionOrbit.Mode = RevolutionMode.TranslationOnly;
-        revolutionState.Revolving = false;
 
         // 随机生成同步轨道
         float pitch = (float)random.NextDouble() * (_defaultOrbitMaxPitch - _defaultOrbitMinPitch) + _defaultOrbitMinPitch;

@@ -35,7 +35,7 @@ public static class Revolution
     {
         float phase = (float)random.NextDouble() * 2 * MathF.PI;
 
-        return new RevolutionState { Revolving = true, Phase = phase };
+        return new RevolutionState { Phase = phase };
     }
 
     /// <summary>

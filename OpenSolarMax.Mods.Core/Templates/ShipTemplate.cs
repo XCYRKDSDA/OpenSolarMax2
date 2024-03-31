@@ -39,8 +39,5 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
-
-        // 默认进行公转
-        revolutionState.Revolving = true;
     }
 }

@@ -18,8 +18,6 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Child),
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),
-        typeof(RevolutionOrbit),
-        typeof(RevolutionState),
         typeof(PlanetGeostationaryOrbit),
         typeof(Tree<Party>.Child),
         typeof(Tree<Anchorage>.Parent),

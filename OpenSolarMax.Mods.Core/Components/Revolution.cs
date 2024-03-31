@@ -47,11 +47,6 @@ public struct RevolutionOrbit()
 public struct RevolutionState
 {
     /// <summary>
-    /// 是否正在执行当前任务
-    /// </summary>
-    public bool Revolving;
-
-    /// <summary>
     /// 当前相位
     /// </summary>
     public float Phase;
