@@ -29,6 +29,9 @@ public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ApplyPartyReference(in Tree<Party>.Child registry, ref T target)
     {
+        if (registry.Parent == Entity.Null)
+            return;
+
         ref readonly var reference = ref registry.Parent.Get<R>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
