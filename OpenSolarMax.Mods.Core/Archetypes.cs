@@ -23,7 +23,6 @@ public static class Archetypes
         typeof(Tree<Anchorage>.Parent),
         typeof(AnchoredShipsRegistry),
         typeof(ProductionAbility),
-        typeof(ProductionState),
         typeof(ReferenceSize),
         typeof(Battlefield),
         typeof(Animation)
