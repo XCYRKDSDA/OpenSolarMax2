@@ -4,7 +4,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
-public static class Anchorage
+public static class AnchorageUtils
 {
     private const float _defaultRevolutionOffsetRange = 0.3f;
 
@@ -20,8 +20,8 @@ public static class Anchorage
         ship.SetParent<RelativeTransform>(planet);
 
         // 随机生成并泊入轨道
-        ship.Get<RevolutionOrbit>() = Revolution.CreateRandomRevolutionOrbit(
+        ship.Get<RevolutionOrbit>() = RevolutionUtils.CreateRandomRevolutionOrbit(
             in planet.Get<PlanetGeostationaryOrbit>(), random, revolutionOffsetRange);
-        ship.Get<RevolutionState>() = Revolution.CreateRandomState(random);
+        ship.Get<RevolutionState>() = RevolutionUtils.CreateRandomState(random);
     }
 }

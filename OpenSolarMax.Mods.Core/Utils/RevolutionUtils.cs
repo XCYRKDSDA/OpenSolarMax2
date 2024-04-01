@@ -2,7 +2,8 @@
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Utils;
-public static class Revolution
+
+public static class RevolutionUtils
 {
     /// <summary>
     /// 根据星球同步轨道随机生成单位公转轨道

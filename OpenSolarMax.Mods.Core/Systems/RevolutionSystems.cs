@@ -47,11 +47,11 @@ public sealed partial class CalculateEntitiesTransformAroundOrbitSystem(World wo
         switch (orbit.Mode)
         {
             case RevolutionMode.TranslationAndRotation:
-                transform = Revolution.CalculateTransform(in orbit, in state);
+                transform = RevolutionUtils.CalculateTransform(in orbit, in state);
                 break;
 
             case RevolutionMode.TranslationOnly:
-                transform.Translation = Revolution.CalculateTransform(in orbit, in state).Translation;
+                transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;
                 break;
 
             default:
