@@ -1,4 +1,4 @@
-﻿using Arch.CommandBuffer;
+﻿using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class CountDownAndExpireTimeoutEntitiesSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly CommandBuffer _commandBuffer = new(world);
+    private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
     [All<ExpiredAfterTimeout>]
@@ -30,7 +30,7 @@ public sealed partial class CountDownAndExpireTimeoutEntitiesSystem(World world,
     public override void Update(in GameTime t)
     {
         ExpireEntitiesQuery(World, _commandBuffer, t);
-        _commandBuffer.Playback();
+        _commandBuffer.Playback(World);
     }
 
     public override void Dispose()

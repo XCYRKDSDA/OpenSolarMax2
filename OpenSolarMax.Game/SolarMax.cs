@@ -51,10 +51,10 @@ public class SolarMax : XNAGame
     #region Model
 
     private readonly World _world = World.Create();
-    private readonly Arch.System.Group<GameTime> _coreUpdateSystems = new();
-    private readonly Arch.System.Group<GameTime> _structuralChangeSystems = new();
-    private readonly Arch.System.Group<GameTime> _lateUpdateSystems = new();
-    private readonly Arch.System.Group<GameTime> _drawSystems = new();
+    private readonly Arch.System.Group<GameTime> _coreUpdateSystems = new("coreUpdate");
+    private readonly Arch.System.Group<GameTime> _structuralChangeSystems = new("structuralChange");
+    private readonly Arch.System.Group<GameTime> _lateUpdateSystems = new("lateUpdate");
+    private readonly Arch.System.Group<GameTime> _drawSystems = new("draw");
 
     private float _updateSpeed;
 

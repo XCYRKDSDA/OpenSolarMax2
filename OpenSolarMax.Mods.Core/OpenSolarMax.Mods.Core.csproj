@@ -22,7 +22,7 @@
 	</Target>
 
 	<ItemGroup>
-		<PackageReference Include="Arch.System.SourceGenerator" Version="1.1.2">
+		<PackageReference Include="Arch.System.SourceGenerator" Version="1.1.4">
 			<PrivateAssets>runtime</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">

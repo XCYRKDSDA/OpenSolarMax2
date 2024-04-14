@@ -1,4 +1,4 @@
-﻿using Arch.CommandBuffer;
+﻿using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -18,7 +18,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class AutomaticallyStartProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly CommandBuffer _commandBuffer = new(world);
+    private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
     [All<Tree<Party>.Child, ProductionAbility>]
@@ -34,7 +34,7 @@ public sealed partial class AutomaticallyStartProductionSystem(World world, IAss
     public override void Update(in GameTime t)
     {
         AutomaticallyStartProductionQuery(World);
-        _commandBuffer.Playback();
+        _commandBuffer.Playback(World);
     }
 
     public override void Dispose()
