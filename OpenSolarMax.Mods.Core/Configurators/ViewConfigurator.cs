@@ -4,6 +4,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
@@ -15,6 +16,8 @@ public class ViewConfiguration : IEntityConfiguration
     public float[]? Depth { get; set; }
 
     public float[]? Position { get; set; }
+
+    public string? Party { get; set; }
 }
 
 [ConfiguratorKey("view")]
@@ -56,5 +59,8 @@ public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
             if (cameraConfig.Position.Length > 2)
                 transform.Translation.Z = cameraConfig.Position[2];
         }
+
+        if (cameraConfig.Party is not null)
+            entity.SetParent<Party>(ctx.OtherEntities[cameraConfig.Party]);
     }
 }

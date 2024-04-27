@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Arch.Core;
+﻿using Arch.Core;
 using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Mods.Core.Components;
@@ -16,103 +14,46 @@ public struct Shippable
     public float Speed;
 }
 
-public enum ShippingStage
-{
-    TakingOff,
-    Shipping
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct ShippingTask_TakingOff
-{
-    /// <summary>
-    /// 至少要等待的时间
-    /// </summary>
-    [FieldOffset(0)]
-    public float LeastDuration;
-
-    /// <summary>
-    /// 当前实体所在的移动任务中计算路线的异步任务
-    /// </summary>
-    [FieldOffset(24)]
-    public Task<ShippingTask_Shipping> TrajectoryCalculator;
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct ShippingTask_Shipping
+/// <summary>
+/// 运输任务组件。描述某个单位参与的运输任务
+/// </summary>
+public struct ShippingTask
 {
     /// <summary>
     /// 当前运输的目标星球
     /// </summary>
-    [FieldOffset(0)]
     public Entity DestinationPlanet;
 
     /// <summary>
-    /// 目标绝对位置
+    /// 开始运输时的位置
     /// </summary>
-    [FieldOffset(8)]
-    public Vector3 DestinationAbsolutePosition;
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct ShippingTask
-{
-    [FieldOffset(0)]
-    public ShippingStage Stage;
-
-    [FieldOffset(8)]
-    public ShippingTask_TakingOff TakingOff;
-
-    [FieldOffset(8)]
-    public ShippingTask_Shipping Shipping;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator ShippingTask(in ShippingTask_TakingOff takingOff)
-        => new() { Stage = ShippingStage.TakingOff, TakingOff = takingOff };
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator ShippingTask(in ShippingTask_Shipping shipping)
-        => new() { Stage = ShippingStage.Shipping, Shipping = shipping };
-}
-
-public struct ShippingState_TakingOff
-{
-    /// <summary>
-    /// 已等待的时间
-    /// </summary>
-    public float TimeWaited;
-}
-
-public struct ShippingState_Shipping
-{
-    /// <summary>
-    /// 预计还需需要的移动时间
-    /// </summary>
-    public float TimeToTravel;
+    public Vector3 DeparturePosition;
 
     /// <summary>
-    /// 已经移动的时间
+    /// 预计抵达星球时的目标位置
     /// </summary>
-    public float TimeTravelled;
+    public Vector3 ExpectedArrivalPosition;
+
+    /// <summary>
+    /// 预计飞行时间
+    /// </summary>
+    public float ExpectedTravelDuration;
+
+    /// <summary>
+    /// 预计所泊入的轨道
+    /// </summary>
+    public RevolutionOrbit ExpectedRevolutionOrbit;
+
+    /// <summary>
+    /// 预计入轨时的状态
+    /// </summary>
+    public RevolutionState ExpectedRevolutionState;
 }
 
-[StructLayout(LayoutKind.Explicit)]
 public struct ShippingState
 {
-    [FieldOffset(0)]
-    public ShippingStage Stage;
-
-    [FieldOffset(8)]
-    public ShippingState_TakingOff TakingOff;
-
-    [FieldOffset(8)]
-    public ShippingState_Shipping Shipping;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator ShippingState(in ShippingState_TakingOff takingOff)
-        => new() { Stage = ShippingStage.TakingOff, TakingOff = takingOff };
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator ShippingState(in ShippingState_Shipping shipping)
-        => new() { Stage = ShippingStage.Shipping, Shipping = shipping };
+    /// <summary>
+    /// 已经行驶了的时间
+    /// </summary>
+    public float TravelledTime;
 }

@@ -20,6 +20,7 @@ public class PartyTemplate : ITemplate
         ref var refColor = ref entity.Get<PartyReferenceColor>();
         ref var producible = ref entity.Get<Producible>();
         ref var combatable = ref entity.Get<Combatable>();
+        ref var shippable = ref entity.Get<Shippable>();
 
         refColor.Value = Color.White;
 
@@ -27,5 +28,7 @@ public class PartyTemplate : ITemplate
 
         combatable.AttackPerUnitPerSecond = 0;
         combatable.MaximumDamagePerUnit = float.PositiveInfinity;
+
+        shippable.Speed = 100;
     }
 }

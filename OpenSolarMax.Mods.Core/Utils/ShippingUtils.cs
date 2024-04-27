@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using System.Diagnostics;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Microsoft.Xna.Framework;
@@ -123,9 +124,9 @@ public static class ShippingUtils
         return (virtualWorld, tailProxy);
     }
 
-    private static readonly TimeSpan _dt = TimeSpan.FromSeconds(1 / 2f);
+    private static readonly float _dt = 1 / 10f;
 
-    public static ShippingTask_Shipping CalculateShippingTask(Entity departure, Entity destination, Shippable shippable)
+    public static (Vector3 Destination, float Duration) CalculateShippingTask(Entity departure, Entity destination, Shippable shippable)
     {
         // 获取出发位置
         var departurePosition = departure.Get<AbsoluteTransform>().Translation;
@@ -142,14 +143,14 @@ public static class ShippingUtils
         );
 
         // 开始求解
-        var t = TimeSpan.Zero;
+        var t = 0f;
         var err1 = float.NaN;
         var destinationPosition1 = destinationPosition;
         while (true)
         {
             // 步进系统
             t += _dt;
-            var simTime = new GameTime(t, _dt);
+            var simTime = new GameTime(TimeSpan.FromSeconds(t), TimeSpan.FromSeconds(_dt));
             simulateSystems.BeforeUpdate(in simTime);
             simulateSystems.Update(in simTime);
             simulateSystems.AfterUpdate(in simTime);
@@ -158,7 +159,7 @@ public static class ShippingUtils
             var distance = (destinationPosition - departurePosition).Length();
 
             // 单位可移动的距离
-            var movedDistance = shippable.Speed * (float)t.TotalSeconds;
+            var movedDistance = shippable.Speed * t;
 
             // 计算误差
             var err = distance - movedDistance;
@@ -168,15 +169,74 @@ public static class ShippingUtils
             {
                 // 上一刻为t，误差为err；此刻为t2，误差为err2。做一个线性近似
                 var k = (0 - err1) / (err - err1);
-                return new ShippingTask_Shipping()
-                {
-                    DestinationPlanet = destination,
-                    DestinationAbsolutePosition = Vector3.Lerp(destinationPosition1, destinationPosition, k),
-                };
+                return (
+                    Vector3.Lerp(destinationPosition1, destinationPosition, k),
+                    MathHelper.Lerp(t - _dt, t, k)
+                );
             }
 
             err1 = err;
             destinationPosition1 = destinationPosition;
+        }
+    }
+
+    public static void Ship(Entity departure, Entity destination, Entity camp, int expectedNum)
+    {
+        Debug.Assert(departure.WorldId == destination.WorldId && departure.WorldId == camp.WorldId);
+
+        var shipsRemain = expectedNum;
+        var allShips = departure.Get<AnchoredShipsRegistry>().Ships[camp];
+
+        var shippable = camp.Get<Shippable>();
+        var (expectedArrivalPlanetPosition, expectedTravelDuration) = CalculateShippingTask(departure, destination, shippable);
+
+        var commonShippingTask = new ShippingTask()
+        {
+            DestinationPlanet = destination,
+            ExpectedTravelDuration = expectedTravelDuration
+        };
+
+        var shipsEnumerator = allShips.GetEnumerator();
+        while (shipsRemain > 0 && shipsEnumerator.MoveNext())
+        {
+            var ship = shipsEnumerator.Current;
+
+            // 添加运输任务
+            ship.Add<ShippingTask, ShippingState>();
+            ref var shippingTask = ref ship.Get<ShippingTask>();
+            ref var shippingState = ref ship.Get<ShippingState>();
+
+            // 获取相关信息
+            ref readonly var pose = ref ship.Get<AbsoluteTransform>();
+            ref readonly var revolutionOrbit = ref ship.Get<RevolutionOrbit>();
+            ref readonly var revolutionState = ref ship.Get<RevolutionState>();
+            ref readonly var departurePlanetOrbit = ref departure.Get<PlanetGeostationaryOrbit>();
+            ref readonly var destinationPlanetOrbit = ref destination.Get<PlanetGeostationaryOrbit>();
+
+            // 计算泊入轨道
+            var orbitOffset = revolutionOrbit.Shape.Width / 2 / departurePlanetOrbit.Radius;
+            var expectedOrbit = new RevolutionOrbit()
+            {
+                Rotation = destinationPlanetOrbit.Rotation,
+                Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2, destinationPlanetOrbit.Radius * orbitOffset * 2),
+                Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f),
+                Mode = RevolutionMode.TranslationAndRotation
+            };
+            var expectedPosition = expectedArrivalPlanetPosition
+                                   + RevolutionUtils.CalculateTransform(in expectedOrbit, in revolutionState).Translation;
+
+            // 设置任务
+            shippingTask = commonShippingTask with
+            {
+                DeparturePosition = pose.Translation,
+                ExpectedArrivalPosition = expectedPosition,
+                ExpectedRevolutionOrbit = expectedOrbit,
+                ExpectedRevolutionState = revolutionState
+            };
+            shippingState.TravelledTime = 0;
+
+            // 解除到星球的锚定
+            ship.UnanchorTo(departure);
         }
     }
 }

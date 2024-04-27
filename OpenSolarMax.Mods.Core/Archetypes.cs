@@ -53,7 +53,8 @@ public static class Archetypes
         typeof(Tree<Party>.Parent),
         typeof(PartyReferenceColor),
         typeof(Producible),
-        typeof(Combatable)
+        typeof(Combatable),
+        typeof(Shippable)
     );
 
     public static readonly Archetype View = new(
@@ -62,7 +63,8 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Child),
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Camera),
-        typeof(ManeuvaringShipsStatus)
+        typeof(ManeuvaringShipsStatus),
+        typeof(Tree<Party>.Child)
     );
 
     public static readonly Archetype Animation = new(
