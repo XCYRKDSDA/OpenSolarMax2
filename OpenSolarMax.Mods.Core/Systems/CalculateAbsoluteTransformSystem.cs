@@ -32,17 +32,20 @@ public sealed partial class CalculateAbsoluteTransformSystem(World world, IAsset
     }
 
     [Query]
-    [All(typeof(Tree<RelativeTransform>.Parent), typeof(RelativeTransform), typeof(AbsoluteTransform))]
+    [All(typeof(Tree<RelativeTransform>.Parent), typeof(AbsoluteTransform))]
     private static void UpdateAbsoluteTransform(in Entity entity,
                                                 in Tree<RelativeTransform>.Parent relationship,
-                                                in RelativeTransform relativeTransform,
                                                 ref AbsoluteTransform absoluteTransform)
     {
         // 如果该实体支持作为变换树中的子方且其父实体非空，则该实体不是根实体，需要跳过
         if (entity.TryGet<Tree<RelativeTransform>.Child>(out var asChild) && asChild.Parent != Entity.Null)
             return;
 
-        absoluteTransform.TransformToRoot = relativeTransform.TransformToParent;
+        // 如果该实体有相对变换组件，则由相对变换组件中的值确定绝对变换
+        if (entity.Has<RelativeTransform>())
+            absoluteTransform.TransformToRoot = entity.Get<RelativeTransform>().TransformToParent;
+
+        // 遍历确定子实体的绝对变换
         foreach (var child in relationship.Children)
             RecursivelyUpdateAbsoluteTransform(in child, absoluteTransform.TransformToRoot);
     }
