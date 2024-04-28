@@ -124,7 +124,7 @@ public static class ShippingUtils
         return (virtualWorld, tailProxy);
     }
 
-    private static readonly float _dt = 1 / 10f;
+    private static readonly float _dt = 1f;
 
     public static (Vector3 Destination, float Duration) CalculateShippingTask(Entity departure, Entity destination, Shippable shippable)
     {
