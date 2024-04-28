@@ -42,7 +42,7 @@ public class PlanetConfiguration : IEntityConfiguration
         public float? Period { get; set; }
 
         /// <summary>
-        /// 初始时星球在轨道上的相位
+        /// 初始时星球在轨道上的相位。但是以一个周期为单位1
         /// </summary>
         public float? Phase { get; set; }
     }
@@ -151,7 +151,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                 revolutionOrbit.Period = planetConfig.Orbit.Period.Value;
 
             if (planetConfig.Orbit.Phase.HasValue)
-                revolutionState.Phase = planetConfig.Orbit.Phase.Value;
+                revolutionState.Phase = planetConfig.Orbit.Phase.Value * MathF.PI * 2;
         }
 
         // 设置所属阵营
