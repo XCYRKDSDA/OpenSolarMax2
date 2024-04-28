@@ -56,4 +56,9 @@ public struct ShippingState
     /// 已经行驶了的时间
     /// </summary>
     public float TravelledTime;
+
+    /// <summary>
+    /// 已经进行的飞行进度
+    /// </summary>
+    public float Progress;
 }
