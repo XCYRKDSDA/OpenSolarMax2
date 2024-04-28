@@ -44,18 +44,6 @@ public sealed partial class CalculateEntitiesTransformAroundOrbitSystem(World wo
     private static void CalculateTransform(in RevolutionOrbit orbit, ref RevolutionState state, ref RelativeTransform transform)
     {
         // 更新相对位姿
-        switch (orbit.Mode)
-        {
-            case RevolutionMode.TranslationAndRotation:
-                transform = RevolutionUtils.CalculateTransform(in orbit, in state);
-                break;
-
-            case RevolutionMode.TranslationOnly:
-                transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;
     }
 }

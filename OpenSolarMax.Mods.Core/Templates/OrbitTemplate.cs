@@ -26,6 +26,5 @@ public class OrbitTemplate : ITemplate
         orbit.Template.Rotation = Quaternion.Identity;
         orbit.Template.Shape = new(0, 0);
         orbit.Template.Period = float.PositiveInfinity;
-        orbit.Template.Mode = RevolutionMode.TranslationOnly;
     }
 }

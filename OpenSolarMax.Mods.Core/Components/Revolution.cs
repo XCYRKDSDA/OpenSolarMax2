@@ -5,15 +5,6 @@ using OpenSolarMax.Game.ECS;
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
-/// 公转的模式
-/// </summary>
-public enum RevolutionMode
-{
-    TranslationAndRotation, //同时进行平动和转动
-    TranslationOnly,        //只进行平动, 不进行转动
-}
-
-/// <summary>
 /// 轨道组件。描述当前实体正在运行的轨道
 /// </summary>
 [Component]
@@ -33,11 +24,6 @@ public struct RevolutionOrbit()
     /// 轨道上星球公转周期
     /// </summary>
     public float Period;
-
-    /// <summary>
-    /// 按当前轨道转动的模式
-    /// </summary>
-    public RevolutionMode Mode;
 }
 
 /// <summary>

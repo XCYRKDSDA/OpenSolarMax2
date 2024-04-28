@@ -219,8 +219,7 @@ public static class ShippingUtils
             {
                 Rotation = destinationPlanetOrbit.Rotation,
                 Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2, destinationPlanetOrbit.Radius * orbitOffset * 2),
-                Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f),
-                Mode = RevolutionMode.TranslationAndRotation
+                Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f)
             };
             var expectedPosition = expectedArrivalPlanetPosition
                                    + RevolutionUtils.CalculateTransform(in expectedOrbit, in revolutionState).Translation;

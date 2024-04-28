@@ -21,8 +21,7 @@ public static class RevolutionUtils
         {
             Rotation = planetOrbit.Rotation,
             Shape = new(planetOrbit.Radius * offset * 2, planetOrbit.Radius * offset * 2),
-            Period = planetOrbit.Period * MathF.Pow(offset, 1.5f),
-            Mode = RevolutionMode.TranslationAndRotation
+            Period = planetOrbit.Period * MathF.Pow(offset, 1.5f)
         };
     }
 
