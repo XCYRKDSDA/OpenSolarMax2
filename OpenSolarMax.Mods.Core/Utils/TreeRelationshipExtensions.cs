@@ -34,7 +34,7 @@ public static class TreeRelationshipExtensions
 
         childRelationship._parent = parent;
 
-        if (parent != Entity.Null)
+        if (parent != Entity.Null && parent.Has<Tree<T>.Parent>())
             parent.Get<Tree<T>.Parent>()._children.Add(child);
     }
 
@@ -55,16 +55,24 @@ public static class TreeRelationshipExtensions
     {
         Debug.Assert(child != Entity.Null);
 
-        child.SetParent<T>(in parent);
+        if (child.Has<Tree<T>.Child>())
+            child.SetParent<T>(parent);
+        else
+            parent.Get<Tree<T>.Parent>()._children.Add(child);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveChild<T>(in this Entity parent, in Entity child)
     {
         Debug.Assert(child != Entity.Null);
-        Debug.Assert(child.GetParent<T>() == parent);
 
-        child.RemoveParent<T>();
+        if (child.Has<Tree<T>.Child>())
+        {
+            Debug.Assert(child.GetParent<T>() == parent);
+            child.RemoveParent<T>();
+        }
+        else
+            parent.Get<Tree<T>.Parent>()._children.Remove(child);
     }
 
     #endregion
