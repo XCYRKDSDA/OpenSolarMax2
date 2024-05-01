@@ -50,7 +50,6 @@ public static class Archetypes
     );
 
     public static readonly Archetype Party = new(
-        typeof(Tree<Party>.Parent),
         typeof(PartyReferenceColor),
         typeof(Producible),
         typeof(Combatable),

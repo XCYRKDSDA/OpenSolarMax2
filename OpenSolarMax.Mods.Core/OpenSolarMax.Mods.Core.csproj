@@ -42,6 +42,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\Animations\TrailExtinguished.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Content\Animations\TrailStretching.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Content\Animations\UnitFlare.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

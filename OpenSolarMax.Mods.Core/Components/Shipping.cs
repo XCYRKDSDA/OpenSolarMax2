@@ -4,6 +4,20 @@ using Microsoft.Xna.Framework;
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
+/// 开始运输请求。描述一个开始运输的请求
+/// </summary>
+public struct StartShippingRequest
+{
+    public Entity Departure;
+
+    public Entity Destination;
+
+    public Entity Party;
+
+    public int ExpectedNum;
+}
+
+/// <summary>
 /// 可运输组件。描述阵营的移动能力
 /// </summary>
 public struct Shippable
@@ -62,3 +76,6 @@ public struct ShippingState
     /// </summary>
     public float Progress;
 }
+
+public abstract class TrailOf
+{ }

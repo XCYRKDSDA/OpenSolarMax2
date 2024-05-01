@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Systems;
+using OpenSolarMax.Mods.Core.Templates;
+using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
@@ -177,65 +179,6 @@ public static class ShippingUtils
 
             err1 = err;
             destinationPosition1 = destinationPosition;
-        }
-    }
-
-    public static void Ship(Entity departure, Entity destination, Entity camp, int expectedNum)
-    {
-        Debug.Assert(departure.WorldId == destination.WorldId && departure.WorldId == camp.WorldId);
-
-        var shipsRemain = expectedNum;
-        var allShips = departure.Get<AnchoredShipsRegistry>().Ships[camp];
-
-        var shippable = camp.Get<Shippable>();
-        var (expectedArrivalPlanetPosition, expectedTravelDuration) = CalculateShippingTask(departure, destination, shippable);
-
-        var commonShippingTask = new ShippingTask()
-        {
-            DestinationPlanet = destination,
-            ExpectedTravelDuration = expectedTravelDuration
-        };
-
-        var shipsEnumerator = allShips.GetEnumerator();
-        while (shipsRemain > 0 && shipsEnumerator.MoveNext())
-        {
-            var ship = shipsEnumerator.Current;
-
-            // 添加运输任务
-            ship.Add<ShippingTask, ShippingState>();
-            ref var shippingTask = ref ship.Get<ShippingTask>();
-            ref var shippingState = ref ship.Get<ShippingState>();
-
-            // 获取相关信息
-            ref readonly var pose = ref ship.Get<AbsoluteTransform>();
-            ref readonly var revolutionOrbit = ref ship.Get<RevolutionOrbit>();
-            ref readonly var revolutionState = ref ship.Get<RevolutionState>();
-            ref readonly var departurePlanetOrbit = ref departure.Get<PlanetGeostationaryOrbit>();
-            ref readonly var destinationPlanetOrbit = ref destination.Get<PlanetGeostationaryOrbit>();
-
-            // 计算泊入轨道
-            var orbitOffset = revolutionOrbit.Shape.Width / 2 / departurePlanetOrbit.Radius;
-            var expectedOrbit = new RevolutionOrbit()
-            {
-                Rotation = destinationPlanetOrbit.Rotation,
-                Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2, destinationPlanetOrbit.Radius * orbitOffset * 2),
-                Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f)
-            };
-            var expectedPosition = expectedArrivalPlanetPosition
-                                   + RevolutionUtils.CalculateTransform(in expectedOrbit, in revolutionState).Translation;
-
-            // 设置任务
-            shippingTask = commonShippingTask with
-            {
-                DeparturePosition = pose.Translation,
-                ExpectedArrivalPosition = expectedPosition,
-                ExpectedRevolutionOrbit = expectedOrbit,
-                ExpectedRevolutionState = revolutionState
-            };
-            shippingState.TravelledTime = 0;
-
-            // 解除到星球的锚定
-            ship.UnanchorTo(departure);
         }
     }
 }
