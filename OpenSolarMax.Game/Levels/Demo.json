@@ -5,14 +5,15 @@
 	},
 
 	"entities": [
-		{ "$base": "view", "size": [ 1920, 1080 ], "depth": [ -1000, 1000 ] },
-
-		{ "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
-
 		{ "$id": "blue", "$base": "blue" },
 		{ "$id": "red", "$base": "blue", "color": "#FF5D93" },
 
+		{ "$base": "view", "size": [ 1920, 1080 ], "depth": [ -1000, 1000 ], "party": "blue" },
+
+		{ "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
+
 		{ "$id": "planet01", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0 } },
+		{ "$id": "planet02", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0.5 } },
 
 		{ "$base": "ship", "party": "blue", "planet": "planet01", "$num": 30 },
 		{ "$base": "ship", "party": "red", "planet": "planet01", "$num": 30 }
