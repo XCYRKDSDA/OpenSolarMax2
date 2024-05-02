@@ -35,7 +35,8 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
         if (unitConfig.Planet != null)
         {
             var planetEntity = ctx.OtherEntities[unitConfig.Planet];
-            entity.AnchorTo(planetEntity);
+            AnchorageUtils.AnchorShipToPlanet(entity, planetEntity);
+            RevolutionUtils.RandomlySetShipOrbitAroundPlanet(entity, planetEntity);
         }
 
         // 设置所属阵营

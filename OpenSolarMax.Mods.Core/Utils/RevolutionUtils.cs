@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Diagnostics;
+using Arch.Core;
+using Arch.Core.Extensions;
+using Microsoft.Xna.Framework;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Utils;
@@ -10,12 +13,12 @@ public static class RevolutionUtils
     /// </summary>
     /// <param name="planetOrbit">星球同步轨道组件</param>
     /// <param name="random">随机引擎</param>
-    /// <param name="radiusRange">单位半径偏差范围</param>
+    /// <param name="orbitOffsetRange">单位半径偏差范围</param>
     /// <returns>单位公转轨道组件</returns>
     public static RevolutionOrbit CreateRandomRevolutionOrbit(in PlanetGeostationaryOrbit planetOrbit,
-                                                              Random random, float radiusRange)
+                                                              Random random, float orbitOffsetRange)
     {
-        float offset = ((float)random.NextDouble() - 0.5f) * radiusRange + 1;
+        float offset = ((float)random.NextDouble() - 0.5f) * orbitOffsetRange + 1;
 
         return new RevolutionOrbit
         {
@@ -36,6 +39,19 @@ public static class RevolutionUtils
         float phase = (float)random.NextDouble() * 2 * MathF.PI;
 
         return new RevolutionState { Phase = phase };
+    }
+
+    private const float _defaultOrbitOffsetRange = 0.3f;
+    public static void RandomlySetShipOrbitAroundPlanet(Entity ship, Entity planet,
+                                                        Random? random = null, float orbitOffsetRange = _defaultOrbitOffsetRange)
+    {
+        Debug.Assert(ship.WorldId == planet.WorldId);
+
+        random ??= new();
+
+        ref readonly var geostationaryOrbit = ref planet.Get<PlanetGeostationaryOrbit>();
+        ship.Get<RevolutionOrbit>() = CreateRandomRevolutionOrbit(in geostationaryOrbit, random, _defaultOrbitOffsetRange);
+        ship.Get<RevolutionState>() = CreateRandomState(random);
     }
 
     /// <summary>

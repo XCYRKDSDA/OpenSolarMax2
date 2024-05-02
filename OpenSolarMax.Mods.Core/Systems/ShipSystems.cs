@@ -86,7 +86,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             shippingState.TravelledTime = 0;
 
             // 解除到星球的锚定
-            ship.UnanchorTo(request.Departure);
+            AnchorageUtils.UnanchorShipFromPlanet(ship, request.Departure);
+            // 保持单位在世界系的绝对位姿
+            ship.Get<RelativeTransform>().TransformToParent = ship.Get<AbsoluteTransform>().TransformToRoot;
 
             // 创建单位的尾迹，并挂载到星球上
             var trail = world.Construct(_trailTemplate.Archetype);
@@ -152,7 +154,7 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
             var task = ship.Get<ShippingTask>();
 
             // 将单位挂载到目标星球
-            AnchorageUtils.JustAnchorTo(ship, task.DestinationPlanet);
+            AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
             ship.Add(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
             ship.Remove<ShippingTask, ShippingState>();
         });
