@@ -1,4 +1,4 @@
-#if OPENGL
+ï»¿#if OPENGL
 #define VS_SHADERMODEL vs_3_0
 #define PS_SHADERMODEL ps_3_0
 #else
@@ -8,7 +8,7 @@
 
 
 /*************************************
- * ×ÅÉ«Æ÷È«¾Ö²ÎÊı
+ * ç€è‰²å™¨å…¨å±€å‚æ•°
  *************************************/
 
 uniform float2 center;
@@ -17,13 +17,13 @@ uniform float thickness;
 
 uniform float4x4 to_ndc;
 
-uniform bool inferior; //ÊÇ·ñÎªÁÓ½Ç£¿
-uniform float2 head_vector; //»¡ÏßÆğÊ¼½ÇµÄÏòÁ¿
-uniform float2 tail_vector; //»¡ÏßÖÕµã½ÇµÄÏòÁ¿
+uniform bool inferior; //æ˜¯å¦ä¸ºåŠ£è§’ï¼Ÿ
+uniform float2 head_vector; //å¼§çº¿èµ·å§‹è§’çš„å‘é‡
+uniform float2 tail_vector; //å¼§çº¿ç»ˆç‚¹è§’çš„å‘é‡
 
 
 /*************************************
- * ¶¥µã×ÅÉ«Æ÷
+ * é¡¶ç‚¹ç€è‰²å™¨
  *************************************/
 
 struct VertexInput
@@ -63,7 +63,7 @@ VertexOutput vs_main(VertexInput v)
 
 
 /*************************************
- * ÏñËØ×ÅÉ«Æ÷
+ * åƒç´ ç€è‰²å™¨
  *************************************/
 
 struct PixelInput
@@ -98,7 +98,7 @@ float4 ps_main(PixelInput p) : SV_TARGET
 
 
 /*************************************
- * Ğ§¹û¶¨Òå
+ * æ•ˆæœå®šä¹‰
  *************************************/
 
 technique Ring

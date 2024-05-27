@@ -1,4 +1,4 @@
-#if OPENGL
+ï»¿#if OPENGL
 #define VS_SHADERMODEL vs_3_0
 #define PS_SHADERMODEL ps_3_0
 #else
@@ -8,7 +8,7 @@
 
 
 /*************************************
- * ×ÅÉ«Æ÷È«¾Ö²ÎÊı
+ * ç€è‰²å™¨å…¨å±€å‚æ•°
  *************************************/
 
 uniform float2 head;
@@ -19,7 +19,7 @@ uniform float4x4 to_ndc;
 
 
 /*************************************
- * ¶¥µã×ÅÉ«Æ÷
+ * é¡¶ç‚¹ç€è‰²å™¨
  *************************************/
 
 struct VertexInput
@@ -49,7 +49,7 @@ VertexOutput vs_main(VertexInput v)
 
 
 /*************************************
- * ÏñËØ×ÅÉ«Æ÷
+ * åƒç´ ç€è‰²å™¨
  *************************************/
 
 struct PixelInput
@@ -67,7 +67,7 @@ float aastep(float threshold, float value)
 
 float4 ps_main(PixelInput p) : SV_TARGET
 {
-    // ¼ÆËãºáÏòãĞÖµ
+    // è®¡ç®—æ¨ªå‘é˜ˆå€¼
     
     float3 p2head, p2tail;
     p2head.z = p2tail.z = 0;
@@ -77,7 +77,7 @@ float4 ps_main(PixelInput p) : SV_TARGET
     float dist = abs(cross(p2head, p2tail).z / distance(head, tail));
     float flag_v = 1 - aastep(thickness / 2, dist);
     
-    // ¼ÆËã×İÏòãĞÖµ
+    // è®¡ç®—çºµå‘é˜ˆå€¼
     
     float2 head2tail = tail - head;
     float flag_h = aastep(0, dot(p2tail.xy, head2tail)) - aastep(0, dot(p2head.xy, head2tail));
@@ -87,7 +87,7 @@ float4 ps_main(PixelInput p) : SV_TARGET
 
 
 /*************************************
- * Ğ§¹û¶¨Òå
+ * æ•ˆæœå®šä¹‰
  *************************************/
 
 technique Circle

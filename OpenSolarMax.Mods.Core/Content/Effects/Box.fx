@@ -1,4 +1,4 @@
-#if OPENGL
+ï»¿#if OPENGL
 #define VS_SHADERMODEL vs_3_0
 #define PS_SHADERMODEL ps_3_0
 #else
@@ -8,18 +8,18 @@
 
 
 /*************************************
- * ×ÅÉ«Æ÷È«¾Ö²ÎÊı
+ * ç€è‰²å™¨å…¨å±€å‚æ•°
  *************************************/
 
-uniform float2 origin; // ×óÏÂ½Ç
-uniform float2 size; // ³ß´ç
+uniform float2 origin; // å·¦ä¸‹è§’
+uniform float2 size; // å°ºå¯¸
 uniform float thickness;
 
 uniform float4x4 to_ndc;
 
 
 /*************************************
- * ¶¥µã×ÅÉ«Æ÷
+ * é¡¶ç‚¹ç€è‰²å™¨
  *************************************/
 
 struct VertexInput
@@ -49,7 +49,7 @@ VertexOutput vs_main(VertexInput v)
 
 
 /*************************************
- * ÏñËØ×ÅÉ«Æ÷
+ * åƒç´ ç€è‰²å™¨
  *************************************/
 
 struct PixelInput
@@ -84,7 +84,7 @@ float4 ps_main(PixelInput p) : SV_TARGET
 
 
 /*************************************
- * Ğ§¹û¶¨Òå
+ * æ•ˆæœå®šä¹‰
  *************************************/
 
 technique Circle
