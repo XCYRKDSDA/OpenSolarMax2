@@ -8,6 +8,7 @@ using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Systems;
 using OpenSolarMax.Mods.Core.Templates;
 using Nine.Assets;
+using OpenSolarMax.Game;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
@@ -153,9 +154,7 @@ public static class ShippingUtils
             // 步进系统
             t += _dt;
             var simTime = new GameTime(TimeSpan.FromSeconds(t), TimeSpan.FromSeconds(_dt));
-            simulateSystems.BeforeUpdate(in simTime);
-            simulateSystems.Update(in simTime);
-            simulateSystems.AfterUpdate(in simTime);
+            simulateSystems.JustUpdate(in simTime);
 
             // 计算距离
             var distance = (destinationPosition - departurePosition).Length();

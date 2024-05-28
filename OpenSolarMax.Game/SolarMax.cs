@@ -456,9 +456,7 @@ public class SolarMax : XNAGame
         worldLoader.Load(level, _world);
 
         // 对新加入的实体进行事后求解
-        _lateUpdateSystems.BeforeUpdate(null);
-        _lateUpdateSystems.Update(null);
-        _lateUpdateSystems.AfterUpdate(null);
+        _lateUpdateSystems.JustUpdate(new GameTime());
     }
 
     protected override void Update(GameTime gameTime)
@@ -469,17 +467,9 @@ public class SolarMax : XNAGame
 
         //_desktop.UpdateInput();
 
-        _coreUpdateSystems.BeforeUpdate(in gameTime);
-        _coreUpdateSystems.Update(in gameTime);
-        _coreUpdateSystems.AfterUpdate(in gameTime);
-
-        _structuralChangeSystems.BeforeUpdate(in gameTime);
-        _structuralChangeSystems.Update(in gameTime);
-        _structuralChangeSystems.AfterUpdate(in gameTime);
-
-        _lateUpdateSystems.BeforeUpdate(in gameTime);
-        _lateUpdateSystems.Update(in gameTime);
-        _lateUpdateSystems.AfterUpdate(in gameTime);
+        _coreUpdateSystems.JustUpdate(in gameTime);
+        _structuralChangeSystems.JustUpdate(in gameTime);
+        _lateUpdateSystems.JustUpdate(in gameTime);
 
         base.Update(gameTime);
     }
@@ -488,9 +478,7 @@ public class SolarMax : XNAGame
     {
         GraphicsDevice.Clear(Color.Black);
 
-        _drawSystems.BeforeUpdate(in gameTime);
-        _drawSystems.Update(in gameTime);
-        _drawSystems.AfterUpdate(in gameTime);
+        _drawSystems.JustUpdate(in gameTime);
 
         //_desktop.UpdateLayout();
         //_desktop.RenderVisual();
