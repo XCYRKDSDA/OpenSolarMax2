@@ -5,7 +5,8 @@ using OpenSolarMax.Game.ECS;
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
-/// 轨道组件。描述当前实体正在运行的轨道
+/// 轨道组件。描述当前实体正在运行的轨道。
+/// 属于“任务”类型组件
 /// </summary>
 [Component]
 public struct RevolutionOrbit()
@@ -27,7 +28,8 @@ public struct RevolutionOrbit()
 }
 
 /// <summary>
-/// 公转状态组件。描述当前实体绕其当前轨道公转的实时状态
+/// 公转状态组件。描述当前实体绕其当前轨道公转的实时状态。
+/// 属于“状态”类型组件
 /// </summary>
 [Component]
 public struct RevolutionState

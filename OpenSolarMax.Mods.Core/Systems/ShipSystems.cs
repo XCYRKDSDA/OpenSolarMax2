@@ -96,6 +96,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             trail.SetParent<TrailOf>(ship);
             trail.SetParent<RelativeTransform>(ship);
             trail.SetParent<Party>(request.Party);
+            trail.DependOn(ship);
 
             // 摆放尾迹方向
             // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直

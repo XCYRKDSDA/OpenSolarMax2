@@ -12,7 +12,12 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Parent)
     );
 
-    public static readonly Archetype Planet = new(
+    public static readonly Archetype Dependentable = new(
+        typeof(Dependence.AsDependent),
+        typeof(Dependence.AsDependency)
+    );
+
+    public static readonly Archetype Planet = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(Tree<RelativeTransform>.Child),
@@ -28,7 +33,7 @@ public static class Archetypes
         typeof(Animation)
     );
 
-    public static readonly Archetype Ship = new(
+    public static readonly Archetype Ship = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(Tree<RelativeTransform>.Child),
@@ -41,7 +46,7 @@ public static class Archetypes
         typeof(Animation)
     );
 
-    public static readonly Archetype PredefinedOrbit = new(
+    public static readonly Archetype PredefinedOrbit = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(Tree<RelativeTransform>.Child),
@@ -49,14 +54,14 @@ public static class Archetypes
         typeof(PredefinedOrbit)
     );
 
-    public static readonly Archetype Party = new(
+    public static readonly Archetype Party = Dependentable + new Archetype(
         typeof(PartyReferenceColor),
         typeof(Producible),
         typeof(Combatable),
         typeof(Shippable)
     );
 
-    public static readonly Archetype View = new(
+    public static readonly Archetype View = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(Tree<RelativeTransform>.Child),
@@ -66,7 +71,7 @@ public static class Archetypes
         typeof(Tree<Party>.Child)
     );
 
-    public static readonly Archetype Animation = new(
+    public static readonly Archetype Animation = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(Tree<RelativeTransform>.Child),
