@@ -1,7 +1,10 @@
-﻿using Arch.Core;
+﻿using System.Diagnostics;
+using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
@@ -14,65 +17,50 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [StructuralChangeSystem]
 public sealed partial class ManageDependenceSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, float>(world)
+    : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly List<Entity> _relationshipBroken = [];
-    private readonly SortedSet<(Entity, Entity)> _dependencyToOperate = [];
+    private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
     [All<Dependence>]
-    private void FindBrokenDependence1(Entity entity, in Dependence relationship)
+    private void FindBrokenDependence1(Entity relationship, in Dependence record)
     {
-        if (relationship.Dependency.IsAlive())
+        if (record.Dependency.IsAlive())
             return;
 
-        _relationshipBroken.Add(entity);
-        if (relationship.Dependent.IsAlive())
-            World.Destroy(relationship.Dependent);
+        _commandBuffer.Destroy(relationship);
+        if (record.Dependent.IsAlive())
+            _commandBuffer.Destroy(record.Dependent);
     }
 
     [Query]
     [All<Dependence>]
-    private void FindBrokenDependence2(Entity entity, in Dependence relationship)
+    private void FindBrokenDependence2(Entity relationship, in Dependence record)
     {
-        if (relationship.Dependent.IsAlive())
+        if (record.Dependent.IsAlive())
             return;
 
-        _relationshipBroken.Add(entity);
-
-        ref readonly var asDependency = ref relationship.Dependency.Get<Dependence.AsDependency>();
-        asDependency.Relationships.Remove(relationship.Dependent);
+        _commandBuffer.Destroy(relationship);
     }
 
-    public override void Update(in float t)
+    public override void Update(in GameTime gameTime)
     {
         // 找到所有被依赖实体被销毁的依赖关系，并销毁其关系和依赖对方的实体
         while (true)
         {
             FindBrokenDependence1Query(World);
-            if (_relationshipBroken.Count == 0)
+            if (_commandBuffer.Size == 0)
                 break;
-
-            foreach (var entity in _relationshipBroken)
-                World.Destroy(entity);
-            _relationshipBroken.Clear();
+            _commandBuffer.Playback(World);
         }
 
         // 找到所有依赖对方的实体被销毁的依赖关系，销毁其关系并记录在被依赖的实体的组件中
         while (true)
         {
             FindBrokenDependence2Query(World);
-            if (_relationshipBroken.Count == 0 && _dependencyToOperate.Count == 0)
+            if (_commandBuffer.Size == 0)
                 break;
-
-            foreach (var entity in _relationshipBroken)
-                World.Destroy(entity);
-
-            foreach (var (dependency, dependent) in _dependencyToOperate)
-                dependency.Get<Dependence.AsDependency>().Relationships.Remove(dependent);
-
-            _relationshipBroken.Clear();
-            _dependencyToOperate.Clear();
+            _commandBuffer.Playback(World);
         }
     }
 }

@@ -10,6 +10,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [StructuralChangeSystem]
+[ExecuteBefore(typeof(ManageDependenceSystem))]
 public sealed partial class CountDownAndExpireTimeoutEntitiesSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

@@ -19,6 +19,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
 [StructuralChangeSystem]
+[ExecuteBefore(typeof(ManageDependenceSystem))]
 public sealed partial class StartShippingSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
@@ -96,7 +97,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             trail.SetParent<TrailOf>(ship);
             trail.SetParent<RelativeTransform>(ship);
             trail.SetParent<Party>(request.Party);
-            trail.DependOn(ship);
+            world.Create(new Dependence(trail, ship));
 
             // 摆放尾迹方向
             // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
@@ -138,6 +139,7 @@ public sealed partial class UpdateShipStateSystem(World world, IAssetsManager as
 }
 
 [StructuralChangeSystem]
+[ExecuteBefore(typeof(ManageDependenceSystem))]
 public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
@@ -190,6 +192,7 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 
 [StructuralChangeSystem]
 [ExecuteAfter(typeof(LandArrivedShipsSystem))]
+[ExecuteBefore(typeof(ManageDependenceSystem))]
 public sealed partial class ShipTrailLifecycleSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

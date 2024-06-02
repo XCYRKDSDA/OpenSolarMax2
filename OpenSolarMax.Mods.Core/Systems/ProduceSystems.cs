@@ -63,6 +63,7 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
 /// </summary>
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteBefore(typeof(ManageDependenceSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]
 public sealed partial class SettleProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem

@@ -14,6 +14,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [StructuralChangeSystem]
+[ExecuteBefore(typeof(ManageDependenceSystem))]
 [ExecuteAfter(typeof(SettleProductionSystem))]
 [ExecuteAfter(typeof(SettleCombatSystem))]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IAssetsManager assets)
