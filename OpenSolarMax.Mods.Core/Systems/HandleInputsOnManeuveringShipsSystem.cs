@@ -226,8 +226,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, Tree<Party>.Child>]
-    private void HandleInputs(in Camera camera, in AbsoluteTransform pose, ref ManeuvaringShipsStatus status, in Tree<Party>.Child ofParty)
+    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, TreeRelationship<Party>.AsChild>]
+    private void HandleInputs(in Camera camera, in AbsoluteTransform pose, ref ManeuvaringShipsStatus status, in TreeRelationship<Party>.AsChild ofParty)
     {
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
@@ -238,8 +238,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
         // 处理星球选择
         Entity? pointedPlanet = null;
-        HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Parent, ref pointedPlanet);
-        UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Parent, ref pointedPlanet);
+        HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent, ref pointedPlanet);
+        UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent, ref pointedPlanet);
     }
 
     public override void Update(in GameTime data) => HandleInputsQuery(World);

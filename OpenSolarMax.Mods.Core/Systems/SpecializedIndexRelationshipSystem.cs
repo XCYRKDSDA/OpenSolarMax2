@@ -11,3 +11,9 @@ namespace OpenSolarMax.Mods.Core;
 public sealed class IndexDependenceSystem(World world, IAssetsManager assets)
     : IndexRelationshipSystem<Dependence>(world)
 { }
+
+[LateUpdateSystem]
+[ExecuteBefore(typeof(AnimateSystem))]
+public sealed class IndexPartyAffiliationSystem(World world, IAssetsManager assets)
+    : IndexRelationshipSystem<TreeRelationship<Party>>(world)
+{ }

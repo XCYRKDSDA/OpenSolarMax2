@@ -24,7 +24,7 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),
         typeof(PlanetGeostationaryOrbit),
-        typeof(Tree<Party>.Child),
+        typeof(TreeRelationship<Party>.AsChild),
         typeof(Tree<Anchorage>.Parent),
         typeof(AnchoredShipsRegistry),
         typeof(ProductionAbility),
@@ -41,7 +41,7 @@ public static class Archetypes
         typeof(Sprite),
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
-        typeof(Tree<Party>.Child),
+        typeof(TreeRelationship<Party>.AsChild),
         typeof(Tree<Anchorage>.Child),
         typeof(Animation)
     );
@@ -58,7 +58,8 @@ public static class Archetypes
         typeof(PartyReferenceColor),
         typeof(Producible),
         typeof(Combatable),
-        typeof(Shippable)
+        typeof(Shippable),
+        typeof(TreeRelationship<Party>.AsParent)
     );
 
     public static readonly Archetype View = Dependentable + new Archetype(
@@ -68,12 +69,13 @@ public static class Archetypes
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Camera),
         typeof(ManeuvaringShipsStatus),
-        typeof(Tree<Party>.Child)
+        typeof(TreeRelationship<Party>.AsChild)
     );
 
     public static readonly Archetype Animation = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
+        typeof(TreeRelationship<Party>.AsChild),
         typeof(Tree<RelativeTransform>.Child),
         typeof(Tree<RelativeTransform>.Parent),
         typeof(Sprite),

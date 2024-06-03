@@ -1,4 +1,5 @@
 ﻿using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
@@ -20,6 +21,6 @@ public sealed partial class UpdateShipRegistrySystem(World world, IAssetsManager
     [All<Tree<Anchorage>.Parent, AnchoredShipsRegistry>]
     private static void CountAnchoredShips(in Tree<Anchorage>.Parent anchorageRelationship, ref AnchoredShipsRegistry shipRegistry)
     {
-        shipRegistry.Ships = (Lookup<Entity, Entity>)anchorageRelationship._children.ToLookup((e) => e.GetParent<Party>());
+        shipRegistry.Ships = (Lookup<Entity, Entity>)anchorageRelationship._children.ToLookup((e) => e.Get<TreeRelationship<Party>.AsChild>().Index.Parent);
     }
 }

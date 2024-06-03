@@ -1,4 +1,6 @@
-﻿using Arch.Core;
+﻿using System.Collections;
+using Arch.Core;
+using Arch.Core.Extensions;
 using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Components;
@@ -34,5 +36,115 @@ public abstract class Tree<T>
 
         public readonly IReadOnlyList<Entity> Children => _children;
 
+    }
+}
+
+public readonly struct TreeRelationship<T>(Entity parent, Entity child) : IRelationshipRecord
+{
+    public readonly Entity Parent = parent;
+    public readonly Entity Child = child;
+
+    #region IRelationshipRecord
+
+    static Type[] IRelationshipRecord.ParticipantTypes => [typeof(AsParent), typeof(AsChild)];
+
+    readonly int ILookup<Type, Entity>.Count => 2;
+
+    readonly IEnumerable<Entity> ILookup<Type, Entity>.this[Type key]
+    {
+        get
+        {
+            if (key == typeof(AsParent)) yield return Parent;
+            else if (key == typeof(AsChild)) yield return Child;
+        }
+    }
+
+    readonly bool ILookup<Type, Entity>.Contains(Type key) => key == typeof(AsParent) || key == typeof(AsChild);
+
+    readonly IEnumerator<IGrouping<Type, Entity>> IEnumerable<IGrouping<Type, Entity>>.GetEnumerator()
+    {
+        yield return new SingleItemGroup<Type, Entity>(typeof(AsParent), Parent);
+        yield return new SingleItemGroup<Type, Entity>(typeof(AsChild), Child);
+    }
+
+    readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IGrouping<Type, Entity>>).GetEnumerator();
+
+    #endregion
+
+    public readonly struct AsParent() : IParticipantIndex
+    {
+        /// <summary>
+        /// 按照子实体索引的关系
+        /// </summary>
+        public readonly SortedDictionary<Entity, Entity> Relationships = [];
+
+        #region IParticipantIndex
+
+        readonly int ICollection<Entity>.Count => Relationships.Count;
+        readonly bool ICollection<Entity>.IsReadOnly => false;
+
+        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
+        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        readonly IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
+
+        readonly bool ICollection<Entity>.Contains(Entity relationship)
+        {
+            var child = relationship.Get<TreeRelationship<T>>().Child;
+            return Relationships.ContainsKey(child);
+        }
+
+        void ICollection<Entity>.Add(Entity relationship)
+        {
+            var child = relationship.Get<TreeRelationship<T>>().Child;
+            Relationships.Add(child, relationship);
+        }
+
+        bool ICollection<Entity>.Remove(Entity relationship)
+        {
+            var child = relationship.Get<TreeRelationship<T>>().Child;
+            return Relationships.Remove(child);
+        }
+
+        void ICollection<Entity>.Clear() => Relationships.Clear();
+
+        #endregion
+    }
+
+    public struct AsChild() : IParticipantIndex
+    {
+        public (Entity Parent, Entity Relationship) Index = (Entity.Null, Entity.Null);
+
+        #region IParticipantIndex
+
+        readonly int ICollection<Entity>.Count => 1;
+
+        readonly bool ICollection<Entity>.IsReadOnly => false;
+
+        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex) => array[arrayIndex] = Index.Relationship;
+
+        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator() { yield return Index.Relationship; }
+
+        readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<Entity>).GetEnumerator();
+
+        readonly bool ICollection<Entity>.Contains(Entity relationship) => Index.Relationship == relationship;
+
+        void ICollection<Entity>.Add(Entity relationship)
+        {
+            var parent = relationship.Get<TreeRelationship<T>>().Parent;
+            Index = (parent, relationship);
+        }
+
+        bool ICollection<Entity>.Remove(Entity relationship)
+        {
+            if (Index.Relationship != relationship)
+                return false;
+
+            Index = (Entity.Null, Entity.Null);
+            return true;
+        }
+
+        void ICollection<Entity>.Clear() => Index = (Entity.Null, Entity.Null);
+
+        #endregion
     }
 }

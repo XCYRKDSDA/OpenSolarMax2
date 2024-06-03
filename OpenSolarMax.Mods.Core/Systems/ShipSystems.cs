@@ -96,7 +96,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             _trailTemplate.Apply(trail);
             trail.SetParent<TrailOf>(ship);
             trail.SetParent<RelativeTransform>(ship);
-            trail.SetParent<Party>(request.Party);
+            world.Create(new TreeRelationship<Party>(request.Party, trail));
             world.Create(new Dependence(trail, ship));
 
             // 摆放尾迹方向
@@ -193,6 +193,7 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 [StructuralChangeSystem]
 [ExecuteAfter(typeof(LandArrivedShipsSystem))]
 [ExecuteBefore(typeof(ManageDependenceSystem))]
+[ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
 public sealed partial class ShipTrailLifecycleSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

@@ -13,26 +13,26 @@ public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
 {
     protected abstract void ApplyPartyReferenceImpl(in R reference, ref T target);
 
-    private static readonly QueryDescription _entitesDecs = new QueryDescription().WithAll<Tree<Party>.Child, T>();
+    private static readonly QueryDescription _entitesDecs = new QueryDescription().WithAll<TreeRelationship<Party>.AsChild, T>();
 
     public override void Update(in GameTime t)
     {
         var query = world.Query(in _entitesDecs);
         foreach (ref var chunk in query.GetChunkIterator())
         {
-            chunk.GetSpan<Tree<Party>.Child, T>(out var relationshipSpan, out var componentSpan);
+            chunk.GetSpan<TreeRelationship<Party>.AsChild, T>(out var relationshipSpan, out var componentSpan);
             foreach (var entity in chunk)
                 ApplyPartyReference(in relationshipSpan[entity], ref componentSpan[entity]);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ApplyPartyReference(in Tree<Party>.Child registry, ref T target)
+    private void ApplyPartyReference(in TreeRelationship<Party>.AsChild asChild, ref T target)
     {
-        if (registry.Parent == Entity.Null)
+        if (asChild.Index.Parent == Entity.Null)
             return;
 
-        ref readonly var reference = ref registry.Parent.Get<R>();
+        ref readonly var reference = ref asChild.Index.Parent.Get<R>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
 }

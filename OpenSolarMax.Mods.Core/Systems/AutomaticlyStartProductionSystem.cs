@@ -21,11 +21,11 @@ public sealed partial class AutomaticallyStartProductionSystem(World world, IAss
     private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
-    [All<Tree<Party>.Child, ProductionAbility>]
+    [All<TreeRelationship<Party>.AsChild, ProductionAbility>]
     [None<ProductionState>]
-    private void AutomaticallyStartProduction(Entity entity, in Tree<Party>.Child child)
+    private void AutomaticallyStartProduction(Entity entity, in TreeRelationship<Party>.AsChild child)
     {
-        if (child.Parent == Entity.Null)
+        if (child.Index.Parent == Entity.Null)
             return;
 
         _commandBuffer.Add<ProductionState>(entity, new() { Progress = 0 });

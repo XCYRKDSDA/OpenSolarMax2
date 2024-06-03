@@ -11,6 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(ManageDependenceSystem))]
+[ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
 public sealed partial class CountDownAndExpireTimeoutEntitiesSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

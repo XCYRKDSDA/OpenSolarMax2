@@ -41,6 +41,6 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (unitConfig.Party != null)
-            entity.SetParent<Party>(ctx.OtherEntities[unitConfig.Party]);
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party], entity));
     }
 }

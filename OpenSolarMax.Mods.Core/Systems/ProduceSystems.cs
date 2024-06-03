@@ -23,7 +23,7 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
     private static bool CanProduce(Entity planet)
     {
         // 无所属阵营的不生产
-        var party = planet.GetParent<Party>();
+        var party = planet.Get<TreeRelationship<Party>.AsChild>().Index.Parent;
         if (party == Entity.Null)
             return false;
 
@@ -43,7 +43,7 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
     }
 
     [Query]
-    [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, Tree<Party>.Child>]
+    [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, TreeRelationship<Party>.AsChild>]
     private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability, ref ProductionState state)
     {
         if (!CanProduce(planet))
@@ -69,10 +69,10 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<ProductionAbility, ProductionState, Tree<Party>.Child>]
-    private static void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state, in Tree<Party>.Child partyRelationship)
+    [All<ProductionAbility, ProductionState, TreeRelationship<Party>.AsChild>]
+    private static void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state, in TreeRelationship<Party>.AsChild partyRelationship)
     {
-        var party = partyRelationship.Parent;
+        var party = partyRelationship.Index.Parent;
         ref readonly var producible = ref party.Get<Producible>();
 
         // 生产一个新部队
@@ -86,7 +86,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
                 template.Apply(newShip);
 
             // 设置单位阵营
-            newShip.SetParent<Party>(party);
+            World.Worlds[newShip.WorldId].Create(new TreeRelationship<Party>(party, newShip));
 
             // 将单位泊入星球
             AnchorageUtils.AnchorShipToPlanet(newShip, planet);
