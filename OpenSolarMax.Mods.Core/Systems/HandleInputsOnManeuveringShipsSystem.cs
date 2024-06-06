@@ -23,7 +23,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
     private const int _minimalSelectPixels = 10;
 
     [Query]
-    [All<Tree<Anchorage>.Parent, AbsoluteTransform>]
+    [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
     private static void CheckPointedPlanet(Entity planet, in AbsoluteTransform pose,
                                            [Data] in Point mouseInViewport, [Data] in Matrix worldToViewport,
                                            [Data] ref Entity pointedPlanet, [Data] ref float pointedPlanetZ)
@@ -55,7 +55,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
     }
 
     [Query]
-    [All<Tree<Anchorage>.Parent, AbsoluteTransform>]
+    [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
     private static void CheckBoxedPlanets(Entity planet, in AbsoluteTransform pose,
                                           [Data] in Rectangle box, [Data] in Matrix worldToViewport,
                                           [Data] ref HashSet<Entity> boxedPlanets)

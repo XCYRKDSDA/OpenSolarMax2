@@ -25,7 +25,7 @@ public static class Archetypes
         typeof(Sprite),
         typeof(PlanetGeostationaryOrbit),
         typeof(TreeRelationship<Party>.AsChild),
-        typeof(Tree<Anchorage>.Parent),
+        typeof(TreeRelationship<Anchorage>.AsParent),
         typeof(AnchoredShipsRegistry),
         typeof(ProductionAbility),
         typeof(ReferenceSize),
@@ -42,7 +42,7 @@ public static class Archetypes
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
         typeof(TreeRelationship<Party>.AsChild),
-        typeof(Tree<Anchorage>.Child),
+        typeof(TreeRelationship<Anchorage>.AsChild),
         typeof(Animation)
     );
 

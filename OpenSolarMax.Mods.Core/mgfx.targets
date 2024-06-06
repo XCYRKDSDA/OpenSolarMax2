@@ -15,7 +15,8 @@
 		</CompiledEffect>
 	</ItemDefinitionGroup>
 
-	<Target Name="CompileEffects" BeforeTargets="PrepareForBuild">
+	<Target Name="CompileEffects" BeforeTargets="PrepareForBuild"
+			Inputs="@(Effect)" Outputs="@(Effect->'$(IntermediateOutputPath)%(RelativeDir)%(Filename).mgfxo')">
 		<MakeDir Condition="!Exists('$(IntermediateOutputPath)%(Effect.RelativeDir)')" Directories="$(IntermediateOutputPath)%(Effect.RelativeDir)" />
 		<Exec Command="dotnet tool run mgfxc %(Effect.Identity) $(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo /Profile:$(MGFXProfile)"
               Outputs="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"/>

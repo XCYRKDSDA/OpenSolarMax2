@@ -9,3 +9,8 @@ namespace OpenSolarMax.Mods.Core;
 public sealed class DestroyBrokenPartyRelationshipSystem(World world, IAssetsManager assets)
     : DestroyBrokenRelationshipsSystem<TreeRelationship<Party>>(world), ISystem
 { }
+
+[StructuralChangeSystem]
+public sealed class DestroyBrokenAnchorageRelationshipSystem(World world, IAssetsManager assets)
+    : DestroyBrokenRelationshipsSystem<TreeRelationship<Anchorage>>(world), ISystem
+{ }
