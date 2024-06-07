@@ -1,6 +1,6 @@
 ﻿using Arch.Core;
 
-namespace OpenSolarMax.Mods.Core;
+namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
 /// 关系组件记录接口，用于记录所有参与者

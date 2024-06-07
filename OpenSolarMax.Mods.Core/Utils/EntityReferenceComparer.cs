@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Arch.Core;
 
-namespace OpenSolarMax.Mods.Core;
+namespace OpenSolarMax.Mods.Core.Utils;
 
 public sealed class EntityReferenceComparer : IComparer<EntityReference>
 {

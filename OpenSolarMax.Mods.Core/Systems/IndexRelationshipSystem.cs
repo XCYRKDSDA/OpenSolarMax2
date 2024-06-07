@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Mods.Core.Components;
 
-namespace OpenSolarMax.Mods.Core;
+namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
 /// 将关系实体描述的关系缓存到各个参与者的参与组件的索引中

@@ -3,7 +3,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
-namespace OpenSolarMax.Mods.Core;
+namespace OpenSolarMax.Mods.Core.Systems;
 
 [StructuralChangeSystem]
 public sealed class DestroyBrokenPartyRelationshipSystem(World world, IAssetsManager assets)

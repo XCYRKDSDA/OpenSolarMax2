@@ -1,10 +1,10 @@
 ﻿using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.System;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Mods.Core.Components;
 
-namespace OpenSolarMax.Mods.Core;
+namespace OpenSolarMax.Mods.Core.Systems;
 
 public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World world)
     : BaseSystem<World, GameTime>(world) where TRelationship : IRelationshipRecord
