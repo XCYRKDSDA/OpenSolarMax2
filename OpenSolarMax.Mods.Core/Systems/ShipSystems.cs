@@ -96,8 +96,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             _trailTemplate.Apply(trail);
             trail.SetParent<TrailOf>(ship);
             trail.SetParent<RelativeTransform>(ship);
-            world.Create(new TreeRelationship<Party>(request.Party, trail));
-            world.Create(new Dependence(trail, ship));
+            world.Create(new TreeRelationship<Party>(request.Party.Reference(), trail.Reference()));
+            world.Create(new Dependence(trail.Reference(), ship.Reference()));
 
             // 摆放尾迹方向
             // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直

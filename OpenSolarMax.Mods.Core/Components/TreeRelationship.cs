@@ -39,18 +39,18 @@ public abstract class Tree<T>
     }
 }
 
-public readonly struct TreeRelationship<T>(Entity parent, Entity child) : IRelationshipRecord
+public readonly struct TreeRelationship<T>(EntityReference parent, EntityReference child) : IRelationshipRecord
 {
-    public readonly Entity Parent = parent;
-    public readonly Entity Child = child;
+    public readonly EntityReference Parent = parent;
+    public readonly EntityReference Child = child;
 
     #region IRelationshipRecord
 
     static Type[] IRelationshipRecord.ParticipantTypes => [typeof(AsParent), typeof(AsChild)];
 
-    readonly int ILookup<Type, Entity>.Count => 2;
+    readonly int ILookup<Type, EntityReference>.Count => 2;
 
-    readonly IEnumerable<Entity> ILookup<Type, Entity>.this[Type key]
+    readonly IEnumerable<EntityReference> ILookup<Type, EntityReference>.this[Type key]
     {
         get
         {
@@ -59,15 +59,15 @@ public readonly struct TreeRelationship<T>(Entity parent, Entity child) : IRelat
         }
     }
 
-    readonly bool ILookup<Type, Entity>.Contains(Type key) => key == typeof(AsParent) || key == typeof(AsChild);
+    readonly bool ILookup<Type, EntityReference>.Contains(Type key) => key == typeof(AsParent) || key == typeof(AsChild);
 
-    readonly IEnumerator<IGrouping<Type, Entity>> IEnumerable<IGrouping<Type, Entity>>.GetEnumerator()
+    readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
     {
-        yield return new SingleItemGroup<Type, Entity>(typeof(AsParent), Parent);
-        yield return new SingleItemGroup<Type, Entity>(typeof(AsChild), Child);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsParent), Parent);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsChild), Child);
     }
 
-    readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IGrouping<Type, Entity>>).GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
 
     #endregion
 
@@ -76,74 +76,74 @@ public readonly struct TreeRelationship<T>(Entity parent, Entity child) : IRelat
         /// <summary>
         /// 按照子实体索引的关系
         /// </summary>
-        public readonly SortedDictionary<Entity, Entity> Relationships = [];
+        public readonly SortedDictionary<EntityReference, EntityReference> Relationships = new(new EntityReferenceComparer());
 
         #region IParticipantIndex
 
-        readonly int ICollection<Entity>.Count => Relationships.Count;
-        readonly bool ICollection<Entity>.IsReadOnly => false;
+        readonly int ICollection<EntityReference>.Count => Relationships.Count;
+        readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
-        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
-        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() => Relationships.Values.GetEnumerator();
         readonly IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
 
-        readonly bool ICollection<Entity>.Contains(Entity relationship)
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
         {
-            var child = relationship.Get<TreeRelationship<T>>().Child;
+            var child = relationship.Entity.Get<TreeRelationship<T>>().Child;
             return Relationships.ContainsKey(child);
         }
 
-        void ICollection<Entity>.Add(Entity relationship)
+        void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var child = relationship.Get<TreeRelationship<T>>().Child;
+            var child = relationship.Entity.Get<TreeRelationship<T>>().Child;
             Relationships.Add(child, relationship);
         }
 
-        bool ICollection<Entity>.Remove(Entity relationship)
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
         {
-            var child = relationship.Get<TreeRelationship<T>>().Child;
+            var child = relationship.Entity.Get<TreeRelationship<T>>().Child;
             return Relationships.Remove(child);
         }
 
-        void ICollection<Entity>.Clear() => Relationships.Clear();
+        void ICollection<EntityReference>.Clear() => Relationships.Clear();
 
         #endregion
     }
 
     public struct AsChild() : IParticipantIndex
     {
-        public (Entity Parent, Entity Relationship) Index = (Entity.Null, Entity.Null);
+        public (EntityReference Parent, EntityReference Relationship) Index = (EntityReference.Null, EntityReference.Null);
 
         #region IParticipantIndex
 
-        readonly int ICollection<Entity>.Count => 1;
+        readonly int ICollection<EntityReference>.Count => 1;
 
-        readonly bool ICollection<Entity>.IsReadOnly => false;
+        readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
-        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex) => array[arrayIndex] = Index.Relationship;
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => array[arrayIndex] = Index.Relationship;
 
-        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator() { yield return Index.Relationship; }
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() { yield return Index.Relationship; }
 
-        readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<Entity>).GetEnumerator();
+        readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
 
-        readonly bool ICollection<Entity>.Contains(Entity relationship) => Index.Relationship == relationship;
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) => Index.Relationship == relationship;
 
-        void ICollection<Entity>.Add(Entity relationship)
+        void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var parent = relationship.Get<TreeRelationship<T>>().Parent;
+            var parent = relationship.Entity.Get<TreeRelationship<T>>().Parent;
             Index = (parent, relationship);
         }
 
-        bool ICollection<Entity>.Remove(Entity relationship)
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
         {
             if (Index.Relationship != relationship)
                 return false;
 
-            Index = (Entity.Null, Entity.Null);
+            Index = (EntityReference.Null, EntityReference.Null);
             return true;
         }
 
-        void ICollection<Entity>.Clear() => Index = (Entity.Null, Entity.Null);
+        void ICollection<EntityReference>.Clear() => Index = (EntityReference.Null, EntityReference.Null);
 
         #endregion
     }

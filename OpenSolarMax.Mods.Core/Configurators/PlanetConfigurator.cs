@@ -156,7 +156,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (planetConfig.Party != null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party], entity));
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party].Reference(), entity.Reference()));
 
         // 设置人口
         if (planetConfig.Population.HasValue)

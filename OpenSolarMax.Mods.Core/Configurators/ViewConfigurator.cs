@@ -61,6 +61,6 @@ public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
         }
 
         if (cameraConfig.Party is not null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[cameraConfig.Party], entity));
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[cameraConfig.Party].Reference(), entity.Reference()));
     }
 }

@@ -17,18 +17,18 @@ internal class SingleItemGroup<TKey, TItem>(TKey key, TItem item) : IGrouping<TK
 /// 依赖关系。当被依赖的实体死亡时，依赖其的实体也会被销毁。该逻辑由<see cref="Systems.ManageDependenceSystem"/>实现。<br/>
 /// 注意：为保险起见，请使用<see cref="Utils.DependenceUtils"/>提供的工具方法来实现在实体间添加依赖。
 /// </summary>
-public readonly struct Dependence(Entity dependent, Entity dependency) : IRelationshipRecord
+public readonly struct Dependence(EntityReference dependent, EntityReference dependency) : IRelationshipRecord
 {
-    public readonly Entity Dependent = dependent;
-    public readonly Entity Dependency = dependency;
+    public readonly EntityReference Dependent = dependent;
+    public readonly EntityReference Dependency = dependency;
 
     #region IRelationshipRecord
 
     static Type[] IRelationshipRecord.ParticipantTypes => [typeof(AsDependent), typeof(AsDependency)];
 
-    int ILookup<Type, Entity>.Count => 2;
+    int ILookup<Type, EntityReference>.Count => 2;
 
-    IEnumerable<Entity> ILookup<Type, Entity>.this[Type key]
+    IEnumerable<EntityReference> ILookup<Type, EntityReference>.this[Type key]
     {
         get
         {
@@ -37,15 +37,15 @@ public readonly struct Dependence(Entity dependent, Entity dependency) : IRelati
         }
     }
 
-    bool ILookup<Type, Entity>.Contains(Type key) => key == typeof(AsDependent) || key == typeof(AsDependency);
+    bool ILookup<Type, EntityReference>.Contains(Type key) => key == typeof(AsDependent) || key == typeof(AsDependency);
 
-    IEnumerator<IGrouping<Type, Entity>> IEnumerable<IGrouping<Type, Entity>>.GetEnumerator()
+    IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
     {
-        yield return new SingleItemGroup<Type, Entity>(typeof(AsDependent), Dependent);
-        yield return new SingleItemGroup<Type, Entity>(typeof(AsDependency), Dependency);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsDependent), Dependent);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsDependency), Dependency);
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IGrouping<Type, Entity>>).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
 
     #endregion
 
@@ -57,36 +57,36 @@ public readonly struct Dependence(Entity dependent, Entity dependency) : IRelati
         /// <summary>
         /// 按照另一方实体排序的关系
         /// </summary>
-        public readonly SortedDictionary<Entity, Entity> Relationships = [];
+        public readonly SortedDictionary<EntityReference, EntityReference> Relationships = new(new EntityReferenceComparer());
 
         #region IParticipantIndex
 
-        int ICollection<Entity>.Count => Relationships.Count;
-        bool ICollection<Entity>.IsReadOnly => false;
+        int ICollection<EntityReference>.Count => Relationships.Count;
+        bool ICollection<EntityReference>.IsReadOnly => false;
 
-        void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
-        IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
+        IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() => Relationships.Values.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
 
-        bool ICollection<Entity>.Contains(Entity relationship)
+        bool ICollection<EntityReference>.Contains(EntityReference relationship)
         {
-            var dependency = relationship.Get<Dependence>().Dependency;
+            var dependency = relationship.Entity.Get<Dependence>().Dependency;
             return Relationships.ContainsKey(dependency);
         }
 
-        void ICollection<Entity>.Add(Entity relationship)
+        void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var dependency = relationship.Get<Dependence>().Dependency;
+            var dependency = relationship.Entity.Get<Dependence>().Dependency;
             Relationships.Add(dependency, relationship);
         }
 
-        bool ICollection<Entity>.Remove(Entity relationship)
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
         {
-            var dependency = relationship.Get<Dependence>().Dependency;
+            var dependency = relationship.Entity.Get<Dependence>().Dependency;
             return Relationships.Remove(dependency);
         }
 
-        void ICollection<Entity>.Clear() => Relationships.Clear();
+        void ICollection<EntityReference>.Clear() => Relationships.Clear();
 
         #endregion
     }
@@ -99,36 +99,36 @@ public readonly struct Dependence(Entity dependent, Entity dependency) : IRelati
         /// <summary>
         /// 按照另一方实体排序的关系
         /// </summary>
-        public readonly SortedDictionary<Entity, Entity> Relationships = [];
+        public readonly SortedDictionary<EntityReference, EntityReference> Relationships = new(new EntityReferenceComparer());
 
         #region IParticipantIndex
 
-        int ICollection<Entity>.Count => Relationships.Count;
-        bool ICollection<Entity>.IsReadOnly => false;
+        int ICollection<EntityReference>.Count => Relationships.Count;
+        bool ICollection<EntityReference>.IsReadOnly => false;
 
-        void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
-        IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
+        IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() => Relationships.Values.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
 
-        bool ICollection<Entity>.Contains(Entity relationship)
+        bool ICollection<EntityReference>.Contains(EntityReference relationship)
         {
-            var dependent = relationship.Get<Dependence>().Dependent;
+            var dependent = relationship.Entity.Get<Dependence>().Dependent;
             return Relationships.ContainsKey(dependent);
         }
 
-        void ICollection<Entity>.Add(Entity relationship)
+        void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var dependent = relationship.Get<Dependence>().Dependent;
+            var dependent = relationship.Entity.Get<Dependence>().Dependent;
             Relationships.Add(dependent, relationship);
         }
 
-        bool ICollection<Entity>.Remove(Entity relationship)
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
         {
-            var dependent = relationship.Get<Dependence>().Dependent;
+            var dependent = relationship.Entity.Get<Dependence>().Dependent;
             return Relationships.Remove(dependent);
         }
 
-        void ICollection<Entity>.Clear() => Relationships.Clear();
+        void ICollection<EntityReference>.Clear() => Relationships.Clear();
 
         #endregion
     }

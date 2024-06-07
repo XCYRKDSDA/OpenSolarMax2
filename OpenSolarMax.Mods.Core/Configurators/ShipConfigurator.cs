@@ -1,4 +1,5 @@
 ﻿using Arch.Core;
+using Arch.Core.Extensions;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
@@ -41,6 +42,6 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (unitConfig.Party != null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party], entity));
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party].Reference(), entity.Reference()));
     }
 }

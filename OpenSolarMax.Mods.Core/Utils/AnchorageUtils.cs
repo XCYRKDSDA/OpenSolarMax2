@@ -15,7 +15,7 @@ public static class AnchorageUtils
         var world = World.Worlds[ship.WorldId];
 
         // 设置停靠关系
-        world.Create(new TreeRelationship<Anchorage>(planet, ship));
+        world.Create(new TreeRelationship<Anchorage>(planet.Reference(), ship.Reference()));
 
         // 设置变换关系
         ship.SetParent<RelativeTransform>(planet);

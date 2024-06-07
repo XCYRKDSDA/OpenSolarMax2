@@ -24,7 +24,7 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
     {
         // 无所属阵营的不生产
         var party = planet.Get<TreeRelationship<Party>.AsChild>().Index.Parent;
-        if (party == Entity.Null)
+        if (party == EntityReference.Null)
             return false;
 
         // 无己方单位且有敌方单位的不生产
@@ -73,7 +73,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
     private static void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state, in TreeRelationship<Party>.AsChild partyRelationship)
     {
         var party = partyRelationship.Index.Parent;
-        ref readonly var producible = ref party.Get<Producible>();
+        ref readonly var producible = ref party.Entity.Get<Producible>();
 
         // 生产一个新部队
         if (state.Progress >= producible.WorkloadPerShip)
@@ -86,7 +86,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
                 template.Apply(newShip);
 
             // 设置单位阵营
-            World.Worlds[newShip.WorldId].Create(new TreeRelationship<Party>(party, newShip));
+            World.Worlds[newShip.WorldId].Create(new TreeRelationship<Party>(party, newShip.Reference()));
 
             // 将单位泊入星球
             AnchorageUtils.AnchorShipToPlanet(newShip, planet);

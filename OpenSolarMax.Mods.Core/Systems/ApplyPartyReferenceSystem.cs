@@ -29,10 +29,10 @@ public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ApplyPartyReference(in TreeRelationship<Party>.AsChild asChild, ref T target)
     {
-        if (asChild.Index.Parent == Entity.Null)
+        if (asChild.Index.Parent == EntityReference.Null)
             return;
 
-        ref readonly var reference = ref asChild.Index.Parent.Get<R>();
+        ref readonly var reference = ref asChild.Index.Parent.Entity.Get<R>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
 }

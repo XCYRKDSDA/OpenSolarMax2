@@ -20,6 +20,8 @@ public sealed partial class UpdateShipRegistrySystem(World world, IAssetsManager
     private static void CountAnchoredShips(in TreeRelationship<Anchorage>.AsParent asAnchrageParent, ref AnchoredShipsRegistry shipRegistry)
     {
         shipRegistry.Ships = (Lookup<Entity, Entity>)asAnchrageParent.Relationships.Keys.ToLookup(
-            (e) => e.Get<TreeRelationship<Party>.AsChild>().Index.Parent);
+            (ship) => ship.Entity.Get<TreeRelationship<Party>.AsChild>().Index.Parent.Entity,
+            (ship) => ship.Entity
+        );
     }
 }
