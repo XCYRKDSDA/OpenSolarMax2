@@ -1,11 +1,11 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
+using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -14,39 +14,34 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [LateUpdateSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
-[ExecuteAfter(typeof(UpdateTransformTreeSystems))] //需要在更新完坐标变换树后再执行
+[ExecuteAfter(typeof(IndexTransformTreeSystem))] //需要在更新完坐标变换树后再执行
 public sealed partial class CalculateAbsoluteTransformSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private static void RecursivelyUpdateAbsoluteTransform(in Entity entity, in Matrix parentTransformToRoot)
+    private static void RecursivelyUpdateAbsoluteTransform(Entity entity)
     {
-        ref readonly var relativeTransform = ref entity.Get<RelativeTransform>();
-        var transformToRoot = relativeTransform.TransformToParent * parentTransformToRoot;
+        var parentTransformToRoot = entity.Get<AbsoluteTransform>().TransformToRoot;
 
-        // 计算该实体相对默认根实体的绝对变换
-        entity.Get<AbsoluteTransform>().TransformToRoot = transformToRoot;
+        // 先计算子实体的变换，感觉比递归的cache miss会少一些
+        foreach (var (child, relationship) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
+        {
+            var transformToParent = relationship.Entity.Get<RelativeTransform>().TransformToParent;
+            child.Entity.Get<AbsoluteTransform>().TransformToRoot = transformToParent * parentTransformToRoot;
+        }
 
         // 递归考察子实体
-        foreach (var child in entity.GetChildren<RelativeTransform>())
-            RecursivelyUpdateAbsoluteTransform(in child, in transformToRoot);
+        foreach (var (child, _) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
+            RecursivelyUpdateAbsoluteTransform(child.Entity);
     }
 
     [Query]
-    [All(typeof(Tree<RelativeTransform>.Parent), typeof(AbsoluteTransform))]
-    private static void UpdateAbsoluteTransform(in Entity entity,
-                                                in Tree<RelativeTransform>.Parent relationship,
-                                                ref AbsoluteTransform absoluteTransform)
+    [All<TreeRelationship<RelativeTransform>.AsChild, AbsoluteTransform>]
+    private static void UpdateFromRoot(Entity root, in TreeRelationship<RelativeTransform>.AsChild asChild)
     {
-        // 如果该实体支持作为变换树中的子方且其父实体非空，则该实体不是根实体，需要跳过
-        if (entity.TryGet<Tree<RelativeTransform>.Child>(out var asChild) && asChild.Parent != Entity.Null)
+        // 如果该实体的父实体非空，则不是根实体，需要跳过
+        if (asChild.Index.Parent != EntityReference.Null)
             return;
 
-        // 如果该实体有相对变换组件，则由相对变换组件中的值确定绝对变换
-        if (entity.Has<RelativeTransform>())
-            absoluteTransform.TransformToRoot = entity.Get<RelativeTransform>().TransformToParent;
-
-        // 遍历确定子实体的绝对变换
-        foreach (var child in relationship.Children)
-            RecursivelyUpdateAbsoluteTransform(in child, absoluteTransform.TransformToRoot);
+        RecursivelyUpdateAbsoluteTransform(root);
     }
 }

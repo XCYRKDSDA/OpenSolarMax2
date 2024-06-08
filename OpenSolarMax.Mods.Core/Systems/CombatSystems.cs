@@ -71,6 +71,7 @@ public sealed partial class UpdateCombatSystem(World world, IAssetsManager asset
 [ExecuteBefore(typeof(ManageDependenceSystem))]
 [ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
 [ExecuteBefore(typeof(DestroyBrokenAnchorageRelationshipSystem))]
+[ExecuteBefore(typeof(DestroyBrokenTransformRelationshipSystem))]
 [ExecuteAfter(typeof(UpdateCombatSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]
 [ExecuteAfter(typeof(SettleProductionSystem))]
@@ -102,13 +103,13 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
                 var flare = World.Construct(_unitFlareConfigurator.Archetype);
                 _unitFlareConfigurator.Apply(flare);
                 flare.Get<Sprite>().Color = ship.Get<Sprite>().Color;
-                flare.Get<RelativeTransform>().Translation = ship.Get<AbsoluteTransform>().Translation;
+                flare.Get<AbsoluteTransform>().Translation = ship.Get<AbsoluteTransform>().Translation;
 
                 // 生成冲击波
                 var pulse = World.Construct(_unitPulseConfigurator.Archetype);
                 _unitPulseConfigurator.Apply(pulse);
                 pulse.Get<Sprite>().Color = ship.Get<Sprite>().Color;
-                pulse.Get<RelativeTransform>().Translation = ship.Get<AbsoluteTransform>().Translation;
+                pulse.Get<AbsoluteTransform>().Translation = ship.Get<AbsoluteTransform>().Translation;
 
                 // 移除单位
                 World.Destroy(ship);

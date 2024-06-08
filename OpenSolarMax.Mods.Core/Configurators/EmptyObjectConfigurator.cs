@@ -27,9 +27,9 @@ public class EmptyObjectConfigurator(IAssetsManager assets) : IEntityConfigurato
     {
         var basicConfig = (configuration as EmptyObjectConfiguration)!;
 
-        ref var relativeTransform = ref entity.Get<RelativeTransform>();
+        ref var absoluteTransform = ref entity.Get<AbsoluteTransform>();
 
         if (basicConfig.Position.HasValue)
-            relativeTransform.Translation = new(basicConfig.Position.Value, 0);
+            absoluteTransform.Translation = new(basicConfig.Position.Value, 0);
     }
 }

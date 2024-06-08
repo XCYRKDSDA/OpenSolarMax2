@@ -14,3 +14,8 @@ public sealed class DestroyBrokenPartyRelationshipSystem(World world, IAssetsMan
 public sealed class DestroyBrokenAnchorageRelationshipSystem(World world, IAssetsManager assets)
     : DestroyBrokenRelationshipsSystem<TreeRelationship<Anchorage>>(world), ISystem
 { }
+
+[StructuralChangeSystem]
+public sealed class DestroyBrokenTransformRelationshipSystem(World world, IAssetsManager assets)
+    : DestroyBrokenRelationshipsSystem<TreeRelationship<RelativeTransform>>(world), ISystem
+{ }

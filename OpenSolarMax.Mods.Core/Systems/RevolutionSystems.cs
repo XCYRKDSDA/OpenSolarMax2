@@ -40,7 +40,7 @@ public sealed partial class CalculateEntitiesTransformAroundOrbitSystem(World wo
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<Tree<RelativeTransform>.Child, RelativeTransform, RevolutionOrbit, RevolutionState>]
+    [All<TreeRelationship<RelativeTransform>, RelativeTransform, RevolutionOrbit, RevolutionState>]
     private static void CalculateTransform(in RevolutionOrbit orbit, ref RevolutionState state, ref RelativeTransform transform)
     {
         // 更新相对位姿

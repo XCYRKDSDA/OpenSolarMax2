@@ -60,8 +60,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 
             // 获取相关信息
             ref readonly var pose = ref ship.Get<AbsoluteTransform>();
-            ref readonly var revolutionOrbit = ref ship.Get<RevolutionOrbit>();
-            ref readonly var revolutionState = ref ship.Get<RevolutionState>();
+            var transformRelationship = ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
+            ref readonly var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
+            ref readonly var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
             ref readonly var departurePlanetOrbit = ref request.Departure.Get<PlanetGeostationaryOrbit>();
             ref readonly var destinationPlanetOrbit = ref request.Destination.Get<PlanetGeostationaryOrbit>();
 
@@ -88,14 +89,14 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 
             // 解除到星球的锚定
             AnchorageUtils.UnanchorShipFromPlanet(ship, request.Departure);
-            // 保持单位在世界系的绝对位姿
-            ship.Get<RelativeTransform>().TransformToParent = ship.Get<AbsoluteTransform>().TransformToRoot;
 
             // 创建单位的尾迹，并挂载到星球上
             var trail = world.Construct(_trailTemplate.Archetype);
             _trailTemplate.Apply(trail);
             trail.SetParent<TrailOf>(ship);
-            trail.SetParent<RelativeTransform>(ship);
+            var relativeTransformIdx = world.Create(
+                new TreeRelationship<RelativeTransform>(ship.Reference(), trail.Reference()),
+                new RelativeTransform());
             world.Create(new TreeRelationship<Party>(request.Party.Reference(), trail.Reference()));
             world.Create(new Dependence(trail.Reference(), ship.Reference()));
 
@@ -105,7 +106,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var headY = Vector3.Normalize(Vector3.Cross(Vector3.UnitZ, headX));
             var headZ = Vector3.Normalize(Vector3.Cross(headX, headY));
             var rotation = new Matrix { Right = headX, Up = headY, Backward = headZ };
-            trail.Get<RelativeTransform>().Rotation = Quaternion.CreateFromRotationMatrix(rotation);
+            relativeTransformIdx.Get<RelativeTransform>().Rotation = Quaternion.CreateFromRotationMatrix(rotation);
         }
 
         // 移除任务
@@ -157,8 +158,8 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
             var task = ship.Get<ShippingTask>();
 
             // 将单位挂载到目标星球
-            AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
-            ship.Add(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
+            var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
+            transformRelationship.Set(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
             ship.Remove<ShippingTask, ShippingState>();
         });
     }
@@ -183,8 +184,8 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<ShippingTask, ShippingState, RelativeTransform>]
-    private static void CalculatePosition(in ShippingTask task, in ShippingState state, ref RelativeTransform pose)
+    [All<ShippingTask, ShippingState, AbsoluteTransform>]
+    private static void CalculatePosition(in ShippingTask task, in ShippingState state, ref AbsoluteTransform pose)
     {
         pose.Translation = Vector3.Lerp(task.DeparturePosition, task.ExpectedArrivalPosition, state.Progress);
     }

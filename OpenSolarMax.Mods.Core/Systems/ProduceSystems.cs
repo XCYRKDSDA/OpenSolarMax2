@@ -89,10 +89,10 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
             World.Worlds[newShip.WorldId].Create(new TreeRelationship<Party>(party, newShip.Reference()));
 
             // 将单位泊入星球
-            AnchorageUtils.AnchorShipToPlanet(newShip, planet);
+            var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(newShip, planet);
 
             // 随机设置轨道
-            RevolutionUtils.RandomlySetShipOrbitAroundPlanet(newShip, planet);
+            RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, planet);
 
             // 减去对应工作量
             state.Progress -= producible.WorkloadPerShip;

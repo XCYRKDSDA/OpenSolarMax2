@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Xml;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -42,16 +43,14 @@ public static class RevolutionUtils
     }
 
     private const float _defaultOrbitOffsetRange = 0.3f;
-    public static void RandomlySetShipOrbitAroundPlanet(Entity ship, Entity planet,
+    public static void RandomlySetShipOrbitAroundPlanet(Entity relationship, Entity planet,
                                                         Random? random = null, float orbitOffsetRange = _defaultOrbitOffsetRange)
     {
-        Debug.Assert(ship.WorldId == planet.WorldId);
-
         random ??= new();
 
         ref readonly var geostationaryOrbit = ref planet.Get<PlanetGeostationaryOrbit>();
-        ship.Get<RevolutionOrbit>() = CreateRandomRevolutionOrbit(in geostationaryOrbit, random, _defaultOrbitOffsetRange);
-        ship.Get<RevolutionState>() = CreateRandomState(random);
+        relationship.Get<RevolutionOrbit>() = CreateRandomRevolutionOrbit(in geostationaryOrbit, random, _defaultOrbitOffsetRange);
+        relationship.Get<RevolutionState>() = CreateRandomState(random);
     }
 
     /// <summary>

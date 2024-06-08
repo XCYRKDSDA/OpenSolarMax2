@@ -22,3 +22,9 @@ public sealed class IndexPartyAffiliationSystem(World world, IAssetsManager asse
 public sealed class IndexAnchorageSystem(World world, IAssetsManager assets)
     : IndexRelationshipSystem<TreeRelationship<Anchorage>>(world)
 { }
+
+[LateUpdateSystem]
+[ExecuteBefore(typeof(AnimateSystem))]
+public sealed class IndexTransformTreeSystem(World world, IAssetsManager assets)
+    : IndexRelationshipSystem<TreeRelationship<RelativeTransform>>(world)
+{ }

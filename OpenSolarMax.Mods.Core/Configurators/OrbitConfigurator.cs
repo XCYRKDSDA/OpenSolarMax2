@@ -55,7 +55,7 @@ public class PredefinedOrbitConfigurator(IAssetsManager assets) : IEntityConfigu
         var orbitConfig = (configuration as PredefinedOrbitConfiguration) ?? throw new ArgumentException("Unexpected configuration type");
 
         if (orbitConfig.Parent is not null)
-            entity.SetParent<RelativeTransform>(ctx.OtherEntities[orbitConfig.Parent]);
+            throw new NotImplementedException();
 
         if (orbitConfig.Shape is not null)
         {
@@ -65,7 +65,7 @@ public class PredefinedOrbitConfigurator(IAssetsManager assets) : IEntityConfigu
 
         if (orbitConfig.Position is not null)
         {
-            ref var position = ref entity.Get<RelativeTransform>();
+            ref var position = ref entity.Get<AbsoluteTransform>();
             position.Translation = new(orbitConfig.Position[0], orbitConfig.Position[1], 0);
         }
 

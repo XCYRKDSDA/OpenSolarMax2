@@ -9,16 +9,21 @@ namespace OpenSolarMax.Mods.Core.Utils;
 public static class AnchorageUtils
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AnchorShipToPlanet(Entity ship, Entity planet)
+    public static (Entity AnchorageRelationship, Entity TransformRelationship) AnchorShipToPlanet(Entity ship,
+        Entity planet)
     {
         Debug.Assert(ship.WorldId == planet.WorldId);
         var world = World.Worlds[ship.WorldId];
 
         // 设置停靠关系
-        world.Create(new TreeRelationship<Anchorage>(planet.Reference(), ship.Reference()));
+        var anchorageRelationship = world.Create(new TreeRelationship<Anchorage>(planet.Reference(), ship.Reference()));
 
         // 设置变换关系
-        ship.SetParent<RelativeTransform>(planet);
+        var transformRelationship = world.Create(
+            new TreeRelationship<RelativeTransform>(planet.Reference(), ship.Reference()),
+            new RelativeTransform(), new RevolutionOrbit(), new RevolutionState());
+
+        return (anchorageRelationship, transformRelationship);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,7 +31,7 @@ public static class AnchorageUtils
     {
         Debug.Assert(ship.WorldId == planet.WorldId);
         Debug.Assert(ship.Get<TreeRelationship<Anchorage>.AsChild>().Index.Parent == planet);
-        Debug.Assert(ship.GetParent<RelativeTransform>() == planet);
+        Debug.Assert(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Parent == planet);
 
         var world = World.Worlds[ship.WorldId];
 
@@ -34,6 +39,6 @@ public static class AnchorageUtils
         world.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Index.Relationship);
 
         // 解除变换关系
-        ship.RemoveParent<RelativeTransform>();
+        world.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship);
     }
 }

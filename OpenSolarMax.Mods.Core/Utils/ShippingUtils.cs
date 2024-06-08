@@ -99,32 +99,42 @@ public static class ShippingUtils
         var virtualWorld = World.Create();
         var tailProxy = virtualWorld.Construct(in Archetypes.Transformable);
         tailProxy.Get<AbsoluteTransform>() = tail.Get<AbsoluteTransform>();
-        tailProxy.Get<RelativeTransform>() = tail.Get<RelativeTransform>();
 
         var child = tail;
         var childProxy = tailProxy;
-        var parent = child.TryGet<Tree<RelativeTransform>.Child>(out var asChild) ? asChild.Parent : Entity.Null;
-        while (parent != Entity.Null)
+
+        while (true)
         {
+            // 当发现考察的子实体已经是根实体时，方法结束
+            if (!child.TryGet<TreeRelationship<RelativeTransform>.AsChild>(out var asChild))
+                return (virtualWorld, tailProxy);
+            var (parentRef, relationshipRef) = asChild.Index;
+            if (parentRef == EntityReference.Null || relationshipRef == EntityReference.Null)
+                return (virtualWorld, tailProxy);
+            
+            // 创建虚拟世界中关于原世界父对象的代理对象
             var parentProxy = virtualWorld.Construct(in Archetypes.Transformable);
-            parentProxy.Get<AbsoluteTransform>() = parent.Get<AbsoluteTransform>();
-            parentProxy.Get<RelativeTransform>() = parent.Get<RelativeTransform>();
+            parentProxy.Get<AbsoluteTransform>() = parentRef.Entity.Get<AbsoluteTransform>();
 
-            childProxy.SetParent<RelativeTransform>(parentProxy);
+            // 创建子实体代理和父实体代理之间的关系
+            var relationshipProxy = relationshipRef.Entity.Has<RevolutionOrbit, RevolutionState>()
+                ? virtualWorld.Create(
+                    new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
+                    relationshipRef.Entity.Get<RelativeTransform>(),
+                    relationshipRef.Entity.Get<RevolutionOrbit>(), relationshipRef.Entity.Get<RevolutionState>())
+                : virtualWorld.Create(
+                    new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
+                    relationshipRef.Entity.Get<RelativeTransform>());
+            
+            // 将关系直接记录到两侧组件中
+            childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Index =
+                (parentProxy.Reference(), relationshipProxy.Reference());
+            parentProxy.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships.Add(
+                childProxy.Reference(), relationshipProxy.Reference());
 
-            if (child.Has<RevolutionOrbit, RevolutionState>())
-            {
-                childProxy.Add<RevolutionOrbit, RevolutionState>();
-                childProxy.Get<RevolutionOrbit>() = child.Get<RevolutionOrbit>();
-                childProxy.Get<RevolutionState>() = child.Get<RevolutionState>();
-            }
-
-            child = parent;
+            child = parentRef.Entity;
             childProxy = parentProxy;
-            parent = child.TryGet<Tree<RelativeTransform>.Child>(out var asChild2) ? asChild2.Parent : Entity.Null;
         }
-
-        return (virtualWorld, tailProxy);
     }
 
     private static readonly float _dt = 1f;

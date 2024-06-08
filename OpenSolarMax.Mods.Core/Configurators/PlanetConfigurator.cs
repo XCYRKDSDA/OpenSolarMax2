@@ -107,7 +107,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         ref var sprite = ref entity.Get<Sprite>();
         ref var planetSize = ref entity.Get<ReferenceSize>();
-        ref var relativeTransform = ref entity.Get<RelativeTransform>();
+        ref var absoluteTransform = ref entity.Get<AbsoluteTransform>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
 
         // 修改星球的尺寸
@@ -124,25 +124,48 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置星球的位置
         if (planetConfig.Position.HasValue)
-            relativeTransform.Translation = new(planetConfig.Position.Value, 0);
+            absoluteTransform.Translation = new(planetConfig.Position.Value, 0);
 
         // 设置星球所在的轨道
         if (planetConfig.Orbit != null)
         {
-            if (!entity.Has<RevolutionOrbit, RevolutionState>())
-                entity.Add<RevolutionOrbit, RevolutionState>();
-            ref var revolutionOrbit = ref entity.Get<RevolutionOrbit>();
-            ref var revolutionState = ref entity.Get<RevolutionState>();
-
             if (planetConfig.Orbit.Parent != null)
             {
+                var world = World.Worlds[entity.WorldId];
                 var parentEntity = ctx.OtherEntities[planetConfig.Orbit.Parent];
-                entity.SetParent<RelativeTransform>(parentEntity);
+                
+                // 检查现在是否已有相对变换关系
+                ref var transformChild = ref entity.Get<TreeRelationship<RelativeTransform>.AsChild>();
+                
+                if (transformChild.Index.Parent == parentEntity)
+                    goto DONE;
+
+                if (transformChild.Index.Parent != EntityReference.Null && transformChild.Index.Parent != parentEntity)
+                {
+                    // 目前有和指定父实体不同的关系
+                    // TODO - Warning: 新的关系将覆盖老的关系
+                    var (oldParent, oldRelationship) = transformChild.Index;
+                    world.Destroy(oldRelationship);
+                    transformChild.Index = (EntityReference.Null, EntityReference.Null);
+                }
+                
+                // 现在还没有相对变换关系
+                var newTransformRelationshipIdx = world.Create(
+                    new TreeRelationship<RelativeTransform>(parentEntity.Reference(), entity.Reference()),
+                    new RelativeTransform(),
+                    new RevolutionOrbit(), new RevolutionState());
+                transformChild.Index = (parentEntity.Reference(), newTransformRelationshipIdx.Reference());
 
                 // 如果指定了一个有预定义轨道的实体作为公转的父级，则采用预定义轨道作为基础值
                 if (parentEntity.Has<PredefinedOrbit>())
-                    revolutionOrbit = parentEntity.Get<PredefinedOrbit>().Template;
+                    newTransformRelationshipIdx.Get<RevolutionOrbit>() = parentEntity.Get<PredefinedOrbit>().Template;
+                
+                DONE: ;
             }
+            
+            var transformRelationship = entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
+            ref var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
+            ref var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
 
             if (planetConfig.Orbit.Shape.HasValue)
                 revolutionOrbit.Shape = (SizeF)planetConfig.Orbit.Shape.Value;

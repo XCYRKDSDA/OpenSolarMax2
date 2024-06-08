@@ -17,6 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
+[ExecuteBefore(typeof(DestroyBrokenTransformRelationshipSystem))]
 public sealed partial class ManageDependenceSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

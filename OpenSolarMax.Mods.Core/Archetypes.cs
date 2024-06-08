@@ -7,9 +7,8 @@ public static class Archetypes
 {
     public static readonly Archetype Transformable = new(
         typeof(AbsoluteTransform),
-        typeof(RelativeTransform),
-        typeof(Tree<RelativeTransform>.Child),
-        typeof(Tree<RelativeTransform>.Parent)
+        typeof(TreeRelationship<RelativeTransform>.AsChild),
+        typeof(TreeRelationship<RelativeTransform>.AsParent)
     );
 
     public static readonly Archetype Dependentable = new(
@@ -20,8 +19,8 @@ public static class Archetypes
     public static readonly Archetype Planet = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(Tree<RelativeTransform>.Child),
-        typeof(Tree<RelativeTransform>.Parent),
+        typeof(TreeRelationship<RelativeTransform>.AsChild),
+        typeof(TreeRelationship<RelativeTransform>.AsParent),
         typeof(Sprite),
         typeof(PlanetGeostationaryOrbit),
         typeof(TreeRelationship<Party>.AsChild),
@@ -36,8 +35,8 @@ public static class Archetypes
     public static readonly Archetype Ship = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(Tree<RelativeTransform>.Child),
-        typeof(Tree<RelativeTransform>.Parent),
+        typeof(TreeRelationship<RelativeTransform>.AsChild),
+        typeof(TreeRelationship<RelativeTransform>.AsParent),
         typeof(Sprite),
         typeof(RevolutionOrbit),
         typeof(RevolutionState),
@@ -49,8 +48,8 @@ public static class Archetypes
     public static readonly Archetype PredefinedOrbit = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(Tree<RelativeTransform>.Child),
-        typeof(Tree<RelativeTransform>.Parent),
+        typeof(TreeRelationship<RelativeTransform>.AsChild),
+        typeof(TreeRelationship<RelativeTransform>.AsParent),
         typeof(PredefinedOrbit)
     );
 
@@ -65,8 +64,6 @@ public static class Archetypes
     public static readonly Archetype View = Dependentable + new Archetype(
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
-        typeof(Tree<RelativeTransform>.Child),
-        typeof(Tree<RelativeTransform>.Parent),
         typeof(Camera),
         typeof(ManeuvaringShipsStatus),
         typeof(TreeRelationship<Party>.AsChild)
@@ -76,8 +73,8 @@ public static class Archetypes
         typeof(AbsoluteTransform),
         typeof(RelativeTransform),
         typeof(TreeRelationship<Party>.AsChild),
-        typeof(Tree<RelativeTransform>.Child),
-        typeof(Tree<RelativeTransform>.Parent),
+        typeof(TreeRelationship<RelativeTransform>.AsChild),
+        typeof(TreeRelationship<RelativeTransform>.AsParent),
         typeof(Sprite),
         typeof(Animation),
         typeof(ExpiredAfterTimeout)

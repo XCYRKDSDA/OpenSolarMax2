@@ -37,7 +37,7 @@ public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
         var cameraConfig = (configuration as ViewConfiguration)!;
 
         ref var camera = ref entity.Get<Camera>();
-        ref var transform = ref entity.Get<RelativeTransform>();
+        ref var transform = ref entity.Get<AbsoluteTransform>();
 
         if (cameraConfig.Size != null)
         {
