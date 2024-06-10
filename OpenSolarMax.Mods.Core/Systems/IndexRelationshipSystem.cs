@@ -18,7 +18,7 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
 
     protected static void ClearAllIndex<TParticipant>(World world)
         where TParticipant : IParticipantIndex
-        => world.Query(new QueryDescription().WithAll<TParticipant>(), (ref TParticipant index) => index.Clear());
+        => world.Query(new QueryDescription().WithAll<TParticipant>(), (Entity _, ref TParticipant index) => index.Clear());
 
     #region `ClearAllIndex` Cache
 

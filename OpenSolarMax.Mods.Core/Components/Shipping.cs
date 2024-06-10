@@ -1,4 +1,6 @@
-﻿using Arch.Core;
+﻿using System.Collections;
+using Arch.Core;
+using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Mods.Core.Components;
@@ -77,5 +79,124 @@ public struct ShippingState
     public float Progress;
 }
 
-public abstract class TrailOf
-{ }
+public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRelationshipRecord
+{
+    public readonly EntityReference ShipRef = (shipRef);
+    public readonly EntityReference TrailRef = (trailRef);
+
+    #region IRelationshipRecord
+
+    static Type[] IRelationshipRecord.ParticipantTypes => [typeof(AsShip), typeof(AsTrail)];
+
+    readonly int ILookup<Type, EntityReference>.Count => 2;
+
+    readonly IEnumerable<EntityReference> ILookup<Type, EntityReference>.this[Type key]
+    {
+        get
+        {
+            if (key == typeof(AsShip)) yield return ShipRef;
+            else if (key == typeof(AsTrail)) yield return TrailRef;
+        }
+    }
+
+    readonly bool ILookup<Type, EntityReference>.Contains(Type key) => key == typeof(AsShip) || key == typeof(AsTrail);
+
+    readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
+    {
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsShip), ShipRef);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsTrail), TrailRef);
+    }
+
+    readonly IEnumerator IEnumerable.GetEnumerator() =>
+        (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
+
+    #endregion
+
+    public struct AsShip() : IParticipantIndex
+    {
+        public (EntityReference TrailRef, EntityReference RelationshipRef)
+            Index = (EntityReference.Null, EntityReference.Null);
+
+        #region IParticipantIndex
+
+        readonly int ICollection<EntityReference>.Count => 1;
+
+        readonly bool ICollection<EntityReference>.IsReadOnly => false;
+
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) =>
+            array[arrayIndex] = Index.RelationshipRef;
+
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+        {
+            yield return Index.RelationshipRef;
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
+
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) =>
+            Index.RelationshipRef == relationship;
+
+        void ICollection<EntityReference>.Add(EntityReference relationship)
+        {
+            var parent = relationship.Entity.Get<TreeRelationship<TrailOf>>().Parent;
+            Index = (parent, relationship);
+        }
+
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
+        {
+            if (Index.RelationshipRef != relationship)
+                return false;
+
+            Index = (EntityReference.Null, EntityReference.Null);
+            return true;
+        }
+
+        void ICollection<EntityReference>.Clear() => Index = (EntityReference.Null, EntityReference.Null);
+
+        #endregion
+    }
+
+    public struct AsTrail() : IParticipantIndex
+    {
+        public (EntityReference ShipRef, EntityReference RelationshipRef)
+            Index = (EntityReference.Null, EntityReference.Null);
+
+        #region IParticipantIndex
+
+        readonly int ICollection<EntityReference>.Count => 1;
+
+        readonly bool ICollection<EntityReference>.IsReadOnly => false;
+
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) =>
+            array[arrayIndex] = Index.RelationshipRef;
+
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+        {
+            yield return Index.RelationshipRef;
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
+
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) =>
+            Index.RelationshipRef == relationship;
+
+        void ICollection<EntityReference>.Add(EntityReference relationship)
+        {
+            var parent = relationship.Entity.Get<TreeRelationship<TrailOf>>().Parent;
+            Index = (parent, relationship);
+        }
+
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
+        {
+            if (Index.RelationshipRef != relationship)
+                return false;
+
+            Index = (EntityReference.Null, EntityReference.Null);
+            return true;
+        }
+
+        void ICollection<EntityReference>.Clear() => Index = (EntityReference.Null, EntityReference.Null);
+
+        #endregion
+    }
+}

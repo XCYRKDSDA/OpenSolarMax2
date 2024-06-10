@@ -93,7 +93,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             // 创建单位的尾迹，并挂载到星球上
             var trail = world.Construct(_trailTemplate.Archetype);
             _trailTemplate.Apply(trail);
-            trail.SetParent<TrailOf>(ship);
+            world.Create(new TrailOf(ship.Reference(), trail.Reference()));
+            world.Create(new TreeRelationship<TrailOf>());
             var relativeTransformIdx = world.Create(
                 new TreeRelationship<RelativeTransform>(ship.Reference(), trail.Reference()),
                 new RelativeTransform());
@@ -193,18 +194,20 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 
 [StructuralChangeSystem]
 [ExecuteAfter(typeof(LandArrivedShipsSystem))]
+[ExecuteBefore(typeof(StartShippingSystem))] // TODO - 此处是为了避免新创造的关系实体还没有被索引就被处理。需要更优雅的实现方法
 [ExecuteBefore(typeof(ManageDependenceSystem))]
 [ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
+[ExecuteBefore(typeof(DestroyBrokenTrailRelationshipSystem))]
 public sealed partial class ShipTrailLifecycleSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
-    [All<Tree<TrailOf>.Child>]
-    private void ManageLifecycle(Entity trail, in Tree<TrailOf>.Child trailOf)
+    [All<TrailOf.AsTrail>]
+    private void ManageLifecycle(Entity trail, in TrailOf.AsTrail asTrail)
     {
-        var unit = trailOf.Parent;
+        var unit = asTrail.Index.ShipRef.Entity;
 
         if (!unit.Has<ShippingTask, ShippingState>())
             _commandBuffer.Destroy(trail);
@@ -225,6 +228,7 @@ public sealed partial class ShipTrailLifecycleSystem(World world, IAssetsManager
 
 [LateUpdateSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(IndexTrailAffiliationSystem))]
 public sealed partial class ShipTrailEffectSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
@@ -234,10 +238,10 @@ public sealed partial class ShipTrailEffectSystem(World world, IAssetsManager as
     private readonly AnimationClip<Entity> _extinguishedAnimation = assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
 
     [Query]
-    [All<Tree<TrailOf>.Child, Animation>]
-    private void CalculateAnimation(in Tree<TrailOf>.Child trailOf, ref Animation animation)
+    [All<TrailOf.AsTrail, Animation>]
+    private void CalculateAnimation(in TrailOf.AsTrail asTrail, ref Animation animation)
     {
-        var unit = trailOf.Parent;
+        var unit = asTrail.Index.ShipRef.Entity;
         ref readonly var unitShippingTask = ref unit.Get<ShippingTask>();
         ref readonly var unitShippingState = ref unit.Get<ShippingState>();
 

@@ -42,7 +42,8 @@ public static class Archetypes
         typeof(RevolutionState),
         typeof(TreeRelationship<Party>.AsChild),
         typeof(TreeRelationship<Anchorage>.AsChild),
-        typeof(Animation)
+        typeof(Animation),
+        typeof(TrailOf.AsShip)
     );
 
     public static readonly Archetype PredefinedOrbit = Dependentable + new Archetype(

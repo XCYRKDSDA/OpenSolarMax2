@@ -28,3 +28,9 @@ public sealed class IndexAnchorageSystem(World world, IAssetsManager assets)
 public sealed class IndexTransformTreeSystem(World world, IAssetsManager assets)
     : IndexRelationshipSystem<TreeRelationship<RelativeTransform>>(world)
 { }
+
+[LateUpdateSystem]
+[ExecuteBefore(typeof(AnimateSystem))]
+public sealed class IndexTrailAffiliationSystem(World world, IAssetsManager assets)
+    : IndexRelationshipSystem<TrailOf>(world)
+{ }
