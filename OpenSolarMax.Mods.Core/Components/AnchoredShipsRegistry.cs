@@ -6,5 +6,8 @@ namespace OpenSolarMax.Mods.Core.Components;
 [Component]
 public struct AnchoredShipsRegistry
 {
-    public Lookup<Entity, Entity> Ships;
+    /// <summary>
+    /// 阵营 -> 舰船
+    /// </summary>
+    public Lookup<EntityReference, EntityReference> Ships;
 }

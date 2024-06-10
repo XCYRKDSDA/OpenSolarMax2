@@ -108,23 +108,23 @@ public static class ShippingUtils
             // 当发现考察的子实体已经是根实体时，方法结束
             if (!child.TryGet<TreeRelationship<RelativeTransform>.AsChild>(out var asChild))
                 return (virtualWorld, tailProxy);
-            var (parentRef, relationshipRef) = asChild.Index;
-            if (parentRef == EntityReference.Null || relationshipRef == EntityReference.Null)
+            var (parent, relationship) = asChild.Index;
+            if (parent == EntityReference.Null || relationship == EntityReference.Null)
                 return (virtualWorld, tailProxy);
             
             // 创建虚拟世界中关于原世界父对象的代理对象
             var parentProxy = virtualWorld.Construct(in Archetypes.Transformable);
-            parentProxy.Get<AbsoluteTransform>() = parentRef.Entity.Get<AbsoluteTransform>();
+            parentProxy.Get<AbsoluteTransform>() = parent.Entity.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
-            var relationshipProxy = relationshipRef.Entity.Has<RevolutionOrbit, RevolutionState>()
+            var relationshipProxy = relationship.Entity.Has<RevolutionOrbit, RevolutionState>()
                 ? virtualWorld.Create(
                     new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
-                    relationshipRef.Entity.Get<RelativeTransform>(),
-                    relationshipRef.Entity.Get<RevolutionOrbit>(), relationshipRef.Entity.Get<RevolutionState>())
+                    relationship.Entity.Get<RelativeTransform>(),
+                    relationship.Entity.Get<RevolutionOrbit>(), relationship.Entity.Get<RevolutionState>())
                 : virtualWorld.Create(
                     new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
-                    relationshipRef.Entity.Get<RelativeTransform>());
+                    relationship.Entity.Get<RelativeTransform>());
             
             // 将关系直接记录到两侧组件中
             childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Index =
@@ -132,7 +132,7 @@ public static class ShippingUtils
             parentProxy.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships.Add(
                 childProxy.Reference(), relationshipProxy.Reference());
 
-            child = parentRef.Entity;
+            child = parent.Entity;
             childProxy = parentProxy;
         }
     }

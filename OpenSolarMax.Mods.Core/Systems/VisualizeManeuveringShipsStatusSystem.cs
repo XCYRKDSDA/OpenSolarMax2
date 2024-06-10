@@ -51,27 +51,27 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(Entity selected, in Matrix worldToCanvas, Color ringColor, float ringThickness)
+    private void DrawSelected(EntityReference selected, in Matrix worldToCanvas, Color ringColor, float ringThickness)
     {
-        var compos = selected.Get<ReferenceSize, AbsoluteTransform>();
+        var compos = selected.Entity.Get<ReferenceSize, AbsoluteTransform>();
         DrawSelected(in compos.t0, in compos.t1, in worldToCanvas, ringColor, ringThickness);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(IEnumerable<Entity> selecteds, in Matrix worldToCanvas, Color ringColor, float ringThickness)
+    private void DrawSelected(IEnumerable<EntityReference> selecteds, in Matrix worldToCanvas, Color ringColor, float ringThickness)
     {
         foreach (var selected in selecteds)
             DrawSelected(selected, in worldToCanvas, ringColor, ringThickness);
     }
 
-    private void DrawLines(IEnumerable<Entity> sources, Entity target, in Matrix worldToViewport)
+    private void DrawLines(IEnumerable<EntityReference> sources, EntityReference target, in Matrix worldToViewport)
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
         var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
 
         // 计算终点的位置和半径
-        var targetCompos = target.Get<ReferenceSize, AbsoluteTransform>();
+        var targetCompos = target.Entity.Get<ReferenceSize, AbsoluteTransform>();
         ref readonly var targetRefSize = ref targetCompos.t0;
         ref readonly var targetPose = ref targetCompos.t1;
         var targetInCanvas3D = Vector3.Transform(targetPose.Translation, worldToViewport);
@@ -80,7 +80,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
 
         foreach (var source in sources)
         {
-            var compos = source.Get<ReferenceSize, AbsoluteTransform>();
+            var compos = source.Entity.Get<ReferenceSize, AbsoluteTransform>();
             ref readonly var refSize = ref compos.t0;
             ref readonly var pose = ref compos.t1;
 
@@ -99,7 +99,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
         }
     }
 
-    private void DrawLines(IEnumerable<Entity> sources, Vector2 tailInCanvas, in Matrix worldToViewport)
+    private void DrawLines(IEnumerable<EntityReference> sources, Vector2 tailInCanvas, in Matrix worldToViewport)
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
@@ -107,7 +107,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
 
         foreach (var source in sources)
         {
-            var compos = source.Get<ReferenceSize, AbsoluteTransform>();
+            var compos = source.Entity.Get<ReferenceSize, AbsoluteTransform>();
             ref readonly var refSize = ref compos.t0;
             ref readonly var pose = ref compos.t1;
 

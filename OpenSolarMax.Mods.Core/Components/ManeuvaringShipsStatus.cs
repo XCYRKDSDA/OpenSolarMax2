@@ -16,16 +16,16 @@ public enum ShipsSelection_State
 public struct ShipsSelection_SimpleSelecting()
 {
     [FieldOffset(0)]
-    public Entity PointingPlanet = Entity.Null;
-
-    [FieldOffset(8)]
-    public Entity TappingSource = Entity.Null;
+    public EntityReference PointingPlanet = EntityReference.Null;
 
     [FieldOffset(16)]
-    public Entity TappingDestination = Entity.Null;
+    public EntityReference TappingSource = EntityReference.Null;
 
     [FieldOffset(32)]
-    public HashSet<Entity> SelectedSources;
+    public EntityReference TappingDestination = EntityReference.Null;
+
+    [FieldOffset(48)]
+    public HashSet<EntityReference> SelectedSources;
 }
 
 [StructLayout(LayoutKind.Explicit)]
@@ -37,21 +37,21 @@ public struct ShipsSelection_BoxSelectingSources
     [FieldOffset(8)]
     public Rectangle BoxInViewport;
 
-    [FieldOffset(32)]
-    public HashSet<Entity> OtherSelectedPlanets;
+    [FieldOffset(48)]
+    public HashSet<EntityReference> OtherSelectedPlanets;
 
-    [FieldOffset(40)]
-    public HashSet<Entity> PlanetsInBox;
+    [FieldOffset(64)]
+    public HashSet<EntityReference> PlanetsInBox;
 }
 
 [StructLayout(LayoutKind.Explicit)]
 public struct ShipsSelection_DraggingToDestination()
 {
     [FieldOffset(0)]
-    public Entity CandidateDestination = Entity.Null;
+    public EntityReference CandidateDestination = EntityReference.Null;
 
-    [FieldOffset(32)]
-    public HashSet<Entity> SelectedSources;
+    [FieldOffset(48)]
+    public HashSet<EntityReference> SelectedSources;
 }
 
 [StructLayout(LayoutKind.Explicit)]

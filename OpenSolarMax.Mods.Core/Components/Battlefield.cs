@@ -6,5 +6,8 @@ namespace OpenSolarMax.Mods.Core.Components;
 [Component]
 public readonly struct Battlefield()
 {
-    public readonly Dictionary<Entity, float> FrontlineDamage = [];
+    /// <summary>
+    /// 阵营 -> 伤害
+    /// </summary>
+    public readonly Dictionary<EntityReference, float> FrontlineDamage = [];
 }

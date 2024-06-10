@@ -30,14 +30,14 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
     [All<StartShippingRequest>]
     private void StartShipping(Entity requestEntity, in StartShippingRequest request)
     {
-        Debug.Assert(requestEntity.WorldId == request.Departure.WorldId
-                     && requestEntity.WorldId == request.Destination.WorldId
-                     && requestEntity.WorldId == request.Party.WorldId);
+        Debug.Assert(requestEntity.WorldId == request.Departure.Entity.WorldId
+                     && requestEntity.WorldId == request.Destination.Entity.WorldId
+                     && requestEntity.WorldId == request.Party.Entity.WorldId);
 
         var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Party];
+        var allShips = request.Departure.Entity.Get<AnchoredShipsRegistry>().Ships[request.Party];
 
-        var shippable = request.Party.Get<Shippable>();
+        var shippable = request.Party.Entity.Get<Shippable>();
         var (expectedArrivalPlanetPosition, expectedTravelDuration) =
             ShippingUtils.CalculateShippingTask(request.Departure, request.Destination, shippable);
 
@@ -54,17 +54,17 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var ship = shipsEnumerator.Current;
 
             // 添加运输任务
-            ship.Add<ShippingTask, ShippingState>();
-            ref var shippingTask = ref ship.Get<ShippingTask>();
-            ref var shippingState = ref ship.Get<ShippingState>();
+            ship.Entity.Add<ShippingTask, ShippingState>();
+            ref var shippingTask = ref ship.Entity.Get<ShippingTask>();
+            ref var shippingState = ref ship.Entity.Get<ShippingState>();
 
             // 获取相关信息
-            ref readonly var pose = ref ship.Get<AbsoluteTransform>();
-            var transformRelationship = ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
+            ref readonly var pose = ref ship.Entity.Get<AbsoluteTransform>();
+            var transformRelationship = ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
             ref readonly var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
             ref readonly var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
-            ref readonly var departurePlanetOrbit = ref request.Departure.Get<PlanetGeostationaryOrbit>();
-            ref readonly var destinationPlanetOrbit = ref request.Destination.Get<PlanetGeostationaryOrbit>();
+            ref readonly var departurePlanetOrbit = ref request.Departure.Entity.Get<PlanetGeostationaryOrbit>();
+            ref readonly var destinationPlanetOrbit = ref request.Destination.Entity.Get<PlanetGeostationaryOrbit>();
 
             // 计算泊入轨道
             var orbitOffset = revolutionOrbit.Shape.Width / 2 / departurePlanetOrbit.Radius;
@@ -93,13 +93,13 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             // 创建单位的尾迹，并挂载到星球上
             var trail = world.Construct(_trailTemplate.Archetype);
             _trailTemplate.Apply(trail);
-            world.Create(new TrailOf(ship.Reference(), trail.Reference()));
+            world.Create(new TrailOf(ship.Entity.Reference(), trail.Reference()));
             world.Create(new TreeRelationship<TrailOf>());
             var relativeTransformIdx = world.Create(
-                new TreeRelationship<RelativeTransform>(ship.Reference(), trail.Reference()),
+                new TreeRelationship<RelativeTransform>(ship.Entity.Reference(), trail.Reference()),
                 new RelativeTransform());
-            world.Create(new TreeRelationship<Party>(request.Party.Reference(), trail.Reference()));
-            world.Create(new Dependence(trail.Reference(), ship.Reference()));
+            world.Create(new TreeRelationship<Party>(request.Party, trail.Reference()));
+            world.Create(new Dependence(trail.Reference(), ship));
 
             // 摆放尾迹方向
             // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
@@ -207,7 +207,7 @@ public sealed partial class ShipTrailLifecycleSystem(World world, IAssetsManager
     [All<TrailOf.AsTrail>]
     private void ManageLifecycle(Entity trail, in TrailOf.AsTrail asTrail)
     {
-        var unit = asTrail.Index.ShipRef.Entity;
+        var unit = asTrail.Index.Ship.Entity;
 
         if (!unit.Has<ShippingTask, ShippingState>())
             _commandBuffer.Destroy(trail);
@@ -241,7 +241,7 @@ public sealed partial class ShipTrailEffectSystem(World world, IAssetsManager as
     [All<TrailOf.AsTrail, Animation>]
     private void CalculateAnimation(in TrailOf.AsTrail asTrail, ref Animation animation)
     {
-        var unit = asTrail.Index.ShipRef.Entity;
+        var unit = asTrail.Index.Ship.Entity;
         ref readonly var unitShippingTask = ref unit.Get<ShippingTask>();
         ref readonly var unitShippingState = ref unit.Get<ShippingState>();
 

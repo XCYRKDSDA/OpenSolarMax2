@@ -10,11 +10,11 @@ namespace OpenSolarMax.Mods.Core.Components;
 /// </summary>
 public struct StartShippingRequest
 {
-    public Entity Departure;
+    public EntityReference Departure;
 
-    public Entity Destination;
+    public EntityReference Destination;
 
-    public Entity Party;
+    public EntityReference Party;
 
     public int ExpectedNum;
 }
@@ -38,7 +38,7 @@ public struct ShippingTask
     /// <summary>
     /// 当前运输的目标星球
     /// </summary>
-    public Entity DestinationPlanet;
+    public EntityReference DestinationPlanet;
 
     /// <summary>
     /// 开始运输时的位置
@@ -79,10 +79,10 @@ public struct ShippingState
     public float Progress;
 }
 
-public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRelationshipRecord
+public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationshipRecord
 {
-    public readonly EntityReference ShipRef = (shipRef);
-    public readonly EntityReference TrailRef = (trailRef);
+    public readonly EntityReference Ship = (ship);
+    public readonly EntityReference Trail = (trail);
 
     #region IRelationshipRecord
 
@@ -94,8 +94,8 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
     {
         get
         {
-            if (key == typeof(AsShip)) yield return ShipRef;
-            else if (key == typeof(AsTrail)) yield return TrailRef;
+            if (key == typeof(AsShip)) yield return Ship;
+            else if (key == typeof(AsTrail)) yield return Trail;
         }
     }
 
@@ -103,8 +103,8 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
 
     readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
     {
-        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsShip), ShipRef);
-        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsTrail), TrailRef);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsShip), Ship);
+        yield return new SingleItemGroup<Type, EntityReference>(typeof(AsTrail), Trail);
     }
 
     readonly IEnumerator IEnumerable.GetEnumerator() =>
@@ -114,7 +114,7 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
 
     public struct AsShip() : IParticipantIndex
     {
-        public (EntityReference TrailRef, EntityReference RelationshipRef)
+        public (EntityReference TrailRef, EntityReference Relationship)
             Index = (EntityReference.Null, EntityReference.Null);
 
         #region IParticipantIndex
@@ -124,17 +124,17 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
         readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
         readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) =>
-            array[arrayIndex] = Index.RelationshipRef;
+            array[arrayIndex] = Index.Relationship;
 
         readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
         {
-            yield return Index.RelationshipRef;
+            yield return Index.Relationship;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
 
         readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) =>
-            Index.RelationshipRef == relationship;
+            Index.Relationship == relationship;
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
@@ -144,7 +144,7 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
 
         bool ICollection<EntityReference>.Remove(EntityReference relationship)
         {
-            if (Index.RelationshipRef != relationship)
+            if (Index.Relationship != relationship)
                 return false;
 
             Index = (EntityReference.Null, EntityReference.Null);
@@ -158,7 +158,7 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
 
     public struct AsTrail() : IParticipantIndex
     {
-        public (EntityReference ShipRef, EntityReference RelationshipRef)
+        public (EntityReference Ship, EntityReference Relationship)
             Index = (EntityReference.Null, EntityReference.Null);
 
         #region IParticipantIndex
@@ -168,17 +168,17 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
         readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
         readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) =>
-            array[arrayIndex] = Index.RelationshipRef;
+            array[arrayIndex] = Index.Relationship;
 
         readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
         {
-            yield return Index.RelationshipRef;
+            yield return Index.Relationship;
         }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
 
         readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) =>
-            Index.RelationshipRef == relationship;
+            Index.Relationship == relationship;
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
@@ -188,7 +188,7 @@ public struct TrailOf(EntityReference shipRef, EntityReference trailRef) : IRela
 
         bool ICollection<EntityReference>.Remove(EntityReference relationship)
         {
-            if (Index.RelationshipRef != relationship)
+            if (Index.Relationship != relationship)
                 return false;
 
             Index = (EntityReference.Null, EntityReference.Null);
