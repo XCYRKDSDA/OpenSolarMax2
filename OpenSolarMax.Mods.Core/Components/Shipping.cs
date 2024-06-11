@@ -138,7 +138,7 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var parent = relationship.Entity.Get<TreeRelationship<TrailOf>>().Parent;
+            var parent = relationship.Entity.Get<TreeRelationship<TrailOf>>().Child;
             Index = (parent, relationship);
         }
 
