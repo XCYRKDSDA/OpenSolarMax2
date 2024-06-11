@@ -142,6 +142,7 @@ public sealed partial class UpdateShipStateSystem(World world, IAssetsManager as
 
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(ManageDependenceSystem))]
+[ExecuteBefore(typeof(DestroyBrokenTrailRelationshipSystem))]
 public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
@@ -162,6 +163,10 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
             var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
             transformRelationship.Set(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
             ship.Remove<ShippingTask, ShippingState>();
+            
+            // 销毁单位的尾迹实体
+            var world = World.Worlds[ship.WorldId];
+            world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
         });
     }
 
@@ -192,44 +197,10 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
     }
 }
 
-[StructuralChangeSystem]
-[ExecuteAfter(typeof(LandArrivedShipsSystem))]
-[ExecuteBefore(typeof(StartShippingSystem))] // TODO - 此处是为了避免新创造的关系实体还没有被索引就被处理。需要更优雅的实现方法
-[ExecuteBefore(typeof(ManageDependenceSystem))]
-[ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
-[ExecuteBefore(typeof(DestroyBrokenTrailRelationshipSystem))]
-public sealed partial class ShipTrailLifecycleSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
-{
-    private readonly CommandBuffer _commandBuffer = new();
-
-    [Query]
-    [All<TrailOf.AsTrail>]
-    private void ManageLifecycle(Entity trail, in TrailOf.AsTrail asTrail)
-    {
-        var unit = asTrail.Index.Ship.Entity;
-
-        if (!unit.Has<ShippingTask, ShippingState>())
-            _commandBuffer.Destroy(trail);
-    }
-
-    public override void Update(in GameTime t)
-    {
-        ManageLifecycleQuery(World);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
-}
-
 [LateUpdateSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(IndexTrailAffiliationSystem))]
-public sealed partial class ShipTrailEffectSystem(World world, IAssetsManager assets)
+public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const float _extinguishTime = 0.5f;
@@ -238,27 +209,30 @@ public sealed partial class ShipTrailEffectSystem(World world, IAssetsManager as
     private readonly AnimationClip<Entity> _extinguishedAnimation = assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
 
     [Query]
-    [All<TrailOf.AsTrail, Animation>]
-    private void CalculateAnimation(in TrailOf.AsTrail asTrail, ref Animation animation)
+    [All<TrailOf.AsShip, ShippingTask, ShippingState, Animation>]
+    private void CalculateAnimation(in TrailOf.AsShip asShip,
+                                    in ShippingTask shippingTask, in ShippingState shippingState,
+                                    ref Animation animation)
     {
-        var unit = asTrail.Index.Ship.Entity;
-        ref readonly var unitShippingTask = ref unit.Get<ShippingTask>();
-        ref readonly var unitShippingState = ref unit.Get<ShippingState>();
+        // 处理尾迹实体的动画
+        var trail = asShip.Index.TrailRef;
+        Debug.Assert(trail.Entity.Has<Animation>());
+        ref var trailAnimation = ref trail.Entity.Get<Animation>();
 
-        if (animation.Clip == _stretchingAnimation)
+        if (trailAnimation.Clip == _stretchingAnimation)
         {
             // 当单位快要结束时，切换进入熄灭状态
-            if (unitShippingTask.ExpectedTravelDuration - unitShippingState.TravelledTime <= _extinguishTime)
+            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _extinguishTime)
             {
-                animation.Transition = new()
+                trailAnimation.Transition = new()
                 {
-                    PreviousClip = animation.Clip,
-                    PreviousClipTime = animation.LocalTime,
+                    PreviousClip = trailAnimation.Clip,
+                    PreviousClipTime = trailAnimation.LocalTime,
                     Duration = _extinguishTime,
                     Tweener = null
                 };
-                animation.Clip = _extinguishedAnimation;
-                animation.LocalTime = 0;
+                trailAnimation.Clip = _extinguishedAnimation;
+                trailAnimation.LocalTime = 0;
             }
         }
     }
