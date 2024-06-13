@@ -69,6 +69,12 @@
 		<None Update="manifest.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Content\Animations\UnitBlinking.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Content\Animations\UnitShipping.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<Import Project="mgfx.targets" />

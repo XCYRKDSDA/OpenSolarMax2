@@ -103,14 +103,6 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                 new RelativeTransform());
             world.Create(new TreeRelationship<Party>(request.Party, trail.Reference()));
             world.Create(new Dependence(trail.Reference(), ship));
-
-            // 摆放尾迹方向
-            // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
-            var headX = Vector3.Normalize(shippingTask.ExpectedArrivalPosition - shippingTask.DeparturePosition);
-            var headY = Vector3.Normalize(Vector3.Cross(Vector3.UnitZ, headX));
-            var headZ = Vector3.Normalize(Vector3.Cross(headX, headY));
-            var rotation = new Matrix { Right = headX, Up = headY, Backward = headZ };
-            relativeTransformIdx.Get<RelativeTransform>().Rotation = Quaternion.CreateFromRotationMatrix(rotation);
         }
 
         // 移除任务
@@ -197,6 +189,14 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
     private static void CalculatePosition(in ShippingTask task, in ShippingState state, ref AbsoluteTransform pose)
     {
         pose.Translation = Vector3.Lerp(task.DeparturePosition, task.ExpectedArrivalPosition, state.Progress);
+
+        // 摆放尾向
+        // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
+        var headX = Vector3.Normalize(task.ExpectedArrivalPosition - task.DeparturePosition);
+        var headY = Vector3.Normalize(Vector3.Cross(Vector3.UnitZ, headX));
+        var headZ = Vector3.Normalize(Vector3.Cross(headX, headY));
+        var rotation = new Matrix { Right = headX, Up = headY, Backward = headZ };
+        pose.Rotation = Quaternion.CreateFromRotationMatrix(rotation);
     }
 }
 
@@ -206,13 +206,21 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private const float _extinguishTime = 0.5f;
+    private const float _landDuration = 0.5f;
 
-    private readonly AnimationClip<Entity> _stretchingAnimation =
+    private readonly AnimationClip<Entity> _trailStretchingAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
 
-    private readonly AnimationClip<Entity> _extinguishedAnimation =
+    private readonly AnimationClip<Entity> _trailExtinguishedAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
+
+    private const float _takeOffDuration = 0.5f;
+
+    private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
+
+    private readonly AnimationClip<Entity> _unitShippingAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitShipping.json");
 
     [Query]
     [All<TrailOf.AsShip, ShippingTask, ShippingState, Animation>]
@@ -220,24 +228,56 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
                                     in ShippingTask shippingTask, in ShippingState shippingState,
                                     ref Animation animation)
     {
+        // 处理自己的动画
+        if (animation.Clip == _unitBlinkingAnimationClip)
+        {
+            if (shippingState.TravelledTime <= _takeOffDuration)
+            {
+                animation.Transition = new()
+                {
+                    PreviousClip = animation.Clip,
+                    PreviousClipTime = animation.LocalTime,
+                    Duration = _takeOffDuration,
+                    Tweener = null
+                };
+                animation.Clip = _unitShippingAnimationClip;
+                animation.LocalTime = 0;
+            }
+        }
+        else if (animation.Clip == _unitShippingAnimationClip)
+        {
+            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration)
+            {
+                animation.Transition = new()
+                {
+                    PreviousClip = animation.Clip,
+                    PreviousClipTime = animation.LocalTime,
+                    Duration = _landDuration,
+                    Tweener = null
+                };
+                animation.Clip = _unitBlinkingAnimationClip;
+                animation.LocalTime = 0;
+            }
+        }
+
         // 处理尾迹实体的动画
         var trail = asShip.Index.TrailRef;
         Debug.Assert(trail.Entity.Has<Animation>());
         ref var trailAnimation = ref trail.Entity.Get<Animation>();
 
-        if (trailAnimation.Clip == _stretchingAnimation)
+        if (trailAnimation.Clip == _trailStretchingAnimation)
         {
             // 当单位快要结束时，切换进入熄灭状态
-            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _extinguishTime)
+            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration)
             {
                 trailAnimation.Transition = new()
                 {
                     PreviousClip = trailAnimation.Clip,
                     PreviousClipTime = trailAnimation.LocalTime,
-                    Duration = _extinguishTime,
+                    Duration = _landDuration,
                     Tweener = null
                 };
-                trailAnimation.Clip = _extinguishedAnimation;
+                trailAnimation.Clip = _trailExtinguishedAnimation;
                 trailAnimation.LocalTime = 0;
             }
         }
