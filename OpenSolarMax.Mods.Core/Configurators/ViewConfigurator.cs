@@ -9,8 +9,6 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
 
-using static TreeRelationshipUtils;
-
 public class ViewConfiguration : IEntityConfiguration
 {
     public float[]? Size { get; set; }
@@ -63,6 +61,6 @@ public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
         }
 
         if (cameraConfig.Party is not null)
-            CreateTreeRelationship<Party>(ctx.OtherEntities[cameraConfig.Party], entity, indexNow: true);
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[cameraConfig.Party].Reference(), entity.Reference()));
     }
 }

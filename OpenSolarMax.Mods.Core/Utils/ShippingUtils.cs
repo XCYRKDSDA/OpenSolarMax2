@@ -12,8 +12,6 @@ using OpenSolarMax.Game;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
-using static TreeRelationshipUtils;
-
 public static class ShippingUtils
 {
     //private enum TransformLinkType
@@ -119,22 +117,20 @@ public static class ShippingUtils
             parentProxy.Get<AbsoluteTransform>() = parent.Entity.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
-            EntityReference relationshipProxy;
-            if (relationship.Entity.Has<RevolutionOrbit, RevolutionState>())
-            {
-                relationshipProxy = CreateTreeRelationship<RelativeTransform>(
-                    parentProxy, childProxy, indexNow: true,
-                    template: new RuntimeTemplate(typeof(RelativeTransform), typeof(RevolutionOrbit), typeof(RevolutionState)));
-                relationshipProxy.Entity.Set(relationship.Entity.Get<RelativeTransform>(),
-                    relationship.Entity.Get<RevolutionOrbit>(), relationship.Entity.Get<RevolutionState>());
-            }
-            else
-            {
-                relationshipProxy = CreateTreeRelationship<RelativeTransform>(
-                    parentProxy, childProxy, indexNow: true,
-                    template: new RuntimeTemplate(typeof(RelativeTransform)));
-                relationshipProxy.Entity.Set(relationship.Entity.Get<RelativeTransform>());
-            }
+            var relationshipProxy = relationship.Entity.Has<RevolutionOrbit, RevolutionState>()
+                ? virtualWorld.Create(
+                    new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
+                    relationship.Entity.Get<RelativeTransform>(),
+                    relationship.Entity.Get<RevolutionOrbit>(), relationship.Entity.Get<RevolutionState>())
+                : virtualWorld.Create(
+                    new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
+                    relationship.Entity.Get<RelativeTransform>());
+            
+            // 将关系直接记录到两侧组件中
+            childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Index =
+                (parentProxy.Reference(), relationshipProxy.Reference());
+            parentProxy.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships.Add(
+                childProxy.Reference(), relationshipProxy.Reference());
 
             child = parent.Entity;
             childProxy = parentProxy;

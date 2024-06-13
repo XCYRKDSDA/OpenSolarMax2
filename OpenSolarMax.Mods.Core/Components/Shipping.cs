@@ -79,10 +79,10 @@ public struct ShippingState
     public float Progress;
 }
 
-public struct TrailOf(Entity ship, Entity trail) : IRelationshipRecord
+public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationshipRecord
 {
-    public readonly EntityReference Ship = ship.Reference();
-    public readonly EntityReference Trail = trail.Reference();
+    public readonly EntityReference Ship = (ship);
+    public readonly EntityReference Trail = (trail);
 
     #region IRelationshipRecord
 

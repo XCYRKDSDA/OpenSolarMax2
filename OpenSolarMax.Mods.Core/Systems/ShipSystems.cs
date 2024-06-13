@@ -15,10 +15,6 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-using static TreeRelationshipUtils;
-using static TrailRelationshipUtils;
-using static DependenceRelationshipUtils;
-
 /// <summary>
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
@@ -97,10 +93,13 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             // 创建单位的尾迹，并挂载到星球上
             var trail = world.Construct(_trailTemplate.Archetype);
             _trailTemplate.Apply(trail);
-            _ = CreateTrailRelationship(ship, trail);
-            var relativeTransform = CreateTreeRelationship<RelativeTransform>(ship, trail, template: new TransformRelationshipTemplate());
-            _ = CreateTreeRelationship<Party>(request.Party, trail);
-            _ = CreateDependenceRelationship(trail, ship);
+            world.Create(new TrailOf(ship.Entity.Reference(), trail.Reference()));
+            world.Create(new TreeRelationship<TrailOf>());
+            var relativeTransformIdx = world.Create(
+                new TreeRelationship<RelativeTransform>(ship.Entity.Reference(), trail.Reference()),
+                new RelativeTransform());
+            world.Create(new TreeRelationship<Party>(request.Party, trail.Reference()));
+            world.Create(new Dependence(trail.Reference(), ship));
 
             // 摆放尾迹方向
             // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
@@ -108,7 +107,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var headY = Vector3.Normalize(Vector3.Cross(Vector3.UnitZ, headX));
             var headZ = Vector3.Normalize(Vector3.Cross(headX, headY));
             var rotation = new Matrix { Right = headX, Up = headY, Backward = headZ };
-            relativeTransform.Entity.Get<RelativeTransform>().Rotation = Quaternion.CreateFromRotationMatrix(rotation);
+            relativeTransformIdx.Get<RelativeTransform>().Rotation = Quaternion.CreateFromRotationMatrix(rotation);
         }
 
         // 移除任务

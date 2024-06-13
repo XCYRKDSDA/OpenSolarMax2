@@ -12,8 +12,6 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
 
-using static TreeRelationshipUtils;
-
 public class PlanetConfiguration : IEntityConfiguration
 {
     /// <summary>
@@ -147,19 +145,20 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                     // 目前有和指定父实体不同的关系
                     // TODO - Warning: 新的关系将覆盖老的关系
                     var (oldParent, oldRelationship) = transformChild.Index;
-                    RemoveTreeRelationship<RelativeTransform>(oldRelationship, indexNow: true);
+                    world.Destroy(oldRelationship);
+                    transformChild.Index = (EntityReference.Null, EntityReference.Null);
                 }
                 
                 // 现在还没有相对变换关系
-                var newTransformRelationship = CreateTreeRelationship<RelativeTransform>(
-                    parentEntity, entity,
-                    template: new RuntimeTemplate(typeof(RelativeTransform), typeof(RevolutionOrbit), typeof(RevolutionState)),
-                    indexNow: true
-                );
+                var newTransformRelationshipIdx = world.Create(
+                    new TreeRelationship<RelativeTransform>(parentEntity.Reference(), entity.Reference()),
+                    new RelativeTransform(),
+                    new RevolutionOrbit(), new RevolutionState());
+                transformChild.Index = (parentEntity.Reference(), newTransformRelationshipIdx.Reference());
 
                 // 如果指定了一个有预定义轨道的实体作为公转的父级，则采用预定义轨道作为基础值
                 if (parentEntity.Has<PredefinedOrbit>())
-                    newTransformRelationship.Entity.Get<RevolutionOrbit>() = parentEntity.Get<PredefinedOrbit>().Template;
+                    newTransformRelationshipIdx.Get<RevolutionOrbit>() = parentEntity.Get<PredefinedOrbit>().Template;
                 
                 DONE: ;
             }
@@ -180,7 +179,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (planetConfig.Party != null)
-            TreeRelationshipUtils.CreateTreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party], entity, indexNow: true);
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party].Reference(), entity.Reference()));
 
         // 设置人口
         if (planetConfig.Population.HasValue)
