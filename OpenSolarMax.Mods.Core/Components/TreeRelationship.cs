@@ -5,10 +5,10 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public readonly struct TreeRelationship<T>(EntityReference parent, EntityReference child) : IRelationshipRecord
+public readonly struct TreeRelationship<T>(Entity parent, Entity child) : IRelationshipRecord
 {
-    public readonly EntityReference Parent = parent;
-    public readonly EntityReference Child = child;
+    public readonly EntityReference Parent = parent.Reference();
+    public readonly EntityReference Child = child.Reference();
 
     #region IRelationshipRecord
 

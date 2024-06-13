@@ -12,6 +12,8 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
+using static TreeRelationshipUtils;
+
 /// <summary>
 /// 更新生产系统. 在所有可生产部队的星球上推进生产
 /// </summary>
@@ -86,7 +88,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
                 template.Apply(newShip);
 
             // 设置单位阵营
-            World.Worlds[newShip.WorldId].Create(new TreeRelationship<Party>(party, newShip.Reference()));
+            CreateTreeRelationship<Party>(party, newShip);
 
             // 将单位泊入星球
             var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(newShip, planet);

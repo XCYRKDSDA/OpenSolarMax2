@@ -18,10 +18,10 @@ internal class SingleItemGroup<TKey, TItem>(TKey key, TItem item) : IGrouping<TK
 /// 依赖关系。当被依赖的实体死亡时，依赖其的实体也会被销毁。该逻辑由<see cref="Systems.ManageDependenceSystem"/>实现。<br/>
 /// 注意：为保险起见，请使用<see cref="Utils.DependenceUtils"/>提供的工具方法来实现在实体间添加依赖。
 /// </summary>
-public readonly struct Dependence(EntityReference dependent, EntityReference dependency) : IRelationshipRecord
+public readonly struct Dependence(Entity dependent, Entity dependency) : IRelationshipRecord
 {
-    public readonly EntityReference Dependent = dependent;
-    public readonly EntityReference Dependency = dependency;
+    public readonly EntityReference Dependent = dependent.Reference();
+    public readonly EntityReference Dependency = dependency.Reference();
 
     #region IRelationshipRecord
 

@@ -9,6 +9,8 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;
 
+using static TreeRelationshipUtils;
+
 public class ShipConfiguration : IEntityConfiguration
 {
     public string? Planet { get; set; }
@@ -42,6 +44,6 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (unitConfig.Party != null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party].Reference(), entity.Reference()));
+            CreateTreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party], entity, indexNow: true);
     }
 }
