@@ -25,7 +25,8 @@ public readonly struct TreeRelationship<T>(EntityReference parent, EntityReferen
         }
     }
 
-    readonly bool ILookup<Type, EntityReference>.Contains(Type key) => key == typeof(AsParent) || key == typeof(AsChild);
+    readonly bool ILookup<Type, EntityReference>.Contains(Type key)
+        => key == typeof(AsParent) || key == typeof(AsChild);
 
     readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
     {
@@ -33,7 +34,8 @@ public readonly struct TreeRelationship<T>(EntityReference parent, EntityReferen
         yield return new SingleItemGroup<Type, EntityReference>(typeof(AsChild), Child);
     }
 
-    readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator()
+        => (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
 
     #endregion
 
@@ -42,15 +44,20 @@ public readonly struct TreeRelationship<T>(EntityReference parent, EntityReferen
         /// <summary>
         /// 按照子实体索引的关系
         /// </summary>
-        public readonly SortedDictionary<EntityReference, EntityReference> Relationships = new(new EntityReferenceComparer());
+        public readonly SortedDictionary<EntityReference, EntityReference> Relationships =
+            new(new EntityReferenceComparer());
 
         #region IParticipantIndex
 
         readonly int ICollection<EntityReference>.Count => Relationships.Count;
         readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
-        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
-        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+            => Relationships.Values.CopyTo(array, arrayIndex);
+
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+            => Relationships.Values.GetEnumerator();
+
         readonly IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
 
         readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
@@ -78,7 +85,8 @@ public readonly struct TreeRelationship<T>(EntityReference parent, EntityReferen
 
     public struct AsChild() : IParticipantIndex
     {
-        public (EntityReference Parent, EntityReference Relationship) Index = (EntityReference.Null, EntityReference.Null);
+        public (EntityReference Parent, EntityReference Relationship) Index =
+            (EntityReference.Null, EntityReference.Null);
 
         #region IParticipantIndex
 
@@ -86,13 +94,18 @@ public readonly struct TreeRelationship<T>(EntityReference parent, EntityReferen
 
         readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
-        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => array[arrayIndex] = Index.Relationship;
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+            => array[arrayIndex] = Index.Relationship;
 
-        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() { yield return Index.Relationship; }
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+        {
+            yield return Index.Relationship;
+        }
 
         readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
 
-        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) => Index.Relationship == relationship;
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+            => Index.Relationship == relationship;
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {

@@ -18,14 +18,18 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
 
     protected static void ClearAllIndex<TParticipant>(World world)
         where TParticipant : IParticipantIndex
-        => world.Query(new QueryDescription().WithAll<TParticipant>(), (Entity _, ref TParticipant index) => index.Clear());
+        => world.Query(new QueryDescription().WithAll<TParticipant>(),
+                       (Entity _, ref TParticipant index) => index.Clear());
 
     #region `ClearAllIndex` Cache
 
     private static readonly MethodInfo _clearerInfo = typeof(IndexRelationshipSystem<RelationshipT>)
         .GetMethod("ClearAllIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
+
     private delegate void ClearerDelegate(World world);
+
     private static readonly Dictionary<Type, ClearerDelegate> _clearerCache = [];
+
     private static ClearerDelegate GetClearer(Type indexType)
     {
         if (_clearerCache.TryGetValue(indexType, out var clearer))
@@ -50,8 +54,11 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
 
     private static readonly MethodInfo _indexerInfo = typeof(IndexRelationshipSystem<RelationshipT>)
         .GetMethod("BuildIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
+
     private delegate void IndexerDelegate(EntityReference relationship, EntityReference participant);
+
     private static readonly Dictionary<Type, IndexerDelegate> _indexerCache = [];
+
     private static IndexerDelegate GetIndexer(Type indexType)
     {
         if (_indexerCache.TryGetValue(indexType, out var indexer))

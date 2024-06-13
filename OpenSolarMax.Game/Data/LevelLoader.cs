@@ -59,13 +59,14 @@ internal class LevelLoader : IAssetLoader<Level>
                 throw new Exception("All base template should have the same configuration key");
 
             // 从json文件解析当前模板语句本身的配置
-            var configs = (
-                from configuratorType in ConfigurationTypes[configurationKey]
-                select (IEntityConfiguration)templateElement.Deserialize(configuratorType, options)!
-            ).ToArray();
+            var configs =
+                (from configuratorType in ConfigurationTypes[configurationKey]
+                 select (IEntityConfiguration)templateElement.Deserialize(configuratorType, options)!
+                ).ToArray();
 
             // 构造并添加新的模板语句
-            level.Templates.Add(templateName, new LevelStatement(bases.Where(@base => @base != configurationKey).ToArray(), configs));
+            level.Templates.Add(templateName,
+                                new LevelStatement(bases.Where(@base => @base != configurationKey).ToArray(), configs));
 
             // 将该模板语句的配置类型加入到缓存中
             templateConfigurationKeysCache.Add(templateName, configurationKey);
@@ -87,10 +88,10 @@ internal class LevelLoader : IAssetLoader<Level>
                 throw new Exception("All base template should have the same configuration key");
 
             // 从json文件解析当前实体语句本身的配置
-            var configs = (
-                from configuratorType in ConfigurationTypes[configurationKey]
-                select (IEntityConfiguration)entityElement.Deserialize(configuratorType, options)!
-            ).ToArray();
+            var configs =
+                (from configuratorType in ConfigurationTypes[configurationKey]
+                 select (IEntityConfiguration)entityElement.Deserialize(configuratorType, options)!
+                ).ToArray();
 
             // 获取id, 如果有的话
             var id = entityElement.TryGetProperty("$id", out var idProp) ? idProp.GetString() : null;
@@ -99,7 +100,11 @@ internal class LevelLoader : IAssetLoader<Level>
             int num = entityElement.TryGetProperty("$num", out var numProp) ? numProp.GetInt32() : 1;
 
             // 构造并添加新的实体语句
-            level.Entities.Add((id, new LevelStatement(bases.Where(@base => @base != configurationKey).ToArray(), configs), num));
+            level.Entities.Add(
+                (id,
+                 new LevelStatement(bases.Where(@base => @base != configurationKey).ToArray(), configs),
+                 num)
+            );
         }
 
         return level;

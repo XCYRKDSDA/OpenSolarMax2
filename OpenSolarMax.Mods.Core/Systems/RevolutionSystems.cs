@@ -41,7 +41,8 @@ public sealed partial class CalculateEntitiesTransformAroundOrbitSystem(World wo
 {
     [Query]
     [All<TreeRelationship<RelativeTransform>, RelativeTransform, RevolutionOrbit, RevolutionState>]
-    private static void CalculateTransform(in RevolutionOrbit orbit, ref RevolutionState state, ref RelativeTransform transform)
+    private static void CalculateTransform(in RevolutionOrbit orbit, ref RevolutionState state,
+                                           ref RelativeTransform transform)
     {
         // 更新相对位姿
         transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;

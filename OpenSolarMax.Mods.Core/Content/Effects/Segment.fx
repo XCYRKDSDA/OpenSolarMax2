@@ -38,12 +38,12 @@ struct VertexOutput
 VertexOutput vs_main(VertexInput v)
 {
     VertexOutput o;
-    
+
     o.vertex_in_ndc = mul(v.vertex, to_ndc);
     o.color = v.color;
-    
+
     o.coord = v.vertex;
-    
+
     return o;
 }
 
@@ -68,20 +68,20 @@ float aastep(float threshold, float value)
 float4 ps_main(PixelInput p) : SV_TARGET
 {
     // 计算横向阈值
-    
+
     float3 p2head, p2tail;
     p2head.z = p2tail.z = 0;
     p2head.xy = head - p.coord.xy;
     p2tail.xy = tail - p.coord.xy;
-    
+
     float dist = abs(cross(p2head, p2tail).z / distance(head, tail));
     float flag_v = 1 - aastep(thickness / 2, dist);
-    
+
     // 计算纵向阈值
-    
+
     float2 head2tail = tail - head;
     float flag_h = aastep(0, dot(p2tail.xy, head2tail)) - aastep(0, dot(p2head.xy, head2tail));
-    
+
     return p.color * flag_v * flag_h;
 }
 
@@ -96,5 +96,7 @@ technique Circle
     {
         VertexShader = compile VS_SHADERMODEL vs_main();
         PixelShader = compile PS_SHADERMODEL ps_main();
+    
+    
     }
 }

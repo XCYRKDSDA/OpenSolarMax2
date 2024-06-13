@@ -15,7 +15,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [DrawSystem]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
-public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+public sealed partial class VisualizeManeuveringShipsStatusSystem(
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const float _ringRadiusFactor = 1.6f;
@@ -58,7 +59,8 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(IEnumerable<EntityReference> selecteds, in Matrix worldToCanvas, Color ringColor, float ringThickness)
+    private void DrawSelected(IEnumerable<EntityReference> selecteds, in Matrix worldToCanvas, Color ringColor,
+                              float ringThickness)
     {
         foreach (var selected in selecteds)
             DrawSelected(selected, in worldToCanvas, ringColor, ringThickness);
@@ -148,7 +150,8 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
         _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _circleRenderer.Effect.Projection = _boxRenderer.Effect.Projection = _segmentRenderer.Effect.Projection = canvasToNdc;
+        _circleRenderer.Effect.Projection =
+            _boxRenderer.Effect.Projection = _segmentRenderer.Effect.Projection = canvasToNdc;
 
         ref readonly var selection = ref status.Selection;
 
@@ -161,24 +164,29 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
             if (mouse.LeftButton != ButtonState.Pressed)
             {
                 if (selection.SimpleSelecting.PointingPlanet != Entity.Null)
-                    DrawSelected(selection.SimpleSelecting.PointingPlanet, in worldToCanvas, _hoveredRingColor, _ringThickness);
+                    DrawSelected(selection.SimpleSelecting.PointingPlanet, in worldToCanvas, _hoveredRingColor,
+                                 _ringThickness);
             }
 
             // 绘制所有选中的星球
             // TappingSource已经包含在SelectedSources中了，故不重复绘制
-            DrawSelected(selection.SimpleSelecting.SelectedSources, in worldToCanvas, _selectedRingColor, _ringThickness);
+            DrawSelected(selection.SimpleSelecting.SelectedSources, in worldToCanvas, _selectedRingColor,
+                         _ringThickness);
 
             // 绘制目标星球
             if (selection.SimpleSelecting.TappingDestination != Entity.Null)
-                DrawSelected(selection.SimpleSelecting.TappingDestination, in worldToCanvas, _selectedRingColor, _ringThickness);
+                DrawSelected(selection.SimpleSelecting.TappingDestination, in worldToCanvas, _selectedRingColor,
+                             _ringThickness);
         }
 
         // 当处于框选状态时，还需要绘制选框和选框内的星球
         else if (selection.State == ShipsSelection_State.BoxSelectingSources)
         {
             // 绘制所有选中的星球
-            DrawSelected(Enumerable.Concat(selection.BoxSelectingSources.OtherSelectedPlanets, selection.BoxSelectingSources.PlanetsInBox),
-                         in worldToCanvas, _selectedRingColor, _ringThickness);
+            DrawSelected(
+                Enumerable.Concat(selection.BoxSelectingSources.OtherSelectedPlanets,
+                                  selection.BoxSelectingSources.PlanetsInBox),
+                in worldToCanvas, _selectedRingColor, _ringThickness);
 
             // 绘制选框
             _boxRenderer.DrawBox(selection.BoxSelectingSources.BoxInViewport, _boxColor, _boxThickness);
@@ -187,13 +195,16 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(World world, G
         // 当处于拖拽状态时，还需要绘制起点到目标的线段
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
-            DrawSelected(selection.DraggingToDestination.SelectedSources, in worldToCanvas, _selectedRingColor, _ringThickness);
+            DrawSelected(selection.DraggingToDestination.SelectedSources, in worldToCanvas, _selectedRingColor,
+                         _ringThickness);
 
             // 当存在候选星球时，将线段终点吸附到候选星球上
             if (selection.DraggingToDestination.CandidateDestination != Entity.Null)
             {
-                DrawSelected(selection.DraggingToDestination.CandidateDestination, in worldToCanvas, _selectedRingColor, _ringThickness);
-                DrawLines(selection.DraggingToDestination.SelectedSources, selection.DraggingToDestination.CandidateDestination, in worldToCanvas);
+                DrawSelected(selection.DraggingToDestination.CandidateDestination, in worldToCanvas, _selectedRingColor,
+                             _ringThickness);
+                DrawLines(selection.DraggingToDestination.SelectedSources,
+                          selection.DraggingToDestination.CandidateDestination, in worldToCanvas);
             }
             else
                 DrawLines(selection.DraggingToDestination.SelectedSources, mouseInCanvas.ToVector2(), in worldToCanvas);

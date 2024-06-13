@@ -43,37 +43,61 @@ internal class SegmentEffect : Effect, IEffectMatrices
     public Matrix World
     {
         get => _world;
-        set { _world = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _world = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Matrix View
     {
         get => _view;
-        set { _view = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _view = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Matrix Projection
     {
         get => _proj;
-        set { _proj = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _proj = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Vector2 Head
     {
         get => _head;
-        set { _head = value; _dirtyFlags |= DirtyFlags.Shape; }
+        set
+        {
+            _head = value;
+            _dirtyFlags |= DirtyFlags.Shape;
+        }
     }
 
     public Vector2 Tail
     {
         get => _tail;
-        set { _tail = value; _dirtyFlags |= DirtyFlags.Shape; }
+        set
+        {
+            _tail = value;
+            _dirtyFlags |= DirtyFlags.Shape;
+        }
     }
 
     public float Thickness
     {
         get => _thickness;
-        set { _thickness = value; _dirtyFlags |= DirtyFlags.Thickness; }
+        set
+        {
+            _thickness = value;
+            _dirtyFlags |= DirtyFlags.Thickness;
+        }
     }
 
     #endregion

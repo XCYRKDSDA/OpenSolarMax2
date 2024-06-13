@@ -44,9 +44,11 @@ public class PartyReferenceConfigurator(IAssetsManager assets) : IEntityConfigur
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
         => _template.Apply(entity);
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx,
+                          WorldLoadingEnvironment env)
     {
-        var partyConfig = configuration as PartyReferenceConfiguration ?? throw new ArgumentException("Unexpected configuration type");
+        var partyConfig = configuration as PartyReferenceConfiguration ??
+                          throw new ArgumentException("Unexpected configuration type");
 
         if (partyConfig.Color.HasValue)
             entity.Get<PartyReferenceColor>().Value = partyConfig.Color.Value;

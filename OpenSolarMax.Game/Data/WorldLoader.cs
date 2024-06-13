@@ -20,8 +20,8 @@ internal sealed class WorldLoader
             _configurators.Add(configurator.ConfigurationType, configurator);
     }
 
-    private static IEnumerable<IEntityConfiguration> GetAllConfigs(LevelStatement statement,
-                                                                   IReadOnlyDictionary<string, LevelStatement> templates)
+    private static IEnumerable<IEntityConfiguration> GetAllConfigs(
+        LevelStatement statement, IReadOnlyDictionary<string, LevelStatement> templates)
     {
         if (statement.Base == null)
             return statement.Configs;
@@ -57,7 +57,8 @@ internal sealed class WorldLoader
     {
         var namedEntities = new Dictionary<string, Entity>();
 
-        var configuratorsTable = _configurators.Values.ToLookup((c) => c.GetType().GetCustomAttribute<ConfiguratorKeyAttribute>()!.Key);
+        var configuratorsTable = _configurators.Values.ToLookup(
+            (c) => c.GetType().GetCustomAttribute<ConfiguratorKeyAttribute>()!.Key);
 
         var ctx = new WorldLoadingContext(namedEntities);
         var env = new WorldLoadingEnvironment(configuratorsTable);

@@ -43,43 +43,72 @@ internal class BoxEffect : Effect, IEffectMatrices
     public Matrix World
     {
         get => _world;
-        set { _world = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _world = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Matrix View
     {
         get => _view;
-        set { _view = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _view = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Matrix Projection
     {
         get => _proj;
-        set { _proj = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _proj = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Vector2 Origin
     {
         get => _origin;
-        set { _origin = value; _dirtyFlags |= DirtyFlags.Shape; }
+        set
+        {
+            _origin = value;
+            _dirtyFlags |= DirtyFlags.Shape;
+        }
     }
 
     public Vector2 Size
     {
         get => _size;
-        set { _size = value; _dirtyFlags |= DirtyFlags.Shape; }
+        set
+        {
+            _size = value;
+            _dirtyFlags |= DirtyFlags.Shape;
+        }
     }
 
     public Rectangle Shape
     {
         get => new(_origin.ToPoint(), _size.ToPoint());
-        set { _origin = value.Location.ToVector2(); _size = value.Size.ToVector2(); _dirtyFlags |= DirtyFlags.Shape; }
+        set
+        {
+            _origin = value.Location.ToVector2();
+            _size = value.Size.ToVector2();
+            _dirtyFlags |= DirtyFlags.Shape;
+        }
     }
 
     public float Thickness
     {
         get => _thickness;
-        set { _thickness = value; _dirtyFlags |= DirtyFlags.Thickness; }
+        set
+        {
+            _thickness = value;
+            _dirtyFlags |= DirtyFlags.Thickness;
+        }
     }
 
     #endregion

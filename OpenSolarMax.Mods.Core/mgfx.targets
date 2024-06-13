@@ -1,29 +1,29 @@
 <Project>
 
-	<PropertyGroup>
-		<MGFXProfile>OpenGL</MGFXProfile>
-	</PropertyGroup>
+    <PropertyGroup>
+        <MGFXProfile>OpenGL</MGFXProfile>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<AvailableItemName Include="Effect" />
-	</ItemGroup>
+    <ItemGroup>
+        <AvailableItemName Include="Effect"/>
+    </ItemGroup>
 
-	<ItemDefinitionGroup>
-		<CompiledEffect>
-			<Name/>
-			<Source/>
-		</CompiledEffect>
-	</ItemDefinitionGroup>
+    <ItemDefinitionGroup>
+        <CompiledEffect>
+            <Name/>
+            <Source/>
+        </CompiledEffect>
+    </ItemDefinitionGroup>
 
-	<Target Name="CompileEffects" BeforeTargets="PrepareForBuild"
-			Inputs="@(Effect)" Outputs="@(Effect->'$(IntermediateOutputPath)%(RelativeDir)%(Filename).mgfxo')">
-		<MakeDir Condition="!Exists('$(IntermediateOutputPath)%(Effect.RelativeDir)')" Directories="$(IntermediateOutputPath)%(Effect.RelativeDir)" />
-		<Exec Command="dotnet tool run mgfxc %(Effect.Identity) $(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo /Profile:$(MGFXProfile)"
+    <Target Name="CompileEffects" BeforeTargets="PrepareForBuild"
+            Inputs="@(Effect)" Outputs="@(Effect->'$(IntermediateOutputPath)%(RelativeDir)%(Filename).mgfxo')">
+        <MakeDir Condition="!Exists('$(IntermediateOutputPath)%(Effect.RelativeDir)')" Directories="$(IntermediateOutputPath)%(Effect.RelativeDir)"/>
+        <Exec Command="dotnet tool run mgfxc %(Effect.Identity) $(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo /Profile:$(MGFXProfile)"
               Outputs="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"/>
-		<ItemGroup>
-			<CompiledEffect Include="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"
-							Name="%(Effect.RelativeDir)%(Effect.Filename).mgfxo" Source="%(Effect.Identity)"/>
-		</ItemGroup>
-	</Target>
+        <ItemGroup>
+            <CompiledEffect Include="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"
+                            Name="%(Effect.RelativeDir)%(Effect.Filename).mgfxo" Source="%(Effect.Identity)"/>
+        </ItemGroup>
+    </Target>
 
 </Project>

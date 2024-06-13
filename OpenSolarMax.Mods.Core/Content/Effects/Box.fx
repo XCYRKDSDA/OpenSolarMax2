@@ -38,12 +38,12 @@ struct VertexOutput
 VertexOutput vs_main(VertexInput v)
 {
     VertexOutput o;
-    
+
     o.vertex_in_ndc = mul(v.vertex, to_ndc);
     o.color = v.color;
-    
+
     o.coord = v.vertex;
-    
+
     return o;
 }
 
@@ -73,12 +73,12 @@ float inside(float min, float max, float value)
 float4 ps_main(PixelInput p) : SV_TARGET
 {
     float half_thickness = thickness / 2;
-    
+
     float flag = inside(origin.x - half_thickness, origin.x + size.x + half_thickness, p.coord.x)
-                 * inside(origin.y - half_thickness, origin.y + size.y + half_thickness, p.coord.y)
-                 - inside(origin.x + half_thickness, origin.x + size.x - half_thickness, p.coord.x)
-                   * inside(origin.y + half_thickness, origin.y + size.y - half_thickness, p.coord.y);
-    
+        * inside(origin.y - half_thickness, origin.y + size.y + half_thickness, p.coord.y)
+        - inside(origin.x + half_thickness, origin.x + size.x - half_thickness, p.coord.x)
+        * inside(origin.y + half_thickness, origin.y + size.y - half_thickness, p.coord.y);
+
     return p.color * flag;
 }
 
@@ -93,5 +93,7 @@ technique Circle
     {
         VertexShader = compile VS_SHADERMODEL vs_main();
         PixelShader = compile PS_SHADERMODEL ps_main();
+    
+    
     }
 }

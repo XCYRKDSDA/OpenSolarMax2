@@ -27,7 +27,8 @@ public sealed partial class UpdateAnimationTimeSystem(World world, IAssetsManage
             animation.Transition = null;
 
         // 当不存在过渡需求时，将动画时间限制在四倍动画时长之内，保证float的精度，同时不论对于循环动画还是折返循环动画都能正常工作
-        if (animation.Transition is null && animation.Clip is not null && animation.LocalTime >= animation.Clip.Length * 4)
+        if (animation.Transition is null && animation.Clip is not null &&
+            animation.LocalTime >= animation.Clip.Length * 4)
             animation.LocalTime -= animation.Clip.Length * 2;
     }
 }
@@ -46,7 +47,8 @@ public sealed partial class AnimateSystem(World world, IAssetsManager assets)
         {
             AnimationEvaluator<Entity>.TweenAndSet(
                 ref entity,
-                animation.Transition.Value.PreviousClip, animation.Transition.Value.PreviousClipTime + animation.LocalTime,
+                animation.Transition.Value.PreviousClip,
+                animation.Transition.Value.PreviousClipTime + animation.LocalTime,
                 animation.Clip, animation.LocalTime,
                 animation.Transition.Value.Tweener, animation.LocalTime / animation.Transition.Value.Duration
             );

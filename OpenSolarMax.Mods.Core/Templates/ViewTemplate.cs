@@ -25,6 +25,7 @@ public class ViewTemplate : ITemplate
         transform.Rotation = Quaternion.Identity;
 
         camera.Output = new(0, 0, 1920, 1080);
-        camera.ZNear = -1000; camera.ZFar = 1000;
+        camera.ZNear = -1000;
+        camera.ZFar = 1000;
     }
 }

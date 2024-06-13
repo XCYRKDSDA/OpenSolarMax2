@@ -28,20 +28,22 @@ public class ShipConfigurator(IAssetsManager assets) : IEntityConfigurator
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
         => _template.Apply(entity);
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx,
+                          WorldLoadingEnvironment env)
     {
         var unitConfig = (ShipConfiguration)configuration;
 
         // 设置所属星球
         if (unitConfig.Planet != null)
         {
-            var planetEntity = ctx.OtherEntities[unitConfig.Planet]; 
+            var planetEntity = ctx.OtherEntities[unitConfig.Planet];
             var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(entity, planetEntity);
             RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, planetEntity);
         }
 
         // 设置所属阵营
         if (unitConfig.Party != null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party].Reference(), entity.Reference()));
+            World.Worlds[entity.WorldId].Create(
+                new TreeRelationship<Party>(ctx.OtherEntities[unitConfig.Party].Reference(), entity.Reference()));
     }
 }

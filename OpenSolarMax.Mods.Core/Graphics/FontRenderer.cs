@@ -31,8 +31,10 @@ internal class FontRenderer(GraphicsDevice graphicsDevice) : IFontStashRenderer2
     {
         Effect.Texture = texture;
 
-        _vertices[0] = topLeft; _vertices[1] = topRight;
-        _vertices[2] = bottomLeft; _vertices[3] = bottomRight;
+        _vertices[0] = topLeft;
+        _vertices[1] = topRight;
+        _vertices[2] = bottomLeft;
+        _vertices[3] = bottomRight;
 
         foreach (var pass in Effect.CurrentTechnique.Passes)
         {

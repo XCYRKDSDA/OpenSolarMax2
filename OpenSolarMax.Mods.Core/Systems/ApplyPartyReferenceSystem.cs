@@ -13,7 +13,8 @@ public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
 {
     protected abstract void ApplyPartyReferenceImpl(in R reference, ref T target);
 
-    private static readonly QueryDescription _entitesDecs = new QueryDescription().WithAll<TreeRelationship<Party>.AsChild, T>();
+    private static readonly QueryDescription _entitesDecs =
+        new QueryDescription().WithAll<TreeRelationship<Party>.AsChild, T>();
 
     public override void Update(in GameTime t)
     {

@@ -107,8 +107,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
         yield return new SingleItemGroup<Type, EntityReference>(typeof(AsTrail), Trail);
     }
 
-    readonly IEnumerator IEnumerable.GetEnumerator() =>
-        (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator()
+        => (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
 
     #endregion
 
@@ -123,8 +123,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
-        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) =>
-            array[arrayIndex] = Index.Relationship;
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+            => array[arrayIndex] = Index.Relationship;
 
         readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
         {
@@ -133,8 +133,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
 
-        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) =>
-            Index.Relationship == relationship;
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+            => Index.Relationship == relationship;
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
@@ -167,8 +167,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         readonly bool ICollection<EntityReference>.IsReadOnly => false;
 
-        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) =>
-            array[arrayIndex] = Index.Relationship;
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+            => array[arrayIndex] = Index.Relationship;
 
         readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
         {
@@ -177,8 +177,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         readonly IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<EntityReference>).GetEnumerator();
 
-        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship) =>
-            Index.Relationship == relationship;
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+            => Index.Relationship == relationship;
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {

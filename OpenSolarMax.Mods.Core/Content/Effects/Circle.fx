@@ -38,12 +38,12 @@ struct VertexOutput
 VertexOutput vs_main(VertexInput v)
 {
     VertexOutput o;
-    
+
     o.vertex_in_ndc = mul(v.vertex, to_ndc);
     o.color = v.color;
-    
+
     o.coord = v.vertex;
-    
+
     return o;
 }
 
@@ -69,8 +69,8 @@ float4 ps_main(PixelInput p) : SV_TARGET
 {
     float dist = distance(p.coord.xy, center);
     float dist_flag = aastep(radius - thickness / 2, dist)
-                      - aastep(radius + thickness / 2, dist);
-    
+        - aastep(radius + thickness / 2, dist);
+
     return p.color * dist_flag;
 }
 
@@ -85,5 +85,7 @@ technique Circle
     {
         VertexShader = compile VS_SHADERMODEL vs_main();
         PixelShader = compile PS_SHADERMODEL ps_main();
+    
+    
     }
 }

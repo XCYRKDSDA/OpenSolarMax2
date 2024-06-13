@@ -38,12 +38,12 @@ struct VertexOutput
 VertexOutput vs_main(VertexInput v)
 {
     VertexOutput o;
-    
+
     o.vertex_in_ndc = mul(v.vertex, to_ndc);
-    
+
     o.coord_in_uv = v.coord_in_uv;
     o.color_in_uv = v.color_in_uv;
-    
+
     return o;
 }
 
@@ -61,13 +61,13 @@ struct PixelInput
 float4 ps_main(PixelInput p) : SV_TARGET
 {
     float4 tex_rgba = tex.Sample(tex_sampler, p.coord_in_uv.xy);
-    
+
     float color_avg = (p.color_in_uv.r + p.color_in_uv.g + p.color_in_uv.b) / 3;
-    
+
     float4 mixed_rgba = tex_rgba;
     mixed_rgba.rgb *= p.color_in_uv.rgb / color_avg;
     mixed_rgba *= p.color_in_uv.a;
-    
+
     return mixed_rgba;
 }
 
@@ -82,6 +82,7 @@ technique Tint
     {
         VertexShader = compile VS_SHADERMODEL vs_main();
         PixelShader = compile PS_SHADERMODEL ps_main();
+    
+    
     }
 }
-

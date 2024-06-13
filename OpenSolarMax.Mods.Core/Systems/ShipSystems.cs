@@ -60,7 +60,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 
             // 获取相关信息
             ref readonly var pose = ref ship.Entity.Get<AbsoluteTransform>();
-            var transformRelationship = ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
+            var transformRelationship =
+                ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
             ref readonly var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
             ref readonly var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
             ref readonly var departurePlanetOrbit = ref request.Departure.Entity.Get<PlanetGeostationaryOrbit>();
@@ -71,11 +72,13 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var expectedOrbit = new RevolutionOrbit()
             {
                 Rotation = destinationPlanetOrbit.Rotation,
-                Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2, destinationPlanetOrbit.Radius * orbitOffset * 2),
+                Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2,
+                            destinationPlanetOrbit.Radius * orbitOffset * 2),
                 Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f)
             };
             var expectedPosition = expectedArrivalPlanetPosition
-                                   + RevolutionUtils.CalculateTransform(in expectedOrbit, in revolutionState).Translation;
+                                   + RevolutionUtils.CalculateTransform(in expectedOrbit, in revolutionState)
+                                                    .Translation;
 
             // 设置任务
             shippingTask = commonShippingTask with
@@ -163,7 +166,7 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
             var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
             transformRelationship.Set(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
             ship.Remove<ShippingTask, ShippingState>();
-            
+
             // 销毁单位的尾迹实体
             var world = World.Worlds[ship.WorldId];
             world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
@@ -205,8 +208,11 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
 {
     private const float _extinguishTime = 0.5f;
 
-    private readonly AnimationClip<Entity> _stretchingAnimation = assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
-    private readonly AnimationClip<Entity> _extinguishedAnimation = assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
+    private readonly AnimationClip<Entity> _stretchingAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
+
+    private readonly AnimationClip<Entity> _extinguishedAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
 
     [Query]
     [All<TrailOf.AsShip, ShippingTask, ShippingState, Animation>]

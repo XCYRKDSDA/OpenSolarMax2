@@ -14,7 +14,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [DrawSystem]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
-public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+public sealed partial class VisualizeAnchoredUnitsSystem(
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const int _textSize = 36;
@@ -69,7 +70,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         return arcsAngles;
     }
 
-    private void VisualizeOnePlanet(in AnchoredShipsRegistry registry, in ReferenceSize refSize, in AbsoluteTransform pose, in Matrix worldToCanvas)
+    private void VisualizeOnePlanet(in AnchoredShipsRegistry registry, in ReferenceSize refSize,
+                                    in AbsoluteTransform pose, in Matrix worldToCanvas)
     {
         // 如果没有停泊任何单位则跳过绘制
         if (registry.Ships.Count == 0)
@@ -137,7 +139,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
                 var textPosition = ringCenter
-                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius * _labelRadiusFactor * scale
+                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius *
+                                   _labelRadiusFactor * scale
                                    - textSize / 2;
                 var shadowPosition = textPosition with { Y = textPosition.Y + _shadowDistance };
 
@@ -182,7 +185,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(World world, GraphicsDe
         }
     }
 
-    private static readonly QueryDescription _planetDesc = new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
+    private static readonly QueryDescription _planetDesc =
+        new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
 
     public override void Update(in GameTime t)
     {

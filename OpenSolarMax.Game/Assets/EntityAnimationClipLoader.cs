@@ -78,7 +78,8 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
 
     private static Delegate CompileSetter(Type componentType, Type memberType, string memberPath)
     {
-        var dynMethod = new DynamicMethod("SetMember", null, [typeof(Entity).MakeByRefType(), memberType.MakeByRefType()]);
+        var dynMethod =
+            new DynamicMethod("SetMember", null, [typeof(Entity).MakeByRefType(), memberType.MakeByRefType()]);
         var ilGenerator = dynMethod.GetILGenerator();
         var variablesStack = new Stack<(LocalBuilder, LocalBuilder, PropertyInfo)>(); // 属性缓存、属性属于的对象的引用、属性信息
 
@@ -141,7 +142,8 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
     protected override (IProperty<Entity>, Type) ParsePropertyImpl(string property)
     {
         var parts = property.Split("::");
-        var componentTypeName = parts[0]; var memberPath = parts[1];
+        var componentTypeName = parts[0];
+        var memberPath = parts[1];
 
         // 查找组件和成员类型
         var componentType = GetType(componentTypeName, ComponentTypes);
@@ -168,6 +170,7 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
 
         return options;
     }
+
     private static readonly JsonSerializerOptions _jsonSerializationOptions = PrepareJsonSerializationOptions();
 
     protected override ValueT ParseValueImpl<ValueT>(in JsonElement json)

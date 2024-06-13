@@ -19,7 +19,8 @@ public sealed partial class CountDownAndExpireTimeoutEntitiesSystem(World world,
 
     [Query]
     [All<ExpiredAfterTimeout>]
-    private static void ExpireEntities([Data] CommandBuffer commands, [Data] GameTime time, Entity entity, ref ExpiredAfterTimeout expiration)
+    private static void ExpireEntities([Data] CommandBuffer commands, [Data] GameTime time,
+                                       Entity entity, ref ExpiredAfterTimeout expiration)
     {
         //if (expiration.TimeRemain == Timeout.InfiniteTimeSpan)
         //    return;

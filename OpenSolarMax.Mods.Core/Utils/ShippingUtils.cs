@@ -111,21 +111,22 @@ public static class ShippingUtils
             var (parent, relationship) = asChild.Index;
             if (parent == EntityReference.Null || relationship == EntityReference.Null)
                 return (virtualWorld, tailProxy);
-            
+
             // 创建虚拟世界中关于原世界父对象的代理对象
             var parentProxy = virtualWorld.Construct(in Archetypes.Transformable);
             parentProxy.Get<AbsoluteTransform>() = parent.Entity.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
-            var relationshipProxy = relationship.Entity.Has<RevolutionOrbit, RevolutionState>()
-                ? virtualWorld.Create(
-                    new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
-                    relationship.Entity.Get<RelativeTransform>(),
-                    relationship.Entity.Get<RevolutionOrbit>(), relationship.Entity.Get<RevolutionState>())
-                : virtualWorld.Create(
-                    new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
-                    relationship.Entity.Get<RelativeTransform>());
-            
+            var relationshipProxy =
+                relationship.Entity.Has<RevolutionOrbit, RevolutionState>()
+                    ? virtualWorld.Create(
+                        new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
+                        relationship.Entity.Get<RelativeTransform>(),
+                        relationship.Entity.Get<RevolutionOrbit>(), relationship.Entity.Get<RevolutionState>())
+                    : virtualWorld.Create(
+                        new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
+                        relationship.Entity.Get<RelativeTransform>());
+
             // 将关系直接记录到两侧组件中
             childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Index =
                 (parentProxy.Reference(), relationshipProxy.Reference());
@@ -139,7 +140,8 @@ public static class ShippingUtils
 
     private static readonly float _dt = 1f;
 
-    public static (Vector3 Destination, float Duration) CalculateShippingTask(Entity departure, Entity destination, Shippable shippable)
+    public static (Vector3 Destination, float Duration) CalculateShippingTask(
+        Entity departure, Entity destination, Shippable shippable)
     {
         // 获取出发位置
         var departurePosition = departure.Get<AbsoluteTransform>().Translation;
@@ -150,9 +152,9 @@ public static class ShippingUtils
 
         // 生成模拟系统
         var simulateSystems = new Group<GameTime>($"simulateSystem_{virtualWorld.GetHashCode()}",
-            new UpdateRevolutionPhaseSystem(virtualWorld, null),
-            new CalculateEntitiesTransformAroundOrbitSystem(virtualWorld, null),
-            new CalculateAbsoluteTransformSystem(virtualWorld, null)
+                                                  new UpdateRevolutionPhaseSystem(virtualWorld, null),
+                                                  new CalculateEntitiesTransformAroundOrbitSystem(virtualWorld, null),
+                                                  new CalculateAbsoluteTransformSystem(virtualWorld, null)
         );
 
         // 开始求解
@@ -181,9 +183,9 @@ public static class ShippingUtils
                 // 上一刻为t，误差为err；此刻为t2，误差为err2。做一个线性近似
                 var k = (0 - err1) / (err - err1);
                 return (
-                    Vector3.Lerp(destinationPosition1, destinationPosition, k),
-                    MathHelper.Lerp(t - _dt, t, k)
-                );
+                           Vector3.Lerp(destinationPosition1, destinationPosition, k),
+                           MathHelper.Lerp(t - _dt, t, k)
+                       );
             }
 
             err1 = err;

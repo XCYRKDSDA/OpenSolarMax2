@@ -15,7 +15,9 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
     public Archetype Archetype => Archetypes.Animation;
 
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipPulse");
-    private readonly AnimationClip<Entity> _pulseAnimation = assets.Load<AnimationClip<Entity>>("Animations/UnitPulse.json");
+
+    private readonly AnimationClip<Entity> _pulseAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitPulse.json");
 
     public void Apply(Entity entity)
     {

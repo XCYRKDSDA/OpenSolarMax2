@@ -33,5 +33,6 @@ public interface IEntityConfigurator
     /// <param name="entity"></param>
     /// <param name="ctx"></param>
     /// <param name="env"></param>
-    void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env);
+    void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx,
+                   WorldLoadingEnvironment env);
 }

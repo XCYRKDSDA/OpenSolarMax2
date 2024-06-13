@@ -82,8 +82,9 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
     /// <param name="configurator"></param>
     /// <param name="ctx"></param>
     /// <param name="env"></param>
-    private class ConfiguratorWrapperTemplate(IEntityConfigurator configurator,
-                                              WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    private class ConfiguratorWrapperTemplate(
+        IEntityConfigurator configurator,
+        WorldLoadingContext ctx, WorldLoadingEnvironment env)
         : ITemplate
     {
         public Archetype Archetype => configurator.Archetype;
@@ -97,11 +98,13 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置星球能够生产的单位的配置器
         ref var productionAbility = ref entity.Get<ProductionAbility>();
-        productionAbility.ProductTemplates = env.Configurators[_defaultProductKey]
-            .Select((c) => new ConfiguratorWrapperTemplate(c, ctx, env) as ITemplate).ToArray();
+        productionAbility.ProductTemplates =
+            env.Configurators[_defaultProductKey]
+               .Select((c) => new ConfiguratorWrapperTemplate(c, ctx, env) as ITemplate).ToArray();
     }
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx,
+                          WorldLoadingEnvironment env)
     {
         var planetConfig = (configuration as PlanetConfiguration)!;
 
@@ -133,10 +136,10 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
             {
                 var world = World.Worlds[entity.WorldId];
                 var parentEntity = ctx.OtherEntities[planetConfig.Orbit.Parent];
-                
+
                 // 检查现在是否已有相对变换关系
                 ref var transformChild = ref entity.Get<TreeRelationship<RelativeTransform>.AsChild>();
-                
+
                 if (transformChild.Index.Parent == parentEntity)
                     goto DONE;
 
@@ -148,7 +151,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                     world.Destroy(oldRelationship);
                     transformChild.Index = (EntityReference.Null, EntityReference.Null);
                 }
-                
+
                 // 现在还没有相对变换关系
                 var newTransformRelationshipIdx = world.Create(
                     new TreeRelationship<RelativeTransform>(parentEntity.Reference(), entity.Reference()),
@@ -159,10 +162,10 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                 // 如果指定了一个有预定义轨道的实体作为公转的父级，则采用预定义轨道作为基础值
                 if (parentEntity.Has<PredefinedOrbit>())
                     newTransformRelationshipIdx.Get<RevolutionOrbit>() = parentEntity.Get<PredefinedOrbit>().Template;
-                
+
                 DONE: ;
             }
-            
+
             var transformRelationship = entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
             ref var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
             ref var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
@@ -179,7 +182,8 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (planetConfig.Party != null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party].Reference(), entity.Reference()));
+            World.Worlds[entity.WorldId].Create(
+                new TreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party].Reference(), entity.Reference()));
 
         // 设置人口
         if (planetConfig.Population.HasValue)

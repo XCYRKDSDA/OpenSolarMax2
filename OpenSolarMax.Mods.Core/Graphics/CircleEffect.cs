@@ -46,37 +46,61 @@ internal class CircleEffect : Effect, IEffectMatrices
     public Matrix World
     {
         get => _world;
-        set { _world = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _world = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Matrix View
     {
         get => _view;
-        set { _view = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _view = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Matrix Projection
     {
         get => _proj;
-        set { _proj = value; _dirtyFlags |= DirtyFlags.WorldViewProj; }
+        set
+        {
+            _proj = value;
+            _dirtyFlags |= DirtyFlags.WorldViewProj;
+        }
     }
 
     public Vector2 Center
     {
         get => _center;
-        set { _center = value; _dirtyFlags |= DirtyFlags.Center; }
+        set
+        {
+            _center = value;
+            _dirtyFlags |= DirtyFlags.Center;
+        }
     }
 
     public float Radius
     {
         get => _radius;
-        set { _radius = value; _dirtyFlags |= DirtyFlags.Radius; }
+        set
+        {
+            _radius = value;
+            _dirtyFlags |= DirtyFlags.Radius;
+        }
     }
 
     public float Thickness
     {
         get => _thickness;
-        set { _thickness = value; _dirtyFlags |= DirtyFlags.Thickness; }
+        set
+        {
+            _thickness = value;
+            _dirtyFlags |= DirtyFlags.Thickness;
+        }
     }
 
     #endregion

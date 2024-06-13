@@ -22,7 +22,8 @@ public sealed partial class UpdateCombatSystem(World world, IAssetsManager asset
 {
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
-    private static void UpdateCombat([Data] GameTime time, in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
+    private static void UpdateCombat([Data] GameTime time,
+                                     in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
     {
         var ships = shipsRegistry.Ships;
         var damage = battle.FrontlineDamage;
@@ -118,4 +119,3 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
         }
     }
 }
-

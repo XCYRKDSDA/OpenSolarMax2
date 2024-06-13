@@ -44,7 +44,8 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
 
     [Query]
     [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, TreeRelationship<Party>.AsChild>]
-    private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability, ref ProductionState state)
+    private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability,
+                                         ref ProductionState state)
     {
         if (!CanProduce(planet))
         {
@@ -70,7 +71,8 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
 {
     [Query]
     [All<ProductionAbility, ProductionState, TreeRelationship<Party>.AsChild>]
-    private static void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state, in TreeRelationship<Party>.AsChild partyRelationship)
+    private static void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
+                                         in TreeRelationship<Party>.AsChild partyRelationship)
     {
         var party = partyRelationship.Index.Parent;
         ref readonly var producible = ref party.Entity.Get<Producible>();

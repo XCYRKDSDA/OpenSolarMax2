@@ -43,21 +43,21 @@ struct VertexOutput
 VertexOutput vs_main(VertexInput v)
 {
     VertexOutput o;
-    
+
     o.vertex_in_ndc = mul(v.vertex, to_ndc);
-    
+
     float2 vertex_vector = v.vertex.xy - center;
-    
+
     //float head_vector_in_ndc = mul(float4(head_vector, 0, 0), to_ndc);
     //float tail_vector_in_ndc = mul(float4(tail_vector, 0, 0), to_ndc);
-    
+
     o.coord_in_uv.x = dot(float2(-head_vector.y, head_vector.x), vertex_vector);
     o.coord_in_uv.y = dot(float2(tail_vector.y, -tail_vector.x), vertex_vector);
     o.coord_in_uv.z = o.coord_in_uv.w = 0;
-    
+
     o.coord = v.vertex;
     o.color = v.color;
-    
+
     return o;
 }
 
@@ -84,15 +84,15 @@ float4 ps_main(PixelInput p) : SV_TARGET
 {
     float head_flag = aastep(0, p.coord_in_uv.x);
     float tail_flag = aastep(0, p.coord_in_uv.y);
-    
+
     float arc_flag = inferior ? min(head_flag, tail_flag) : max(head_flag, tail_flag);
-    
+
     float dist = distance(p.coord.xy, center);
     float dist_flag = aastep(radius - thickness / 2, dist)
-                      - aastep(radius + thickness / 2, dist);
-    
+        - aastep(radius + thickness / 2, dist);
+
     float flag = arc_flag * dist_flag;
-    
+
     return p.color * flag;
 }
 
@@ -107,5 +107,7 @@ technique Ring
     {
         VertexShader = compile VS_SHADERMODEL vs_main();
         PixelShader = compile PS_SHADERMODEL ps_main();
+    
+    
     }
 }

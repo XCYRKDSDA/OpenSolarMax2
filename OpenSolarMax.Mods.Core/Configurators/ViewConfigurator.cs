@@ -32,7 +32,8 @@ public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
     public void Initialize(in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
         => _template.Apply(entity);
 
-    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx, WorldLoadingEnvironment env)
+    public void Configure(IEntityConfiguration configuration, in Entity entity, WorldLoadingContext ctx,
+                          WorldLoadingEnvironment env)
     {
         var cameraConfig = (configuration as ViewConfiguration)!;
 
@@ -61,6 +62,7 @@ public class ViewConfigurator(IAssetsManager assets) : IEntityConfigurator
         }
 
         if (cameraConfig.Party is not null)
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(ctx.OtherEntities[cameraConfig.Party].Reference(), entity.Reference()));
+            World.Worlds[entity.WorldId].Create(
+                new TreeRelationship<Party>(ctx.OtherEntities[cameraConfig.Party].Reference(), entity.Reference()));
     }
 }

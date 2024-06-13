@@ -15,7 +15,9 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
     public Archetype Archetype => Archetypes.Animation;
 
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipFlare");
-    private readonly AnimationClip<Entity> _flareAnimation = assets.Load<AnimationClip<Entity>>("Animations/UnitFlare.json");
+
+    private readonly AnimationClip<Entity> _flareAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitFlare.json");
 
     public void Apply(Entity entity)
     {

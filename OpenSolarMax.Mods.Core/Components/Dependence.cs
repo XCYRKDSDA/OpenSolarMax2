@@ -58,15 +58,20 @@ public readonly struct Dependence(EntityReference dependent, EntityReference dep
         /// <summary>
         /// 按照另一方实体排序的关系
         /// </summary>
-        public readonly SortedDictionary<EntityReference, EntityReference> Relationships = new(new EntityReferenceComparer());
+        public readonly SortedDictionary<EntityReference, EntityReference> Relationships =
+            new(new EntityReferenceComparer());
 
         #region IParticipantIndex
 
         int ICollection<EntityReference>.Count => Relationships.Count;
         bool ICollection<EntityReference>.IsReadOnly => false;
 
-        void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
-        IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+            => Relationships.Values.CopyTo(array, arrayIndex);
+
+        IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+            => Relationships.Values.GetEnumerator();
+
         IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
 
         bool ICollection<EntityReference>.Contains(EntityReference relationship)
@@ -100,15 +105,20 @@ public readonly struct Dependence(EntityReference dependent, EntityReference dep
         /// <summary>
         /// 按照另一方实体排序的关系
         /// </summary>
-        public readonly SortedDictionary<EntityReference, EntityReference> Relationships = new(new EntityReferenceComparer());
+        public readonly SortedDictionary<EntityReference, EntityReference> Relationships =
+            new(new EntityReferenceComparer());
 
         #region IParticipantIndex
 
         int ICollection<EntityReference>.Count => Relationships.Count;
         bool ICollection<EntityReference>.IsReadOnly => false;
 
-        void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex) => Relationships.Values.CopyTo(array, arrayIndex);
-        IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator() => Relationships.Values.GetEnumerator();
+        void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+            => Relationships.Values.CopyTo(array, arrayIndex);
+
+        IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+            => Relationships.Values.GetEnumerator();
+
         IEnumerator IEnumerable.GetEnumerator() => Relationships.Values.GetEnumerator();
 
         bool ICollection<EntityReference>.Contains(EntityReference relationship)

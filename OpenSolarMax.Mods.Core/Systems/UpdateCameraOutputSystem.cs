@@ -16,8 +16,5 @@ public sealed partial class UpdateCameraOutputSystem(World world, GraphicsDevice
 {
     [Query]
     [All<Camera>]
-    private static void UpdateOutput(ref Camera camera)
-    {
-        camera.Output = new(0, 0, 1920, 1080);
-    }
+    private static void UpdateOutput(ref Camera camera) { camera.Output = new(0, 0, 1920, 1080); }
 }

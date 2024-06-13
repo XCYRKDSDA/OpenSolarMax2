@@ -57,9 +57,12 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
         refSize.Radius = _defaultRadius;
 
         // 随机生成同步轨道
-        float pitch = (float)random.NextDouble() * (_defaultOrbitMaxPitch - _defaultOrbitMinPitch) + _defaultOrbitMinPitch;
-        float roll = (float)random.NextDouble() * (_defaultOrbitMaxRoll - _defaultOrbitMinRoll) + _defaultOrbitMinRoll;
-        geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
+        float pitch = (float)random.NextDouble() * (_defaultOrbitMaxPitch - _defaultOrbitMinPitch) +
+                      _defaultOrbitMinPitch;
+        float roll = (float)random.NextDouble() * (_defaultOrbitMaxRoll - _defaultOrbitMinRoll) +
+                     _defaultOrbitMinRoll;
+        geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
+                                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
         geostationaryOrbit.Radius = _defaultOrbitRadius;
         geostationaryOrbit.Period = _defaultOrbitPeriod;
 

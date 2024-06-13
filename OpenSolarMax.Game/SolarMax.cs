@@ -17,9 +17,10 @@ using XNAGame = Microsoft.Xna.Framework.Game;
 
 namespace OpenSolarMax.Game;
 
-public record class LevelUIContext(StackPanel TopBar, StackPanel BottomBar,
-                                   StackPanel LeftBar, StackPanel RightBar,
-                                   Widget WorldPad);
+public record class LevelUIContext(
+    StackPanel TopBar, StackPanel BottomBar,
+    StackPanel LeftBar, StackPanel RightBar,
+    Widget WorldPad);
 
 public class SolarMax : XNAGame
 {
@@ -306,7 +307,9 @@ public class SolarMax : XNAGame
         var requiredMods = (from mod in allMods where requiredModsNames.Contains(mod.Item2.Name) select mod).ToArray();
 
         // 逐个加载模组程序集（若有
-        var sharedAssemblies = (from assembly in AppDomain.CurrentDomain.GetAssemblies() select (assembly.FullName, assembly)).ToDictionary();
+        var sharedAssemblies =
+            (from assembly in AppDomain.CurrentDomain.GetAssemblies() select (assembly.FullName, assembly))
+            .ToDictionary();
         var loadedMods = new List<(DirectoryEntry, ModManifest, Assembly?)>();
         foreach (var (dir, manifest) in requiredMods)
         {
@@ -316,7 +319,8 @@ public class SolarMax : XNAGame
                 var ctx = new ModLoadContext(dir, sharedAssemblies);
                 using var stream = dir.EnumerateFiles(manifest.Assembly).First().Open(FileMode.Open, FileAccess.Read);
 #if DEBUG
-                using var pdbStream = dir.EnumerateFiles(manifest.Assembly.Replace(".dll", ".pdb")).First().Open(FileMode.Open, FileAccess.Read);
+                using var pdbStream = dir.EnumerateFiles(manifest.Assembly.Replace(".dll", ".pdb")).First()
+                                         .Open(FileMode.Open, FileAccess.Read);
                 assembly = ctx.LoadFromStream(stream, pdbStream);
 #else
                 assembly = ctx.LoadFromStream(stream);
@@ -394,10 +398,11 @@ public class SolarMax : XNAGame
         var levelsAssets = new AssetsManager(levelsFileSystem);
         levelsAssets.RegisterLoader(new LevelLoader()
         {
-            ConfigurationTypes = (from pair in configurators
-                                  select (pair.Key,
-                                          (from configurator in pair.Value select configurator.ConfigurationType).ToArray()
-                                  )).ToDictionary()
+            ConfigurationTypes =
+                (from pair in configurators
+                 select (pair.Key,
+                         (from configurator in pair.Value select configurator.ConfigurationType).ToArray()
+                        )).ToDictionary()
         });
 
         // 当玩家选择了一个关卡地图时，游戏开始加载该地图。
@@ -429,24 +434,24 @@ public class SolarMax : XNAGame
         var updateSystemsConstructParams = new object[] { _world, localAssets };
         _coreUpdateSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.CoreUpdate])
-            .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
-            .ToArray()
+                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .ToArray()
         );
         _structuralChangeSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.StructuralChange])
-            .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
-            .ToArray()
+                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .ToArray()
         );
         _lateUpdateSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.LateUpdate])
-            .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
-            .ToArray()
+                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .ToArray()
         );
         var drawSystemsConstructParams = new object[] { _world, GraphicsDevice, localAssets };
         _drawSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.Draw])
-            .Select((type) => Activator.CreateInstance(type, drawSystemsConstructParams) as ISystem)
-            .ToArray()
+                    .Select((type) => Activator.CreateInstance(type, drawSystemsConstructParams) as ISystem)
+                    .ToArray()
         );
 
         // 构造世界加载器

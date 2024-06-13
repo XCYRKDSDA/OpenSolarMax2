@@ -10,7 +10,8 @@ public static partial class Content
 
         public const string DefaultPlanetShape = $"{_base}/PlanetsAtlas.json:PlanetShape";
 
-        private static readonly string[] _defaultPlanetTextureIds = {
+        private static readonly string[] _defaultPlanetTextureIds =
+        {
             "Planet01", "Planet02", "Planet03", "Planet04", "Planet05",
             "Planet06", "Planet07", "Planet08", "Planet09",
         };

@@ -14,7 +14,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
@@ -39,9 +38,13 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
 
         // 计算四个顶点的坐标
         _vertices[0].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
-        _vertices[1].Position = Vector3.Transform(new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
-        _vertices[2].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0), anchorToWorld);
-        _vertices[3].Position = Vector3.Transform(new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0), anchorToWorld);
+        _vertices[1].Position = Vector3.Transform(
+            new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
+        _vertices[2].Position = Vector3.Transform(
+            new(-sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0), anchorToWorld);
+        _vertices[3].Position = Vector3.Transform(
+            new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0),
+            anchorToWorld);
 
         // 计算四个顶点对应的原始纹理的UV坐标
         _vertices[0].TextureCoordinate = new(sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,

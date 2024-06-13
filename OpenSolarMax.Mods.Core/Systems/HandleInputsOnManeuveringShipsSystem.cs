@@ -33,7 +33,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
         {
             ref readonly var refSize = ref planet.Get<ReferenceSize>();
             var halfSizeInViewport = Vector2.TransformNormal(new(refSize.Radius), worldToViewport);
-            radiusInViewport = MathF.Max(MathF.MaxMagnitude(halfSizeInViewport.X, halfSizeInViewport.Y), radiusInViewport);
+            radiusInViewport =
+                MathF.Max(MathF.MaxMagnitude(halfSizeInViewport.X, halfSizeInViewport.Y), radiusInViewport);
         }
 
         var positionInViewport = Vector3.Transform(pose.Translation, worldToViewport);
@@ -95,7 +96,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                     {
                         // 当前左键点在空白处，但是之前还正在点选一个星球，则切换至拖拽状态
                         selection.State = ShipsSelection_State.DraggingToDestination;
-                        selection.DraggingToDestination = new() { SelectedSources = selection.SimpleSelecting.SelectedSources };
+                        selection.DraggingToDestination = new()
+                            { SelectedSources = selection.SimpleSelecting.SelectedSources };
                     }
                     else
                     {
@@ -110,7 +112,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 }
             }
             else if (mouse.RightButton != ButtonState.Pressed
-                && selection.SimpleSelecting.TappingDestination != Entity.Null)
+                     && selection.SimpleSelecting.TappingDestination != Entity.Null)
             {
                 // 当前右键没有按下，但是之前有选中的目标，则操作单位，并切换至初始状态的简单选择状态
                 foreach (var departure in selection.SimpleSelecting.SelectedSources)
@@ -166,7 +168,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                     selection.SimpleSelecting = new() { SelectedSources = [] };
                 }
                 else
-                    selection.SimpleSelecting = new() { SelectedSources = selection.DraggingToDestination.SelectedSources };
+                    selection.SimpleSelecting = new()
+                        { SelectedSources = selection.DraggingToDestination.SelectedSources };
             }
         }
     }
@@ -182,7 +185,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
-            selection.SimpleSelecting.PointingPlanet = pointedPlanet ??= GetPointedPlanet(in mouseInViewport, worldToViewport);
+            selection.SimpleSelecting.PointingPlanet =
+                pointedPlanet ??= GetPointedPlanet(in mouseInViewport, worldToViewport);
 
             if (mouse.LeftButton == ButtonState.Pressed)
             {
@@ -215,7 +219,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
             var boxSize = new Point(Math.Abs(mouseInViewport.X - selection.BoxSelectingSources.BoxStartInViewport.X),
                                     Math.Abs(mouseInViewport.Y - selection.BoxSelectingSources.BoxStartInViewport.Y));
             selection.BoxSelectingSources.BoxInViewport = new(boxOrigin, boxSize);
-            selection.BoxSelectingSources.PlanetsInBox = GetBoxedPlanets(in selection.BoxSelectingSources.BoxInViewport, worldToViewport);
+            selection.BoxSelectingSources.PlanetsInBox =
+                GetBoxedPlanets(in selection.BoxSelectingSources.BoxInViewport, worldToViewport);
         }
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
@@ -227,7 +232,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
     [Query]
     [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, TreeRelationship<Party>.AsChild>]
-    private void HandleInputs(in Camera camera, in AbsoluteTransform pose, ref ManeuvaringShipsStatus status, in TreeRelationship<Party>.AsChild ofParty)
+    private void HandleInputs(in Camera camera, in AbsoluteTransform pose, ref ManeuvaringShipsStatus status,
+                              in TreeRelationship<Party>.AsChild ofParty)
     {
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
@@ -238,8 +244,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
         // 处理星球选择
         EntityReference? pointedPlanet = null;
-        HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent, ref pointedPlanet);
-        UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent, ref pointedPlanet);
+        HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent,
+                                       ref pointedPlanet);
+        UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent,
+                              ref pointedPlanet);
     }
 
     public override void Update(in GameTime data) => HandleInputsQuery(World);
