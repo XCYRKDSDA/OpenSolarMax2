@@ -126,12 +126,14 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 public sealed partial class UpdateShipStateSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
+    private const float _delayTime = 0.5f;
+    
     [Query]
     [All<ShippingTask, ShippingState>]
     private static void Proceed([Data] GameTime time, in ShippingTask task, ref ShippingState state)
     {
         state.TravelledTime += (float)time.ElapsedGameTime.TotalSeconds;
-        state.Progress = state.TravelledTime / task.ExpectedTravelDuration;
+        state.Progress = MathF.Max((state.TravelledTime - _delayTime) / (task.ExpectedTravelDuration - _delayTime), 0);
     }
 }
 
