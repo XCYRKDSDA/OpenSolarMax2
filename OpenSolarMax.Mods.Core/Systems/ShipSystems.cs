@@ -127,7 +127,7 @@ public sealed partial class UpdateShipStateSystem(World world, IAssetsManager as
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const float _delayTime = 0.5f;
-    
+
     [Query]
     [All<ShippingTask, ShippingState>]
     private static void Proceed([Data] GameTime time, in ShippingTask task, ref ShippingState state)
@@ -216,13 +216,17 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
     private readonly AnimationClip<Entity> _trailExtinguishedAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
 
-    private const float _takeOffDuration = 0.5f;
+    private const float _delayDuration = 0.5f;
+    private const float _takeOffDuration = 0.3f;
 
     private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
 
     private readonly AnimationClip<Entity> _unitShippingAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitShipping.json");
+
+    private readonly AnimationClip<Entity> _unitTakingOffAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitTakingOff.json");
 
     [Query]
     [All<TrailOf.AsShip, ShippingTask, ShippingState, Animation>]
@@ -231,7 +235,7 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
                                     ref Animation animation)
     {
         // 处理自己的动画
-        if (animation.Clip == _unitBlinkingAnimationClip)
+        if (animation.Clip == _unitBlinkingAnimationClip && animation.Transition is null)
         {
             if (shippingState.TravelledTime <= _takeOffDuration)
             {
@@ -242,19 +246,31 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
                     Duration = _takeOffDuration,
                     Tweener = null
                 };
-                animation.Clip = _unitShippingAnimationClip;
+                animation.Clip = _unitTakingOffAnimationClip;
                 animation.LocalTime = 0;
             }
         }
-        else if (animation.Clip == _unitShippingAnimationClip)
+        else if (animation.Clip == _unitTakingOffAnimationClip && animation.Transition is null)
         {
-            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration)
+            animation.Transition = new()
+            {
+                PreviousClip = animation.Clip,
+                PreviousClipTime = animation.LocalTime,
+                Duration = _delayDuration - _takeOffDuration,
+                Tweener = null
+            };
+            animation.Clip = _unitShippingAnimationClip;
+            animation.LocalTime = 0;
+        }
+        else if (animation.Clip == _unitShippingAnimationClip && animation.Transition is null)
+        {
+            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration / 2)
             {
                 animation.Transition = new()
                 {
                     PreviousClip = animation.Clip,
                     PreviousClipTime = animation.LocalTime,
-                    Duration = _landDuration,
+                    Duration = _landDuration / 2,
                     Tweener = null
                 };
                 animation.Clip = _unitBlinkingAnimationClip;
