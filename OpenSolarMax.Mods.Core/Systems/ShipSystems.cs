@@ -235,46 +235,21 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
                                     ref Animation animation)
     {
         // 处理自己的动画
-        if (animation.Clip == _unitBlinkingAnimationClip && animation.Transition is null)
+        if (animation.State == AnimationState.Clip)
         {
-            if (shippingState.TravelledTime <= _takeOffDuration)
+            if (animation.Clip.Clip == _unitBlinkingAnimationClip)
             {
-                animation.Transition = new()
-                {
-                    PreviousClip = animation.Clip,
-                    PreviousClipTime = animation.LocalTime,
-                    Duration = _takeOffDuration,
-                    Tweener = null
-                };
-                animation.Clip = _unitTakingOffAnimationClip;
-                animation.LocalTime = 0;
+                if (shippingState.TravelledTime <= _takeOffDuration)
+                    animation.TriggerTransition(_unitTakingOffAnimationClip, _takeOffDuration);
             }
-        }
-        else if (animation.Clip == _unitTakingOffAnimationClip && animation.Transition is null)
-        {
-            animation.Transition = new()
+            else if (animation.Clip.Clip == _unitTakingOffAnimationClip)
             {
-                PreviousClip = animation.Clip,
-                PreviousClipTime = animation.LocalTime,
-                Duration = _delayDuration - _takeOffDuration,
-                Tweener = null
-            };
-            animation.Clip = _unitShippingAnimationClip;
-            animation.LocalTime = 0;
-        }
-        else if (animation.Clip == _unitShippingAnimationClip && animation.Transition is null)
-        {
-            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration / 2)
+                animation.TriggerTransition(_unitShippingAnimationClip, _delayDuration - _takeOffDuration);
+            }
+            else if (animation.Clip.Clip == _unitShippingAnimationClip)
             {
-                animation.Transition = new()
-                {
-                    PreviousClip = animation.Clip,
-                    PreviousClipTime = animation.LocalTime,
-                    Duration = _landDuration / 2,
-                    Tweener = null
-                };
-                animation.Clip = _unitBlinkingAnimationClip;
-                animation.LocalTime = 0;
+                if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration / 2)
+                    animation.TriggerTransition(_unitBlinkingAnimationClip, _landDuration / 2);
             }
         }
 
@@ -283,20 +258,13 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         Debug.Assert(trail.Entity.Has<Animation>());
         ref var trailAnimation = ref trail.Entity.Get<Animation>();
 
-        if (trailAnimation.Clip == _trailStretchingAnimation)
+        if (trailAnimation.State == AnimationState.Clip)
         {
-            // 当单位快要结束时，切换进入熄灭状态
-            if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration)
+            if (trailAnimation.Clip.Clip == _trailStretchingAnimation)
             {
-                trailAnimation.Transition = new()
-                {
-                    PreviousClip = trailAnimation.Clip,
-                    PreviousClipTime = trailAnimation.LocalTime,
-                    Duration = _landDuration,
-                    Tweener = null
-                };
-                trailAnimation.Clip = _trailExtinguishedAnimation;
-                trailAnimation.LocalTime = 0;
+                // 当单位快要结束时，切换进入熄灭状态
+                if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration)
+                    trailAnimation.TriggerTransition(_trailExtinguishedAnimation, _landDuration);
             }
         }
     }

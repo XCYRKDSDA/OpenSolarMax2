@@ -1,17 +1,49 @@
-﻿using Arch.Core;
+﻿using System.Runtime.InteropServices;
+using Arch.Core;
 using Nine.Animations;
 using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public struct Transition
+public enum AnimationState
 {
-    public AnimationClip<Entity>? PreviousClip;
+    Idle,
+    Clip,
+    Transition
+}
 
-    public float PreviousClipTime;
+[StructLayout(LayoutKind.Explicit)]
+public struct Animation_Clip
+{
+    [FieldOffset(0)]
+    public float TimeOffset;
 
+    [FieldOffset(4)]
+    public float TimeElapsed;
+
+    [FieldOffset(16)]
+    public AnimationClip<Entity> Clip;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+public struct Animation_Transition
+{
+    [FieldOffset(0)]
+    public float PreviousClipTimeOffset;
+
+    [FieldOffset(4)]
+    public float TimeElapsed;
+
+    [FieldOffset(8)]
     public float Duration;
 
+    [FieldOffset(16)]
+    public AnimationClip<Entity>? PreviousClip;
+
+    [FieldOffset(24)]
+    public AnimationClip<Entity> NextClip;
+
+    [FieldOffset(32)]
     public ICurve<float>? Tweener;
 }
 
@@ -19,11 +51,15 @@ public struct Transition
 /// 动画组件。描述当前实体正在播放的动画剪辑和时间
 /// </summary>
 [Component]
+[StructLayout(LayoutKind.Explicit)]
 public struct Animation
 {
-    public AnimationClip<Entity>? Clip;
+    [FieldOffset(0)]
+    public AnimationState State;
 
-    public float LocalTime;
+    [FieldOffset(8)]
+    public Animation_Clip Clip;
 
-    public Transition? Transition;
+    [FieldOffset(8)]
+    public Animation_Transition Transition;
 }

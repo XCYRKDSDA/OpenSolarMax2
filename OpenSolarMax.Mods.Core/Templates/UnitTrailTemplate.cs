@@ -39,7 +39,9 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
 
         // 设置动画
         ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _stretchingAnimation;
-        animation.LocalTime = 0;
+        animation.State = AnimationState.Clip;
+        animation.Clip.Clip = _stretchingAnimation;
+        animation.Clip.TimeOffset = 0;
+        animation.Clip.TimeElapsed = 0;
     }
 }

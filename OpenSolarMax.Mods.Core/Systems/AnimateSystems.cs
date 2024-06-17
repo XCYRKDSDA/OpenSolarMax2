@@ -17,19 +17,34 @@ public sealed partial class UpdateAnimationTimeSystem(World world, IAssetsManage
     [All<Animation>]
     private static void Animate([Data] GameTime t, ref Animation animation)
     {
-        if (animation.Clip is null && animation.Transition is null)
+        if (animation.State == AnimationState.Idle)
             return;
 
-        animation.LocalTime += (float)t.ElapsedGameTime.TotalSeconds;
+        if (animation.State == AnimationState.Clip)
+        {
+            animation.Clip.TimeElapsed += (float)t.ElapsedGameTime.TotalSeconds;
+            while (animation.Clip.TimeElapsed > 4 * animation.Clip.Clip.Length)
+                animation.Clip.TimeElapsed -= 2 * animation.Clip.Clip.Length;
+        }
+        else if (animation.State == AnimationState.Transition)
+        {
+            animation.Transition.TimeElapsed += (float)t.ElapsedGameTime.TotalSeconds;
 
-        // 当动画时间超过了过渡时间时，说明过渡已经完成，则不再记录上一则动画，并且允许对动画时间进行限幅
-        if (animation.Transition is not null && animation.LocalTime >= animation.Transition.Value.Duration)
-            animation.Transition = null;
-
-        // 当不存在过渡需求时，将动画时间限制在四倍动画时长之内，保证float的精度，同时不论对于循环动画还是折返循环动画都能正常工作
-        if (animation.Transition is null && animation.Clip is not null &&
-            animation.LocalTime >= animation.Clip.Length * 4)
-            animation.LocalTime -= animation.Clip.Length * 2;
+            if (animation.Transition.TimeElapsed > animation.Transition.Duration)
+            {
+                animation.State = AnimationState.Clip;
+                animation.Clip = new()
+                {
+                    TimeOffset = 0,
+                    TimeElapsed = animation.Transition.TimeElapsed,
+                    Clip = animation.Transition.NextClip,
+                };
+                while (animation.Clip.TimeElapsed > 4 * animation.Clip.Clip.Length)
+                    animation.Clip.TimeElapsed -= 2 * animation.Clip.Clip.Length;
+            }
+        }
+        else
+            throw new ArgumentOutOfRangeException(nameof(animation));
     }
 }
 
@@ -41,17 +56,21 @@ public sealed partial class AnimateSystem(World world, IAssetsManager assets)
     [All<Animation>]
     private static void Animate(Entity entity, in Animation animation)
     {
-        if (animation.Transition is null)
-            AnimationEvaluator<Entity>.EvaluateAndSet(ref entity, animation.Clip, animation.LocalTime);
-        else
-        {
+        if (animation.State == AnimationState.Idle)
+            return;
+
+        if (animation.State == AnimationState.Clip)
+            AnimationEvaluator<Entity>.EvaluateAndSet(ref entity, animation.Clip.Clip,
+                                                      animation.Clip.TimeElapsed + animation.Clip.TimeOffset);
+        else if (animation.State == AnimationState.Transition)
             AnimationEvaluator<Entity>.TweenAndSet(
                 ref entity,
-                animation.Transition.Value.PreviousClip,
-                animation.Transition.Value.PreviousClipTime + animation.LocalTime,
-                animation.Clip, animation.LocalTime,
-                animation.Transition.Value.Tweener, animation.LocalTime / animation.Transition.Value.Duration
+                animation.Transition.PreviousClip,
+                animation.Transition.PreviousClipTimeOffset + animation.Transition.TimeElapsed,
+                animation.Transition.NextClip, animation.Transition.TimeElapsed,
+                animation.Transition.Tweener, animation.Transition.TimeElapsed / animation.Transition.Duration
             );
-        }
+        else
+            throw new ArgumentOutOfRangeException(nameof(animation));
     }
 }

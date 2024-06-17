@@ -37,8 +37,10 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
 
         // 设置动画
         ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _pulseAnimation;
-        animation.LocalTime = 0;
+        animation.State = AnimationState.Clip;
+        animation.Clip.Clip = _pulseAnimation;
+        animation.Clip.TimeOffset = 0;
+        animation.Clip.TimeElapsed = 0;
 
         // 设置定时销毁
         ref var expiration = ref entity.Get<ExpiredAfterTimeout>();

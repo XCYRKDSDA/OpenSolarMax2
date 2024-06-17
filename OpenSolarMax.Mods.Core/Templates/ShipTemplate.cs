@@ -46,8 +46,9 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置闪烁动画
-        animation.Clip = _unitBlinkingAnimationClip;
-        animation.LocalTime = new Random().NextSingle() % _unitBlinkingAnimationClip.Length;
-        animation.Transition = null;
+        animation.State = AnimationState.Clip;
+        animation.Clip.Clip = _unitBlinkingAnimationClip;
+        animation.Clip.TimeOffset = new Random().NextSingle() % _unitBlinkingAnimationClip.Length;
+        animation.Clip.TimeElapsed = 0;
     }
 }
