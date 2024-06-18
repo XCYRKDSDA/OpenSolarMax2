@@ -45,7 +45,8 @@ public static class Archetypes
             typeof(TreeRelationship<Party>.AsChild),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(Animation),
-            typeof(TrailOf.AsShip)
+            typeof(TrailOf.AsShip),
+            typeof(PopulationCost)
         );
 
     public static readonly Archetype PredefinedOrbit =
@@ -63,7 +64,8 @@ public static class Archetypes
             typeof(Producible),
             typeof(Combatable),
             typeof(Shippable),
-            typeof(TreeRelationship<Party>.AsParent)
+            typeof(TreeRelationship<Party>.AsParent),
+            typeof(PartyPopulationRegistry)
         );
 
     public static readonly Archetype View =

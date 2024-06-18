@@ -37,7 +37,10 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
         if (ships[party].Count() >= productable.Population)
             return false;
 
-        // TODO：己方各星球单位总数量超过总容量的不生产
+        // 己方各星球单位总数量超过总容量的不生产
+        ref readonly var populationRegistry = ref party.Entity.Get<PartyPopulationRegistry>();
+        if (populationRegistry.CurrentPopulation >= populationRegistry.PopulationLimit)
+            return false;
 
         return true;
     }

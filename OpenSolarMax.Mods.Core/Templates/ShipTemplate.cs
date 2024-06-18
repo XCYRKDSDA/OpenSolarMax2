@@ -30,6 +30,7 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         ref var sprite = ref entity.Get<Sprite>();
         ref var revolutionState = ref entity.Get<RevolutionState>();
         ref var animation = ref entity.Get<Animation>();
+        ref var populationCost = ref entity.Get<PopulationCost>();
 
         // 置于世界系原点
         transform.Translation = Vector3.Zero;
@@ -50,5 +51,8 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         animation.Clip.Clip = _unitBlinkingAnimationClip;
         animation.Clip.TimeOffset = new Random().NextSingle() % _unitBlinkingAnimationClip.Length;
         animation.Clip.TimeElapsed = 0;
+        
+        // 占用一个人口
+        populationCost.Value = 1;
     }
 }
