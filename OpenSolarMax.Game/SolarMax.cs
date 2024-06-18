@@ -465,6 +465,16 @@ public class SolarMax : XNAGame
         // 将关卡加载到世界中
         var level = levelsAssets.Load<Level>(targetLevelFile);
         worldLoader.Load(level, _world);
+        
+        // 将当前UI记录到世界的View实体中
+        _world.Query(new QueryDescription().WithAll<LevelUIContext>(),
+                     (ref LevelUIContext uiContext) => uiContext = _uiContext);
+        
+        // 初始化所有系统
+        _coreUpdateSystems.Initialize();
+        _structuralChangeSystems.Initialize();
+        _lateUpdateSystems.Initialize();
+        _drawSystems.Initialize();
 
         // 对新加入的实体进行事后求解
         _lateUpdateSystems.JustUpdate(new GameTime());

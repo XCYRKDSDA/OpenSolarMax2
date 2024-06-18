@@ -1,4 +1,5 @@
-﻿using OpenSolarMax.Game.Utils;
+﻿using OpenSolarMax.Game;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core;
@@ -74,7 +75,8 @@ public static class Archetypes
             typeof(RelativeTransform),
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
-            typeof(TreeRelationship<Party>.AsChild)
+            typeof(TreeRelationship<Party>.AsChild),
+            typeof(LevelUIContext)
         );
 
     public static readonly Archetype Animation =
