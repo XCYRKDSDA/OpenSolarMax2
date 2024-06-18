@@ -4,6 +4,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Myra;
+using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
 using Nine.Graphics;
@@ -126,6 +127,7 @@ public class SolarMax : XNAGame
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
+            Margin = new Thickness(20),
             RowsProportions =
             {
                 new() { Type = ProportionType.Auto },
@@ -134,12 +136,12 @@ public class SolarMax : XNAGame
             },
             ColumnsProportions =
             {
-                new() { Type = ProportionType.Part, Value = 1 },
-                new() { Type = ProportionType.Part, Value = 3 },
-                new() { Type = ProportionType.Part, Value = 1 }
+                new() { Type = ProportionType.Auto },
+                new() { Type = ProportionType.Fill },
+                new() { Type = ProportionType.Auto }
             },
-            //ShowGridLines = true,
-            //GridLinesColor = Color.White,
+            // ShowGridLines = true,
+            // GridLinesColor = Color.White,
         };
         _desktop.Widgets.Add(grid);
 
@@ -147,20 +149,21 @@ public class SolarMax : XNAGame
 
         // 关卡UI结构如下:
         //
-        // +-------+-------+-------+
-        // |          Top          |
-        // +-------+-------+-------+
-        // | Left  | World | Right |
-        // +-------+-------+-------+
-        // |        Bottom         |
-        // +-------+-------+-------+
+        // +---------------------------+
+        // | +-------+-------+-------+ |
+        // | |          Top          | |
+        // | +-------+-------+-------+ |
+        // | | Left  | World | Right | |
+        // | +-------+-------+-------+ |
+        // | |        Bottom         | |
+        // | +-------+-------+-------+ |
+        // +---------------------------+
 
         // 上方工具栏
         var topPanel = new HorizontalStackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Top,
-            Margin = new(20, 20, 20, 0),
+            VerticalAlignment = VerticalAlignment.Center,
         };
         Grid.SetRow(topPanel, 0);
         Grid.SetColumn(topPanel, 0);
@@ -171,8 +174,7 @@ public class SolarMax : XNAGame
         var bottomPanel = new HorizontalStackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Bottom,
-            Margin = new(20, 0, 20, 20),
+            VerticalAlignment = VerticalAlignment.Center,
         };
         Grid.SetRow(bottomPanel, 2);
         Grid.SetColumn(bottomPanel, 0);
@@ -182,9 +184,8 @@ public class SolarMax : XNAGame
         // 左侧工具栏
         var leftPanel = new VerticalStackPanel()
         {
-            HorizontalAlignment = HorizontalAlignment.Left,
+            HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new(20, 0, 0, 0),
         };
         Grid.SetRow(leftPanel, 1);
         Grid.SetColumn(leftPanel, 0);
@@ -193,9 +194,8 @@ public class SolarMax : XNAGame
         // 右侧工具栏
         var rightPanel = new VerticalStackPanel()
         {
-            HorizontalAlignment = HorizontalAlignment.Right,
+            HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new(0, 0, 20, 0),
         };
         Grid.SetRow(rightPanel, 1);
         Grid.SetColumn(rightPanel, 2);
@@ -221,7 +221,6 @@ public class SolarMax : XNAGame
         {
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new(20, 20, 0, 0),
         };
         Grid.SetColumnSpan(leftStack, 3);
         var exitButton = new ImageButton(null)
@@ -248,7 +247,6 @@ public class SolarMax : XNAGame
         {
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new(0, 20, 20, 0),
         };
         Grid.SetColumnSpan(rightStack, 3);
         var slowButton = new ImageButton(null)
