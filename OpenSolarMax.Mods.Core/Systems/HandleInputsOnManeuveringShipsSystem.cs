@@ -34,7 +34,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
             ref readonly var refSize = ref planet.Get<ReferenceSize>();
             var halfSizeInViewport = Vector2.TransformNormal(new(refSize.Radius), worldToViewport);
             radiusInViewport =
-                MathF.Max(MathF.MaxMagnitude(halfSizeInViewport.X, halfSizeInViewport.Y), radiusInViewport);
+                MathF.Max(MathF.Abs(MathF.MaxMagnitude(halfSizeInViewport.X, halfSizeInViewport.Y)), radiusInViewport);
         }
 
         var positionInViewport = Vector3.Transform(pose.Translation, worldToViewport);

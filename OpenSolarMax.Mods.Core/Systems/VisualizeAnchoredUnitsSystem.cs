@@ -83,7 +83,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         {
             // 计算从世界到UI画布的缩放
             var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
-            var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+            var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
             // 更新文字
             var text = string.Format(_textFormat, registry.Ships[parties[0]].Count());
@@ -107,7 +107,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         {
             // 计算从世界到UI画布的缩放
             var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
-            var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+            var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
             // 计算战斗环的尺寸
             var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
@@ -138,10 +138,10 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
                 var textSize = _font.MeasureString(labels[i]);
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
-                var textPosition = ringCenter
-                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius *
-                                   _labelRadiusFactor * scale
-                                   - textSize / 2;
+                var textPosition =
+                    ringCenter
+                    + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius * _labelRadiusFactor
+                    - textSize / 2;
                 var shadowPosition = textPosition with { Y = textPosition.Y + _shadowDistance };
 
                 var shadowColor = Color.Lerp(colors[i], Color.Black, _shadowDensity)

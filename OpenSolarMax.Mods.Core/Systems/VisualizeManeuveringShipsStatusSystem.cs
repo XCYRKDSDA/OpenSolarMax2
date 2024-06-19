@@ -40,7 +40,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     {
         // 计算选择环的尺寸
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToCanvas);
-        var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+        var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
         var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
 
         // 计算选择环的位置
@@ -70,7 +70,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
-        var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+        var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
         // 计算终点的位置和半径
         var targetCompos = target.Entity.Get<ReferenceSize, AbsoluteTransform>();
@@ -105,7 +105,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
-        var scale = MathF.MaxMagnitude(scale2D.X, scale2D.Y);
+        var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
         foreach (var source in sources)
         {
