@@ -11,6 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
+    protected abstract void ApplyDefaultValueImpl(ref T target);
     protected abstract void ApplyPartyReferenceImpl(in R reference, ref T target);
 
     private static readonly QueryDescription _entitesDecs =
@@ -31,7 +32,10 @@ public abstract partial class ApplyPartyReferenceSystem<T, R>(World world)
     private void ApplyPartyReference(in TreeRelationship<Party>.AsChild asChild, ref T target)
     {
         if (asChild.Index.Parent == EntityReference.Null)
+        {
+            ApplyDefaultValueImpl(ref target);
             return;
+        }
 
         ref readonly var reference = ref asChild.Index.Parent.Entity.Get<R>();
         ApplyPartyReferenceImpl(in reference, ref target);
