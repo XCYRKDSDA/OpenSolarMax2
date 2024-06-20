@@ -31,7 +31,9 @@ public static class Archetypes
             typeof(ProductionAbility),
             typeof(ReferenceSize),
             typeof(Battlefield),
-            typeof(Animation)
+            typeof(Animation),
+            typeof(Colonizable),
+            typeof(ColonizationState) //一般而言所有星球都处在或多或少被殖民的状态，因此一直保留该组件
         );
 
     public static readonly Archetype Ship =
@@ -66,7 +68,8 @@ public static class Archetypes
             typeof(Combatable),
             typeof(Shippable),
             typeof(TreeRelationship<Party>.AsParent),
-            typeof(PartyPopulationRegistry)
+            typeof(PartyPopulationRegistry),
+            typeof(ColonizationAbility)
         );
 
     public static readonly Archetype View =

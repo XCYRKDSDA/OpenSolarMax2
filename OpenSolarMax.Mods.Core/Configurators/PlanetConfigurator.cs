@@ -112,6 +112,8 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         ref var planetSize = ref entity.Get<ReferenceSize>();
         ref var absoluteTransform = ref entity.Get<AbsoluteTransform>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
+        ref var colonizable = ref entity.Get<Colonizable>();
+        ref var colonizationState = ref entity.Get<ColonizationState>();
 
         // 修改星球的尺寸
         if (planetConfig.Radius.HasValue)
@@ -182,8 +184,12 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
 
         // 设置所属阵营
         if (planetConfig.Party != null)
-            World.Worlds[entity.WorldId].Create(
-                new TreeRelationship<Party>(ctx.OtherEntities[planetConfig.Party].Reference(), entity.Reference()));
+        {
+            var party = ctx.OtherEntities[planetConfig.Party].Reference();
+            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(party, entity.Reference()));
+            colonizationState.Party = party;
+            colonizationState.Progress = colonizable.Volume;
+        }
 
         // 设置人口
         if (planetConfig.Population.HasValue)

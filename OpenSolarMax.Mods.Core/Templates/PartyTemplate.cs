@@ -21,6 +21,7 @@ public class PartyTemplate : ITemplate
         ref var producible = ref entity.Get<Producible>();
         ref var combatable = ref entity.Get<Combatable>();
         ref var shippable = ref entity.Get<Shippable>();
+        ref var colonizationAbility = ref entity.Get<ColonizationAbility>();
 
         refColor.Value = Color.White;
 
@@ -30,5 +31,7 @@ public class PartyTemplate : ITemplate
         combatable.MaximumDamagePerUnit = float.PositiveInfinity;
 
         shippable.Speed = 100;
+
+        colonizationAbility.ProgressPerSecond = 1;
     }
 }
