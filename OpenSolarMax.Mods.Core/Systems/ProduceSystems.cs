@@ -78,6 +78,9 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
                                          in TreeRelationship<Party>.AsChild partyRelationship)
     {
         var party = partyRelationship.Index.Parent;
+        if (party == EntityReference.Null)
+            return;
+        
         ref readonly var producible = ref party.Entity.Get<Producible>();
 
         // 生产一个新部队
