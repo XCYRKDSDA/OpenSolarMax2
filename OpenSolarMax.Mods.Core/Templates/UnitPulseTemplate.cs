@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Templates;
 
 public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
 {
-    public Archetype Archetype => Archetypes.Animation;
+    public Archetype Archetype => Archetypes.CountDownAnimation;
 
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipPulse");
 

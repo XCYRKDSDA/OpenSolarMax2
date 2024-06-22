@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Templates;
 
 public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 {
-    public Archetype Archetype => Archetypes.Animation;
+    public Archetype Archetype => Archetypes.CountDownAnimation;
 
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipFlare");
 

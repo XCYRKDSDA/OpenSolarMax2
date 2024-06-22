@@ -100,7 +100,6 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var relativeTransformIdx = world.Create(
                 new TreeRelationship<RelativeTransform>(ship.Entity.Reference(), trail.Reference()),
                 new RelativeTransform());
-            world.Create(new TreeRelationship<Party>(request.Party, trail.Reference()));
             world.Create(new Dependence(trail.Reference(), ship));
         }
 
@@ -226,9 +225,9 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         assets.Load<AnimationClip<Entity>>("Animations/UnitTakingOff.json");
 
     [Query]
-    [All<TrailOf.AsShip, ShippingTask, ShippingState, Animation>]
+    [All<TrailOf.AsShip, ShippingTask, ShippingState, Sprite, Animation>]
     private void CalculateAnimation(in TrailOf.AsShip asShip,
-                                    in ShippingTask shippingTask, in ShippingState shippingState,
+                                    in ShippingTask shippingTask, in ShippingState shippingState, in Sprite sprite,
                                     ref Animation animation)
     {
         // 处理自己的动画
@@ -250,11 +249,16 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
             }
         }
 
-        // 处理尾迹实体的动画
+        // 处理尾迹效果
         var trail = asShip.Index.TrailRef;
+        
+        // 尾迹的颜色和单位的颜色相同
+        Debug.Assert(trail.Entity.Has<Sprite>());
+        trail.Entity.Get<Sprite>().Color = sprite.Color;
+        
+        // 处理尾迹动画
         Debug.Assert(trail.Entity.Has<Animation>());
         ref var trailAnimation = ref trail.Entity.Get<Animation>();
-
         if (trailAnimation.State == AnimationState.Clip)
         {
             if (trailAnimation.Clip.Clip == _trailStretchingAnimation)

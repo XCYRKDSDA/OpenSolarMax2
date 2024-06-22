@@ -86,7 +86,6 @@ public static class Archetypes
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
             typeof(RelativeTransform),
-            typeof(TreeRelationship<Party>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
