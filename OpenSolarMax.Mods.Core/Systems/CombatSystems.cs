@@ -69,10 +69,6 @@ public sealed partial class UpdateCombatSystem(World world, IAssetsManager asset
 /// </summary>
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(AnimateSystem))]
-[ExecuteBefore(typeof(ManageDependenceSystem))]
-[ExecuteBefore(typeof(DestroyBrokenPartyRelationshipSystem))]
-[ExecuteBefore(typeof(DestroyBrokenAnchorageRelationshipSystem))]
-[ExecuteBefore(typeof(DestroyBrokenTransformRelationshipSystem))]
 [ExecuteAfter(typeof(UpdateCombatSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]
 [ExecuteAfter(typeof(SettleProductionSystem))]

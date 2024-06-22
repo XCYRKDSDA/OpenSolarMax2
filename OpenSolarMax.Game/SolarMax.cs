@@ -55,6 +55,7 @@ public class SolarMax : XNAGame
     private readonly World _world = World.Create();
     private readonly Arch.System.Group<GameTime> _coreUpdateSystems = new("coreUpdate");
     private readonly Arch.System.Group<GameTime> _structuralChangeSystems = new("structuralChange");
+    private readonly Arch.System.Group<GameTime> _reactivelyStructuralChangeSystems = new("reactivelyStructuralChange");
     private readonly Arch.System.Group<GameTime> _lateUpdateSystems = new("lateUpdate");
     private readonly Arch.System.Group<GameTime> _drawSystems = new("draw");
 
@@ -420,6 +421,8 @@ public class SolarMax : XNAGame
                 return SystemTypes.CoreUpdate;
             else if (type.GetCustomAttribute<StructuralChangeSystemAttribute>() != null)
                 return SystemTypes.StructuralChange;
+            else if (type.GetCustomAttribute<ReactivelyStructuralChangeSystemAttribute>() != null)
+                return SystemTypes.ReactivelyStructuralChange;
             else if (type.GetCustomAttribute<LateUpdateSystemAttribute>() != null)
                 return SystemTypes.LateUpdate;
             else if (type.GetCustomAttribute<DrawSystemAttribute>() != null)
@@ -437,6 +440,11 @@ public class SolarMax : XNAGame
         );
         _structuralChangeSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.StructuralChange])
+                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .ToArray()
+        );
+        _reactivelyStructuralChangeSystems.Add(
+            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.ReactivelyStructuralChange])
                     .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
                     .ToArray()
         );
@@ -463,14 +471,15 @@ public class SolarMax : XNAGame
         // 将关卡加载到世界中
         var level = levelsAssets.Load<Level>(targetLevelFile);
         worldLoader.Load(level, _world);
-        
+
         // 将当前UI记录到世界的View实体中
         _world.Query(new QueryDescription().WithAll<LevelUIContext>(),
                      (ref LevelUIContext uiContext) => uiContext = _uiContext);
-        
+
         // 初始化所有系统
         _coreUpdateSystems.Initialize();
         _structuralChangeSystems.Initialize();
+        _reactivelyStructuralChangeSystems.Initialize();
         _lateUpdateSystems.Initialize();
         _drawSystems.Initialize();
 
@@ -488,6 +497,7 @@ public class SolarMax : XNAGame
 
         _coreUpdateSystems.JustUpdate(in gameTime);
         _structuralChangeSystems.JustUpdate(in gameTime);
+        _reactivelyStructuralChangeSystems.JustUpdate(in gameTime);
         _lateUpdateSystems.JustUpdate(in gameTime);
 
         base.Update(gameTime);

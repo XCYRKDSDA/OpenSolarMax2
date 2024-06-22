@@ -19,7 +19,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
 [StructuralChangeSystem]
-[ExecuteBefore(typeof(ManageDependenceSystem))]
 public sealed partial class StartShippingSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
@@ -138,8 +137,6 @@ public sealed partial class UpdateShipStateSystem(World world, IAssetsManager as
 }
 
 [StructuralChangeSystem]
-[ExecuteBefore(typeof(ManageDependenceSystem))]
-[ExecuteBefore(typeof(DestroyBrokenTrailRelationshipSystem))]
 public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

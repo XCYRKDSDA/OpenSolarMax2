@@ -4,6 +4,7 @@ internal enum SystemTypes
 {
     CoreUpdate,
     StructuralChange,
+    ReactivelyStructuralChange,
     LateUpdate,
     Draw
 }

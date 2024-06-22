@@ -8,10 +8,17 @@ public sealed class CoreUpdateSystemAttribute : Attribute
 { }
 
 /// <summary>
-/// 对世界状态做出结构性变化的系统
+/// 对世界状态做出结构性变化的系统。此处的系统特指考察实体状态而做出结构性变化的系统
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class StructuralChangeSystemAttribute : Attribute
+public sealed class StructuralChangeSystemAttribute() : Attribute
+{ }
+
+/// <summary>
+/// 对世界状态做出结构性变化的系统。此处的系统特指响应其他结构性变化而做出结构性变化的系统
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class ReactivelyStructuralChangeSystemAttribute() : Attribute
 { }
 
 /// <summary>
