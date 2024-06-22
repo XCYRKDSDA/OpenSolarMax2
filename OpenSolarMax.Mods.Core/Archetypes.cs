@@ -89,6 +89,16 @@ public static class Archetypes
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
+            typeof(Animation)
+        );
+
+    public static readonly Archetype CountDownAnimation =
+        Dependentable + new Archetype(
+            typeof(AbsoluteTransform),
+            typeof(RelativeTransform),
+            typeof(TreeRelationship<RelativeTransform>.AsChild),
+            typeof(TreeRelationship<RelativeTransform>.AsParent),
+            typeof(Sprite),
             typeof(Animation),
             typeof(ExpiredAfterTimeout)
         );

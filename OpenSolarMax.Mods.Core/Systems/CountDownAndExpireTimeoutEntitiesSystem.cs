@@ -9,28 +9,39 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
+[CoreUpdateSystem]
+public sealed partial class CountDownExpirationTimeSystem(World world, IAssetsManager assets)
+    : BaseSystem<World, GameTime>(world), ISystem
+{
+    [Query]
+    [All<ExpiredAfterTimeout>]
+    private static void CountDown([Data] GameTime time, ref ExpiredAfterTimeout expiration)
+    {
+        if (expiration.TimeRemain == Timeout.InfiniteTimeSpan)
+            return;
+
+        expiration.TimeRemain -= time.ElapsedGameTime;
+    }
+}
+
 [StructuralChangeSystem]
-public sealed partial class CountDownAndExpireTimeoutEntitiesSystem(World world, IAssetsManager assets)
+public sealed partial class ExpireTimeoutEntitiesSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
     [All<ExpiredAfterTimeout>]
-    private static void ExpireEntities([Data] CommandBuffer commands, [Data] GameTime time,
+    private static void ExpireEntities([Data] CommandBuffer commands,
                                        Entity entity, ref ExpiredAfterTimeout expiration)
     {
-        //if (expiration.TimeRemain == Timeout.InfiniteTimeSpan)
-        //    return;
-
-        //expiration.TimeRemain -= time.ElapsedGameTime;
-        //if (expiration.TimeRemain <= TimeSpan.Zero)
-        //    commands.Destroy(entity);
+        if (expiration.TimeRemain <= TimeSpan.Zero)
+            commands.Destroy(entity);
     }
 
-    public override void Update(in GameTime t)
+    public override void Update(in GameTime d)
     {
-        ExpireEntitiesQuery(World, _commandBuffer, t);
+        ExpireEntitiesQuery(World, _commandBuffer);
         _commandBuffer.Playback(World);
     }
 
