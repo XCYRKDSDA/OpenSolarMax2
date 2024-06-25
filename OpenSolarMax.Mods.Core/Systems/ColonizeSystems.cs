@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -6,7 +7,9 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -43,6 +46,22 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 {
     private readonly CommandBuffer _commandBuffer = new();
 
+    private readonly HaloExplosionTemplate _haloExplosionTemplate = new(assets);
+
+    private void CreateHaloExplosion(Entity planet, Color color)
+    {
+        var halo = world.Construct(_haloExplosionTemplate.Archetype);
+        _haloExplosionTemplate.Apply(halo);
+
+        // 摆放位置
+        Debug.Assert(planet.Has<AbsoluteTransform>());
+        halo.Get<AbsoluteTransform>() = planet.Get<AbsoluteTransform>();
+        halo.Get<AbsoluteTransform>().Translation.Z = 1000; // 一定位于最前边
+
+        // 设置颜色
+        halo.Get<Sprite>().Color = color;
+    }
+
     [Query]
     [All<Colonizable, ColonizationState, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
     private void SettleColonization(Entity planet,
@@ -63,6 +82,8 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             // 完成殖民
             if (planetParty == EntityReference.Null)
                 World.Create(new TreeRelationship<Party>(state.Party, planet.Reference()));
+            
+            CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
 
             // 移除“占领中”组件
             _commandBuffer.Remove<ColonizationState>(planet);
@@ -74,7 +95,10 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
             // 解除当前阵营的殖民 
             if (planetParty != EntityReference.Null)
+            {
                 World.Destroy(asPartyChild.Index.Relationship);
+                CreateHaloExplosion(planet, Color.White);
+            }
         }
     }
 
