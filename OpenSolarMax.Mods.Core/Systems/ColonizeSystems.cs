@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -26,7 +27,7 @@ public sealed partial class UpdateColonizationSystem(World world, IAssetsManager
         var shipsNum = shipsRegistry.Ships.First().Count();
 
         var deltaProgress = shipsNum * colonizeParty.Entity.Get<ColonizationAbility>().ProgressPerSecond
-                            * (float)time.ElapsedGameTime.TotalSeconds;
+                                     * (float)time.ElapsedGameTime.TotalSeconds;
 
         if (state.Party == colonizeParty || colonizeParty == EntityReference.Null)
             state.Progress += deltaProgress;
@@ -40,6 +41,8 @@ public sealed partial class UpdateColonizationSystem(World world, IAssetsManager
 public sealed partial class SettleColonizationSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
+    private readonly CommandBuffer _commandBuffer = new();
+
     [Query]
     [All<Colonizable, ColonizationState, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
     private void SettleColonization(Entity planet,
@@ -60,6 +63,9 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             // 完成殖民
             if (planetParty == EntityReference.Null)
                 World.Create(new TreeRelationship<Party>(state.Party, planet.Reference()));
+
+            // 移除“占领中”组件
+            _commandBuffer.Remove<ColonizationState>(planet);
         }
         else if (state.Progress < 0)
         {
@@ -70,5 +76,66 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             if (planetParty != EntityReference.Null)
                 World.Destroy(asPartyChild.Index.Relationship);
         }
+    }
+
+    public override void Update(in GameTime t)
+    {
+        SettleColonizationQuery(World);
+        _commandBuffer.Playback(World);
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        _commandBuffer.Dispose();
+    }
+}
+
+[StructuralChangeSystem]
+[ExecuteBefore(typeof(IndexPartyAffiliationSystem))]
+[ExecuteBefore(typeof(SettleColonizationSystem))]
+public sealed partial class StartColonizationSystem(World world, IAssetsManager assets)
+    : BaseSystem<World, GameTime>(world), ISystem
+{
+    private readonly CommandBuffer _commandBuffer = new();
+
+    [Query]
+    [All<Colonizable, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
+    [None<ColonizationState>]
+    private void StartColonization(Entity planet, in Colonizable colonizable,
+                                   in TreeRelationship<Party>.AsChild asPartyChild,
+                                   in AnchoredShipsRegistry shipsRegistry)
+    {
+        if (shipsRegistry.Ships.Count != 1)
+            return;
+        var shipParty = shipsRegistry.Ships.First().Key;
+
+        if (asPartyChild.Index.Parent == shipParty)
+            return;
+
+        // 如果当前星球没有所属阵营，则停靠单位阵营直接开始进行自己的殖民；
+        // 如果当前星球已有阵营，则停靠单位阵营需要先破坏现有阵营的殖民度
+        if (asPartyChild.Index.Parent == EntityReference.Null)
+            _commandBuffer.Add(planet, new ColonizationState() { Party = shipParty, Progress = 0 });
+        else
+        {
+            _commandBuffer.Add(planet, new ColonizationState()
+            {
+                Party = asPartyChild.Index.Parent,
+                Progress = colonizable.Volume
+            });
+        }
+    }
+
+    public override void Update(in GameTime t)
+    {
+        StartColonizationQuery(World);
+        _commandBuffer.Playback(World);
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        _commandBuffer.Dispose();
     }
 }

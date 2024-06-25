@@ -32,8 +32,7 @@ public static class Archetypes
             typeof(ReferenceSize),
             typeof(Battlefield),
             typeof(Animation),
-            typeof(Colonizable),
-            typeof(ColonizationState) //一般而言所有星球都处在或多或少被殖民的状态，因此一直保留该组件
+            typeof(Colonizable)
         );
 
     public static readonly Archetype Ship =

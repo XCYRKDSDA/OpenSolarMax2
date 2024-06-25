@@ -39,7 +39,6 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
         ref var productionAbility = ref entity.Get<ProductionAbility>();
         ref var colonizable = ref entity.Get<Colonizable>();
-        ref var colonizationState = ref entity.Get<ColonizationState>();
 
         // 置于世界系原点
         transform.Translation = Vector3.Zero;
@@ -71,10 +70,8 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
         // 默认单位生产速度为0；且默认进行生产
         productionAbility.Population = 0;
         productionAbility.ProgressPerSecond = 0;
-        
+
         // 默认体量700
         colonizable.Volume = 700;
-        colonizationState.Party = EntityReference.Null;
-        colonizationState.Progress = 0;
     }
 }
