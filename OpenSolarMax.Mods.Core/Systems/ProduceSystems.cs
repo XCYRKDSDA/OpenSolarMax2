@@ -3,10 +3,12 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
+using Nine.Animations;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
@@ -71,15 +73,17 @@ public sealed partial class UpdateProductionSystem(World world, IAssetsManager a
 public sealed partial class SettleProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
+    private readonly UnitBornPulseTemplate _unitBornPulseTemplate = new(assets);
+
     [Query]
     [All<ProductionAbility, ProductionState, TreeRelationship<Party>.AsChild>]
-    private static void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
-                                         in TreeRelationship<Party>.AsChild partyRelationship)
+    private void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
+                                  in TreeRelationship<Party>.AsChild partyRelationship)
     {
         var party = partyRelationship.Index.Parent;
         if (party == EntityReference.Null)
             return;
-        
+
         ref readonly var producible = ref party.Entity.Get<Producible>();
 
         // 生产一个新部队
@@ -88,18 +92,26 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
             var unionArchetype = new Archetype();
             foreach (var template in ability.ProductTemplates)
                 unionArchetype += template.Archetype;
-            var newShip = World.Worlds[planet.WorldId].Construct(in unionArchetype);
+            var newShip = World.Construct(in unionArchetype);
             foreach (var template in ability.ProductTemplates)
                 template.Apply(newShip);
 
             // 设置单位阵营
-            World.Worlds[newShip.WorldId].Create(new TreeRelationship<Party>(party, newShip.Reference()));
+            World.Create(new TreeRelationship<Party>(party, newShip.Reference()));
 
             // 将单位泊入星球
             var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(newShip, planet);
 
             // 随机设置轨道
             RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, planet);
+            
+            // 生成出生动画
+            var pulse = World.Construct(_unitBornPulseTemplate.Archetype);
+            _unitBornPulseTemplate.Apply(pulse);
+            pulse.Get<Sprite>().Color = party.Entity.Get<PartyReferenceColor>().Value;
+            World.Create(new TreeRelationship<RelativeTransform>(newShip.Reference(), pulse.Reference()),
+                         new RelativeTransform());
+            World.Create(new Dependence(pulse.Reference(), newShip.Reference()));
 
             // 减去对应工作量
             state.Progress -= producible.WorkloadPerShip;

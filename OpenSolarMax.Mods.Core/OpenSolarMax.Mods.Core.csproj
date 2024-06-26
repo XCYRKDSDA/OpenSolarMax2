@@ -84,6 +84,12 @@
 		<None Update="Content\Animations\HaloExplosion.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Content\Animations\UnitUnborn.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Content\Animations\UnitBornPulse.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<Import Project="mgfx.targets" />

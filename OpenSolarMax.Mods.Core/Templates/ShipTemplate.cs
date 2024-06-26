@@ -21,8 +21,22 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
 
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(Content.Textures.DefaultShip);
 
+    private const float _bornDuration = 1f;
+
+    private readonly AnimationClip<Entity> _unitUnbornAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitUnborn.json");
+
     private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
+
+    private class BornTweener : ICurve<float>
+    {
+        public float Evaluate(float position)
+        {
+            // 在后10%时才开始上升
+            return position < 0.9f ? 0 : (position - 0.9f) * 10;
+        }
+    }
 
     public void Apply(Entity entity)
     {
@@ -47,11 +61,17 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置闪烁动画
-        animation.State = AnimationState.Clip;
-        animation.Clip.Clip = _unitBlinkingAnimationClip;
-        animation.Clip.TimeOffset = new Random().NextSingle() % _unitBlinkingAnimationClip.Length;
-        animation.Clip.TimeElapsed = 0;
-        
+        animation.State = AnimationState.Transition;
+        animation.Transition = new Animation_Transition()
+        {
+            Duration = _bornDuration,
+            NextClip = _unitBlinkingAnimationClip,
+            PreviousClip = _unitUnbornAnimationClip,
+            PreviousClipTimeOffset = 0,
+            TimeElapsed = 0,
+            Tweener = new BornTweener()
+        };
+
         // 占用一个人口
         populationCost.Value = 1;
     }
