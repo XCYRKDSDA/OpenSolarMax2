@@ -1,0 +1,1 @@
+该项目旨在复刻已经停止维护的游戏SolarMax2和SolarMax3。
