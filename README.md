@@ -18,8 +18,8 @@ The project is modularly designed: a launcher loads different modules to introdu
 
 ### Launcher
 
-- [*] Mod Loading
-- [*] Level packages and level loading
+- [x] Mod Loading
+- [x] Level packages and level loading
 - [ ] Mod/Level package managed by git
 - [ ] Level background
 - [ ] UI for packages management
@@ -27,17 +27,17 @@ The project is modularly designed: a launcher loads different modules to introdu
 
 ### Core Mechanics
 
-- [*] Unit production
-- [*] Unit combat
-- [*] Unit Shipping
-- [*] Unit Revolution
-- [*] Planet colonization
-- [*] Planet revolution
+- [x] Unit production
+- [x] Unit combat
+- [x] Unit Shipping
+- [x] Unit Revolution
+- [x] Planet colonization
+- [x] Planet revolution
 - [ ] Barrier
 - [ ] Basic AI
-- [*] Visualization of unit combat status
-- [*] Visualization of planet colonization
-- [*] Input system for shipping units
+- [x] Visualization of unit combat status
+- [x] Visualization of planet colonization
+- [x] Input system for shipping units
 - [ ] Sound system and effects
 
 ### SolarMax2 Features
