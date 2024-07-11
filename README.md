@@ -60,6 +60,30 @@ The art assets currently used in the project are obtained by unpacking existing 
 
 ## Build and run
 
-> This project is currently in the early stages of development, and many features are very unstable. There is no guarantee that it will always compile successfully and run correctly.
+> This project is currently in the early stages of development, and many features are very unstable. There is no guarantee that it will always compile successfully and run correctly. And the current executable is more like a demo than a game.
 
-Regardless of which IDE is used, both "OpenSolarMax.Launcher" and "OpenSolarMax.Mods.Core" must be compiled separately. This is because the former does not explicitly depend on the latter. Instead, the launcher loads mods by loading the assembly directly at runtime. Once compiled, you can run the launcher project to start the game.
+### Download
+
+Recursively clone the repository:
+
+```bash
+git clone --recursive https://github.com/XCYRKDSDA/OpenSolarMax2.git
+cd OpenSolarMax2
+```
+
+### Build
+
+The project utilizes "mgfxc" to compile shaders. You can follow the instruction at this [link](https://docs.monogame.net/articles/tools/mgfxc.html) to install it.
+
+The launcher "OpenSolarMax.Launcher" and the module "OpenSolarMax.Mods.Core" must be built separately. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
+
+```bash
+dotnet build OpenSolarMax.Launcher
+dotnet build OpenSolarMax.Mods.Core
+```
+
+### Run
+
+```bash
+dotnet run --project OpenSolarMax.Launcher
+```
