@@ -18,9 +18,6 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
 
     private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipTrail");
 
-    private readonly AnimationClip<Entity> _stretchingAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
-
     public void Apply(Entity entity)
     {
         // 设置纹理
@@ -36,12 +33,5 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
         ref var transform = ref entity.Get<RelativeTransform>();
         transform.Translation = Vector3.Zero;
         transform.Rotation = Quaternion.Identity;
-
-        // 设置动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.State = AnimationState.Clip;
-        animation.Clip.Clip = _stretchingAnimation;
-        animation.Clip.TimeOffset = 0;
-        animation.Clip.TimeElapsed = 0;
     }
 }

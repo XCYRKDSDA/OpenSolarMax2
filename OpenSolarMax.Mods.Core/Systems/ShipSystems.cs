@@ -199,24 +199,18 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 }
 
 [LateUpdateSystem]
+[ExecuteAfter(typeof(ApplyUnitBlinkEffectSystem))]
+[ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
 [ExecuteBefore(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(IndexTrailAffiliationSystem))]
 public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const float _landDuration = 0.5f;
+    private const float _takeOffDuration = 0.5f;
 
-    private readonly AnimationClip<Entity> _trailStretchingAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
-
-    private readonly AnimationClip<Entity> _trailExtinguishedAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
-
-    private const float _delayDuration = 0.5f;
-    private const float _takeOffDuration = 0.3f;
-
-    private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
+    private const float _unitShippingFadeInDuration = 0.1f;
+    private const float _unitShippingFadeOutDuration = _landDuration / 2;
 
     private readonly AnimationClip<Entity> _unitShippingAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitShipping.json");
@@ -224,49 +218,86 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
     private readonly AnimationClip<Entity> _unitTakingOffAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitTakingOff.json");
 
+    private readonly AnimationClip<Entity> _trailStretchingAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
+
+    private readonly AnimationClip<Entity> _trailExtinguishedAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
+
     [Query]
     [All<TrailOf.AsShip, ShippingTask, ShippingState, Sprite, Animation>]
-    private void CalculateAnimation(in TrailOf.AsShip asShip,
+    private void CalculateAnimation(Entity ship, in TrailOf.AsShip asShip,
                                     in ShippingTask shippingTask, in ShippingState shippingState, in Sprite sprite,
                                     ref Animation animation)
     {
-        // 处理自己的动画
-        if (animation.State == AnimationState.Clip)
+        // 当行驶时间早于起飞动画时间时，播放起飞动画
+        if (shippingState.TravelledTime < _takeOffDuration)
         {
-            if (animation.Clip.Clip == _unitBlinkingAnimationClip)
+            var takingOffAnimationTime = shippingState.TravelledTime;
+            var fadeInTime = shippingState.TravelledTime;
+            var fadeInRatio = fadeInTime / _unitShippingFadeInDuration;
+
+            switch (fadeInRatio)
             {
-                if (shippingState.TravelledTime <= _takeOffDuration)
-                    animation.TriggerTransition(_unitTakingOffAnimationClip, _takeOffDuration);
+                case >= 0 and < 1:
+                    AnimationEvaluator<Entity>.TweenAndSet(ref ship,
+                                                           null, float.NaN, // 上一个动画设置为空，直接继承上一个系统设置的值
+                                                           _unitTakingOffAnimationClip, takingOffAnimationTime,
+                                                           null, fadeInRatio); // 采用默认的线性差值
+                    break;
+                case >= 1:
+                    AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitTakingOffAnimationClip,
+                                                              takingOffAnimationTime);
+                    break;
             }
-            else if (animation.Clip.Clip == _unitTakingOffAnimationClip)
+        }
+        // 其余时间都播放飞行动画
+        else
+        {
+            var shippingAnimationTime = shippingState.TravelledTime - _takeOffDuration;
+            var fadeOutTime = shippingState.TravelledTime -
+                              (shippingTask.ExpectedTravelDuration - _unitShippingFadeOutDuration);
+            var fadeOutRatio = fadeOutTime / _unitShippingFadeOutDuration;
+
+            switch (fadeOutRatio)
             {
-                animation.TriggerTransition(_unitShippingAnimationClip, _delayDuration - _takeOffDuration);
-            }
-            else if (animation.Clip.Clip == _unitShippingAnimationClip)
-            {
-                if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration / 2)
-                    animation.TriggerTransition(_unitBlinkingAnimationClip, _landDuration / 2);
+                case < 0:
+                    AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitShippingAnimationClip,
+                                                              shippingAnimationTime);
+                    break;
+                case >= 0 and < 1:
+                    AnimationEvaluator<Entity>.TweenAndSet(ref ship,
+                                                           _unitShippingAnimationClip, shippingAnimationTime,
+                                                           null, float.NaN, // 下一个动画设置为空，直接继承上一个系统设置的值
+                                                           null, fadeOutRatio); // 采用默认的线性差值
+                    break;
             }
         }
 
         // 处理尾迹效果
-        var trail = asShip.Index.TrailRef;
-        
+        var trail = asShip.Index.TrailRef.Entity;
+
         // 尾迹的颜色和单位的颜色相同
-        Debug.Assert(trail.Entity.Has<Sprite>());
-        trail.Entity.Get<Sprite>().Color = sprite.Color;
-        
-        // 处理尾迹动画
-        Debug.Assert(trail.Entity.Has<Animation>());
-        ref var trailAnimation = ref trail.Entity.Get<Animation>();
-        if (trailAnimation.State == AnimationState.Clip)
+        Debug.Assert(trail.Has<Sprite>());
+        trail.Get<Sprite>().Color = sprite.Color;
+
+        // 应用尾迹动画
+        if (shippingState.TravelledTime < shippingTask.ExpectedTravelDuration - _landDuration)
         {
-            if (trailAnimation.Clip.Clip == _trailStretchingAnimation)
-            {
-                // 当单位快要结束时，切换进入熄灭状态
-                if (shippingTask.ExpectedTravelDuration - shippingState.TravelledTime <= _landDuration)
-                    trailAnimation.TriggerTransition(_trailExtinguishedAnimation, _landDuration);
-            }
+            var stretchingAnimationTime = shippingState.TravelledTime;
+            AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation, stretchingAnimationTime);
+        }
+        else
+        {
+            var stretchingAnimationTime = shippingState.TravelledTime;
+            var crossTime = shippingState.TravelledTime - (shippingTask.ExpectedTravelDuration - _landDuration);
+            var crossRatio = crossTime / _landDuration;
+
+            // 此处不是淡出，而只是单纯地用多个动画的交融构造效果
+            AnimationEvaluator<Entity>.TweenAndSet(ref trail,
+                                                   _trailStretchingAnimation, stretchingAnimationTime,
+                                                   _trailExtinguishedAnimation, crossTime,
+                                                   null, crossRatio); // 采用默认的线性差值
         }
     }
 }

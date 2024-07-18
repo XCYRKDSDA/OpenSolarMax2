@@ -21,29 +21,11 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
 
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(Content.Textures.DefaultShip);
 
-    private const float _bornDuration = 1f;
-
-    private readonly AnimationClip<Entity> _unitUnbornAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitUnborn.json");
-
-    private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
-
-    private class BornTweener : ICurve<float>
-    {
-        public float Evaluate(float position)
-        {
-            // 在后10%时才开始上升
-            return position < 0.9f ? 0 : (position - 0.9f) * 10;
-        }
-    }
-
     public void Apply(Entity entity)
     {
         ref var transform = ref entity.Get<RelativeTransform>();
         ref var sprite = ref entity.Get<Sprite>();
         ref var revolutionState = ref entity.Get<RevolutionState>();
-        ref var animation = ref entity.Get<Animation>();
         ref var populationCost = ref entity.Get<PopulationCost>();
 
         // 置于世界系原点
@@ -61,16 +43,13 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置闪烁动画
-        animation.State = AnimationState.Transition;
-        animation.Transition = new Animation_Transition()
-        {
-            Duration = _bornDuration,
-            NextClip = _unitBlinkingAnimationClip,
-            PreviousClip = _unitUnbornAnimationClip,
-            PreviousClipTimeOffset = 0,
-            TimeElapsed = 0,
-            Tweener = new BornTweener()
-        };
+        ref var blinkEffect = ref entity.Get<UnitBlinkEffect>();
+        blinkEffect.TimeElapsed = TimeSpan.Zero;
+        blinkEffect.PhaseOffset = new Random().NextSingle();
+        
+        // 设置出生后动画
+        ref var postBornEffect = ref entity.Get<UnitPostBornEffect>();
+        postBornEffect.TimeElapsed = TimeSpan.Zero;
 
         // 占用一个人口
         populationCost.Value = 1;
