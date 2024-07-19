@@ -12,12 +12,9 @@ namespace OpenSolarMax.Mods.Core.Templates;
 
 public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
 {
-    public Archetype Archetype => Archetypes.CountDownAnimation;
+    public Archetype Archetype { get; } = Archetypes.Animation + new Archetype(typeof(UnitBornPulseEffect));
 
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipPulse");
-
-    private readonly AnimationClip<Entity> _bornPulseAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitBornPulse.json");
 
     public void Apply(Entity entity)
     {
@@ -35,15 +32,8 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
         transform.Translation = Vector3.Zero;
         transform.Rotation = Quaternion.Identity;
 
-        // 设置动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.State = AnimationState.Clip;
-        animation.Clip.Clip = _bornPulseAnimationClip;
-        animation.Clip.TimeOffset = 0;
-        animation.Clip.TimeElapsed = 0;
-
-        // 设置定时销毁
-        ref var expiration = ref entity.Get<ExpiredAfterTimeout>();
-        expiration.TimeRemain = TimeSpan.FromSeconds(_bornPulseAnimationClip.Length);
+        // 初始化效果
+        ref var effect = ref entity.Get<UnitBornPulseEffect>();
+        effect.TimeElapsed = TimeSpan.Zero;
     }
 }
