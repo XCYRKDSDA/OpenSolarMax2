@@ -138,8 +138,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var parent = relationship.Entity.Get<TreeRelationship<TrailOf>>().Child;
-            Index = (parent, relationship);
+            var trailRef = relationship.Entity.Get<TrailOf>().Trail;
+            Index = (trailRef, relationship);
         }
 
         bool ICollection<EntityReference>.Remove(EntityReference relationship)
@@ -182,8 +182,8 @@ public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationsh
 
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            var parent = relationship.Entity.Get<TreeRelationship<TrailOf>>().Parent;
-            Index = (parent, relationship);
+            var shipRef = relationship.Entity.Get<TrailOf>().Ship;
+            Index = (shipRef, relationship);
         }
 
         bool ICollection<EntityReference>.Remove(EntityReference relationship)
