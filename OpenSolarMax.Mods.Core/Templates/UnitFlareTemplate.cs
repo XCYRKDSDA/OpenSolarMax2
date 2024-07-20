@@ -37,10 +37,9 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 
         // 设置动画
         ref var animation = ref entity.Get<Animation>();
-        animation.State = AnimationState.Clip;
-        animation.Clip.Clip = _flareAnimation;
-        animation.Clip.TimeOffset = 0;
-        animation.Clip.TimeElapsed = 0;
+        animation.Clip = _flareAnimation;
+        animation.TimeOffset = TimeSpan.Zero;
+        animation.TimeElapsed = TimeSpan.Zero;
 
         // 设置定时销毁
         ref var expiration = ref entity.Get<ExpiredAfterTimeout>();

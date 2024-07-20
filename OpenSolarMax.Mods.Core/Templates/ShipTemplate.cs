@@ -47,13 +47,9 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置闪烁动画
-        animation.State = AnimationState.Clip;
-        animation.Clip = new Animation_Clip()
-        {
-            Clip = _unitBlinkingAnimationClip,
-            TimeElapsed = 0,
-            TimeOffset = new Random().NextSingle(),
-        };
+        animation.Clip = _unitBlinkingAnimationClip;
+        animation.TimeElapsed = TimeSpan.Zero;
+        animation.TimeOffset = TimeSpan.FromSeconds(new Random().NextDouble());
 
         // 占用一个人口
         populationCost.Value = 1;

@@ -5,61 +5,25 @@ using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public enum AnimationState
-{
-    Idle,
-    Clip,
-    Transition
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct Animation_Clip
-{
-    [FieldOffset(0)]
-    public float TimeOffset;
-
-    [FieldOffset(4)]
-    public float TimeElapsed;
-
-    [FieldOffset(16)]
-    public AnimationClip<Entity> Clip;
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct Animation_Transition
-{
-    [FieldOffset(0)]
-    public float PreviousClipTimeOffset;
-
-    [FieldOffset(4)]
-    public float TimeElapsed;
-
-    [FieldOffset(8)]
-    public float Duration;
-
-    [FieldOffset(16)]
-    public AnimationClip<Entity>? PreviousClip;
-
-    [FieldOffset(24)]
-    public AnimationClip<Entity> NextClip;
-
-    [FieldOffset(32)]
-    public ICurve<float>? Tweener;
-}
-
 /// <summary>
-/// 动画组件。描述当前实体正在播放的动画剪辑和时间
+/// 基本动画组件。描述当前实体正在播放的动画剪辑和时间<br/>
+/// 该组件与其系统不负责动画的切换。动画逻辑请使用层叠动画模式
 /// </summary>
 [Component]
-[StructLayout(LayoutKind.Explicit)]
-public struct Animation
+public struct Animation()
 {
-    [FieldOffset(0)]
-    public AnimationState State;
+    /// <summary>
+    /// 该动画已作用的时间
+    /// </summary>
+    public TimeSpan TimeElapsed = TimeSpan.Zero;
 
-    [FieldOffset(8)]
-    public Animation_Clip Clip;
+    /// <summary>
+    /// 该动画计算时的时间偏移
+    /// </summary>
+    public TimeSpan TimeOffset = TimeSpan.Zero;
 
-    [FieldOffset(8)]
-    public Animation_Transition Transition;
+    /// <summary>
+    /// 该动画应用的动画剪辑对象
+    /// </summary>
+    public AnimationClip<Entity>? Clip = null;
 }
