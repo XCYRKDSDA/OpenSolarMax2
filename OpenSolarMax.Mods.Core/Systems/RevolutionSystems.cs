@@ -34,7 +34,7 @@ public sealed partial class UpdateRevolutionPhaseSystem(World world, IAssetsMana
 /// 根据相位计算实体绕其轨道的位姿变换的系统
 /// </summary>
 [LateUpdateSystem]
-[ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteBefore(typeof(CalculateAbsoluteTransformSystem))]
 public sealed partial class CalculateEntitiesTransformAroundOrbitSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem

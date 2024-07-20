@@ -10,7 +10,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [LateUpdateSystem]
-[ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(IndexAnchorageSystem))]
 public sealed partial class UpdateShipRegistrySystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem

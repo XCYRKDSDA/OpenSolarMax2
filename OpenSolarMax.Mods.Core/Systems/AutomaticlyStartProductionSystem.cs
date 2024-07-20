@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 使满足条件的实体自动开始生产单位的系统
 /// </summary>
 [LateUpdateSystem]
-[ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteBefore(typeof(SettleProductionSystem))]
 public sealed partial class AutomaticallyStartProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem

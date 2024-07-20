@@ -68,7 +68,7 @@ public sealed partial class UpdateCombatSystem(World world, IAssetsManager asset
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
 [StructuralChangeSystem]
-[ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(UpdateCombatSystem))]
 [ExecuteAfter(typeof(UpdateProductionSystem))]
 [ExecuteAfter(typeof(SettleProductionSystem))]

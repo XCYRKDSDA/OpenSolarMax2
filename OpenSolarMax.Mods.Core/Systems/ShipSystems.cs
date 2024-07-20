@@ -177,7 +177,7 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
 /// 运输系统。根据运输时间计算单位动画、位置和方向
 /// </summary>
 [LateUpdateSystem]
-[ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteBefore(typeof(CalculateAbsoluteTransformSystem))]
 public sealed partial class CalculateShipPositionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
@@ -201,7 +201,7 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyUnitBlinkEffectSystem))]
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
-[ExecuteBefore(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(IndexTrailAffiliationSystem))]
 public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
