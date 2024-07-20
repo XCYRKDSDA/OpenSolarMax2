@@ -52,7 +52,6 @@ public partial class RemoveUnitPostBornEffectSystem(World world, IAssetsManager 
 }
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(ApplyUnitBlinkEffectSystem))]
 public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

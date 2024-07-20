@@ -48,9 +48,7 @@ public static class Archetypes
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(Animation),
             typeof(TrailOf.AsShip),
-            typeof(PopulationCost),
-            typeof(UnitBlinkEffect),
-            typeof(UnitPostBornEffect)
+            typeof(PopulationCost)
         );
 
     public static readonly Archetype PredefinedOrbit =

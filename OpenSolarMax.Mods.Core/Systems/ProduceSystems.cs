@@ -104,7 +104,10 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
 
             // 随机设置轨道
             RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, planet);
-            
+
+            // 设置出生后动画
+            newShip.Add(new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });
+
             // 生成出生动画
             var pulse = World.Construct(_unitBornPulseTemplate.Archetype);
             _unitBornPulseTemplate.Apply(pulse);

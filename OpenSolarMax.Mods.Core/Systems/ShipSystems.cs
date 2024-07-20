@@ -199,7 +199,6 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
 }
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(ApplyUnitBlinkEffectSystem))]
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
 [ExecuteAfter(typeof(AnimateSystem))]
 [ExecuteAfter(typeof(IndexTrailAffiliationSystem))]

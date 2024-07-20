@@ -21,12 +21,16 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
 
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(Content.Textures.DefaultShip);
 
+    private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
+
     public void Apply(Entity entity)
     {
         ref var transform = ref entity.Get<RelativeTransform>();
         ref var sprite = ref entity.Get<Sprite>();
         ref var revolutionState = ref entity.Get<RevolutionState>();
         ref var populationCost = ref entity.Get<PopulationCost>();
+        ref var animation = ref entity.Get<Animation>();
 
         // 置于世界系原点
         transform.Translation = Vector3.Zero;
@@ -43,13 +47,13 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置闪烁动画
-        ref var blinkEffect = ref entity.Get<UnitBlinkEffect>();
-        blinkEffect.TimeElapsed = TimeSpan.Zero;
-        blinkEffect.PhaseOffset = new Random().NextSingle();
-        
-        // 设置出生后动画
-        ref var postBornEffect = ref entity.Get<UnitPostBornEffect>();
-        postBornEffect.TimeElapsed = TimeSpan.Zero;
+        animation.State = AnimationState.Clip;
+        animation.Clip = new Animation_Clip()
+        {
+            Clip = _unitBlinkingAnimationClip,
+            TimeElapsed = 0,
+            TimeOffset = new Random().NextSingle(),
+        };
 
         // 占用一个人口
         populationCost.Value = 1;
