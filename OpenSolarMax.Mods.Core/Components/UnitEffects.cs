@@ -26,14 +26,3 @@ public struct UnitPostBornEffect()
     /// </summary>
     public TimeSpan TimeElapsed;
 }
-
-/// <summary>
-/// 单位出生时的脉冲动画
-/// </summary>
-public struct UnitBornPulseEffect
-{
-    /// <summary>
-    /// 该效果已作用的时间
-    /// </summary>
-    public TimeSpan TimeElapsed;
-}

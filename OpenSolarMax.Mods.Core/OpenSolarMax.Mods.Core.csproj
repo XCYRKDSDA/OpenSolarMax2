@@ -98,18 +98,6 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Systems\UpdateHaloExplosionEffectSystem.cs">
-	    <DependentUpon>UpdateCameraOutputSystem.cs</DependentUpon>
-	  </Compile>
-	  <Compile Update="Systems\DestroyHaloExplosionEffectSystem.cs">
-	    <DependentUpon>UpdateCameraOutputSystem.cs</DependentUpon>
-	  </Compile>
-	  <Compile Update="Systems\ApplyHaloExplosionEffectSystem.cs">
-	    <DependentUpon>UpdateCameraOutputSystem.cs</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
 	<Import Project="mgfx.targets" />
 
 </Project>

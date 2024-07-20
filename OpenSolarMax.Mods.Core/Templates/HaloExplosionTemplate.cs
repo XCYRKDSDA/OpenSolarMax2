@@ -12,9 +12,12 @@ namespace OpenSolarMax.Mods.Core.Templates;
 
 public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 {
-    public Archetype Archetype => Archetypes.Animation + new Archetype(typeof(HaloExplosionEffect));
+    public Archetype Archetype => Archetypes.CountDownAnimation;
 
     private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>("Textures/Halo.png");
+
+    private readonly AnimationClip<Entity> _explosionAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
 
     public void Apply(Entity entity)
     {
@@ -28,7 +31,14 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置动画
-        ref var effect = ref entity.Get<HaloExplosionEffect>();
-        effect.TimeElapsed = TimeSpan.Zero;
+        ref var animation = ref entity.Get<Animation>();
+        animation.State = AnimationState.Clip;
+        animation.Clip.Clip = _explosionAnimation;
+        animation.Clip.TimeOffset = 0;
+        animation.Clip.TimeElapsed = 0;
+
+        // 设置定时销毁
+        ref var expiration = ref entity.Get<ExpiredAfterTimeout>();
+        expiration.TimeRemain = TimeSpan.FromSeconds(_explosionAnimation.Length);
     }
 }
