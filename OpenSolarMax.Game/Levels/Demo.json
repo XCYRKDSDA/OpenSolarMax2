@@ -12,6 +12,9 @@
 
 		{ "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
 
+		{ "$base": "barrier", "head": [ -300, 0 ], "tail": [ 300, 0 ] },
+		{ "$base": "barrier", "head": [ 0, -200 ], "tail": [ 0, 200 ] },
+
 		{ "$id": "planet01", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0 } },
 		{ "$id": "planet02", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0.5 } },
 
