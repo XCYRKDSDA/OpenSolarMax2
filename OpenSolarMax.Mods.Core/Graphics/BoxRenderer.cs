@@ -27,10 +27,10 @@ internal class BoxRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
         var halfThickness = thickness / 2;
         var min = rectangle.Location;
         var max = rectangle.Location + rectangle.Size;
-        _vertices[0].Position = new(min.X - halfThickness, min.Y - halfThickness, 0);
-        _vertices[1].Position = new(max.X + halfThickness, min.Y - halfThickness, 0);
-        _vertices[2].Position = new(min.X - halfThickness, max.Y + halfThickness, 0);
-        _vertices[3].Position = new(max.X + halfThickness, max.Y + halfThickness, 0);
+        _vertices[0].Position = new(min.X - halfThickness, max.Y + halfThickness, 0);
+        _vertices[1].Position = new(max.X + halfThickness, max.Y + halfThickness, 0);
+        _vertices[2].Position = new(min.X - halfThickness, min.Y - halfThickness, 0);
+        _vertices[3].Position = new(max.X + halfThickness, min.Y - halfThickness, 0);
         _vertices[0].Color = _vertices[1].Color = _vertices[2].Color = _vertices[3].Color = color;
 
         foreach (var pass in Effect.CurrentTechnique.Passes)

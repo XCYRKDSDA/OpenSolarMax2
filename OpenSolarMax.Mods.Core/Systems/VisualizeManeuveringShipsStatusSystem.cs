@@ -146,7 +146,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         // 设置绘图参数
         _graphicsDevice.BlendState = BlendState.AlphaBlend;
         _graphicsDevice.DepthStencilState = DepthStencilState.None;
-        _graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        _graphicsDevice.RasterizerState = RasterizerState.CullClockwise; // 在UI空间绘图，方向被反转
         _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
