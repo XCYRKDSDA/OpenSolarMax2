@@ -14,6 +14,7 @@
 uniform float2 head;
 uniform float2 tail;
 uniform float thickness;
+uniform float round;
 
 uniform float4x4 to_ndc;
 
@@ -74,15 +75,27 @@ float4 ps_main(PixelInput p) : SV_TARGET
     p2head.xy = head - p.coord.xy;
     p2tail.xy = tail - p.coord.xy;
 
-    float dist = abs(cross(p2head, p2tail).z / distance(head, tail));
+    float segment_length = distance(head, tail);
+
+    float dist = abs(cross(p2head, p2tail).z / segment_length);
     float flag_v = 1 - aastep(thickness / 2, dist);
 
     // 计算纵向阈值
 
     float2 head2tail = tail - head;
-    float flag_h = aastep(0, dot(p2tail.xy, head2tail)) - aastep(0, dot(p2head.xy, head2tail));
+    float dhead = -dot(p2head.xy, head2tail) / segment_length;
+    float dtail = dot(p2tail.xy, head2tail) / segment_length;
+    float flag_h = aastep(0, dhead) * aastep(0, dtail);
 
-    return p.color * flag_v * flag_h;
+    // 计算圆角阈值
+
+    float voffset = thickness / 2 - round;
+    float drhead = sqrt(pow(dhead - round, 2) + pow(dist - voffset, 2));
+    float flag_rhead = 1 - aastep(round, drhead) * (1 - step(round, dhead)) * step(voffset, dist);
+    float drtail = sqrt(pow(dtail - round, 2) + pow(dist - voffset, 2));
+    float flag_rtail = 1 - aastep(round, drtail) * (1 - step(round, dtail)) * step(voffset, dist);
+
+    return p.color * flag_v * flag_h * flag_rhead * flag_rtail;
 }
 
 

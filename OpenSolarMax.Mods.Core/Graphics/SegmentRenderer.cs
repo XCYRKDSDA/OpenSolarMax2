@@ -19,11 +19,12 @@ internal class SegmentRenderer(GraphicsDevice graphicsDevice, IAssetsManager ass
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 
-    public void DrawSegment(Vector2 head, Vector2 tail, Color color, float thickness)
+    public void DrawSegment(Vector2 head, Vector2 tail, Color color, float thickness, float round)
     {
         Effect.Head = head;
         Effect.Tail = tail;
         Effect.Thickness = thickness;
+        Effect.Round = round;
 
         var min = Vector2.Min(head, tail);
         var max = Vector2.Max(head, tail);

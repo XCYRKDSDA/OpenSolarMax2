@@ -28,6 +28,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     private readonly Color _boxColor = Color.White * 0.5f;
 
     private const float _lineThickness = 3f;
+    private const float _lineRound = _lineThickness / 3;
     private readonly Color _lineColor = Color.White;
 
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
@@ -97,7 +98,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
             var tailInCanvas = targetInCanvas - unitDirection * targetRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, _lineColor, _lineThickness);
+            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, _lineColor, _lineThickness, _lineRound);
         }
     }
 
@@ -123,7 +124,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             unitDirection.Normalize();
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, _lineColor, _lineThickness);
+            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, _lineColor, _lineThickness, _lineRound);
         }
     }
 

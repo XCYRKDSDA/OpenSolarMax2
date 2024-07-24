@@ -12,6 +12,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
     private readonly EffectParameter _headParam, _tailParam;
     private readonly EffectParameter _thicknessParam;
+    private readonly EffectParameter _roundParam;
 
     #endregion
 
@@ -23,6 +24,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
     private Vector2 _head = Vector2.Zero, _tail = Vector2.Zero;
     private float _thickness = 0;
+    private float _round = 0;
 
     [Flags]
     private enum DirtyFlags
@@ -31,6 +33,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
         WorldViewProj = 1 << 1,
         Shape = 1 << 2,
         Thickness = 1 << 3,
+        Round = 1 << 4,
         All = -1
     }
 
@@ -100,6 +103,16 @@ internal class SegmentEffect : Effect, IEffectMatrices
         }
     }
 
+    public float Round
+    {
+        get => _round;
+        set
+        {
+            _round = value;
+            _dirtyFlags |= DirtyFlags.Round;
+        }
+    }
+
     #endregion
 
     public SegmentEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
@@ -109,6 +122,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
         _headParam = Parameters["head"];
         _tailParam = Parameters["tail"];
         _thicknessParam = Parameters["thickness"];
+        _roundParam = Parameters["round"];
     }
 
     protected override void OnApply()
@@ -124,6 +138,9 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
         if ((_dirtyFlags & DirtyFlags.Thickness) != DirtyFlags.None)
             _thicknessParam.SetValue(_thickness);
+        
+        if ((_dirtyFlags & DirtyFlags.Round) != DirtyFlags.None)
+            _roundParam.SetValue(_round);
 
         _dirtyFlags = DirtyFlags.None;
     }

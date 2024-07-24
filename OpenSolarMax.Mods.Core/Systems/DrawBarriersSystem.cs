@@ -19,6 +19,7 @@ public sealed partial class DrawBarriersSystem(World world, GraphicsDevice graph
     private const float _vertexRadius = 20f;
     private static readonly Color _vertexColor = Color.Gray;
     private const float _edgeThickness = 3f;
+    private const float _edgeRound = _edgeThickness / 3;
     private static readonly Color _edgeColor = Color.HotPink;
 
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
@@ -36,7 +37,7 @@ public sealed partial class DrawBarriersSystem(World world, GraphicsDevice graph
         _circleRenderer.DrawCircle(tail2, _vertexRadius, _vertexColor, _edgeThickness);
 
         // 绘制线段
-        _segmentRenderer.DrawSegment(head2, tail2, _edgeColor, _edgeThickness);
+        _segmentRenderer.DrawSegment(head2, tail2, _edgeColor, _edgeThickness, _edgeRound);
     }
 
     [Query]
