@@ -14,7 +14,9 @@ using OpenSolarMax.Mods.Core.Graphics;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [DrawSystem]
+[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
+[ExecuteAfter(typeof(DrawBarriersSystem))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem

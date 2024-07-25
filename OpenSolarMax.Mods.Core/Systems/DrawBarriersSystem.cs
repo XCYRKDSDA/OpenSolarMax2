@@ -13,6 +13,8 @@ using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [DrawSystem]
+[ExecuteAfter(typeof(DrawSpritesSystem))]
+[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
 public sealed partial class DrawBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {

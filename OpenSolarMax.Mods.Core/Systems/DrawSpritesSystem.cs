@@ -11,6 +11,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [DrawSystem]
+[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
