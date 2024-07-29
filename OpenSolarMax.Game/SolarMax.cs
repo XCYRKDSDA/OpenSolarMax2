@@ -116,6 +116,7 @@ public class SolarMax : XNAGame
         globalAssets.RegisterLoader(new Texture2DLoader(GraphicsDevice));
         globalAssets.RegisterLoader(new TextureAtlasLoader());
         globalAssets.RegisterLoader(new TextureRegionLoader());
+        globalAssets.RegisterLoader(new NinePatchRegionLoader());
         globalAssets.RegisterLoader(new FontSystemLoader());
         globalAssets.RegisterLoader(new ByteArrayLoader());
 
@@ -367,6 +368,7 @@ public class SolarMax : XNAGame
         localAssets.RegisterLoader(new Texture2DLoader(GraphicsDevice));
         localAssets.RegisterLoader(new TextureAtlasLoader());
         localAssets.RegisterLoader(new TextureRegionLoader());
+        localAssets.RegisterLoader(new NinePatchRegionLoader());
         localAssets.RegisterLoader(new FontSystemLoader());
         localAssets.RegisterLoader(new ByteArrayLoader());
         localAssets.RegisterLoader(new EntityAnimationClipLoader()
