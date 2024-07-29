@@ -5,7 +5,7 @@ using Nine.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
-internal class LineRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets) : ILineRenderer
 {
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[8];
 
@@ -16,9 +16,8 @@ internal class LineRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets
         2, 3, 6, 6, 3, 7,
     ];
 
-    public GraphicsDevice GraphicsDevice => graphicsDevice;
-
-    public TintEffect Effect { get; } = new(graphicsDevice, assets);
+    private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
+    private readonly TintEffect _effect = new TintEffect(graphicsDevice, assets);
 
     public void DrawLine(Vector2 head, Vector2 tail, float thickness,
                          NinePatchRegion texture, Color color)
@@ -65,14 +64,14 @@ internal class LineRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets
             _vertices[i * 4 + 3].Position = _vertices[i * 4].Position + new Vector3(head2Tail, 0);
         }
 
-        Effect.Texture = texture.Texture;
+        _effect.Texture = texture.Texture;
 
-        foreach (var pass in Effect.CurrentTechnique.Passes)
+        foreach (var pass in _effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                                                     _vertices, 0, _vertices.Length,
-                                                     _indices, 0, _indices.Length / 3);
+            _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+                                                      _vertices, 0, _vertices.Length,
+                                                      _indices, 0, _indices.Length / 3);
         }
     }
 }

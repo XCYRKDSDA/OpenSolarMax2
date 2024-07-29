@@ -16,21 +16,30 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [DrawSystem]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
 [ExecuteAfter(typeof(UpdateCameraOutputSystem))]
-public sealed partial class VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime>, ISystem
 {
     private const float _nodeSize = 16;
     private static readonly Color _nodeColor = Color.White;
     private const float _edgeThickness = 8f;
     private static readonly Color _edgeColor = Color.Pink;
 
-    private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
+    private readonly GraphicsDevice _graphicsDevice;
+    private readonly SpriteBatch _spriteBatch;
+    private readonly ILineRenderer _lineRenderer;
 
-    private readonly TextureRegion _nodeTexture = assets.Load<TextureRegion>("Textures/BarrierAtlas.json:Node");
-    private readonly NinePatchRegion _barrierTexture = assets.Load<NinePatchRegion>("Textures/BarrierAtlas.json:Edge");
+    private readonly TextureRegion _nodeTexture;
+    private readonly NinePatchRegion _barrierTexture;
 
-    private readonly SpriteBatch _spriteBatch = new(graphicsDevice);
-    private readonly LineRenderer _lineRenderer = new(graphicsDevice, assets);
+    public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+        : base(world)
+    {
+        _graphicsDevice = graphicsDevice;
+        _spriteBatch = new SpriteBatch(graphicsDevice);
+        _lineRenderer = new SpriteBatchLineRenderer(_spriteBatch);
+
+        _nodeTexture = assets.Load<TextureRegion>("Textures/BarrierAtlas.json:Node");
+        _barrierTexture = assets.Load<NinePatchRegion>("Textures/BarrierAtlas.json:Edge");
+    }
 
     [Query]
     [All<Camera, AbsoluteTransform>]
@@ -46,14 +55,8 @@ public sealed partial class VisualizeBarriersSystem(World world, GraphicsDevice 
         // 设置绘图区域
         _graphicsDevice.Viewport = camera.Output;
 
-        // 设置绘图设备参数
-        _graphicsDevice.BlendState = BlendState.AlphaBlend;
-        _graphicsDevice.DepthStencilState = DepthStencilState.Default;
-        _graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-        _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
-
-        // 设置着色器坐标变换参数
-        _lineRenderer.Effect.Projection = canvasToNdc;
+        // 开始绘图
+        _spriteBatch.Begin();
 
         // 绘制边，同时缓存顶点位置
         var nodePosList = new List<Vector2>();
@@ -65,7 +68,8 @@ public sealed partial class VisualizeBarriersSystem(World world, GraphicsDevice 
             var head2InCanvas = new Vector2(headInCanvas.X, headInCanvas.Y);
             var tail2InCanvas = new Vector2(tailInCanvas.X, tailInCanvas.Y);
 
-            _lineRenderer.DrawLine(head2InCanvas, tail2InCanvas, _edgeThickness, _barrierTexture, _edgeColor);
+            _lineRenderer.DrawLine(head2InCanvas, tail2InCanvas, _edgeThickness, _barrierTexture,
+                                   _edgeColor);
 
             if (nodePosList.All(p => Vector2.Distance(p, head2InCanvas) > 5))
                 nodePosList.Add(head2InCanvas);
@@ -76,12 +80,13 @@ public sealed partial class VisualizeBarriersSystem(World world, GraphicsDevice 
 
         // 绘制顶点
         var nodeScale = MathF.Sqrt((_nodeSize * _nodeSize) / (_nodeTexture.Bounds.Width * _nodeTexture.Bounds.Height));
-        _spriteBatch.Begin();
         foreach (var nodePos in nodePosList)
         {
             _spriteBatch.Draw(_nodeTexture.Texture, nodePos, _nodeTexture.Bounds, _nodeColor, 0, new Vector2(26, 25),
                               Vector2.One * nodeScale, SpriteEffects.None, 0);
         }
+
+        // 结束绘图
         _spriteBatch.End();
     }
 
