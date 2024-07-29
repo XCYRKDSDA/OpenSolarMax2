@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [DrawSystem]
 [ExecuteAfter(typeof(UpdateCameraOutputSystem))]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
-[ExecuteAfter(typeof(DrawBarriersSystem))]
+[ExecuteAfter(typeof(VisualizeBarriersSystem))]
 public sealed partial class VisualizeAnchoredUnitsSystem(
     World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
