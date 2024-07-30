@@ -24,7 +24,7 @@ internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssets
                          float headOffset = 0, float tailOffset = 0)
     {
         throw new NotImplementedException(); // TODO: 未实现首尾偏移
-        
+
         var scale = thickness / texture.Bounds.Height;
 
         _vertices[0].TextureCoordinate.X
@@ -76,5 +76,13 @@ internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssets
                                                       _vertices, 0, _vertices.Length,
                                                       _indices, 0, _indices.Length / 3);
         }
+    }
+
+    public void DrawDashLine(Vector2 head, Vector2 tail, float thickness,
+                             float dashLength, float gapLength,
+                             NinePatchRegion texture, Color color,
+                             float headOffset = 0, float tailOffset = 0)
+    {
+        throw new NotImplementedException();
     }
 }
