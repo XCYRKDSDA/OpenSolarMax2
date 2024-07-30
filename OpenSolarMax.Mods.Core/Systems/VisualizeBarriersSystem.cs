@@ -22,6 +22,8 @@ public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime
     private static readonly Color _nodeColor = Color.White;
     private const float _edgeThickness = 8f;
     private static readonly Color _edgeColor = Color.Pink;
+    private const float _edgeDashLength = 12f;
+    private const float _edgeGapLength = 3f;
 
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
@@ -68,8 +70,8 @@ public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime
             var head2InCanvas = new Vector2(headInCanvas.X, headInCanvas.Y);
             var tail2InCanvas = new Vector2(tailInCanvas.X, tailInCanvas.Y);
 
-            _lineRenderer.DrawLine(head2InCanvas, tail2InCanvas, _edgeThickness, _barrierTexture,
-                                   _edgeColor);
+            _lineRenderer.DrawDashLine(head2InCanvas, tail2InCanvas, _edgeThickness, _edgeDashLength, _edgeGapLength,
+                                       _barrierTexture, _edgeColor, _nodeSize, _nodeSize);
 
             if (nodePosList.All(p => Vector2.Distance(p, head2InCanvas) > 5))
                 nodePosList.Add(head2InCanvas);
