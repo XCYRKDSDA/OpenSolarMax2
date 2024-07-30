@@ -10,6 +10,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -32,6 +33,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     private const float _lineThickness = 3f;
     private const float _lineRound = _lineThickness / 3;
     private readonly Color _lineColor = Color.White;
+    private readonly Color _blockedLineColor = Color.Red;
 
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
     private readonly CircleRenderer _circleRenderer = new(graphicsDevice, assets);
@@ -89,6 +91,10 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             ref readonly var refSize = ref compos.t0;
             ref readonly var pose = ref compos.t1;
 
+            var lineColor = _lineColor;
+            if (ManeuveringUtils.CheckBarriersBlocking(World, pose.Translation, targetPose.Translation))
+                lineColor = _blockedLineColor;
+
             // 计算起点位置和半径
             var sourceInCanvas3D = Vector3.Transform(pose.Translation, worldToViewport);
             var sourceInCanvas = new Vector2(sourceInCanvas3D.X, sourceInCanvas3D.Y);
@@ -100,7 +106,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
             var tailInCanvas = targetInCanvas - unitDirection * targetRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, _lineColor, _lineThickness, _lineRound);
+            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, lineColor, _lineThickness, _lineRound);
         }
     }
 
@@ -110,11 +116,17 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
+        var canvasToWorld = Matrix.Invert(worldToViewport);
         foreach (var source in sources)
         {
             var compos = source.Entity.Get<ReferenceSize, AbsoluteTransform>();
             ref readonly var refSize = ref compos.t0;
             ref readonly var pose = ref compos.t1;
+
+            var lineColor = _lineColor;
+            if (ManeuveringUtils.CheckBarriersBlocking(
+                    World, pose.Translation, Vector3.Transform(new Vector3(tailInCanvas, 0), canvasToWorld)))
+                lineColor = _blockedLineColor;
 
             // 计算起点位置和半径
             var sourceInCanvas3D = Vector3.Transform(pose.Translation, worldToViewport);
@@ -126,7 +138,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             unitDirection.Normalize();
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, _lineColor, _lineThickness, _lineRound);
+            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, lineColor, _lineThickness, _lineRound);
         }
     }
 

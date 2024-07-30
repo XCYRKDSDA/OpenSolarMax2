@@ -10,6 +10,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
+using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -119,7 +120,13 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 // 当前右键没有按下，但是之前有选中的目标，则操作单位，并切换至初始状态的简单选择状态
                 foreach (var departure in selection.SimpleSelecting.SelectedSources)
                 {
+                    // 排除目标星球和出发星球相同的情况
                     if (departure == selection.SimpleSelecting.TappingDestination)
+                        continue;
+
+                    // 排除目标星球和出发星球之间被障碍物遮挡的情况
+                    if (ManeuveringUtils.CheckBarriersBlocking(
+                            World, departure.Entity, selection.SimpleSelecting.TappingDestination.Entity))
                         continue;
 
                     ServiceUtils.Call(World, new StartShippingRequest()
@@ -134,7 +141,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 selection.SimpleSelecting = new() { SelectedSources = [] };
             }
         }
-        
+
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // Box-Selecting
         //
@@ -150,7 +157,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 };
             }
         }
-        
+
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // Dragging to Destination
         //
@@ -164,7 +171,13 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 {
                     foreach (var departure in selection.DraggingToDestination.SelectedSources)
                     {
+                        // 排除目标星球和出发星球相同的情况
                         if (departure == selection.DraggingToDestination.CandidateDestination)
+                            continue;
+
+                        // 排除目标星球和出发星球之间被障碍物遮挡的情况
+                        if (ManeuveringUtils.CheckBarriersBlocking(
+                                World, departure.Entity, selection.DraggingToDestination.CandidateDestination.Entity))
                             continue;
 
                         ServiceUtils.Call(World, new StartShippingRequest()
@@ -239,7 +252,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
             selection.BoxSelectingSources.PlanetsInBox =
                 GetBoxedPlanets(in selection.BoxSelectingSources.BoxInViewport, worldToViewport);
         }
-        
+
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // Dragging to Destination
         //
