@@ -6,5 +6,6 @@ namespace OpenSolarMax.Mods.Core.Graphics;
 internal interface ILineRenderer
 {
     void DrawLine(Vector2 head, Vector2 tail, float thickness,
-                  NinePatchRegion texture, Color color);
+                  NinePatchRegion texture, Color color,
+                  float headOffset = 0, float tailOffset = 0);
 }

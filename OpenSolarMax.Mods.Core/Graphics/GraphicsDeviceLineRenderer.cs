@@ -20,8 +20,11 @@ internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssets
     private readonly TintEffect _effect = new TintEffect(graphicsDevice, assets);
 
     public void DrawLine(Vector2 head, Vector2 tail, float thickness,
-                         NinePatchRegion texture, Color color)
+                         NinePatchRegion texture, Color color,
+                         float headOffset = 0, float tailOffset = 0)
     {
+        throw new NotImplementedException(); // TODO: 未实现首尾偏移
+        
         var scale = thickness / texture.Bounds.Height;
 
         _vertices[0].TextureCoordinate.X
