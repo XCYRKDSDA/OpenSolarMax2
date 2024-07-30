@@ -82,6 +82,9 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
         var mouseInViewport = new Point(mouse.X - viewport.X, mouse.Y - viewport.Y);
 
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // Simple Selecting
+        //
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -131,6 +134,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 selection.SimpleSelecting = new() { SelectedSources = [] };
             }
         }
+        
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // Box-Selecting
+        //
         else if (selection.State == ShipsSelection_State.BoxSelectingSources)
         {
             if (mouse.LeftButton == ButtonState.Released)
@@ -143,6 +150,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
                 };
             }
         }
+        
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // Dragging to Destination
+        //
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
             if (mouse.LeftButton == ButtonState.Released)
@@ -182,6 +193,9 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
         var mouseInViewport = new Point(mouse.X - viewport.X, mouse.Y - viewport.Y);
 
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // Simple Selecting
+        //
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
             selection.SimpleSelecting.PointingPlanet =
@@ -210,6 +224,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
             else
                 selection.SimpleSelecting.TappingDestination = EntityReference.Null;
         }
+
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // Box-Selecting
+        //
         else if (selection.State == ShipsSelection_State.BoxSelectingSources)
         {
             // 在框选状态下时，更新选框，并计算选框内的星球
@@ -221,6 +239,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
             selection.BoxSelectingSources.PlanetsInBox =
                 GetBoxedPlanets(in selection.BoxSelectingSources.BoxInViewport, worldToViewport);
         }
+        
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // Dragging to Destination
+        //
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
             // 在拖拽状态下时，计算并记录当前拖拽到的目标星球
