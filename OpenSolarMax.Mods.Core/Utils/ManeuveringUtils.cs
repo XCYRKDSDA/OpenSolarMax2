@@ -26,8 +26,10 @@ public static class ManeuveringUtils
 
                 var cross1 = Vector3.Cross(departure - head, destination - head);
                 var cross2 = Vector3.Cross(departure - tail, destination - tail);
+                var cross3 = Vector3.Cross(head - departure, tail - departure);
+                var cross4 = Vector3.Cross(head - destination, tail - destination);
 
-                if (cross1.Z * cross2.Z <= 0)
+                if (cross1.Z * cross2.Z <= 0 && cross3.Z * cross4.Z <= 0)
                     return true;
             }
         }
