@@ -26,6 +26,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     private const float _ringThickness = 3f;
     private readonly Color _hoveredRingColor = Color.White * 0.5f;
     private readonly Color _selectedRingColor = Color.White;
+    private readonly Color _blockedRingColor = Color.Red;
 
     private const float _boxThickness = 3f;
     private readonly Color _boxColor = Color.White * 0.5f;
@@ -57,43 +58,40 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(EntityReference selected, in Matrix worldToCanvas, Color ringColor, float ringThickness)
+    private void DrawSelected(Entity selected, in Matrix worldToCanvas, Color ringColor, float ringThickness)
     {
-        var compos = selected.Entity.Get<ReferenceSize, AbsoluteTransform>();
+        var compos = selected.Get<ReferenceSize, AbsoluteTransform>();
         DrawSelected(in compos.t0, in compos.t1, in worldToCanvas, ringColor, ringThickness);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(IEnumerable<EntityReference> selecteds, in Matrix worldToCanvas, Color ringColor,
-                              float ringThickness)
+    private void DrawSelected(IEnumerable<Entity> selecteds, in Matrix worldToCanvas,
+                              IEnumerable<Color> ringColors, float ringThickness)
     {
-        foreach (var selected in selecteds)
-            DrawSelected(selected, in worldToCanvas, ringColor, ringThickness);
+        foreach (var (selected, color) in Enumerable.Zip(selecteds, ringColors))
+            DrawSelected(selected, in worldToCanvas, color, ringThickness);
     }
 
-    private void DrawLines(IEnumerable<EntityReference> sources, EntityReference target, in Matrix worldToViewport)
+    private void DrawLines(IEnumerable<Entity> sources, Entity target, in Matrix worldToViewport,
+                           IEnumerable<Color> colors)
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
         // 计算终点的位置和半径
-        var targetCompos = target.Entity.Get<ReferenceSize, AbsoluteTransform>();
+        var targetCompos = target.Get<ReferenceSize, AbsoluteTransform>();
         ref readonly var targetRefSize = ref targetCompos.t0;
         ref readonly var targetPose = ref targetCompos.t1;
         var targetInCanvas3D = Vector3.Transform(targetPose.Translation, worldToViewport);
         var targetInCanvas = new Vector2(targetInCanvas3D.X, targetInCanvas3D.Y);
         var targetRingRadius = targetRefSize.Radius * _ringRadiusFactor * scale;
 
-        foreach (var source in sources)
+        foreach (var (source, color) in Enumerable.Zip(sources, colors))
         {
-            var compos = source.Entity.Get<ReferenceSize, AbsoluteTransform>();
+            var compos = source.Get<ReferenceSize, AbsoluteTransform>();
             ref readonly var refSize = ref compos.t0;
             ref readonly var pose = ref compos.t1;
-
-            var lineColor = _lineColor;
-            if (ManeuveringUtils.CheckBarriersBlocking(World, pose.Translation, targetPose.Translation))
-                lineColor = _blockedLineColor;
 
             // 计算起点位置和半径
             var sourceInCanvas3D = Vector3.Transform(pose.Translation, worldToViewport);
@@ -106,27 +104,22 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
             var tailInCanvas = targetInCanvas - unitDirection * targetRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, lineColor, _lineThickness, _lineRound);
+            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, color, _lineThickness, _lineRound);
         }
     }
 
-    private void DrawLines(IEnumerable<EntityReference> sources, Vector2 tailInCanvas, in Matrix worldToViewport)
+    private void DrawLines(IEnumerable<Entity> sources, Vector2 tailInCanvas, in Matrix worldToViewport,
+                           IEnumerable<Color> colors)
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
-        var canvasToWorld = Matrix.Invert(worldToViewport);
-        foreach (var source in sources)
+        foreach (var (source, color) in Enumerable.Zip(sources, colors))
         {
-            var compos = source.Entity.Get<ReferenceSize, AbsoluteTransform>();
+            var compos = source.Get<ReferenceSize, AbsoluteTransform>();
             ref readonly var refSize = ref compos.t0;
             ref readonly var pose = ref compos.t1;
-
-            var lineColor = _lineColor;
-            if (ManeuveringUtils.CheckBarriersBlocking(
-                    World, pose.Translation, Vector3.Transform(new Vector3(tailInCanvas, 0), canvasToWorld)))
-                lineColor = _blockedLineColor;
 
             // 计算起点位置和半径
             var sourceInCanvas3D = Vector3.Transform(pose.Translation, worldToViewport);
@@ -138,8 +131,26 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             unitDirection.Normalize();
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, lineColor, _lineThickness, _lineRound);
+            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, color, _lineThickness, _lineRound);
         }
+    }
+
+    private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Entity destination)
+    {
+        return departures.Select(
+            departure => ManeuveringUtils.CheckBarriersBlocking(
+                World, departure, destination)
+        );
+    }
+
+    private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Vector2 tailInCanvas,
+                                                in Matrix canvasToWorld)
+    {
+        var tailLocation = Vector3.Transform(new Vector3(tailInCanvas, 0), canvasToWorld);
+        return departures.Select(
+            departure => ManeuveringUtils.CheckBarriersBlocking(
+                World, departure.Get<AbsoluteTransform>().Translation, tailLocation)
+        );
     }
 
     [Query]
@@ -179,19 +190,19 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             if (mouse.LeftButton != ButtonState.Pressed)
             {
                 if (selection.SimpleSelecting.PointingPlanet != Entity.Null)
-                    DrawSelected(selection.SimpleSelecting.PointingPlanet, in worldToCanvas, _hoveredRingColor,
-                                 _ringThickness);
+                    DrawSelected(selection.SimpleSelecting.PointingPlanet, in worldToCanvas,
+                                 _hoveredRingColor, _ringThickness);
             }
 
             // 绘制所有选中的星球
             // TappingSource已经包含在SelectedSources中了，故不重复绘制
-            DrawSelected(selection.SimpleSelecting.SelectedSources, in worldToCanvas, _selectedRingColor,
-                         _ringThickness);
+            DrawSelected(selection.SimpleSelecting.SelectedSources.Select(r => r.Entity), in worldToCanvas,
+                         Enumerable.Repeat(_selectedRingColor, int.MaxValue), _ringThickness);
 
             // 绘制目标星球
             if (selection.SimpleSelecting.TappingDestination != Entity.Null)
-                DrawSelected(selection.SimpleSelecting.TappingDestination, in worldToCanvas, _selectedRingColor,
-                             _ringThickness);
+                DrawSelected(selection.SimpleSelecting.TappingDestination.Entity, in worldToCanvas,
+                             _selectedRingColor, _ringThickness);
         }
 
         // 当处于框选状态时，还需要绘制选框和选框内的星球
@@ -200,8 +211,8 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             // 绘制所有选中的星球
             DrawSelected(
                 Enumerable.Concat(selection.BoxSelectingSources.OtherSelectedPlanets,
-                                  selection.BoxSelectingSources.PlanetsInBox),
-                in worldToCanvas, _selectedRingColor, _ringThickness);
+                                  selection.BoxSelectingSources.PlanetsInBox).Select(r => r.Entity),
+                in worldToCanvas, Enumerable.Repeat(_selectedRingColor, int.MaxValue), _ringThickness);
 
             // 绘制选框
             _boxRenderer.DrawBox(selection.BoxSelectingSources.BoxInViewport, _boxColor, _boxThickness);
@@ -210,19 +221,33 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         // 当处于拖拽状态时，还需要绘制起点到目标的线段
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
-            DrawSelected(selection.DraggingToDestination.SelectedSources, in worldToCanvas, _selectedRingColor,
-                         _ringThickness);
+            // 所有不能抵达目标位置的出发点和边画红色圈
+            // 如果所有出发点都无法到达目标点，则目标点画红色圈
 
-            // 当存在候选星球时，将线段终点吸附到候选星球上
-            if (selection.DraggingToDestination.CandidateDestination != Entity.Null)
-            {
-                DrawSelected(selection.DraggingToDestination.CandidateDestination, in worldToCanvas, _selectedRingColor,
-                             _ringThickness);
-                DrawLines(selection.DraggingToDestination.SelectedSources,
-                          selection.DraggingToDestination.CandidateDestination, in worldToCanvas);
-            }
+            var blockStates =
+                selection.DraggingToDestination.CandidateDestination == EntityReference.Null
+                    ? CalculateBlocking(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
+                                        mouseInCanvas.ToVector2(), Matrix.Invert(worldToCanvas)).ToArray()
+                    : CalculateBlocking(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
+                                        selection.DraggingToDestination.CandidateDestination.Entity).ToArray();
+
+            var sourceColors = blockStates.Select(b => b ? _blockedRingColor : _selectedRingColor);
+            DrawSelected(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity), in worldToCanvas,
+                         sourceColors, _ringThickness);
+
+            var edgeColors = blockStates.Select(b => b ? _blockedLineColor : _lineColor);
+            if (selection.DraggingToDestination.CandidateDestination == EntityReference.Null)
+                DrawLines(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
+                          mouseInCanvas.ToVector2(), worldToCanvas, edgeColors);
             else
-                DrawLines(selection.DraggingToDestination.SelectedSources, mouseInCanvas.ToVector2(), in worldToCanvas);
+            {
+                DrawLines(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
+                          selection.DraggingToDestination.CandidateDestination.Entity, worldToCanvas, edgeColors);
+
+                var targetColor = blockStates.All(b => b) ? _blockedRingColor : _selectedRingColor;
+                DrawSelected(selection.DraggingToDestination.CandidateDestination, in worldToCanvas,
+                             targetColor, _ringThickness);
+            }
         }
     }
 
