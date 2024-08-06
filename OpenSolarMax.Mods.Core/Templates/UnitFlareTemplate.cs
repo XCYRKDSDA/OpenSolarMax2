@@ -43,6 +43,7 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 
         // 设置定时销毁
         ref var expiration = ref entity.Get<ExpiredAfterTimeout>();
-        expiration.TimeRemain = TimeSpan.FromSeconds(0.3);
+        expiration.ElapsedTime = TimeSpan.Zero;
+        expiration.ExpiryTime = TimeSpan.FromSeconds(0.3);
     }
 }

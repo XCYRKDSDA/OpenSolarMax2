@@ -17,10 +17,7 @@ public sealed partial class CountDownExpirationTimeSystem(World world, IAssetsMa
     [All<ExpiredAfterTimeout>]
     private static void CountDown([Data] GameTime time, ref ExpiredAfterTimeout expiration)
     {
-        if (expiration.TimeRemain == Timeout.InfiniteTimeSpan)
-            return;
-
-        expiration.TimeRemain -= time.ElapsedGameTime;
+        expiration.ElapsedTime += time.ElapsedGameTime;
     }
 }
 
@@ -35,7 +32,7 @@ public sealed partial class ExpireTimeoutEntitiesSystem(World world, IAssetsMana
     private static void ExpireEntities([Data] CommandBuffer commands,
                                        Entity entity, ref ExpiredAfterTimeout expiration)
     {
-        if (expiration.TimeRemain <= TimeSpan.Zero)
+        if (expiration.ElapsedTime > expiration.ExpiryTime)
             commands.Destroy(entity);
     }
 

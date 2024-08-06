@@ -38,6 +38,7 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 
         // 设置定时销毁
         ref var expiration = ref entity.Get<ExpiredAfterTimeout>();
-        expiration.TimeRemain = TimeSpan.FromSeconds(_explosionAnimation.Length);
+        expiration.ElapsedTime = TimeSpan.Zero;
+        expiration.ExpiryTime = TimeSpan.FromSeconds(_explosionAnimation.Length);
     }
 }

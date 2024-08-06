@@ -10,8 +10,14 @@ namespace OpenSolarMax.Mods.Core.Components;
 public struct ExpiredAfterTimeout
 {
     /// <summary>
-    /// 距离实体销毁还剩余的时间。
-    /// 当其为<see cref="Timeout.InfiniteTimeSpan"/>表示实体永不销毁
+    /// 已经经过的时间
     /// </summary>
-    public TimeSpan TimeRemain;
+    public TimeSpan ElapsedTime;
+    
+    /// <summary>
+    /// 实体存活的时间。<br/>
+    /// 当其为<see cref="Timeout.InfiniteTimeSpan"/>可以实际上造成实体永不销毁，
+    /// 但是仍然推荐不倒计时就根本不要添加这个组件以参与这个逻辑
+    /// </summary>
+    public TimeSpan ExpiryTime;
 }

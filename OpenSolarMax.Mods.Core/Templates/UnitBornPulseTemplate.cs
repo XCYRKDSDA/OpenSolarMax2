@@ -43,6 +43,7 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
 
         // 设置定时销毁
         ref var expiration = ref entity.Get<ExpiredAfterTimeout>();
-        expiration.TimeRemain = TimeSpan.FromSeconds(_bornPulseAnimationClip.Length);
+        expiration.ElapsedTime = TimeSpan.Zero;
+        expiration.ExpiryTime = TimeSpan.FromSeconds(_bornPulseAnimationClip.Length);
     }
 }
