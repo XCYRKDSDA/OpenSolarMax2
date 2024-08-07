@@ -40,10 +40,5 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _pulseAnimation;
         animation.TimeOffset = TimeSpan.Zero;
         animation.TimeElapsed = TimeSpan.Zero;
-
-        // 设置定时销毁
-        ref var expiration = ref entity.Get<ExpiredAfterTimeout>();
-        expiration.ElapsedTime = TimeSpan.Zero;
-        expiration.ExpiryTime = TimeSpan.FromSeconds(0.6);
     }
 }

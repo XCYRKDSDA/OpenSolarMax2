@@ -99,6 +99,6 @@ public static class Archetypes
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
             typeof(Animation),
-            typeof(ExpiredAfterTimeout)
+            typeof(ExpireAfterAnimationCompleted)
         );
 }
