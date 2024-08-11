@@ -10,14 +10,20 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
-public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
+public class HaloExplosionTemplate : ITemplate
 {
     public Archetype Archetype => Archetypes.CountDownAnimation;
 
-    private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>("Textures/Halo.png");
+    private readonly TextureRegion _haloTexture;
 
-    private readonly AnimationClip<Entity> _explosionAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
+    private readonly ParametricAnimationClip<Entity> _rawExplosionAnimation;
+
+    public HaloExplosionTemplate(IAssetsManager assets)
+    {
+        _haloTexture = assets.Load<TextureRegion>("Textures/Halo.png");
+        _rawExplosionAnimation = assets.Load<ParametricAnimationClip<Entity>>("Animations/HaloExplosion.json");
+        _ = _rawExplosionAnimation.Bake(); // 预热代码
+    }
 
     public void Apply(Entity entity)
     {
@@ -32,7 +38,7 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 
         // 设置动画
         ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _explosionAnimation;
+        animation.RawClip = _rawExplosionAnimation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
     }

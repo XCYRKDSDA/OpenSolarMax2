@@ -60,6 +60,10 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
         // 设置颜色
         halo.Get<Sprite>().Color = color;
+
+        // 设置尺寸
+        ref readonly var refSize = ref planet.Get<ReferenceSize>();
+        halo.Get<Animation>().RawClip!.Parameters["SCALE"] = refSize.Radius / 60;
     }
 
     [Query]
@@ -82,7 +86,7 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             // 完成殖民
             if (planetParty == EntityReference.Null)
                 World.Create(new TreeRelationship<Party>(state.Party, planet.Reference()));
-            
+
             CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
 
             // 移除“占领中”组件
