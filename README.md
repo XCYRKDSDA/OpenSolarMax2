@@ -33,7 +33,7 @@ The project is modularly designed: a launcher loads different modules to introdu
 - [x] Unit Revolution
 - [x] Planet colonization
 - [x] Planet revolution
-- [ ] Barrier
+- [x] Barrier
 - [ ] Basic AI
 - [x] Visualization of unit combat status
 - [x] Visualization of planet colonization
