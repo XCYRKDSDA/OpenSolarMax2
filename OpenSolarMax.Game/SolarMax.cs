@@ -371,12 +371,11 @@ public class SolarMax : XNAGame
         localAssets.RegisterLoader(new NinePatchRegionLoader());
         localAssets.RegisterLoader(new FontSystemLoader());
         localAssets.RegisterLoader(new ByteArrayLoader());
-        localAssets.RegisterLoader(new EntityAnimationClipLoader()
-        {
-            ComponentTypes = loadedBehaviorMods.SelectMany((t) => t.Item3.ExportedTypes)
+        var componentTypes = loadedBehaviorMods.SelectMany((t) => t.Item3.ExportedTypes)
                                                .Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
-                                               .ToList()
-        });
+                                               .ToList();
+        localAssets.RegisterLoader(new EntityAnimationClipLoader() { ComponentTypes = componentTypes });
+        localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader() { ComponentTypes = componentTypes });
 
         // 从行为包中寻找配置器类型并实例化
         var configurators = new Dictionary<string, List<IEntityConfigurator>>();

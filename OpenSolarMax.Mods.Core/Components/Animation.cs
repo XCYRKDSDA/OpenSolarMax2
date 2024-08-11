@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Arch.Core;
+﻿using Arch.Core;
 using Nine.Animations;
 using OpenSolarMax.Game.ECS;
 
@@ -26,4 +25,9 @@ public struct Animation()
     /// 该动画应用的动画剪辑对象
     /// </summary>
     public AnimationClip<Entity>? Clip = null;
+
+    /// <summary>
+    /// 该动画应用的原始动画剪辑对象。需要烘焙后得到可直接使用的动画剪辑
+    /// </summary>
+    public ParametricAnimationClip<Entity>? RawClip = null;
 }

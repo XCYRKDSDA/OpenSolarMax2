@@ -30,8 +30,14 @@ public sealed partial class AnimateSystem(World world, IAssetsManager assets)
 {
     [Query]
     [All<Animation>]
-    private static void Animate(Entity entity, in Animation animation)
+    private static void Animate(Entity entity, ref Animation animation)
     {
+        if (animation.RawClip is not null)
+        {
+            animation.Clip = animation.RawClip.Bake();
+            animation.RawClip = null;
+        }
+
         if (animation.Clip is null)
             return;
 
