@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 		<Effect Include="Content\Effects\*.fx" />
-	</ItemGroup>
+    </ItemGroup>
 
 	<Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">
 		<Copy SourceFiles="@(CompiledEffect)" DestinationFiles="$(OutputPath)%(CompiledEffect.Name)" />
@@ -42,69 +42,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Content\Animations\TrailExtinguished.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\TrailStretching.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitFlare.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitPulse.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\PlanetsAtlas.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\PlanetsAtlas.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\ShipAtlas.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\ShipAtlas.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="manifest.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitBlinking.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitShipping.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitTakingOff.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\Halo.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\HaloExplosion.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitUnborn.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitBornPulse.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitPostBorn.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Animations\UnitLanding.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\NinePatch.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\BarrierAtlas.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\Textures\BarrierAtlas.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
+        <None Update="Content\Animations\**\*" >
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\Sounds\**\*" >
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\Textures\**\*" >
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
 	</ItemGroup>
 
 	<Import Project="mgfx.targets" />
