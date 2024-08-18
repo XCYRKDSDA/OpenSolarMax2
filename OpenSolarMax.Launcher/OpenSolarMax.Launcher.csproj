@@ -5,7 +5,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,6 +15,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\OpenSolarMax.Game\OpenSolarMax.Game.csproj" />
+        
+        <ProjectReference Include="../Third Party/FMOD.runtimes/FMOD.runtimes.csproj"/>
 	</ItemGroup>
 
 </Project>
