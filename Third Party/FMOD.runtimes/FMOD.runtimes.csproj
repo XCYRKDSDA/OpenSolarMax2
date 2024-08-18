@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <BuildProjectReferences>false</BuildProjectReferences>
+        <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(RuntimeIdentifier)'=='linux-x64'">
+        <Runtimes Include="linux-x64/*.so"/>
+    </ItemGroup>
+
+    <Target Name="Copy Runtimes" AfterTargets="Build">
+        <Copy SourceFiles="@(Runtimes)" DestinationFolder="$(OutputPath)"/>
+    </Target>
+
+</Project>
