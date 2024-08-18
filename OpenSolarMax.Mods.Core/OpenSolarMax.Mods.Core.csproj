@@ -31,10 +31,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Nine\Nine\Nine.MG.csproj">
-			<Private>false</Private>
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</ProjectReference>
 		<ProjectReference Include="..\OpenSolarMax.Game\OpenSolarMax.Game.csproj">
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>

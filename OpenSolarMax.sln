@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Launcher", "Op
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Game", "OpenSolarMax.Game\OpenSolarMax.Game.csproj", "{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nine.MG", "Nine\Nine\Nine.MG.csproj", "{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nine.MG", "Third Party\Nine\Nine\Nine.MG.csproj", "{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Mods.Core", "OpenSolarMax.Mods.Core\OpenSolarMax.Mods.Core.csproj", "{9228CAC1-9A86-423D-994C-640D1CD2D807}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party", "{CE56A241-A0BB-495E-AA10-2AFD9971B51F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,5 +41,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7FAA78F0-E1E7-451B-9E0E-950D9765F265}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0} = {CE56A241-A0BB-495E-AA10-2AFD9971B51F}
 	EndGlobalSection
 EndGlobal

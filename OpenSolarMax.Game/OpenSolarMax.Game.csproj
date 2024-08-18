@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Nine\Nine\Nine.MG.csproj" />
+		<ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
