@@ -6,7 +6,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,8 +16,13 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\OpenSolarMax.Game\OpenSolarMax.Game.csproj" />
-        
-        <ProjectReference Include="../Third Party/FMOD.runtimes/FMOD.runtimes.csproj"/>
 	</ItemGroup>
+    
+    <ItemGroup>
+        <Content Include="runtimes/$(RuntimeIdentifier)/FMOD/*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <TargetPath>%(Filename)$(Extension)</TargetPath>
+        </Content>
+    </ItemGroup>
 
 </Project>

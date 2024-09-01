@@ -1,62 +1,55 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.8.34511.84
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Launcher", "OpenSolarMax.Launcher\OpenSolarMax.Launcher.csproj", "{42506446-8E6B-4540-90F3-05CDD0B04CF8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party", "{6E7B8EA3-99DF-4CE2-9D3C-F22F160DE6B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Game", "OpenSolarMax.Game\OpenSolarMax.Game.csproj", "{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMOD", "Third Party\FMOD\FMOD.csproj", "{5D4C6E6C-726E-4B93-AB7E-39F3293B143E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nine.MG", "Third Party\Nine\Nine\Nine.MG.csproj", "{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nine.MG", "Third Party\Nine\Nine\Nine.MG.csproj", "{A902522D-8485-45FA-8A29-68F9A68B4947}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSolarMax.Mods.Core", "OpenSolarMax.Mods.Core\OpenSolarMax.Mods.Core.csproj", "{9228CAC1-9A86-423D-994C-640D1CD2D807}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Game", "OpenSolarMax.Game\OpenSolarMax.Game.csproj", "{24D9A443-E0E3-40A1-9948-0AED1134176D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party", "{CE56A241-A0BB-495E-AA10-2AFD9971B51F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Mods.Core", "OpenSolarMax.Mods.Core\OpenSolarMax.Mods.Core.csproj", "{ED07A69C-AADF-4623-8834-1586A99D931A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMOD", "Third Party\FMOD\FMOD.csproj", "{8B6990E1-64AC-4739-86C7-3C21A222E739}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMOD.runtimes", "Third Party\FMOD.runtimes\FMOD.runtimes.csproj", "{6E2FDE69-9C20-43E4-9BF2-1284E245B333}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Launcher", "OpenSolarMax.Launcher\OpenSolarMax.Launcher.csproj", "{9D772E75-2D82-4DEC-8D25-9F1620888C8D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FE239B4-D93A-4797-8F22-B8FA0DD24D0C} = {5FE239B4-D93A-4797-8F22-B8FA0DD24D0C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{42506446-8E6B-4540-90F3-05CDD0B04CF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{42506446-8E6B-4540-90F3-05CDD0B04CF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{42506446-8E6B-4540-90F3-05CDD0B04CF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{42506446-8E6B-4540-90F3-05CDD0B04CF8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44FC0053-BCC1-4B5E-BC1E-5366192EAE20}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9228CAC1-9A86-423D-994C-640D1CD2D807}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9228CAC1-9A86-423D-994C-640D1CD2D807}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9228CAC1-9A86-423D-994C-640D1CD2D807}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9228CAC1-9A86-423D-994C-640D1CD2D807}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8B6990E1-64AC-4739-86C7-3C21A222E739}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B6990E1-64AC-4739-86C7-3C21A222E739}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B6990E1-64AC-4739-86C7-3C21A222E739}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B6990E1-64AC-4739-86C7-3C21A222E739}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E2FDE69-9C20-43E4-9BF2-1284E245B333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E2FDE69-9C20-43E4-9BF2-1284E245B333}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E2FDE69-9C20-43E4-9BF2-1284E245B333}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E2FDE69-9C20-43E4-9BF2-1284E245B333}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7FAA78F0-E1E7-451B-9E0E-950D9765F265}
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5D4C6E6C-726E-4B93-AB7E-39F3293B143E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D4C6E6C-726E-4B93-AB7E-39F3293B143E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D4C6E6C-726E-4B93-AB7E-39F3293B143E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D4C6E6C-726E-4B93-AB7E-39F3293B143E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A902522D-8485-45FA-8A29-68F9A68B4947}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A902522D-8485-45FA-8A29-68F9A68B4947}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A902522D-8485-45FA-8A29-68F9A68B4947}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A902522D-8485-45FA-8A29-68F9A68B4947}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24D9A443-E0E3-40A1-9948-0AED1134176D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24D9A443-E0E3-40A1-9948-0AED1134176D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24D9A443-E0E3-40A1-9948-0AED1134176D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24D9A443-E0E3-40A1-9948-0AED1134176D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED07A69C-AADF-4623-8834-1586A99D931A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED07A69C-AADF-4623-8834-1586A99D931A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED07A69C-AADF-4623-8834-1586A99D931A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED07A69C-AADF-4623-8834-1586A99D931A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B3C9A400-EBC3-4180-A2E7-DFD04BB8CFA0} = {CE56A241-A0BB-495E-AA10-2AFD9971B51F}
-		{8B6990E1-64AC-4739-86C7-3C21A222E739} = {CE56A241-A0BB-495E-AA10-2AFD9971B51F}
-		{6E2FDE69-9C20-43E4-9BF2-1284E245B333} = {CE56A241-A0BB-495E-AA10-2AFD9971B51F}
+		{5D4C6E6C-726E-4B93-AB7E-39F3293B143E} = {6E7B8EA3-99DF-4CE2-9D3C-F22F160DE6B9}
+		{A902522D-8485-45FA-8A29-68F9A68B4947} = {6E7B8EA3-99DF-4CE2-9D3C-F22F160DE6B9}
 	EndGlobalSection
 EndGlobal
