@@ -10,6 +10,8 @@ using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
+using FmodEventDescription = FMOD.Studio.EventDescription;
+using Fmod3DAttributes = FMOD.ATTRIBUTES_3D;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -48,6 +50,9 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
     private readonly HaloExplosionTemplate _haloExplosionTemplate = new(assets);
 
+    private FmodEventDescription _colonizedSoundEvent =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
+
     private void CreateHaloExplosion(Entity planet, Color color)
     {
         var halo = world.Construct(_haloExplosionTemplate.Archetype);
@@ -55,7 +60,8 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
         // 摆放位置
         Debug.Assert(planet.Has<AbsoluteTransform>());
-        halo.Get<AbsoluteTransform>() = planet.Get<AbsoluteTransform>();
+        ref var planetAbsoluteTransform = ref planet.Get<AbsoluteTransform>();
+        halo.Get<AbsoluteTransform>() = planetAbsoluteTransform;
         halo.Get<AbsoluteTransform>().Translation.Z = 1000; // 一定位于最前边
 
         // 设置颜色
@@ -64,6 +70,11 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
         // 设置尺寸
         ref readonly var refSize = ref planet.Get<ReferenceSize>();
         halo.Get<Animation>().RawClip!.Parameters["SCALE"] = refSize.Radius / 60;
+
+        // 播放音效
+        _colonizedSoundEvent.createInstance(out var instance);
+        World.Create(new SoundEffect() { EventInstance = instance }, planetAbsoluteTransform);
+        instance.start();
     }
 
     [Query]

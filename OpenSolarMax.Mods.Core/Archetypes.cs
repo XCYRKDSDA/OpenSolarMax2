@@ -78,7 +78,8 @@ public static class Archetypes
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
             typeof(TreeRelationship<Party>.AsChild),
-            typeof(LevelUIContext)
+            typeof(LevelUIContext),
+            typeof(FMOD.Studio.System)
         );
 
     public static readonly Archetype Animation =

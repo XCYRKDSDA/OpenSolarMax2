@@ -47,7 +47,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
         };
 
         var world = World.Worlds[requestEntity.WorldId];
-        var shipsEnumerator = allShips.GetEnumerator();
+        using var shipsEnumerator = allShips.GetEnumerator();
         while (shipsRemain > 0 && shipsEnumerator.MoveNext())
         {
             var ship = shipsEnumerator.Current;

@@ -1,55 +1,58 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-		<OutputPath>..\OpenSolarMax.Launcher\bin\$(PlatformName)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\$(RuntimeIdentifier)\Mods\OpenSolarMax.Mods.Core</OutputPath>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+        <OutputPath>..\OpenSolarMax.Launcher\bin\$(PlatformName)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\$(RuntimeIdentifier)\Mods\OpenSolarMax.Mods.Core</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	</PropertyGroup>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<MGFXProfile>OpenGL</MGFXProfile>
-	</PropertyGroup>
+    <PropertyGroup>
+        <MGFXProfile>OpenGL</MGFXProfile>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Effect Include="Content\Effects\*.fx" />
+    <ItemGroup>
+        <Effect Include="Content\Effects\*.fx"/>
     </ItemGroup>
 
-	<Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">
-		<Copy SourceFiles="@(CompiledEffect)" DestinationFiles="$(OutputPath)%(CompiledEffect.Name)" />
-	</Target>
+    <Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">
+        <Copy SourceFiles="@(CompiledEffect)" DestinationFiles="$(OutputPath)%(CompiledEffect.Name)"/>
+    </Target>
 
-	<ItemGroup>
-		<PackageReference Include="Arch.System.SourceGenerator" Version="1.1.4">
-			<PrivateAssets>runtime</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
-			<PrivateAssets>runtime</PrivateAssets>
-		</PackageReference>
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.4">
+            <PrivateAssets>runtime</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
+            <PrivateAssets>runtime</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\OpenSolarMax.Game\OpenSolarMax.Game.csproj">
-			<Private>false</Private>
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</ProjectReference>
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\OpenSolarMax.Game\OpenSolarMax.Game.csproj">
+            <Private>false</Private>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </ProjectReference>
+    </ItemGroup>
 
-	<ItemGroup>
-        <None Update="Content\Animations\**\*" >
+    <ItemGroup>
+        <None Update="Content\Animations\**\*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="Content\Sounds\**\*" >
+        <None Update="Content\Sounds\**\*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="Content\Textures\**\*" >
+        <None Update="Content\Textures\**\*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-	</ItemGroup>
+        <None Update="manifest.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-	<Import Project="mgfx.targets" />
+    <Import Project="mgfx.targets"/>
 
 </Project>
