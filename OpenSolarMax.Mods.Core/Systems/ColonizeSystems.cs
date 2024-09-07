@@ -110,10 +110,9 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
             // 解除当前阵营的殖民 
             if (planetParty != EntityReference.Null)
-            {
                 World.Destroy(asPartyChild.Index.Relationship);
-                CreateHaloExplosion(planet, Color.White);
-            }
+
+            CreateHaloExplosion(planet, Color.White);
         }
     }
 
