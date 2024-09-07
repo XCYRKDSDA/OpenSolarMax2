@@ -199,7 +199,7 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
     }
 
     private void LandShip(Entity ship, in ShippingTask task, in ShippingStatus status,
-                                 ref SoundEffect soundEffect)
+                          ref SoundEffect soundEffect)
     {
         // 将单位挂载到目标星球
         var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
@@ -211,7 +211,7 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
         // 销毁单位的尾迹实体
         var world = World.Worlds[ship.WorldId];
         world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
-        
+
         // 播放音效
         _travelDoneSoundEvent.createInstance(out var instance);
         soundEffect.EventInstance = instance;
@@ -248,8 +248,8 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
             pose.Translation = task.DeparturePosition;
         else if (status.State == ShippingState.Travelling)
         {
-            var progress = (status.Travelling.ElapsedTime + status.Travelling.DelayedTime) /
-                           task.ExpectedTravelDuration;
+            var progress = status.Travelling.ElapsedTime /
+                           (task.ExpectedTravelDuration - status.Travelling.DelayedTime);
             pose.Translation = Vector3.Lerp(task.DeparturePosition, task.ExpectedArrivalPosition, progress);
         }
 
@@ -319,7 +319,7 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         else if (shippingStatus.State == ShippingState.Travelling)
         {
             var shippingAnimationTime = shippingStatus.Travelling.ElapsedTime;
-            var fadeOutTime = shippingStatus.Travelling.ElapsedTime -
+            var fadeOutTime = shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime -
                               (shippingTask.ExpectedTravelDuration - _unitShippingFadeOutDuration);
             var fadeOutRatio = fadeOutTime / _unitShippingFadeOutDuration;
 
@@ -348,7 +348,8 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         // 应用尾迹动画
         if (shippingStatus.State == ShippingState.Travelling)
         {
-            if (shippingStatus.Travelling.ElapsedTime < shippingTask.ExpectedTravelDuration - _landDuration)
+            if (shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime
+                < shippingTask.ExpectedTravelDuration - _landDuration)
             {
                 var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
                 AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation,
@@ -357,7 +358,7 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
             else
             {
                 var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
-                var crossTime = shippingStatus.Travelling.ElapsedTime -
+                var crossTime = shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime -
                                 (shippingTask.ExpectedTravelDuration - _landDuration);
                 var crossRatio = crossTime / _landDuration;
 
