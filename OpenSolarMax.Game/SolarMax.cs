@@ -100,8 +100,15 @@ public class SolarMax : XNAGame
 
     #endregion
 
+    private FMOD.Studio.System _globalFmodSystem;
+    private FMOD.Studio.System _localFmodSystem;
+    private FMOD.RESULT _fmodFlag;
+
     protected override void LoadContent()
     {
+        _fmodFlag = FMOD.Studio.System.create(out _globalFmodSystem);
+        _fmodFlag = _globalFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0);
+
         var rootFileSystem = new PhysicalFileSystem();
         var currentDirectory = rootFileSystem.GetDirectoryEntry(
             rootFileSystem.ConvertPathFromInternal(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!));
@@ -119,6 +126,8 @@ public class SolarMax : XNAGame
         globalAssets.RegisterLoader(new NinePatchRegionLoader());
         globalAssets.RegisterLoader(new FontSystemLoader());
         globalAssets.RegisterLoader(new ByteArrayLoader());
+        globalAssets.RegisterLoader(new FmodBankLoader(_globalFmodSystem));
+        globalAssets.RegisterLoader(new FmodEventLoader(_globalFmodSystem));
 
         #region 初始化UI
 
@@ -376,6 +385,11 @@ public class SolarMax : XNAGame
                                                .ToList();
         localAssets.RegisterLoader(new EntityAnimationClipLoader() { ComponentTypes = componentTypes });
         localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader() { ComponentTypes = componentTypes });
+        
+        _fmodFlag = FMOD.Studio.System.create(out _localFmodSystem);
+        _fmodFlag = _localFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0);
+        localAssets.RegisterLoader(new FmodBankLoader(_localFmodSystem));
+        localAssets.RegisterLoader(new FmodEventLoader(_localFmodSystem));
 
         // 从行为包中寻找配置器类型并实例化
         var configurators = new Dictionary<string, List<IEntityConfigurator>>();
@@ -476,6 +490,8 @@ public class SolarMax : XNAGame
         // 将当前UI记录到世界的View实体中
         _world.Query(new QueryDescription().WithAll<LevelUIContext>(),
                      (ref LevelUIContext uiContext) => uiContext = _uiContext);
+        _world.Query(new QueryDescription().WithAll<FMOD.Studio.System>(),
+                     (ref FMOD.Studio.System fmodSystem) => fmodSystem = _localFmodSystem);
 
         // 初始化所有系统
         _coreUpdateSystems.Initialize();
@@ -488,6 +504,14 @@ public class SolarMax : XNAGame
         _lateUpdateSystems.JustUpdate(new GameTime());
     }
 
+    protected override void UnloadContent()
+    {
+        base.UnloadContent();
+
+        _globalFmodSystem.release();
+        _localFmodSystem.release();
+    }
+
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed
@@ -495,6 +519,9 @@ public class SolarMax : XNAGame
             Exit();
 
         //_desktop.UpdateInput();
+
+        _globalFmodSystem.update();
+        _localFmodSystem.update();
 
         _coreUpdateSystems.JustUpdate(in gameTime);
         _structuralChangeSystems.JustUpdate(in gameTime);
