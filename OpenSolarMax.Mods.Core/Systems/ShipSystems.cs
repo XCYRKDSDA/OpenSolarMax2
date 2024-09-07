@@ -12,6 +12,7 @@ using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
+using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -24,6 +25,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 {
     private readonly CommandBuffer _commandBuffer = new();
     private readonly UnitTrailTemplate _trailTemplate = new(assets);
+
+    private FmodEventDescription _chargingSoundEvent =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
 
     [Query]
     [All<StartShippingRequest>]
@@ -94,6 +98,11 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             // 解除到星球的锚定
             AnchorageUtils.UnanchorShipFromPlanet(ship, request.Departure);
 
+            // 发出声音
+            _chargingSoundEvent.createInstance(out var instance);
+            ship.Entity.Get<SoundEffect>().EventInstance = instance;
+            instance.start();
+
             // 创建单位的尾迹，并挂载到星球上
             var trail = world.Construct(_trailTemplate.Archetype);
             _trailTemplate.Apply(trail);
@@ -137,15 +146,18 @@ public sealed partial class UpdateShipsStateSystem(World world, IAssetsManager a
     }
 }
 
-[LateUpdateSystem]
-public sealed partial class FinishShipsChargingSystem(World world, IAssetsManager assets)
+[StructuralChangeSystem]
+public sealed partial class StartTravellingSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const float _chargingTime = 0.5f;
 
+    private FmodEventDescription _travelBegunSoundEvent =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipBegun");
+
     [Query]
-    [All<ShippingStatus>]
-    private static void Proceed(ref ShippingStatus status)
+    [All<ShippingStatus, SoundEffect>]
+    private void Proceed(ref ShippingStatus status, ref SoundEffect soundEffect)
     {
         if (status.State != ShippingState.Charging) return;
 
@@ -157,6 +169,10 @@ public sealed partial class FinishShipsChargingSystem(World world, IAssetsManage
                 DelayedTime = status.Charging.ElapsedTime,
                 ElapsedTime = 0,
             };
+
+            _travelBegunSoundEvent.createInstance(out var instance);
+            soundEffect.EventInstance = instance;
+            instance.start();
         }
     }
 }
@@ -167,6 +183,9 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly List<Entity> _arrivedEntities = [];
+
+    private FmodEventDescription _travelDoneSoundEvent =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipDone");
 
     [Query]
     [All<ShippingTask, ShippingStatus>]
@@ -179,7 +198,8 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
             arrivedEntities.Add(ship);
     }
 
-    private static void LandShip(Entity ship, in ShippingTask task, in ShippingStatus status)
+    private void LandShip(Entity ship, in ShippingTask task, in ShippingStatus status,
+                                 ref SoundEffect soundEffect)
     {
         // 将单位挂载到目标星球
         var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
@@ -191,6 +211,11 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
         // 销毁单位的尾迹实体
         var world = World.Worlds[ship.WorldId];
         world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
+        
+        // 播放音效
+        _travelDoneSoundEvent.createInstance(out var instance);
+        soundEffect.EventInstance = instance;
+        instance.start();
     }
 
     public override void Update(in GameTime t)
@@ -199,8 +224,8 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
 
         foreach (var entity in _arrivedEntities)
         {
-            var refs = entity.Get<ShippingTask, ShippingStatus>();
-            LandShip(entity, in refs.t0, in refs.t1);
+            var refs = entity.Get<ShippingTask, ShippingStatus, SoundEffect>();
+            LandShip(entity, in refs.t0, in refs.t1, ref refs.t2);
         }
         _arrivedEntities.Clear();
     }
