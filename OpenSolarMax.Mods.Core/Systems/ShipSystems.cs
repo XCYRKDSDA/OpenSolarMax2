@@ -53,9 +53,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var ship = shipsEnumerator.Current;
 
             // 添加运输任务
-            ship.Entity.Add<ShippingTask, ShippingState>();
+            ship.Entity.Add<ShippingTask, ShippingStatus>();
             ref var shippingTask = ref ship.Entity.Get<ShippingTask>();
-            ref var shippingState = ref ship.Entity.Get<ShippingState>();
+            ref var shippingState = ref ship.Entity.Get<ShippingStatus>();
 
             // 获取相关信息
             ref readonly var pose = ref ship.Entity.Get<AbsoluteTransform>();
@@ -87,7 +87,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                 ExpectedRevolutionOrbit = expectedOrbit,
                 ExpectedRevolutionState = revolutionState
             };
-            shippingState.TravelledTime = 0;
+            // 初始化状态
+            shippingState.State = ShippingState.Charging;
+            shippingState.Charging.ElapsedTime = 0;
 
             // 解除到星球的锚定
             AnchorageUtils.UnanchorShipFromPlanet(ship, request.Departure);
@@ -121,55 +123,86 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 }
 
 [CoreUpdateSystem]
-public sealed partial class UpdateShipStateSystem(World world, IAssetsManager assets)
+public sealed partial class UpdateShipsStateSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private const float _delayTime = 0.5f;
+    [Query]
+    [All<ShippingStatus>]
+    private static void Proceed([Data] GameTime time, ref ShippingStatus status)
+    {
+        if (status.State == ShippingState.Charging)
+            status.Charging.ElapsedTime += (float)time.ElapsedGameTime.TotalSeconds;
+        else
+            status.Travelling.ElapsedTime += (float)time.ElapsedGameTime.TotalSeconds;
+    }
+}
+
+[LateUpdateSystem]
+public sealed partial class FinishShipsChargingSystem(World world, IAssetsManager assets)
+    : BaseSystem<World, GameTime>(world), ISystem
+{
+    private const float _chargingTime = 0.5f;
 
     [Query]
-    [All<ShippingTask, ShippingState>]
-    private static void Proceed([Data] GameTime time, in ShippingTask task, ref ShippingState state)
+    [All<ShippingStatus>]
+    private static void Proceed(ref ShippingStatus status)
     {
-        state.TravelledTime += (float)time.ElapsedGameTime.TotalSeconds;
-        state.Progress = MathF.Max((state.TravelledTime - _delayTime) / (task.ExpectedTravelDuration - _delayTime), 0);
+        if (status.State != ShippingState.Charging) return;
+
+        if (status.Charging.ElapsedTime > _chargingTime)
+        {
+            status.State = ShippingState.Travelling;
+            status.Travelling = new ShippingStatus_Travelling()
+            {
+                DelayedTime = status.Charging.ElapsedTime,
+                ElapsedTime = 0,
+            };
+        }
     }
 }
 
 [StructuralChangeSystem]
+[ExecuteAfter(typeof(StartShippingSystem))]
 public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly List<Action> _actionBuffer = [];
+    private readonly List<Entity> _arrivedEntities = [];
 
     [Query]
-    [All<ShippingTask, ShippingState>]
-    private static void FindArrivedShips(Entity ship, ref ShippingState state, [Data] List<Action> actionBuffer)
+    [All<ShippingTask, ShippingStatus>]
+    private static void FindArrivedShips(Entity ship, in ShippingTask task, ref ShippingStatus status,
+                                         [Data] List<Entity> arrivedEntities)
     {
-        if (state.Progress < 1)
-            return;
+        if (status.State != ShippingState.Travelling) return;
 
-        actionBuffer.Add(() =>
-        {
-            var task = ship.Get<ShippingTask>();
+        if (status.Travelling.ElapsedTime + status.Travelling.DelayedTime >= task.ExpectedTravelDuration)
+            arrivedEntities.Add(ship);
+    }
 
-            // 将单位挂载到目标星球
-            var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
-            transformRelationship.Set(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
-            ship.Remove<ShippingTask, ShippingState>();
+    private static void LandShip(Entity ship, in ShippingTask task, in ShippingStatus status)
+    {
+        // 将单位挂载到目标星球
+        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
+        transformRelationship.Set(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
 
-            // 销毁单位的尾迹实体
-            var world = World.Worlds[ship.WorldId];
-            world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
-        });
+        // 结束飞行。此后不能再访问task和status
+        ship.Remove<ShippingTask, ShippingStatus>();
+
+        // 销毁单位的尾迹实体
+        var world = World.Worlds[ship.WorldId];
+        world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
     }
 
     public override void Update(in GameTime t)
     {
-        FindArrivedShipsQuery(World, _actionBuffer);
+        FindArrivedShipsQuery(World, _arrivedEntities);
 
-        foreach (var action in _actionBuffer)
-            action.Invoke();
-        _actionBuffer.Clear();
+        foreach (var entity in _arrivedEntities)
+        {
+            var refs = entity.Get<ShippingTask, ShippingStatus>();
+            LandShip(entity, in refs.t0, in refs.t1);
+        }
+        _arrivedEntities.Clear();
     }
 }
 
@@ -183,10 +216,17 @@ public sealed partial class CalculateShipPositionSystem(World world, IAssetsMana
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<ShippingTask, ShippingState, AbsoluteTransform>]
-    private static void CalculatePosition(in ShippingTask task, in ShippingState state, ref AbsoluteTransform pose)
+    [All<ShippingTask, ShippingStatus, AbsoluteTransform>]
+    private static void CalculatePosition(in ShippingTask task, in ShippingStatus status, ref AbsoluteTransform pose)
     {
-        pose.Translation = Vector3.Lerp(task.DeparturePosition, task.ExpectedArrivalPosition, state.Progress);
+        if (status.State == ShippingState.Charging)
+            pose.Translation = task.DeparturePosition;
+        else if (status.State == ShippingState.Travelling)
+        {
+            var progress = (status.Travelling.ElapsedTime + status.Travelling.DelayedTime) /
+                           task.ExpectedTravelDuration;
+            pose.Translation = Vector3.Lerp(task.DeparturePosition, task.ExpectedArrivalPosition, progress);
+        }
 
         // 摆放尾向
         // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
@@ -224,16 +264,16 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
 
     [Query]
-    [All<TrailOf.AsShip, ShippingTask, ShippingState, Sprite, Animation>]
+    [All<TrailOf.AsShip, ShippingTask, ShippingStatus, Sprite, Animation>]
     private void CalculateAnimation(Entity ship, in TrailOf.AsShip asShip,
-                                    in ShippingTask shippingTask, in ShippingState shippingState, in Sprite sprite,
+                                    in ShippingTask shippingTask, in ShippingStatus shippingStatus, in Sprite sprite,
                                     ref Animation animation)
     {
-        // 当行驶时间早于起飞动画时间时，播放起飞动画
-        if (shippingState.TravelledTime < _takeOffDuration)
+        // Charging状态下播放起飞动画
+        if (shippingStatus.State == ShippingState.Charging)
         {
-            var takingOffAnimationTime = shippingState.TravelledTime;
-            var fadeInTime = shippingState.TravelledTime;
+            var takingOffAnimationTime = shippingStatus.Charging.ElapsedTime;
+            var fadeInTime = shippingStatus.Charging.ElapsedTime;
             var fadeInRatio = fadeInTime / _unitShippingFadeInDuration;
 
             switch (fadeInRatio)
@@ -250,11 +290,11 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
                     break;
             }
         }
-        // 其余时间都播放飞行动画
-        else
+        // Travelling状态下播放飞行动画
+        else if (shippingStatus.State == ShippingState.Travelling)
         {
-            var shippingAnimationTime = shippingState.TravelledTime - _takeOffDuration;
-            var fadeOutTime = shippingState.TravelledTime -
+            var shippingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+            var fadeOutTime = shippingStatus.Travelling.ElapsedTime -
                               (shippingTask.ExpectedTravelDuration - _unitShippingFadeOutDuration);
             var fadeOutRatio = fadeOutTime / _unitShippingFadeOutDuration;
 
@@ -281,22 +321,27 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         trail.Get<Sprite>().Color = sprite.Color;
 
         // 应用尾迹动画
-        if (shippingState.TravelledTime < shippingTask.ExpectedTravelDuration - _landDuration)
+        if (shippingStatus.State == ShippingState.Travelling)
         {
-            var stretchingAnimationTime = shippingState.TravelledTime;
-            AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation, stretchingAnimationTime);
-        }
-        else
-        {
-            var stretchingAnimationTime = shippingState.TravelledTime;
-            var crossTime = shippingState.TravelledTime - (shippingTask.ExpectedTravelDuration - _landDuration);
-            var crossRatio = crossTime / _landDuration;
+            if (shippingStatus.Travelling.ElapsedTime < shippingTask.ExpectedTravelDuration - _landDuration)
+            {
+                var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+                AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation,
+                                                          stretchingAnimationTime);
+            }
+            else
+            {
+                var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+                var crossTime = shippingStatus.Travelling.ElapsedTime -
+                                (shippingTask.ExpectedTravelDuration - _landDuration);
+                var crossRatio = crossTime / _landDuration;
 
-            // 此处不是淡出，而只是单纯地用多个动画的交融构造效果
-            AnimationEvaluator<Entity>.TweenAndSet(ref trail,
-                                                   _trailStretchingAnimation, stretchingAnimationTime,
-                                                   _trailExtinguishedAnimation, crossTime,
-                                                   null, crossRatio); // 采用默认的线性差值
+                // 此处不是淡出，而只是单纯地用多个动画的交融构造效果
+                AnimationEvaluator<Entity>.TweenAndSet(ref trail,
+                                                       _trailStretchingAnimation, stretchingAnimationTime,
+                                                       _trailExtinguishedAnimation, crossTime,
+                                                       null, crossRatio); // 采用默认的线性差值
+            }
         }
     }
 }

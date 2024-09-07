@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Runtime.InteropServices;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -66,17 +67,46 @@ public struct ShippingTask
     public RevolutionState ExpectedRevolutionState;
 }
 
-public struct ShippingState
+[StructLayout(LayoutKind.Sequential)]
+public struct ShippingStatus_Charging
 {
     /// <summary>
-    /// 已经行驶了的时间
+    /// 已充能的时间
     /// </summary>
-    public float TravelledTime;
+    public float ElapsedTime;
+}
 
+[StructLayout(LayoutKind.Sequential)]
+public struct ShippingStatus_Travelling
+{
     /// <summary>
-    /// 已经进行的飞行进度
+    /// 由于充能耽搁的时间
     /// </summary>
-    public float Progress;
+    public float DelayedTime;
+    
+    /// <summary>
+    /// 已经飞行了的时间
+    /// </summary>
+    public float ElapsedTime;
+}
+
+public enum ShippingState
+{
+    Charging,
+    Travelling,
+}
+
+[StructLayout(LayoutKind.Explicit)]
+public struct ShippingStatus
+{
+    [FieldOffset(0)]
+    public ShippingState State;
+    
+    [FieldOffset(sizeof(ShippingState))]
+    public ShippingStatus_Charging Charging;
+    
+    [FieldOffset(sizeof(ShippingState))]
+    public ShippingStatus_Travelling Travelling;
 }
 
 public struct TrailOf(EntityReference ship, EntityReference trail) : IRelationshipRecord
