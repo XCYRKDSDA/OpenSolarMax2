@@ -140,7 +140,7 @@ public static class ShippingUtils
 
     private static readonly float _dt = 1f;
 
-    public static (Vector3 Destination, float Duration) CalculateShippingTask(
+    public static (Vector3 Destination, float Duration, Vector3 Derivative) CalculateShippingTask(
         Entity departure, Entity destination, Shippable shippable)
     {
         // 获取出发位置
@@ -148,7 +148,7 @@ public static class ShippingUtils
 
         // 提取最简的变换树
         var (virtualWorld, destinationProxy) = ExtractBareTransforms(destination);
-        ref readonly var destinationPosition = ref destinationProxy.Get<AbsoluteTransform>().Translation;
+        ref readonly var destinationPositionRef = ref destinationProxy.Get<AbsoluteTransform>().Translation;
 
         // 生成模拟系统
         var simulateSystems = new Group<GameTime>($"simulateSystem_{virtualWorld.GetHashCode()}",
@@ -160,7 +160,7 @@ public static class ShippingUtils
         // 开始求解
         var t = 0f;
         var err1 = float.NaN;
-        var destinationPosition1 = destinationPosition;
+        var destinationPosition1 = destinationPositionRef;
         while (true)
         {
             // 步进系统
@@ -169,7 +169,7 @@ public static class ShippingUtils
             simulateSystems.JustUpdate(in simTime);
 
             // 计算距离
-            var distance = (destinationPosition - departurePosition).Length();
+            var distance = (destinationPositionRef - departurePosition).Length();
 
             // 单位可移动的距离
             var movedDistance = shippable.Speed * t;
@@ -183,13 +183,14 @@ public static class ShippingUtils
                 // 上一刻为t，误差为err；此刻为t2，误差为err2。做一个线性近似
                 var k = (0 - err1) / (err - err1);
                 return (
-                           Vector3.Lerp(destinationPosition1, destinationPosition, k),
-                           MathHelper.Lerp(t - _dt, t, k)
+                           Vector3.Lerp(destinationPosition1, destinationPositionRef, k),
+                           MathHelper.Lerp(t - _dt, t, k),
+                           (destinationPositionRef - destinationPosition1) / _dt
                        );
             }
 
             err1 = err;
-            destinationPosition1 = destinationPosition;
+            destinationPosition1 = destinationPositionRef;
         }
     }
 }

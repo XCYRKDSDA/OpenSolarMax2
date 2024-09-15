@@ -29,6 +29,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
     private FmodEventDescription _chargingSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
 
+    private const float _offsetTime = 0.5f;
+    private const float _maxOffsetRatio = 0.1f;
+
     [Query]
     [All<StartShippingRequest>]
     private void StartShipping(Entity requestEntity, in StartShippingRequest request)
@@ -41,7 +44,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
         var allShips = request.Departure.Entity.Get<AnchoredShipsRegistry>().Ships[request.Party];
 
         var shippable = request.Party.Entity.Get<Shippable>();
-        var (expectedArrivalPlanetPosition, expectedTravelDuration) =
+        var (expectedArrivalPlanetPosition, expectedTravelDuration, arrivalPlanetPositionDerivative) =
             ShippingUtils.CalculateShippingTask(request.Departure, request.Destination, shippable);
 
         var commonShippingTask = new ShippingTask()
@@ -49,6 +52,9 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             DestinationPlanet = request.Destination,
             ExpectedTravelDuration = expectedTravelDuration
         };
+
+        var departurePlanetPosition = request.Departure.Entity.Get<AbsoluteTransform>().Translation;
+        var departure2Destination = Vector3.Normalize(expectedArrivalPlanetPosition - departurePlanetPosition);
 
         var world = World.Worlds[requestEntity.WorldId];
         using var shipsEnumerator = allShips.GetEnumerator();
@@ -83,11 +89,20 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                                    + RevolutionUtils.CalculateTransform(in expectedOrbit, in revolutionState)
                                                     .Translation;
 
+            // 计算抵达时间偏移
+            var departure2Ship = Vector3.Normalize(departurePlanetPosition - pose.Translation);
+            var dt = Vector3.Dot(departure2Destination, departure2Ship) * _offsetTime / 2;
+            dt = MathHelper.Clamp(dt,
+                                  -_maxOffsetRatio * expectedTravelDuration / 2,
+                                  _maxOffsetRatio * expectedTravelDuration / 2);
+
             // 设置任务
-            shippingTask = commonShippingTask with
+            shippingTask = new ShippingTask()
             {
+                DestinationPlanet = request.Destination,
+                ExpectedTravelDuration = expectedTravelDuration + dt,
                 DeparturePosition = pose.Translation,
-                ExpectedArrivalPosition = expectedPosition,
+                ExpectedArrivalPosition = expectedPosition + arrivalPlanetPositionDerivative * dt,
                 ExpectedRevolutionOrbit = expectedOrbit,
                 ExpectedRevolutionState = revolutionState
             };
