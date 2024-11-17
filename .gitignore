@@ -38,3 +38,6 @@ msbuild.wrn
 
 # Affinity project files
 *.afdesign*
+
+# fmod project files
+*.fspro
