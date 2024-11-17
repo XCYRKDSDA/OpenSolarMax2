@@ -6,31 +6,31 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexDependenceSystem(World world, IAssetsManager assets)
-    : IndexRelationshipSystem<Dependence>(world)
+    : IndexRelationshipSystemBase<Dependence>(world)
 { }
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexPartyAffiliationSystem(World world, IAssetsManager assets)
-    : IndexRelationshipSystem<TreeRelationship<Party>>(world)
+    : IndexRelationshipSystemBase<TreeRelationship<Party>>(world)
 { }
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexAnchorageSystem(World world, IAssetsManager assets)
-    : IndexRelationshipSystem<TreeRelationship<Anchorage>>(world)
+    : IndexRelationshipSystemBase<TreeRelationship<Anchorage>>(world)
 { }
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTransformTreeSystem(World world, IAssetsManager assets)
-    : IndexRelationshipSystem<TreeRelationship<RelativeTransform>>(world)
+    : IndexRelationshipSystemBase<TreeRelationship<RelativeTransform>>(world)
 { }
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTrailAffiliationSystem(World world, IAssetsManager assets)
-    : IndexRelationshipSystem<TrailOf>(world)
+    : IndexRelationshipSystemBase<TrailOf>(world)
 { }

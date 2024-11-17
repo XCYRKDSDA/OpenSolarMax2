@@ -10,7 +10,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(IndexAnchorageSystem))]
 [ExecuteAfter(typeof(IndexPartyAffiliationSystem))]
 public sealed partial class UpdatePartyPopulationRegistrySystem(World world, IAssetsManager assets)

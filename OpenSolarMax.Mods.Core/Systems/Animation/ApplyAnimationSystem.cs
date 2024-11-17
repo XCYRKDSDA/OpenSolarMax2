@@ -9,29 +9,20 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[CoreUpdateSystem]
-public sealed partial class UpdateAnimationTimeSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
-{
-    [Query]
-    [All<Animation>]
-    private static void Animate([Data] GameTime t, ref Animation animation)
-    {
-        if (animation.Clip is null)
-            return;
-
-        animation.TimeElapsed += t.ElapsedGameTime;
-    }
-}
-
+/// <summary>
+/// 根据动画播放时间将动画应用于实体的系统
+/// </summary>
 [LateUpdateSystem]
-public sealed partial class AnimateSystem(World world, IAssetsManager assets)
+#pragma warning disable CS9113 // 参数未读。
+public sealed partial class ApplyAnimationSystem(World world, IAssetsManager assets)
+#pragma warning restore CS9113 // 参数未读。
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
     [All<Animation>]
     private static void Animate(Entity entity, ref Animation animation)
     {
+        // 如果设置了原始动画切片，则会自动将其按照缺省参数烘焙为可用的动画切片
         if (animation.RawClip is not null)
         {
             animation.Clip = animation.RawClip.Bake();

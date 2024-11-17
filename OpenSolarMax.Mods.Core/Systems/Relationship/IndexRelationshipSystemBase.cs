@@ -11,10 +11,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 将关系实体描述的关系缓存到各个参与者的参与组件的索引中
 /// </summary>
-public abstract class IndexRelationshipSystem<RelationshipT>(World world)
-    : BaseSystem<World, GameTime>(world), ISystem where RelationshipT : IRelationshipRecord
+public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
+    : BaseSystem<World, GameTime>(world), ISystem where TRelationship : IRelationshipRecord
 {
-    private readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<RelationshipT>();
+    private readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
 
     protected static void ClearAllIndex<TParticipant>(World world)
         where TParticipant : IParticipantIndex
@@ -23,7 +23,7 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
 
     #region `ClearAllIndex` Cache
 
-    private static readonly MethodInfo _clearerInfo = typeof(IndexRelationshipSystem<RelationshipT>)
+    private static readonly MethodInfo _clearerInfo = typeof(IndexRelationshipSystemBase<TRelationship>)
         .GetMethod("ClearAllIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
 
     private delegate void ClearerDelegate(World world);
@@ -52,7 +52,7 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
 
     #region `BuildIndex` Cache
 
-    private static readonly MethodInfo _indexerInfo = typeof(IndexRelationshipSystem<RelationshipT>)
+    private static readonly MethodInfo _indexerInfo = typeof(IndexRelationshipSystemBase<TRelationship>)
         .GetMethod("BuildIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
 
     private delegate void IndexerDelegate(EntityReference relationship, EntityReference participant);
@@ -73,7 +73,7 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
 
     #endregion
 
-    protected virtual void BuildIndex(EntityReference relationship, in RelationshipT record)
+    protected virtual void BuildIndex(EntityReference relationship, in TRelationship record)
     {
         foreach (var group in record)
         {
@@ -86,14 +86,14 @@ public abstract class IndexRelationshipSystem<RelationshipT>(World world)
     public override void Update(in GameTime t)
     {
         // 清空所有索引
-        foreach (var participantType in RelationshipT.ParticipantTypes)
+        foreach (var participantType in TRelationship.ParticipantTypes)
             GetClearer(participantType).Invoke(World);
 
         // 遍历关系记录，重新构建索引
         var query = World.Query(in _relationshipDesc);
         foreach (var chunk in query.GetChunkIterator())
         {
-            var recordSpan = chunk.GetSpan<RelationshipT>();
+            var recordSpan = chunk.GetSpan<TRelationship>();
             foreach (var idx in chunk)
                 BuildIndex(chunk.Entities[idx].Reference(), in recordSpan[idx]);
         }

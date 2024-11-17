@@ -11,36 +11,12 @@ using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
 using FmodEventDescription = FMOD.Studio.EventDescription;
-using Fmod3DAttributes = FMOD.ATTRIBUTES_3D;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[CoreUpdateSystem]
-public sealed partial class UpdateColonizationSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
-{
-    [Query]
-    [All<ColonizationState, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
-    private static void UpdateColonization([Data] GameTime time,
-                                           ref ColonizationState state, in TreeRelationship<Party>.AsChild asPartyChild,
-                                           in AnchoredShipsRegistry shipsRegistry)
-    {
-        if (shipsRegistry.Ships.Count != 1)
-            return;
-
-        var colonizeParty = shipsRegistry.Ships.First().Key;
-        var shipsNum = shipsRegistry.Ships.First().Count();
-
-        var deltaProgress = shipsNum * colonizeParty.Entity.Get<ColonizationAbility>().ProgressPerSecond
-                                     * (float)time.ElapsedGameTime.TotalSeconds;
-
-        if (state.Party == colonizeParty || colonizeParty == EntityReference.Null)
-            state.Progress += deltaProgress;
-        else
-            state.Progress -= deltaProgress;
-    }
-}
-
+/// <summary>
+/// 监测殖民进度，切换或者移除殖民状态，同时播放动画
+/// </summary>
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(IndexPartyAffiliationSystem))]
 public sealed partial class SettleColonizationSystem(World world, IAssetsManager assets)
@@ -55,7 +31,7 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
     private void CreateHaloExplosion(Entity planet, Color color)
     {
-        var halo = world.Construct(_haloExplosionTemplate.Archetype);
+        var halo = World.Construct(_haloExplosionTemplate.Archetype);
         _haloExplosionTemplate.Apply(halo);
 
         // 摆放位置
@@ -119,55 +95,6 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
     public override void Update(in GameTime t)
     {
         SettleColonizationQuery(World);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
-}
-
-[StructuralChangeSystem]
-[ExecuteBefore(typeof(IndexPartyAffiliationSystem))]
-[ExecuteBefore(typeof(SettleColonizationSystem))]
-public sealed partial class StartColonizationSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
-{
-    private readonly CommandBuffer _commandBuffer = new();
-
-    [Query]
-    [All<Colonizable, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
-    [None<ColonizationState>]
-    private void StartColonization(Entity planet, in Colonizable colonizable,
-                                   in TreeRelationship<Party>.AsChild asPartyChild,
-                                   in AnchoredShipsRegistry shipsRegistry)
-    {
-        if (shipsRegistry.Ships.Count != 1)
-            return;
-        var shipParty = shipsRegistry.Ships.First().Key;
-
-        if (asPartyChild.Index.Parent == shipParty)
-            return;
-
-        // 如果当前星球没有所属阵营，则停靠单位阵营直接开始进行自己的殖民；
-        // 如果当前星球已有阵营，则停靠单位阵营需要先破坏现有阵营的殖民度
-        if (asPartyChild.Index.Parent == EntityReference.Null)
-            _commandBuffer.Add(planet, new ColonizationState() { Party = shipParty, Progress = 0 });
-        else
-        {
-            _commandBuffer.Add(planet, new ColonizationState()
-            {
-                Party = asPartyChild.Index.Parent,
-                Progress = colonizable.Volume
-            });
-        }
-    }
-
-    public override void Update(in GameTime t)
-    {
-        StartColonizationQuery(World);
         _commandBuffer.Playback(World);
     }
 

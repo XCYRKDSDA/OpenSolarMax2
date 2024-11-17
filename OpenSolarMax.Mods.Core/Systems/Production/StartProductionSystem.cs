@@ -13,9 +13,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 使满足条件的实体自动开始生产单位的系统
 /// </summary>
 [LateUpdateSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteBefore(typeof(SettleProductionSystem))]
-public sealed partial class AutomaticallyStartProductionSystem(World world, IAssetsManager assets)
+#pragma warning disable CS9113 // 参数未读。
+public sealed partial class StartProductionSystem(World world, IAssetsManager assets)
+#pragma warning restore CS9113 // 参数未读。
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();
@@ -28,7 +30,7 @@ public sealed partial class AutomaticallyStartProductionSystem(World world, IAss
         if (child.Index.Parent == EntityReference.Null)
             return;
 
-        _commandBuffer.Add<ProductionState>(entity, new() { Progress = 0 });
+        _commandBuffer.Add(entity, new ProductionState { Progress = 0 });
     }
 
     public override void Update(in GameTime t)

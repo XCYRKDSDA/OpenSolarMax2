@@ -1,0 +1,122 @@
+using System.Diagnostics;
+using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using Microsoft.Xna.Framework;
+using Nine.Animations;
+using Nine.Assets;
+using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Mods.Core.Components;
+
+namespace OpenSolarMax.Mods.Core.Systems;
+
+/// <summary>
+/// 根据运输任务执行的时间和阶段，应用单位及其尾焰的动画
+/// </summary>
+[LateUpdateSystem]
+[ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(IndexTrailAffiliationSystem))]
+public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets)
+    : BaseSystem<World, GameTime>(world), ISystem
+{
+    private const float _landDuration = 0.5f;
+
+    private const float _unitShippingFadeInDuration = 0.1f;
+    private const float _unitShippingFadeOutDuration = _landDuration / 2;
+
+    private readonly AnimationClip<Entity> _unitShippingAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitShipping.json");
+
+    private readonly AnimationClip<Entity> _unitTakingOffAnimationClip =
+        assets.Load<AnimationClip<Entity>>("Animations/UnitTakingOff.json");
+
+    private readonly AnimationClip<Entity> _trailStretchingAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/TrailStretching.json");
+
+    private readonly AnimationClip<Entity> _trailExtinguishedAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
+
+    [Query]
+    [All<TrailOf.AsShip, ShippingTask, ShippingStatus, Sprite, Animation>]
+    private void CalculateAnimation(Entity ship, in TrailOf.AsShip asShip,
+                                    in ShippingTask shippingTask, in ShippingStatus shippingStatus, in Sprite sprite)
+    {
+        // Charging状态下播放起飞动画
+        if (shippingStatus.State == ShippingState.Charging)
+        {
+            var takingOffAnimationTime = shippingStatus.Charging.ElapsedTime;
+            var fadeInTime = shippingStatus.Charging.ElapsedTime;
+            var fadeInRatio = fadeInTime / _unitShippingFadeInDuration;
+
+            switch (fadeInRatio)
+            {
+                case >= 0 and < 1:
+                    AnimationEvaluator<Entity>.TweenAndSet(ref ship,
+                                                           null, float.NaN, // 上一个动画设置为空，直接继承上一个系统设置的值
+                                                           _unitTakingOffAnimationClip, takingOffAnimationTime,
+                                                           null, fadeInRatio); // 采用默认的线性差值
+                    break;
+                case >= 1:
+                    AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitTakingOffAnimationClip,
+                                                              takingOffAnimationTime);
+                    break;
+            }
+        }
+        // Travelling状态下播放飞行动画
+        else if (shippingStatus.State == ShippingState.Travelling)
+        {
+            var shippingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+            var fadeOutTime = shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime -
+                              (shippingTask.ExpectedTravelDuration - _unitShippingFadeOutDuration);
+            var fadeOutRatio = fadeOutTime / _unitShippingFadeOutDuration;
+
+            switch (fadeOutRatio)
+            {
+                case < 0:
+                    AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitShippingAnimationClip,
+                                                              shippingAnimationTime);
+                    break;
+                case >= 0 and < 1:
+                    AnimationEvaluator<Entity>.TweenAndSet(ref ship,
+                                                           _unitShippingAnimationClip, shippingAnimationTime,
+                                                           null, float.NaN, // 下一个动画设置为空，直接继承上一个系统设置的值
+                                                           null, fadeOutRatio); // 采用默认的线性差值
+                    break;
+            }
+        }
+
+        // 处理尾迹效果
+        var trail = asShip.Index.TrailRef.Entity;
+
+        // 尾迹的颜色和单位的颜色相同
+        Debug.Assert(trail.Has<Sprite>());
+        trail.Get<Sprite>().Color = sprite.Color;
+
+        // 应用尾迹动画
+        if (shippingStatus.State == ShippingState.Travelling)
+        {
+            if (shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime
+                < shippingTask.ExpectedTravelDuration - _landDuration)
+            {
+                var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+                AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation,
+                                                          stretchingAnimationTime);
+            }
+            else
+            {
+                var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+                var crossTime = shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime -
+                                (shippingTask.ExpectedTravelDuration - _landDuration);
+                var crossRatio = crossTime / _landDuration;
+
+                // 此处不是淡出，而只是单纯地用多个动画的交融构造效果
+                AnimationEvaluator<Entity>.TweenAndSet(ref trail,
+                                                       _trailStretchingAnimation, stretchingAnimationTime,
+                                                       _trailExtinguishedAnimation, crossTime,
+                                                       null, crossRatio); // 采用默认的线性差值
+            }
+        }
+    }
+}

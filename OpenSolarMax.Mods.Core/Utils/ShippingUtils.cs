@@ -153,7 +153,7 @@ public static class ShippingUtils
         // 生成模拟系统
         var simulateSystems = new Group<GameTime>($"simulateSystem_{virtualWorld.GetHashCode()}",
                                                   new UpdateRevolutionPhaseSystem(virtualWorld, null),
-                                                  new CalculateEntitiesTransformAroundOrbitSystem(virtualWorld, null),
+                                                  new CalculateTransformAroundOrbitSystem(virtualWorld, null),
                                                   new CalculateAbsoluteTransformSystem(virtualWorld, null)
         );
 

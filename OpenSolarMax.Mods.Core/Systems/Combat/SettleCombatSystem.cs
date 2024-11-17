@@ -1,4 +1,4 @@
-﻿using Arch.Core;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -13,65 +13,12 @@ using FmodEventDescription = FMOD.Studio.EventDescription;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 战斗更新系统。对所有同在一个星球上的不同阵营部队更新战斗值
-/// </summary>
-[CoreUpdateSystem]
-[ExecuteBefore(typeof(SettleCombatSystem))]
-[ExecuteBefore(typeof(SettleProductionSystem))]
-public sealed partial class UpdateCombatSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
-{
-    [Query]
-    [All<AnchoredShipsRegistry, Battlefield>]
-    private static void UpdateCombat([Data] GameTime time,
-                                     in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
-    {
-        var ships = shipsRegistry.Ships;
-        var damage = battle.FrontlineDamage;
-
-        var engagedParties = ships.Select(g => g.Key).ToHashSet();
-
-        // 删除本星球上已不存在的阵营的战斗数据
-        var deleteParties = damage.Keys.Where(k => !engagedParties.Contains(k)).ToArray();
-        foreach (var party in deleteParties)
-            damage.Remove(party);
-
-        // 如果阵营数目不足2个，则没有任何战斗发生，前线战损清空
-        if (engagedParties.Count < 2)
-        {
-            damage.Clear();
-            return;
-        }
-
-        // 计算每个阵营对其他阵营的伤害
-        foreach (var party1 in engagedParties)
-        {
-            // 计算该阵营造成的总伤害
-            float totalDamage = party1.Entity.Get<Combatable>().AttackPerUnitPerSecond
-                                * ships[party1].Count()
-                                * (float)time.ElapsedGameTime.TotalSeconds;
-
-            // 将总伤害平均到每个其他阵营
-            foreach (var party2 in engagedParties)
-            {
-                if (party2 == party1)
-                    continue;
-
-                if (!damage.ContainsKey(party2))
-                    damage.Add(party2, 0);
-                damage[party2] += totalDamage / (engagedParties.Count - 1);
-            }
-        }
-    }
-}
-
-/// <summary>
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
 [StructuralChangeSystem]
-[ExecuteAfter(typeof(AnimateSystem))]
-[ExecuteAfter(typeof(UpdateCombatSystem))]
-[ExecuteAfter(typeof(UpdateProductionSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ProgressCombatSystem))]
+[ExecuteAfter(typeof(ProgressProductionSystem))]
 [ExecuteAfter(typeof(SettleProductionSystem))]
 public sealed partial class SettleCombatSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
@@ -90,7 +37,7 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
         foreach (var party in battle.FrontlineDamage.Keys)
         {
             ref readonly var partyCombatAbility = ref party.Entity.Get<Combatable>();
-            var shipEnumerator = shipsRegistry.Ships[party].GetEnumerator();
+            using var shipEnumerator = shipsRegistry.Ships[party].GetEnumerator();
 
             // 根据前线战损逐个移除单位
             var damage = battle.FrontlineDamage[party];
