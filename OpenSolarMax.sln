@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Mods.Core", "O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Launcher", "OpenSolarMax.Launcher\OpenSolarMax.Launcher.csproj", "{9D772E75-2D82-4DEC-8D25-9F1620888C8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Mods.Core.SourceGenerators", "OpenSolarMax.Mods.Core.SourceGenerators\OpenSolarMax.Mods.Core.SourceGenerators.csproj", "{ACF57F3D-0AF9-4E5D-B43C-C71B3582E647}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D772E75-2D82-4DEC-8D25-9F1620888C8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACF57F3D-0AF9-4E5D-B43C-C71B3582E647}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF57F3D-0AF9-4E5D-B43C-C71B3582E647}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF57F3D-0AF9-4E5D-B43C-C71B3582E647}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF57F3D-0AF9-4E5D-B43C-C71B3582E647}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5D4C6E6C-726E-4B93-AB7E-39F3293B143E} = {6E7B8EA3-99DF-4CE2-9D3C-F22F160DE6B9}
