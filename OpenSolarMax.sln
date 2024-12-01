@@ -14,9 +14,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Mods.Core", "OpenSolarMax.Mods.Core\OpenSolarMax.Mods.Core.csproj", "{ED07A69C-AADF-4623-8834-1586A99D931A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSolarMax.Launcher", "OpenSolarMax.Launcher\OpenSolarMax.Launcher.csproj", "{9D772E75-2D82-4DEC-8D25-9F1620888C8D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{5FE239B4-D93A-4797-8F22-B8FA0DD24D0C} = {5FE239B4-D93A-4797-8F22-B8FA0DD24D0C}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
