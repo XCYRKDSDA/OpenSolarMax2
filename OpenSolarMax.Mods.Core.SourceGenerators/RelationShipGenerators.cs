@@ -63,6 +63,7 @@ public class RelationShipGenerator : ISourceGenerator
         using System.Linq;
         using Arch.Core;
         using OpenSolarMax.Mods.Core.Components;
+        using OpenSolarMax.Mods.Core.Utils;
 
         namespace <<NAMESPACE>>;
 
