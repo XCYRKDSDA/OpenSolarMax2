@@ -1,0 +1,66 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Arch.Core;
+using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
+
+namespace @NAMESPACE@;
+
+partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
+{
+    public struct @PARTICIPANT_TYPE@(): IParticipantIndex
+    {
+        public EntityReference Relationship = EntityReference.Null;
+        
+        #region IParticipantIndex
+        
+        readonly int ICollection<EntityReference>.Count => 1;
+
+        readonly bool ICollection<EntityReference>.IsReadOnly => false;
+        
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+        {
+            array[arrayIndex] = Relationship;
+        }
+        
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+        {
+            yield return Relationship;
+        }
+        
+        readonly IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (this as IEnumerable<EntityReference>).GetEnumerator();
+        }
+        
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+        {
+            return Relationship == relationship;
+        }
+        
+        void ICollection<EntityReference>.Add(EntityReference relationship)
+        {
+            if (Relationship != EntityReference.Null)
+                throw new IndexOutOfRangeException();
+            Relationship = relationship;
+        }
+        
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
+        {
+            if (Relationship != relationship)
+                return false;
+        
+            Relationship = EntityReference.Null;
+            return true;
+        }
+        
+        void ICollection<EntityReference>.Clear()
+        {
+            Relationship = EntityReference.Null;
+        }
+        
+        #endregion
+    }
+}

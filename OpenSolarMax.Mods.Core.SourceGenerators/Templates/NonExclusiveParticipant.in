@@ -1,0 +1,60 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Arch.Core;
+using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
+
+namespace @NAMESPACE@;
+
+partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
+{
+    public struct @PARTICIPANT_TYPE@(): IParticipantIndex
+    {
+        public HashSet<EntityReference> Relationships = [];
+        
+        #region IParticipantIndex
+        
+        readonly int ICollection<EntityReference>.Count => Relationships.Count;
+
+        readonly bool ICollection<EntityReference>.IsReadOnly => false;
+        
+        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+        {
+            Relationships.CopyTo(array, arrayIndex);
+        }
+        
+        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+        {
+            return Relationships.GetEnumerator();
+        }
+        
+        readonly IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (this as IEnumerable<EntityReference>).GetEnumerator();
+        }
+        
+        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+        {
+            return Relationships.Contains(relationship);
+        }
+        
+        void ICollection<EntityReference>.Add(EntityReference relationship)
+        {
+            Relationships.Add(relationship);
+        }
+        
+        bool ICollection<EntityReference>.Remove(EntityReference relationship)
+        {
+            return Relationships.Remove(relationship);
+        }
+        
+        void ICollection<EntityReference>.Clear()
+        {
+            Relationships.Clear();
+        }
+        
+        #endregion
+    }
+}

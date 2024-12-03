@@ -14,4 +14,10 @@
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Templates\ExclusiveParticipant.in" />
+      <EmbeddedResource Include="Templates\NonExclusiveParticipant.in" />
+      <EmbeddedResource Include="Templates\Relationship.in" />
+    </ItemGroup>
+
 </Project>

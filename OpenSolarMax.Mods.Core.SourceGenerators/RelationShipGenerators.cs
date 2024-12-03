@@ -12,183 +12,14 @@ internal record RelationshipInfo(
 [Generator]
 public class RelationShipGenerator : ISourceGenerator
 {
-    private const string _relationshipTemplate =
-        """
-        using System;
-        using System.Collections;
-        using System.Collections.Generic;
-        using System.Linq;
-        using Arch.Core;
-        using OpenSolarMax.Mods.Core.Components;
-        using OpenSolarMax.Mods.Core.Utils;
+    private static readonly string _relationshipTemplate =
+        ResourceHelper.GetEmbeddedText("Templates/Relationship.in");
 
-        namespace <<NAMESPACE>>;
+    private static readonly string _participant1Template =
+        ResourceHelper.GetEmbeddedText("Templates/ExclusiveParticipant.in");
 
-        partial <<RELATIONSHIP_SYMBOL>> <<RELATIONSHIP_TYPE>> : IRelationshipRecord
-        {
-            static Type[] IRelationshipRecord.ParticipantTypes => [<<PARTICIPANTS_TYPES>>];
-        
-            readonly int ILookup<Type, EntityReference>.Count => <<PARTICIPANTS_COUNT>>;
-        
-            readonly IEnumerable<EntityReference> ILookup<Type, EntityReference>.this[Type key]
-            {
-                get
-                {
-                    <<INDEXER_BODY>>
-                }
-            }
-        
-            readonly bool ILookup<Type, EntityReference>.Contains(Type key)
-            {
-                return <<CONTAINS_EXPRESSION>>;
-            }
-            
-            readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
-            {
-                <<ENUMERATOR_BODY>>
-            }
-            
-            readonly IEnumerator IEnumerable.GetEnumerator()
-            {
-                return (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
-            }
-        }
-                
-        """;
-
-    private const string _participant1Template =
-        """
-        using System;
-        using System.Collections;
-        using System.Collections.Generic;
-        using System.Linq;
-        using Arch.Core;
-        using OpenSolarMax.Mods.Core.Components;
-        using OpenSolarMax.Mods.Core.Utils;
-
-        namespace <<NAMESPACE>>;
-
-        partial <<RELATIONSHIP_SYMBOL>> <<RELATIONSHIP_TYPE>>
-        {
-            public struct <<PARTICIPANT_TYPE>>(): IParticipantIndex
-            {
-                public EntityReference Relationship = EntityReference.Null;
-                
-                #region IParticipantIndex
-                
-                readonly int ICollection<EntityReference>.Count => 1;
-        
-                readonly bool ICollection<EntityReference>.IsReadOnly => false;
-                
-                readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
-                {
-                    array[arrayIndex] = Relationship;
-                }
-                
-                readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
-                {
-                    yield return Relationship;
-                }
-                
-                readonly IEnumerator IEnumerable.GetEnumerator()
-                {
-                    return (this as IEnumerable<EntityReference>).GetEnumerator();
-                }
-                
-                readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
-                {
-                    return Relationship == relationship;
-                }
-                
-                void ICollection<EntityReference>.Add(EntityReference relationship)
-                {
-                    if (Relationship != EntityReference.Null)
-                        throw new IndexOutOfRangeException();
-                    Relationship = relationship;
-                }
-                
-                bool ICollection<EntityReference>.Remove(EntityReference relationship)
-                {
-                    if (Relationship != relationship)
-                        return false;
-                
-                    Relationship = EntityReference.Null;
-                    return true;
-                }
-                
-                void ICollection<EntityReference>.Clear()
-                {
-                    Relationship = EntityReference.Null;
-                }
-                
-                #endregion
-            }
-        }
-        """;
-
-    private const string _participant2Template =
-        """
-        using System;
-        using System.Collections;
-        using System.Collections.Generic;
-        using System.Linq;
-        using Arch.Core;
-        using OpenSolarMax.Mods.Core.Components;
-        using OpenSolarMax.Mods.Core.Utils;
-
-        namespace <<NAMESPACE>>;
-
-        partial <<RELATIONSHIP_SYMBOL>> <<RELATIONSHIP_TYPE>>
-        {
-            public struct <<PARTICIPANT_TYPE>>(): IParticipantIndex
-            {
-                public HashSet<EntityReference> Relationships = [];
-                
-                #region IParticipantIndex
-                
-                readonly int ICollection<EntityReference>.Count => Relationships.Count;
-        
-                readonly bool ICollection<EntityReference>.IsReadOnly => false;
-                
-                readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
-                {
-                    Relationships.CopyTo(array, arrayIndex);
-                }
-                
-                readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
-                {
-                    return Relationships.GetEnumerator();
-                }
-                
-                readonly IEnumerator IEnumerable.GetEnumerator()
-                {
-                    return (this as IEnumerable<EntityReference>).GetEnumerator();
-                }
-                
-                readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
-                {
-                    return Relationships.Contains(relationship);
-                }
-                
-                void ICollection<EntityReference>.Add(EntityReference relationship)
-                {
-                    Relationships.Add(relationship);
-                }
-                
-                bool ICollection<EntityReference>.Remove(EntityReference relationship)
-                {
-                    return Relationships.Remove(relationship);
-                }
-                
-                void ICollection<EntityReference>.Clear()
-                {
-                    Relationships.Clear();
-                }
-                
-                #endregion
-            }
-        }
-        """;
+    private static readonly string _participant2Template =
+        ResourceHelper.GetEmbeddedText("Templates/NonExclusiveParticipant.in");
 
     public void Initialize(GeneratorInitializationContext context) { }
 
@@ -231,24 +62,24 @@ public class RelationShipGenerator : ISourceGenerator
         );
 
         var relationshipCs =
-            _relationshipTemplate.Replace("<<NAMESPACE>>", info.Namespace)
-                                 .Replace("<<RELATIONSHIP_SYMBOL>>", info.Symbol)
-                                 .Replace("<<RELATIONSHIP_TYPE>>", info.Type)
-                                 .Replace("<<PARTICIPANTS_TYPES>>", participantsTypes)
-                                 .Replace("<<PARTICIPANTS_COUNT>>", participantsCount.ToString())
-                                 .Replace("<<INDEXER_BODY>>", indexerBody)
-                                 .Replace("<<CONTAINS_EXPRESSION>>", containsExpression)
-                                 .Replace("<<ENUMERATOR_BODY>>", enumeratorBody);
+            _relationshipTemplate.Replace("@NAMESPACE@", info.Namespace)
+                                 .Replace("@RELATIONSHIP_SYMBOL@", info.Symbol)
+                                 .Replace("@RELATIONSHIP_TYPE@", info.Type)
+                                 .Replace("@PARTICIPANTS_TYPES@", participantsTypes)
+                                 .Replace("@PARTICIPANTS_COUNT@", participantsCount.ToString())
+                                 .Replace("@INDEXER_BODY@", indexerBody)
+                                 .Replace("@CONTAINS_EXPRESSION@", containsExpression)
+                                 .Replace("@ENUMERATOR_BODY@", enumeratorBody);
         context.AddSource($"{fullname}.g.cs", relationshipCs);
 
         foreach (var participant in info.Participants)
         {
             var template = participant.Attr.Exclusive ? _participant1Template : _participant2Template;
             var participantsCs =
-                template.Replace("<<NAMESPACE>>", info.Namespace)
-                        .Replace("<<RELATIONSHIP_SYMBOL>>", info.Symbol)
-                        .Replace("<<RELATIONSHIP_TYPE>>", info.Type)
-                        .Replace("<<PARTICIPANT_TYPE>>", participant.Type);
+                template.Replace("@NAMESPACE@", info.Namespace)
+                        .Replace("@RELATIONSHIP_SYMBOL@", info.Symbol)
+                        .Replace("@RELATIONSHIP_TYPE@", info.Type)
+                        .Replace("@PARTICIPANT_TYPE@", participant.Type);
             context.AddSource($"{fullname}.{participant.Type}.g.cs", participantsCs);
         }
     }

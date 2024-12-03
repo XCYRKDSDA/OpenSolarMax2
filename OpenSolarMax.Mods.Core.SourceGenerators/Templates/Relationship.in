@@ -1,0 +1,39 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Arch.Core;
+using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
+
+namespace @NAMESPACE@;
+
+partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@ : IRelationshipRecord
+{
+    static Type[] IRelationshipRecord.ParticipantTypes => [@PARTICIPANTS_TYPES@];
+
+    readonly int ILookup<Type, EntityReference>.Count => @PARTICIPANTS_COUNT@;
+
+    readonly IEnumerable<EntityReference> ILookup<Type, EntityReference>.this[Type key]
+    {
+        get
+        {
+            @INDEXER_BODY@
+        }
+    }
+
+    readonly bool ILookup<Type, EntityReference>.Contains(Type key)
+    {
+        return @CONTAINS_EXPRESSION@;
+    }
+    
+    readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
+    {
+        @ENUMERATOR_BODY@
+    }
+    
+    readonly IEnumerator IEnumerable.GetEnumerator()
+    {
+        return (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
+    }
+}
