@@ -3,10 +3,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace OpenSolarMax.Mods.Core.SourceGenerators;
 
-internal record ParticipantInfo(string Type, string Member);
+internal record ParticipantInfo(string Type, string Member, bool Multiple, ParticipantAttribute Attr);
 
 internal record RelationshipInfo(
-    string Namespace, string Symbol, string Type,
+    string Namespace, string Symbol, string Type, RelationshipAttribute Attr,
     ParticipantInfo[] Participants);
 
 [Generator]
@@ -20,10 +20,11 @@ public class RelationShipGenerator : ISourceGenerator
         using System.Linq;
         using Arch.Core;
         using OpenSolarMax.Mods.Core.Components;
+        using OpenSolarMax.Mods.Core.Utils;
 
         namespace <<NAMESPACE>>;
 
-        partial <<RELATIONSHIP_SYMBOL>> <<RELATIONSHIP_TYPE>>() : IRelationshipRecord
+        partial <<RELATIONSHIP_SYMBOL>> <<RELATIONSHIP_TYPE>> : IRelationshipRecord
         {
             static Type[] IRelationshipRecord.ParticipantTypes => [<<PARTICIPANTS_TYPES>>];
         
@@ -55,7 +56,7 @@ public class RelationShipGenerator : ISourceGenerator
                 
         """;
 
-    private const string _participantTemplate =
+    private const string _participant1Template =
         """
         using System;
         using System.Collections;
@@ -125,30 +126,108 @@ public class RelationShipGenerator : ISourceGenerator
         }
         """;
 
+    private const string _participant2Template =
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Linq;
+        using Arch.Core;
+        using OpenSolarMax.Mods.Core.Components;
+        using OpenSolarMax.Mods.Core.Utils;
+
+        namespace <<NAMESPACE>>;
+
+        partial <<RELATIONSHIP_SYMBOL>> <<RELATIONSHIP_TYPE>>
+        {
+            public struct <<PARTICIPANT_TYPE>>(): IParticipantIndex
+            {
+                public HashSet<EntityReference> Relationships = [];
+                
+                #region IParticipantIndex
+                
+                readonly int ICollection<EntityReference>.Count => Relationships.Count;
+        
+                readonly bool ICollection<EntityReference>.IsReadOnly => false;
+                
+                readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+                {
+                    Relationships.CopyTo(array, arrayIndex);
+                }
+                
+                readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+                {
+                    return Relationships.GetEnumerator();
+                }
+                
+                readonly IEnumerator IEnumerable.GetEnumerator()
+                {
+                    return (this as IEnumerable<EntityReference>).GetEnumerator();
+                }
+                
+                readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+                {
+                    return Relationships.Contains(relationship);
+                }
+                
+                void ICollection<EntityReference>.Add(EntityReference relationship)
+                {
+                    Relationships.Add(relationship);
+                }
+                
+                bool ICollection<EntityReference>.Remove(EntityReference relationship)
+                {
+                    return Relationships.Remove(relationship);
+                }
+                
+                void ICollection<EntityReference>.Clear()
+                {
+                    Relationships.Clear();
+                }
+                
+                #endregion
+            }
+        }
+        """;
+
     public void Initialize(GeneratorInitializationContext context) { }
 
     private static void GenerateRelationship(RelationshipInfo info, GeneratorExecutionContext context)
     {
         var participantsTypes = string.Join(
-            ", ", info.Participants.Select(p => $"typeof({p.Type})")
+            ", ",
+            info.Participants.Select(p => $"typeof({p.Type})")
         );
 
-        var participantsCount = info.Participants.Length;
+        var participantsCount = string.Join(
+            " + ",
+            info.Participants.Select(
+                p => p.Multiple ? $"({p.Member} as IEnumerable<EntityReference>).Count()" : "1")
+        );
 
         var indexerBody = string.Join(
-            "\n            else ", info.Participants.Select(
-                p => $"if (key == typeof({p.Type})) yield return {p.Member};")
+            "\n            else ",
+            info.Participants.Select(
+                    p => p.Multiple
+                             ? $"if (key == typeof({p.Type})) return {p.Member};"
+                             : $"if (key == typeof({p.Type})) return Enumerable.Repeat({p.Member}, 1);")
+                .Append("return Enumerable.Empty<EntityReference>();")
         );
 
         var containsExpression = string.Join(
-            " || ", info.Participants.Select(
-                p => $"key == typeof({p.Type})")
+            " || ",
+            info.Participants.Select(
+                p => p.Multiple
+                         ? $"(key == typeof({p.Type}) && ({p.Member} as IEnumerable<EntityReference>).Count() != 0)"
+                         : $"key == typeof({p.Type})")
         );
 
         var enumeratorBody = string.Join(
             "\n        ",
             info.Participants.Select(
-                p => $"yield return new SingleItemGroup<Type, EntityReference>(typeof({p.Type}), {p.Member});")
+                p => p.Multiple
+                         ? $"yield return new EnumerableGroup<Type, EntityReference>(typeof({p.Type}), {p.Member});"
+                         : $"yield return new SingleItemGroup<Type, EntityReference>(typeof({p.Type}), {p.Member});")
         );
 
         var relationshipCs =
@@ -164,13 +243,33 @@ public class RelationShipGenerator : ISourceGenerator
 
         foreach (var participant in info.Participants)
         {
+            var template = participant.Attr.Exclusive ? _participant1Template : _participant2Template;
             var participantsCs =
-                _participantTemplate.Replace("<<NAMESPACE>>", info.Namespace)
-                                    .Replace("<<RELATIONSHIP_SYMBOL>>", info.Symbol)
-                                    .Replace("<<RELATIONSHIP_TYPE>>", info.Type)
-                                    .Replace("<<PARTICIPANT_TYPE>>", participant.Type);
+                template.Replace("<<NAMESPACE>>", info.Namespace)
+                        .Replace("<<RELATIONSHIP_SYMBOL>>", info.Symbol)
+                        .Replace("<<RELATIONSHIP_TYPE>>", info.Type)
+                        .Replace("<<PARTICIPANT_TYPE>>", participant.Type);
             context.AddSource($"{info.Type}.{participant.Type}.g.cs", participantsCs);
         }
+    }
+
+    private static bool IsMultiple(ISymbol memberSymbol, Compilation compilation)
+    {
+        var typeSymbol = memberSymbol switch
+        {
+            IFieldSymbol fieldSymbol => fieldSymbol.Type,
+            IPropertySymbol propertySymbol => propertySymbol.Type,
+            _ => throw new ArgumentOutOfRangeException(nameof(memberSymbol))
+        };
+
+        var genericIEnumerableSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!;
+        var entityReferenceSymbol = compilation.GetTypeByMetadataName("Arch.Core.EntityReference")!;
+
+        return typeSymbol.AllInterfaces.Any(
+            i => i.OriginalDefinition.Equals(genericIEnumerableSymbol, SymbolEqualityComparer.Default)
+                 && i.TypeArguments.Length == 1
+                 && i.TypeArguments[0].Equals(entityReferenceSymbol, SymbolEqualityComparer.Default)
+        );
     }
 
     public void Execute(GeneratorExecutionContext context)
@@ -209,7 +308,22 @@ public class RelationShipGenerator : ISourceGenerator
                         _ => throw new Exception()
                     },
                     Type: namedTypeSymbol.Name,
-                    Participants: members.Select(m => new ParticipantInfo($"As{m.Name}", $"{m.Name}")).ToArray()
+                    Attr: RelationshipAttribute.FromAttributeData(
+                        namedTypeSymbol.GetAttributes()
+                                       .First(a => a.AttributeClass?.Name ==
+                                                   nameof(RelationshipAttribute))
+                    )!,
+                    Participants: members
+                                  .Select(m => new ParticipantInfo(
+                                              Type: $"As{m.Name}",
+                                              Member: $"{m.Name}",
+                                              Multiple: IsMultiple(m, context.Compilation),
+                                              Attr: ParticipantAttribute.FromAttributeData(
+                                                  m.GetAttributes()
+                                                   .First(a => a.AttributeClass?.Name == nameof(ParticipantAttribute))
+                                              )!
+                                          ))
+                                  .ToArray()
                 );
 
                 GenerateRelationship(info, context);
