@@ -192,7 +192,7 @@ public class RelationShipGenerator : ISourceGenerator
 
     public void Initialize(GeneratorInitializationContext context) { }
 
-    private static void GenerateRelationship(RelationshipInfo info, GeneratorExecutionContext context)
+    private static void GenerateRelationship(string fullname, RelationshipInfo info, GeneratorExecutionContext context)
     {
         var participantsTypes = string.Join(
             ", ",
@@ -239,7 +239,7 @@ public class RelationShipGenerator : ISourceGenerator
                                  .Replace("<<INDEXER_BODY>>", indexerBody)
                                  .Replace("<<CONTAINS_EXPRESSION>>", containsExpression)
                                  .Replace("<<ENUMERATOR_BODY>>", enumeratorBody);
-        context.AddSource($"{info.Type}.g.cs", relationshipCs);
+        context.AddSource($"{fullname}.g.cs", relationshipCs);
 
         foreach (var participant in info.Participants)
         {
@@ -249,7 +249,7 @@ public class RelationShipGenerator : ISourceGenerator
                         .Replace("<<RELATIONSHIP_SYMBOL>>", info.Symbol)
                         .Replace("<<RELATIONSHIP_TYPE>>", info.Type)
                         .Replace("<<PARTICIPANT_TYPE>>", participant.Type);
-            context.AddSource($"{info.Type}.{participant.Type}.g.cs", participantsCs);
+            context.AddSource($"{fullname}.{participant.Type}.g.cs", participantsCs);
         }
     }
 
@@ -307,7 +307,7 @@ public class RelationShipGenerator : ISourceGenerator
                         TypeKind.Struct => "struct",
                         _ => throw new Exception()
                     },
-                    Type: namedTypeSymbol.Name,
+                    Type: namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     Attr: RelationshipAttribute.FromAttributeData(
                         namedTypeSymbol.GetAttributes()
                                        .First(a => a.AttributeClass?.Name ==
@@ -326,7 +326,12 @@ public class RelationShipGenerator : ISourceGenerator
                                   .ToArray()
                 );
 
-                GenerateRelationship(info, context);
+                var fullnameStyle = new SymbolDisplayFormat(
+                    genericsOptions: SymbolDisplayGenericsOptions.None,
+                    globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+                    typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+                GenerateRelationship(namedTypeSymbol.ToDisplayString(fullnameStyle),
+                                     info, context);
             }
         }
     }
