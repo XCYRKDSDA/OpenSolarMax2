@@ -325,8 +325,9 @@ public class SolarMax : XNAGame
             Assembly? assembly = null;
             if (manifest.Assembly is not null)
             {
-                var ctx = new ModLoadContext(dir, sharedAssemblies);
-                using var stream = dir.EnumerateFiles(manifest.Assembly).First().Open(FileMode.Open, FileAccess.Read);
+                var assemblyFile = dir.EnumerateFiles(manifest.Assembly).First();
+                var ctx = new ModLoadContext(assemblyFile, sharedAssemblies);
+                using var stream = assemblyFile.Open(FileMode.Open, FileAccess.Read);
 #if DEBUG
                 using var pdbStream = dir.EnumerateFiles(manifest.Assembly.Replace(".dll", ".pdb")).First()
                                          .Open(FileMode.Open, FileAccess.Read);

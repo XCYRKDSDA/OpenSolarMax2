@@ -4,11 +4,10 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class ModLoadContext(DirectoryEntry dir, IReadOnlyDictionary<string, Assembly> sharedAssemblies)
+internal class ModLoadContext(FileEntry file, IReadOnlyDictionary<string, Assembly> sharedAssemblies)
     : AssemblyLoadContext
 {
-    private readonly AssemblyDependencyResolver _resolver =
-        new(dir.FileSystem.ConvertPathToInternal(dir.Path) + Path.DirectorySeparatorChar);
+    private readonly AssemblyDependencyResolver _resolver = new(file.FileSystem.ConvertPathToInternal(file.Path));
 
     private readonly IReadOnlyDictionary<string, Assembly> _sharedAssemblies = sharedAssemblies;
 
