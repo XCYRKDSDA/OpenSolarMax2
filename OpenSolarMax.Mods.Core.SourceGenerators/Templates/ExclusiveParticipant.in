@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Arch.Core;
+using Arch.Core.Extensions;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
 
@@ -13,6 +14,9 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
     public struct @PARTICIPANT_TYPE@(): IParticipantIndex
     {
         public EntityReference Relationship = EntityReference.Null;
+        
+        // Only valid when there is valid relationship
+        public @RELATIONSHIP_TYPE@ Record = default;
         
         #region IParticipantIndex
         
@@ -45,6 +49,7 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
             if (Relationship != EntityReference.Null)
                 throw new IndexOutOfRangeException();
             Relationship = relationship;
+            Record = relationship.Entity.Get<@RELATIONSHIP_TYPE@>();
         }
         
         bool ICollection<EntityReference>.Remove(EntityReference relationship)
@@ -53,12 +58,14 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
                 return false;
         
             Relationship = EntityReference.Null;
+            Record = default;
             return true;
         }
         
         void ICollection<EntityReference>.Clear()
         {
             Relationship = EntityReference.Null;
+            Record = default;
         }
         
         #endregion

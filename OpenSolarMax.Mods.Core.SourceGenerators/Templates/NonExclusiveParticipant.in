@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Arch.Core;
+using Arch.Core.Extensions;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
 
@@ -12,7 +13,7 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
 {
     public struct @PARTICIPANT_TYPE@(): IParticipantIndex
     {
-        public HashSet<EntityReference> Relationships = [];
+        public Dictionary<EntityReference, @RELATIONSHIP_TYPE@> Relationships = [];
         
         #region IParticipantIndex
         
@@ -22,12 +23,12 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
         
         readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
         {
-            Relationships.CopyTo(array, arrayIndex);
+            Relationships.Keys.CopyTo(array, arrayIndex);
         }
         
         readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
         {
-            return Relationships.GetEnumerator();
+            return Relationships.Keys.GetEnumerator();
         }
         
         readonly IEnumerator IEnumerable.GetEnumerator()
@@ -37,12 +38,12 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
         
         readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
         {
-            return Relationships.Contains(relationship);
+            return Relationships.ContainsKey(relationship);
         }
         
         void ICollection<EntityReference>.Add(EntityReference relationship)
         {
-            Relationships.Add(relationship);
+            Relationships.Add(relationship, relationship.Entity.Get<@RELATIONSHIP_TYPE@>());
         }
         
         bool ICollection<EntityReference>.Remove(EntityReference relationship)
