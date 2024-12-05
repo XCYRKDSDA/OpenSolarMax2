@@ -39,6 +39,16 @@
         <ProjectReference Include="..\OpenSolarMax.Mods.Core.SourceGenerators\OpenSolarMax.Mods.Core.SourceGenerators.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="true"/>
+        
+        <!-- Temporary solution. See https://github.com/dotnet/sdk/issues/42708 -->
+        <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj">
+            <Private>false</Private>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </ProjectReference>
+        <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj">
+            <Private>false</Private>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </ProjectReference>
     </ItemGroup>
     
     <ItemGroup>
