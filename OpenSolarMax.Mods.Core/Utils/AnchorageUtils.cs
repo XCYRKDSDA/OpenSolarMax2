@@ -30,15 +30,15 @@ public static class AnchorageUtils
     public static void UnanchorShipFromPlanet(this Entity ship, Entity planet)
     {
         Debug.Assert(ship.WorldId == planet.WorldId);
-        Debug.Assert(ship.Get<TreeRelationship<Anchorage>.AsChild>().Index.Parent == planet);
-        Debug.Assert(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Parent == planet);
+        Debug.Assert(ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship?.Copy.Parent == planet);
+        Debug.Assert(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship?.Copy.Parent == planet);
 
         var world = World.Worlds[ship.WorldId];
 
         // 解除停靠关系
-        world.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Index.Relationship);
+        world.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref);
 
         // 解除变换关系
-        world.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship);
+        world.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref);
     }
 }

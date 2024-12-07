@@ -89,7 +89,7 @@ public sealed partial class VisualizeTotalPopulationSystem(
     private static void VisualizePopulation(ref LevelUIContext uiContext,
                                             in TreeRelationship<Party>.AsChild asPartyChild)
     {
-        var party = asPartyChild.Index.Parent;
+        var party = asPartyChild.Relationship!.Value.Copy.Parent;
         ref readonly var populationRegistry = ref party.Entity.Get<PartyPopulationRegistry>();
         ref readonly var partyColor = ref party.Entity.Get<PartyReferenceColor>();
 

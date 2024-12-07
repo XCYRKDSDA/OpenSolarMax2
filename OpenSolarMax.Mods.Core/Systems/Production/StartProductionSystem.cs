@@ -27,7 +27,7 @@ public sealed partial class StartProductionSystem(World world, IAssetsManager as
     [None<ProductionState>]
     private void AutomaticallyStartProduction(Entity entity, in TreeRelationship<Party>.AsChild child)
     {
-        if (child.Index.Parent == EntityReference.Null)
+        if (child.Relationship is null)
             return;
 
         _commandBuffer.Add(entity, new ProductionState { Progress = 0 });

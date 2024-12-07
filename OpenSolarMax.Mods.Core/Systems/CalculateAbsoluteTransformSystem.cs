@@ -23,23 +23,23 @@ public sealed partial class CalculateAbsoluteTransformSystem(World world, IAsset
         var parentTransformToRoot = entity.Get<AbsoluteTransform>().TransformToRoot;
 
         // 先计算子实体的变换，感觉比递归的cache miss会少一些
-        foreach (var (child, relationship) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
+        foreach (var (relationship, record) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
         {
             var transformToParent = relationship.Entity.Get<RelativeTransform>().TransformToParent;
-            child.Entity.Get<AbsoluteTransform>().TransformToRoot = transformToParent * parentTransformToRoot;
+            record.Child.Entity.Get<AbsoluteTransform>().TransformToRoot = transformToParent * parentTransformToRoot;
         }
 
         // 递归考察子实体
-        foreach (var (child, _) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
-            RecursivelyUpdateAbsoluteTransform(child.Entity);
+        foreach (var (_, record) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
+            RecursivelyUpdateAbsoluteTransform(record.Child.Entity);
     }
 
     [Query]
     [All<TreeRelationship<RelativeTransform>.AsChild, AbsoluteTransform>]
     private static void UpdateFromRoot(Entity root, in TreeRelationship<RelativeTransform>.AsChild asChild)
     {
-        // 如果该实体的父实体非空，则不是根实体，需要跳过
-        if (asChild.Index.Parent != EntityReference.Null)
+        // 如果该实体以子身份参与关系，则不是根实体，需要跳过
+        if (asChild.Relationship is not null)
             return;
 
         RecursivelyUpdateAbsoluteTransform(root);

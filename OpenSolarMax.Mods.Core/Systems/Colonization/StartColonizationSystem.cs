@@ -33,18 +33,18 @@ public sealed partial class StartColonizationSystem(World world, IAssetsManager 
             return;
         var shipParty = shipsRegistry.Ships.First().Key;
 
-        if (asPartyChild.Index.Parent == shipParty)
+        if (asPartyChild.Relationship?.Copy.Parent == shipParty)
             return;
 
         // 如果当前星球没有所属阵营，则停靠单位阵营直接开始进行自己的殖民；
         // 如果当前星球已有阵营，则停靠单位阵营需要先破坏现有阵营的殖民度
-        if (asPartyChild.Index.Parent == EntityReference.Null)
+        if (asPartyChild.Relationship is null)
             _commandBuffer.Add(planet, new ColonizationState() { Party = shipParty, Progress = 0 });
         else
         {
             _commandBuffer.Add(planet, new ColonizationState()
             {
-                Party = asPartyChild.Index.Parent,
+                Party = asPartyChild.Relationship!.Value.Copy.Parent,
                 Progress = colonizable.Volume
             });
         }

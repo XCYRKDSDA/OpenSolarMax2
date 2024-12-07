@@ -64,14 +64,14 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             return;
 
         var colonizeParty = shipsRegistry.Ships.First().Key;
-        var planetParty = asPartyChild.Index.Parent;
+        var planetParty = asPartyChild.Relationship?.Copy.Parent;
 
         if (state.Progress > colonizable.Volume)
         {
             state.Progress = colonizable.Volume;
 
             // 完成殖民
-            if (planetParty == EntityReference.Null)
+            if (planetParty is null)
                 World.Create(new TreeRelationship<Party>(state.Party, planet.Reference()));
 
             CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
@@ -85,8 +85,8 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             state.Party = colonizeParty;
 
             // 解除当前阵营的殖民 
-            if (planetParty != EntityReference.Null)
-                World.Destroy(asPartyChild.Index.Relationship);
+            if (planetParty is not null)
+                World.Destroy(asPartyChild.Relationship!.Value.Ref);
 
             CreateHaloExplosion(planet, Color.White);
         }

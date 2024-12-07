@@ -43,13 +43,13 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ApplyPartyReference(in TreeRelationship<Party>.AsChild asChild, ref TTarget target)
     {
-        if (asChild.Index.Parent == EntityReference.Null)
+        if (asChild.Relationship is null)
         {
             ApplyDefaultValueImpl(ref target);
             return;
         }
 
-        ref readonly var reference = ref asChild.Index.Parent.Entity.Get<TReference>();
+        ref readonly var reference = ref asChild.Relationship.Value.Copy.Parent.Entity.Get<TReference>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
 }

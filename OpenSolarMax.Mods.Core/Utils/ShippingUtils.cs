@@ -108,30 +108,33 @@ public static class ShippingUtils
             // 当发现考察的子实体已经是根实体时，方法结束
             if (!child.TryGet<TreeRelationship<RelativeTransform>.AsChild>(out var asChild))
                 return (virtualWorld, tailProxy);
-            var (parent, relationship) = asChild.Index;
-            if (parent == EntityReference.Null || relationship == EntityReference.Null)
+            if (asChild.Relationship is null)
                 return (virtualWorld, tailProxy);
+            var relationship = asChild.Relationship.Value.Ref.Entity;
+            var parent = asChild.Relationship.Value.Copy.Parent;
 
             // 创建虚拟世界中关于原世界父对象的代理对象
             var parentProxy = virtualWorld.Construct(in Archetypes.Transformable);
             parentProxy.Get<AbsoluteTransform>() = parent.Entity.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
+            var relationshipRecord =
+                new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference());
             var relationshipProxy =
-                relationship.Entity.Has<RevolutionOrbit, RevolutionState>()
+                relationship.Has<RevolutionOrbit, RevolutionState>()
                     ? virtualWorld.Create(
-                        new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
-                        relationship.Entity.Get<RelativeTransform>(),
-                        relationship.Entity.Get<RevolutionOrbit>(), relationship.Entity.Get<RevolutionState>())
+                        relationshipRecord,
+                        relationship.Get<RelativeTransform>(),
+                        relationship.Get<RevolutionOrbit>(), relationship.Get<RevolutionState>())
                     : virtualWorld.Create(
-                        new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference()),
-                        relationship.Entity.Get<RelativeTransform>());
+                        relationshipRecord,
+                        relationship.Get<RelativeTransform>());
 
             // 将关系直接记录到两侧组件中
-            childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Index =
-                (parentProxy.Reference(), relationshipProxy.Reference());
+            childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship =
+                (relationshipProxy.Reference(), relationshipRecord);
             parentProxy.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships.Add(
-                childProxy.Reference(), relationshipProxy.Reference());
+                relationshipProxy.Reference(), relationshipRecord);
 
             child = parent.Entity;
             childProxy = parentProxy;

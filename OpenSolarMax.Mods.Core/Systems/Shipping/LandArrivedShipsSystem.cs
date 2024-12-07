@@ -46,7 +46,7 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
 
         // 销毁单位的尾迹实体
         var world = World.Worlds[ship.WorldId];
-        world.Destroy(ship.Get<TrailOf.AsShip>().Index.TrailRef);
+        world.Destroy(ship.Get<TrailOf.AsShip>().Relationship!.Value.Copy.Trail);
 
         // 播放音效
         _travelDoneSoundEvent.createInstance(out var instance);

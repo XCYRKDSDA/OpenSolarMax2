@@ -88,7 +88,7 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         }
 
         // 处理尾迹效果
-        var trail = asShip.Index.TrailRef.Entity;
+        var trail = asShip.Relationship!.Value.Copy.Trail.Entity;
 
         // 尾迹的颜色和单位的颜色相同
         Debug.Assert(trail.Has<Sprite>());

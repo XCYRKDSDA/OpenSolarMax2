@@ -141,16 +141,17 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                 // 检查现在是否已有相对变换关系
                 ref var transformChild = ref entity.Get<TreeRelationship<RelativeTransform>.AsChild>();
 
-                if (transformChild.Index.Parent == parentEntity)
+                // 检查是否已与目标构成相对变换关系
+                if (transformChild.Relationship?.Copy.Parent == parentEntity)
                     goto DONE;
 
-                if (transformChild.Index.Parent != EntityReference.Null && transformChild.Index.Parent != parentEntity)
+                // 检查是否已与其他实体构成相对变换关系
+                if (transformChild.Relationship?.Copy.Parent is not null)
                 {
                     // 目前有和指定父实体不同的关系
                     // TODO - Warning: 新的关系将覆盖老的关系
-                    var (oldParent, oldRelationship) = transformChild.Index;
-                    world.Destroy(oldRelationship);
-                    transformChild.Index = (EntityReference.Null, EntityReference.Null);
+                    world.Destroy(transformChild.Relationship.Value.Ref);
+                    transformChild.Relationship = null;
                 }
 
                 // 现在还没有相对变换关系
@@ -158,7 +159,8 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                     new TreeRelationship<RelativeTransform>(parentEntity.Reference(), entity.Reference()),
                     new RelativeTransform(),
                     new RevolutionOrbit(), new RevolutionState());
-                transformChild.Index = (parentEntity.Reference(), newTransformRelationshipIdx.Reference());
+                transformChild.Relationship = (newTransformRelationshipIdx.Reference(),
+                                               newTransformRelationshipIdx.Get<TreeRelationship<RelativeTransform>>());
 
                 // 如果指定了一个有预定义轨道的实体作为公转的父级，则采用预定义轨道作为基础值
                 if (parentEntity.Has<PredefinedOrbit>())
@@ -167,7 +169,8 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
                 DONE: ;
             }
 
-            var transformRelationship = entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
+            var transformRelationship =
+                entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
             ref var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
             ref var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
 

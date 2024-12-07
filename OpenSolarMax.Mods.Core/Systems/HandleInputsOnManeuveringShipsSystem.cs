@@ -278,10 +278,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IA
 
         // 处理星球选择
         EntityReference? pointedPlanet = null;
-        HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent,
-                                       ref pointedPlanet);
-        UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output, ofParty.Index.Parent,
-                              ref pointedPlanet);
+        HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output,
+                                       ofParty.Relationship!.Value.Copy.Parent, ref pointedPlanet);
+        UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output,
+                              ofParty.Relationship!.Value.Copy.Parent, ref pointedPlanet);
     }
 
     public override void Update(in GameTime data) => HandleInputsQuery(World);

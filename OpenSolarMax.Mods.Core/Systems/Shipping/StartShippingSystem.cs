@@ -64,7 +64,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             // 获取相关信息
             ref readonly var pose = ref ship.Entity.Get<AbsoluteTransform>();
             var transformRelationship =
-                ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Index.Relationship;
+                ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
             ref readonly var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
             ref readonly var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
             ref readonly var departurePlanetOrbit = ref request.Departure.Entity.Get<PlanetGeostationaryOrbit>();

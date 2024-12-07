@@ -29,10 +29,10 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world, IAs
     private static void CountPopulationLimit(in TreeRelationship<Party>.AsChild asPartyChild,
                                              in ProductionAbility productionAbility)
     {
-        if (asPartyChild.Index.Parent == EntityReference.Null)
+        if (asPartyChild.Relationship is null)
             return;
 
-        var party = asPartyChild.Index.Parent;
+        var party = asPartyChild.Relationship!.Value.Copy.Parent;
         party.Entity.Get<PartyPopulationRegistry>().PopulationLimit += productionAbility.Population;
     }
 
@@ -41,10 +41,10 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world, IAs
     private static void CountCurrentPopulation(in TreeRelationship<Party>.AsChild asPartyChild,
                                                in PopulationCost populationCost)
     {
-        if (asPartyChild.Index.Parent == EntityReference.Null)
+        if (asPartyChild.Relationship is null)
             return;
 
-        var party = asPartyChild.Index.Parent;
+        var party = asPartyChild.Relationship!.Value.Copy.Parent;
         party.Entity.Get<PartyPopulationRegistry>().CurrentPopulation += populationCost.Value;
     }
 

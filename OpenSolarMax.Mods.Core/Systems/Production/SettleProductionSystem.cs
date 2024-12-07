@@ -29,9 +29,9 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
     private void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
                                   in TreeRelationship<Party>.AsChild partyRelationship)
     {
-        var party = partyRelationship.Index.Parent;
-        if (party == EntityReference.Null)
+        if (partyRelationship.Relationship is null)
             return;
+        var party = partyRelationship.Relationship!.Value.Copy.Parent;
 
         ref readonly var producible = ref party.Entity.Get<Producible>();
 
