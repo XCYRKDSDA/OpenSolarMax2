@@ -19,7 +19,7 @@ public sealed partial class ProgressColonizationSystem(World world, IAssetsManag
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<ColonizationState, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
+    [All<ColonizationState, InParty.AsAffiliate, AnchoredShipsRegistry>]
     private static void UpdateColonization([Data] GameTime time, ref ColonizationState state,
                                            in AnchoredShipsRegistry shipsRegistry)
     {

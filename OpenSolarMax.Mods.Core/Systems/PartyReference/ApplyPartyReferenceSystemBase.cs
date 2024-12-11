@@ -27,29 +27,29 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
     protected abstract void ApplyPartyReferenceImpl(in TReference reference, ref TTarget target);
 
     private static readonly QueryDescription _entitiesDesc =
-        new QueryDescription().WithAll<TreeRelationship<Party>.AsChild, TTarget>();
+        new QueryDescription().WithAll<InParty.AsAffiliate, TTarget>();
 
     public override void Update(in GameTime t)
     {
         var query = World.Query(in _entitiesDesc);
         foreach (ref var chunk in query.GetChunkIterator())
         {
-            chunk.GetSpan<TreeRelationship<Party>.AsChild, TTarget>(out var relationshipSpan, out var componentSpan);
+            chunk.GetSpan<InParty.AsAffiliate, TTarget>(out var relationshipSpan, out var componentSpan);
             foreach (var entity in chunk)
                 ApplyPartyReference(in relationshipSpan[entity], ref componentSpan[entity]);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ApplyPartyReference(in TreeRelationship<Party>.AsChild asChild, ref TTarget target)
+    private void ApplyPartyReference(in InParty.AsAffiliate asAffiliate, ref TTarget target)
     {
-        if (asChild.Relationship is null)
+        if (asAffiliate.Relationship is null)
         {
             ApplyDefaultValueImpl(ref target);
             return;
         }
 
-        ref readonly var reference = ref asChild.Relationship.Value.Copy.Parent.Entity.Get<TReference>();
+        ref readonly var reference = ref asAffiliate.Relationship.Value.Copy.Party.Entity.Get<TReference>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
 }

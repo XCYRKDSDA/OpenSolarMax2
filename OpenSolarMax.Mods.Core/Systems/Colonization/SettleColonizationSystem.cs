@@ -54,17 +54,17 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
     }
 
     [Query]
-    [All<Colonizable, ColonizationState, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
+    [All<Colonizable, ColonizationState, InParty.AsAffiliate, AnchoredShipsRegistry>]
     private void SettleColonization(Entity planet,
                                     in Colonizable colonizable, ref ColonizationState state,
-                                    in TreeRelationship<Party>.AsChild asPartyChild,
+                                    in InParty.AsAffiliate asPartyAffiliate,
                                     in AnchoredShipsRegistry shipsRegistry)
     {
         if (shipsRegistry.Ships.Count != 1)
             return;
 
         var colonizeParty = shipsRegistry.Ships.First().Key;
-        var planetParty = asPartyChild.Relationship?.Copy.Parent;
+        var planetParty = asPartyAffiliate.Relationship?.Copy.Party;
 
         if (state.Progress > colonizable.Volume)
         {
@@ -72,7 +72,7 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
             // 完成殖民
             if (planetParty is null)
-                World.Create(new TreeRelationship<Party>(state.Party, planet.Reference()));
+                World.Create(new InParty(state.Party, planet.Reference()));
 
             CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
 
@@ -86,7 +86,7 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
             // 解除当前阵营的殖民 
             if (planetParty is not null)
-                World.Destroy(asPartyChild.Relationship!.Value.Ref);
+                World.Destroy(asPartyAffiliate.Relationship!.Value.Ref);
 
             CreateHaloExplosion(planet, Color.White);
         }

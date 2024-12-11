@@ -188,7 +188,7 @@ public class PlanetConfigurator(IAssetsManager assets) : IEntityConfigurator
         if (planetConfig.Party != null)
         {
             var party = ctx.OtherEntities[planetConfig.Party].Reference();
-            World.Worlds[entity.WorldId].Create(new TreeRelationship<Party>(party, entity.Reference()));
+            World.Worlds[entity.WorldId].Create(new InParty(party, entity.Reference()));
         }
 
         // 设置人口

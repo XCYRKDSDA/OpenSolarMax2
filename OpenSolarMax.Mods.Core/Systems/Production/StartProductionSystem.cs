@@ -23,9 +23,9 @@ public sealed partial class StartProductionSystem(World world, IAssetsManager as
     private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
-    [All<TreeRelationship<Party>.AsChild, ProductionAbility>]
+    [All<InParty.AsAffiliate, ProductionAbility>]
     [None<ProductionState>]
-    private void AutomaticallyStartProduction(Entity entity, in TreeRelationship<Party>.AsChild child)
+    private void AutomaticallyStartProduction(Entity entity, in InParty.AsAffiliate child)
     {
         if (child.Relationship is null)
             return;

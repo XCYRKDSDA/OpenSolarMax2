@@ -14,7 +14,7 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
 {
     public Archetype Archetype
         => Archetypes.Animation +
-           new Archetype(typeof(TrailOf.AsTrail), typeof(TreeRelationship<Party>.AsChild));
+           new Archetype(typeof(TrailOf.AsTrail), typeof(InParty.AsAffiliate));
 
     private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipTrail");
 

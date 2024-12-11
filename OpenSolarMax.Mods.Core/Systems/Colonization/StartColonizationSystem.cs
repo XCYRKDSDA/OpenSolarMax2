@@ -23,28 +23,28 @@ public sealed partial class StartColonizationSystem(World world, IAssetsManager 
     private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
-    [All<Colonizable, TreeRelationship<Party>.AsChild, AnchoredShipsRegistry>]
+    [All<Colonizable, InParty.AsAffiliate, AnchoredShipsRegistry>]
     [None<ColonizationState>]
     private void StartColonization(Entity planet, in Colonizable colonizable,
-                                   in TreeRelationship<Party>.AsChild asPartyChild,
+                                   in InParty.AsAffiliate asPartyAffiliate,
                                    in AnchoredShipsRegistry shipsRegistry)
     {
         if (shipsRegistry.Ships.Count != 1)
             return;
         var shipParty = shipsRegistry.Ships.First().Key;
 
-        if (asPartyChild.Relationship?.Copy.Parent == shipParty)
+        if (asPartyAffiliate.Relationship?.Copy.Party == shipParty)
             return;
 
         // 如果当前星球没有所属阵营，则停靠单位阵营直接开始进行自己的殖民；
         // 如果当前星球已有阵营，则停靠单位阵营需要先破坏现有阵营的殖民度
-        if (asPartyChild.Relationship is null)
+        if (asPartyAffiliate.Relationship is null)
             _commandBuffer.Add(planet, new ColonizationState() { Party = shipParty, Progress = 0 });
         else
         {
             _commandBuffer.Add(planet, new ColonizationState()
             {
-                Party = asPartyChild.Relationship!.Value.Copy.Parent,
+                Party = asPartyAffiliate.Relationship!.Value.Copy.Party,
                 Progress = colonizable.Volume
             });
         }

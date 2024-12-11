@@ -14,7 +14,7 @@ public sealed class IndexDependenceSystem(World world, IAssetsManager assets)
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexPartyAffiliationSystem(World world, IAssetsManager assets)
-    : IndexRelationshipSystemBase<TreeRelationship<Party>>(world)
+    : IndexRelationshipSystemBase<InParty>(world)
 { }
 
 [LateUpdateSystem]

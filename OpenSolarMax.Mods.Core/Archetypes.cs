@@ -25,7 +25,7 @@ public static class Archetypes
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
             typeof(PlanetGeostationaryOrbit),
-            typeof(TreeRelationship<Party>.AsChild),
+            typeof(InParty.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsParent),
             typeof(AnchoredShipsRegistry),
             typeof(ProductionAbility),
@@ -44,7 +44,7 @@ public static class Archetypes
             typeof(Sprite),
             typeof(RevolutionOrbit),
             typeof(RevolutionState),
-            typeof(TreeRelationship<Party>.AsChild),
+            typeof(InParty.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(Animation),
             typeof(TrailOf.AsShip),
@@ -67,7 +67,7 @@ public static class Archetypes
             typeof(Producible),
             typeof(Combatable),
             typeof(Shippable),
-            typeof(TreeRelationship<Party>.AsParent),
+            typeof(InParty.AsParty),
             typeof(PartyPopulationRegistry),
             typeof(ColonizationAbility)
         );
@@ -78,7 +78,7 @@ public static class Archetypes
             typeof(RelativeTransform),
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
-            typeof(TreeRelationship<Party>.AsChild),
+            typeof(InParty.AsAffiliate),
             typeof(LevelUIContext),
             typeof(FMOD.Studio.System)
         );

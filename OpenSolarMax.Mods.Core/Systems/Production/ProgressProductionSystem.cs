@@ -22,10 +22,10 @@ public sealed partial class ProgressProductionSystem(World world, IAssetsManager
     private static bool CanProduce(Entity planet)
     {
         // 无所属阵营的不生产
-        ref readonly var asChild = ref planet.Get<TreeRelationship<Party>.AsChild>();
-        if (asChild.Relationship is null)
+        ref readonly var asAffiliate = ref planet.Get<InParty.AsAffiliate>();
+        if (asAffiliate.Relationship is null)
             return false;
-        var party = asChild.Relationship.Value.Copy.Parent;
+        var party = asAffiliate.Relationship.Value.Copy.Party;
 
         // 无己方单位且有敌方单位的不生产
         var ships = planet.Get<AnchoredShipsRegistry>().Ships;
@@ -46,7 +46,7 @@ public sealed partial class ProgressProductionSystem(World world, IAssetsManager
     }
 
     [Query]
-    [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, TreeRelationship<Party>.AsChild>]
+    [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InParty.AsAffiliate>]
     private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability,
                                          ref ProductionState state)
     {

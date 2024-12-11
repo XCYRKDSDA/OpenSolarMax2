@@ -21,7 +21,7 @@ public sealed partial class UpdateShipRegistrySystem(World world, IAssetsManager
                                            ref AnchoredShipsRegistry shipRegistry)
     {
         shipRegistry.Ships = (Lookup<EntityReference, EntityReference>)asAnchorageParent.Relationships.Values.ToLookup(
-            copy => copy.Child.Entity.Get<TreeRelationship<Party>.AsChild>().Relationship!.Value.Copy.Parent,
+            copy => copy.Child.Entity.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party,
             copy => copy.Child
         );
     }

@@ -25,13 +25,13 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
     private readonly UnitBornPulseTemplate _unitBornPulseTemplate = new(assets);
 
     [Query]
-    [All<ProductionAbility, ProductionState, TreeRelationship<Party>.AsChild>]
+    [All<ProductionAbility, ProductionState, InParty.AsAffiliate>]
     private void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
-                                  in TreeRelationship<Party>.AsChild partyRelationship)
+                                  in InParty.AsAffiliate partyRelationship)
     {
         if (partyRelationship.Relationship is null)
             return;
-        var party = partyRelationship.Relationship!.Value.Copy.Parent;
+        var party = partyRelationship.Relationship!.Value.Copy.Party;
 
         ref readonly var producible = ref party.Entity.Get<Producible>();
 
@@ -46,7 +46,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
                 template.Apply(newShip);
 
             // 设置单位阵营
-            World.Create(new TreeRelationship<Party>(party, newShip.Reference()));
+            World.Create(new InParty(party, newShip.Reference()));
 
             // 将单位泊入星球
             var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(newShip, planet);
