@@ -6,7 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+		<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	</PropertyGroup>
 
@@ -21,7 +21,7 @@
     <ItemGroup>
         <Content Include="runtimes/$(RuntimeIdentifier)/FMOD/*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <TargetPath>%(Filename)$(Extension)</TargetPath>
+            <TargetPath>%(Filename)%(Extension)</TargetPath>
         </Content>
     </ItemGroup>
 
