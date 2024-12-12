@@ -20,7 +20,6 @@ public static class Archetypes
     public static readonly Archetype Planet =
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
-            typeof(RelativeTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
@@ -38,7 +37,6 @@ public static class Archetypes
     public static readonly Archetype Ship =
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
-            typeof(RelativeTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
@@ -55,7 +53,6 @@ public static class Archetypes
     public static readonly Archetype PredefinedOrbit =
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
-            typeof(RelativeTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(PredefinedOrbit)
@@ -75,7 +72,6 @@ public static class Archetypes
     public static readonly Archetype View =
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
-            typeof(RelativeTransform),
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
             typeof(InParty.AsAffiliate),
@@ -86,7 +82,6 @@ public static class Archetypes
     public static readonly Archetype Animation =
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
-            typeof(RelativeTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
@@ -96,7 +91,6 @@ public static class Archetypes
     public static readonly Archetype CountDownAnimation =
         Dependentable + new Archetype(
             typeof(AbsoluteTransform),
-            typeof(RelativeTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),

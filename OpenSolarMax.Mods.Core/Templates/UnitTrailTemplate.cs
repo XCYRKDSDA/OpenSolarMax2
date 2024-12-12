@@ -28,10 +28,5 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
         sprite.Anchor = new(179, 2);
         sprite.Scale = new(0.001f, 1);
         sprite.Blend = SpriteBlend.Additive;
-
-        // 设置位姿
-        ref var transform = ref entity.Get<RelativeTransform>();
-        transform.Translation = Vector3.Zero;
-        transform.Rotation = Quaternion.Identity;
     }
 }

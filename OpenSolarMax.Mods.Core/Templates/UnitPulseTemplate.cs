@@ -30,11 +30,6 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;
 
-        // 设置位姿
-        ref var transform = ref entity.Get<RelativeTransform>();
-        transform.Translation = Vector3.Zero;
-        transform.Rotation = Quaternion.Identity;
-
         // 设置动画
         ref var animation = ref entity.Get<Animation>();
         animation.Clip = _pulseAnimation;

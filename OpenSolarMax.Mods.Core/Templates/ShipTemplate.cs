@@ -26,15 +26,10 @@ internal class ShipTemplate(IAssetsManager assets) : ITemplate
 
     public void Apply(Entity entity)
     {
-        ref var transform = ref entity.Get<RelativeTransform>();
         ref var sprite = ref entity.Get<Sprite>();
         ref var revolutionState = ref entity.Get<RevolutionState>();
         ref var populationCost = ref entity.Get<PopulationCost>();
         ref var animation = ref entity.Get<Animation>();
-
-        // 置于世界系原点
-        transform.Translation = Vector3.Zero;
-        transform.Rotation = Quaternion.Identity;
 
         // 填充默认纹理
         sprite.Texture = _defaultTexture;

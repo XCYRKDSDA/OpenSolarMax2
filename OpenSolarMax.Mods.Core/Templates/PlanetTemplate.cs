@@ -33,16 +33,11 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate
     {
         var random = new Random();
 
-        ref var transform = ref entity.Get<RelativeTransform>();
         ref var sprite = ref entity.Get<Sprite>();
         ref var refSize = ref entity.Get<ReferenceSize>();
         ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
         ref var productionAbility = ref entity.Get<ProductionAbility>();
         ref var colonizable = ref entity.Get<Colonizable>();
-
-        // 置于世界系原点
-        transform.Translation = Vector3.Zero;
-        transform.Rotation = Quaternion.Identity;
 
         // 随机填充默认纹理
         var randomIndex = new Random().Next(_defaultPlanetTextures.Length);

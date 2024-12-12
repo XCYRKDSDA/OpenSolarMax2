@@ -18,11 +18,7 @@ public class ViewTemplate : ITemplate
 
     public void Apply(Entity entity)
     {
-        ref var transform = ref entity.Get<RelativeTransform>();
         ref var camera = ref entity.Get<Camera>();
-
-        transform.Translation = Vector3.Zero;
-        transform.Rotation = Quaternion.Identity;
 
         camera.Output = new(0, 0, 1920, 1080);
         camera.ZNear = -1001;

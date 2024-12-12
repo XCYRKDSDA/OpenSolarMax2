@@ -17,11 +17,7 @@ public class OrbitTemplate : ITemplate
 
     public void Apply(Entity entity)
     {
-        ref var transform = ref entity.Get<RelativeTransform>();
         ref var orbit = ref entity.Get<PredefinedOrbit>();
-
-        transform.Translation = Vector3.Zero;
-        transform.Rotation = Quaternion.Identity;
 
         orbit.Template.Rotation = Quaternion.Identity;
         orbit.Template.Shape = new(0, 0);
