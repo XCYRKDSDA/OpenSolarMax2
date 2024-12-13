@@ -2,12 +2,12 @@
   "duration": 1,
   "curves": {
     "Sprite::Alpha": [
-      { "time": 0, "value": 1 }
+      { "time": 0, "value": 1, "type": "step" }
     ],
     "Sprite::Scale": [
-      { "time": 0, "value": [ 6, 1 ] },
-      { "time": 0.5, "value": [ 2, 2 ] },
-      { "time": 1, "value": [ 1, 1 ] }
+      { "time": 0, "value": [ 6, 1 ], "type": "smooth" },
+      { "time": 0.5, "value": [ 2, 2 ], "type": "smooth" },
+      { "time": 1, "value": [ 1, 1 ], "type": "smooth" }
     ]
   }
 }

@@ -5,12 +5,12 @@
 	},
 	"curves": {
 		"Sprite::Alpha": [
-			{ "time": 1, "value": 1, "gradient": 0 },
-			{ "time": 2, "value": 0, "gradient": 0 }
+			{ "time": 1, "value": 1, "type": "smooth", "gradient": 0 },
+			{ "time": 2, "value": 0, "type": "smooth", "gradient": 0 }
 		],
 		"Sprite::Scale": [
-			{ "time": 0, "value": [ 0.001, 0.001 ], "gradient": [ "SCALE * 2", "SCALE * 2" ] },
-			{ "time": 2, "value": [ "SCALE * 2", "SCALE * 2" ], "gradient": [ "SCALE / 2", "SCALE / 2" ] }
+			{ "time": 0, "value": [ 0.001, 0.001 ], "type": "smooth", "gradient": [ "SCALE * 2", "SCALE * 2" ] },
+			{ "time": 2, "value": [ "SCALE * 2", "SCALE * 2" ], "type": "smooth", "gradient": [ "SCALE / 2", "SCALE / 2" ] }
 		]
 	}
 }

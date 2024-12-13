@@ -2,13 +2,13 @@
     "duration": 0.6,
     "curves": {
         "Sprite::Alpha": [
-            { "time": 0.2, "value": 0.5, "gradient": 0 },
-            { "time": 0.6, "value": 0, "gradient": 0 }
+            { "time": 0.2, "value": 0.5, "type": "smooth", "gradient": 0 },
+            { "time": 0.6, "value": 0, "type": "smooth", "gradient": 0 }
         ],
         "Sprite::Scale": [
-            { "time": 0.067, "value": [ 0.001, 0.001 ] },
-            { "time": 0.2, "value": [ 0.3, 0.3 ] },
-            { "time": 0.6, "value": [ 0.6, 0.6 ] }
+            { "time": 0.067, "value": [ 0.001, 0.001 ], "type": "smooth" },
+            { "time": 0.2, "value": [ 0.3, 0.3 ], "type": "smooth" },
+            { "time": 0.6, "value": [ 0.6, 0.6 ], "type": "smooth" }
         ]
     }
 }

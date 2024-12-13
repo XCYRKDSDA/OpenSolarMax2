@@ -2,8 +2,8 @@
     "duration": 5,
     "curves": {
         "Sprite::Scale.X": [
-            { "time": 0, "value": 0.001, "gradient": 0.2 },
-            { "time": 10, "value": 1, "gradient": 0 }
+            { "time": 0, "value": 0.001, "type": "smooth", "gradient": 0.2 },
+            { "time": 10, "value": 1, "type": "smooth", "gradient": 0 }
         ]
     }
 }
