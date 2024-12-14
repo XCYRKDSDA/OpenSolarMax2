@@ -1,11 +1,9 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
-using System.Text.Json;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Nine.Animations;
 using Nine.Assets;
-using Nine.Assets.Serialization;
 
 namespace OpenSolarMax.Game.Assets;
 
@@ -33,8 +31,8 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
         var memberType = componentType;
         foreach (var part in memberPath.Split('.'))
             memberType = memberType.GetField(part) is { } field ? field.FieldType :
-                         memberType.GetProperty(part) is { } property ? property.PropertyType :
-                         throw new KeyNotFoundException();
+                memberType.GetProperty(part) is { } property ? property.PropertyType :
+                throw new KeyNotFoundException();
         return memberType;
     }
 
@@ -159,20 +157,4 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
     }
 
     #endregion
-
-    private static JsonSerializerOptions PrepareJsonSerializationOptions()
-    {
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        options.Converters.Add(new ColorJsonConverter());
-        options.Converters.Add(new Vector2JsonConverter());
-        options.Converters.Add(new Vector3JsonConverter());
-
-        return options;
-    }
-
-    private static readonly JsonSerializerOptions _jsonSerializationOptions = PrepareJsonSerializationOptions();
-
-    protected override ValueT ParseValueImpl<ValueT>(in JsonElement json)
-        => json.Deserialize<ValueT>(_jsonSerializationOptions) ?? throw new JsonException();
 }

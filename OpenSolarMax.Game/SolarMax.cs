@@ -6,7 +6,9 @@ using Microsoft.Xna.Framework.Input;
 using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
+using Nine.Animations;
 using Nine.Assets;
+using Nine.Assets.Serialization;
 using Nine.Graphics;
 using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Data;
@@ -384,8 +386,26 @@ public class SolarMax : XNAGame
         var componentTypes = loadedBehaviorMods.SelectMany((t) => t.Item3.ExportedTypes)
                                                .Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
                                                .ToList();
-        localAssets.RegisterLoader(new EntityAnimationClipLoader() { ComponentTypes = componentTypes });
-        localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader() { ComponentTypes = componentTypes });
+        localAssets.RegisterLoader(new EntityAnimationClipLoader()
+        {
+            ComponentTypes = componentTypes,
+            ValueTypes =
+            {
+                { typeof(float), (null, typeof(CubicCurve<float>)) },
+                { typeof(Vector2), (new Vector2JsonConverter(), typeof(CubicCurve<Vector2>)) },
+                { typeof(Vector3), (new Vector3JsonConverter(), typeof(CubicCurve<Vector3>)) },
+            }
+        });
+        localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader()
+        {
+            ComponentTypes = componentTypes,
+            ValueTypes =
+            {
+                { typeof(float), (new ParametricFloatJsonConverter(), typeof(CubicCurve<float>)) },
+                { typeof(Vector2), (new ParametricVector2JsonConverter(), typeof(CubicCurve<Vector2>)) },
+                { typeof(Vector3), (new ParametricVector3JsonConverter(), typeof(CubicCurve<Vector3>)) },
+            }
+        });
         
         _fmodFlag = FMOD.Studio.System.create(out _localFmodSystem);
         _fmodFlag = _localFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0);

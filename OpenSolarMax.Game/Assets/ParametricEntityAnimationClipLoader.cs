@@ -1,11 +1,9 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
-using System.Text.Json;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Nine.Animations;
 using Nine.Assets;
-using Nine.Assets.Serialization;
 
 namespace OpenSolarMax.Game.Assets;
 
@@ -159,21 +157,4 @@ internal class ParametricEntityAnimationClipLoader : ParametricAnimationClipLoad
     }
 
     #endregion
-
-    private static JsonSerializerOptions PrepareJsonSerializationOptions()
-    {
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        // options.Converters.Add(new ColorJsonConverter());
-        options.Converters.Add(new ParametricFloatJsonConverter());
-        options.Converters.Add(new ParametricVector2JsonConverter());
-        options.Converters.Add(new ParametricVector3JsonConverter());
-
-        return options;
-    }
-
-    private static readonly JsonSerializerOptions _jsonSerializationOptions = PrepareJsonSerializationOptions();
-
-    protected override IParametric<ValueT> ParseValueImpl<ValueT>(in JsonElement json)
-        => json.Deserialize<IParametric<ValueT>>(_jsonSerializationOptions) ?? throw new JsonException();
 }
