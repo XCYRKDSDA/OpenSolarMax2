@@ -8,7 +8,7 @@ public readonly partial struct InParty(in EntityReference party, in EntityRefere
 {
     [Participant(exclusive: false)]
     public readonly EntityReference Party = party;
-    
+
     [Participant]
     public readonly EntityReference Affiliate = affiliate;
 }

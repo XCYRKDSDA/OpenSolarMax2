@@ -1,11 +1,11 @@
 {
-  "duration": 1,
-  "curves": {
-    "Sprite::Alpha": [
-      { "time": 0, "value": 1, "type": "step" }
-    ],
-    "Sprite::Scale": [
-      { "time": 0, "value": [ 3, 0.5 ], "type": "step" }
-    ]
-  }
+    "duration": 1,
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 1, "type": "step" }
+        ],
+        "Sprite::Scale": [
+            { "time": 0, "value": [ 3, 0.5 ], "type": "step" }
+        ]
+    }
 }

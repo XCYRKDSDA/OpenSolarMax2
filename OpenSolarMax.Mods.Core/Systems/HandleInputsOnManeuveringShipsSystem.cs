@@ -10,7 +10,6 @@ using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
-using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 

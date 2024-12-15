@@ -1,14 +1,11 @@
-﻿using System.Diagnostics;
-using Arch.Core;
+﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Systems;
-using OpenSolarMax.Mods.Core.Templates;
-using Nine.Assets;
-using OpenSolarMax.Game;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 

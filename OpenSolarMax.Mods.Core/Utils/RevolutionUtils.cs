@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Xml;
-using Arch.Core;
+﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Mods.Core.Components;

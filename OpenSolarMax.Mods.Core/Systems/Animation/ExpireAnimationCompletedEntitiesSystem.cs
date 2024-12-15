@@ -24,7 +24,7 @@ public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world, 
     {
         if (animation.RawClip is not null)
             return;
-        
+
         // 没有指定动画剪辑也算是播完了
         if (animation.Clip is null || animation.TimeElapsed.TotalSeconds > animation.Clip.Length)
             commands.Destroy(entity);

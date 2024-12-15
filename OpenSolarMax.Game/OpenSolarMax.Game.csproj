@@ -1,38 +1,38 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Arch" Version="1.2.8" />
-		<PackageReference Include="Arch.System" Version="1.0.5" />
-		<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
-			<PrivateAssets>All</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="Myra" Version="1.5.5" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Arch" Version="1.2.8"/>
+        <PackageReference Include="Arch.System" Version="1.0.5"/>
+        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
+            <PrivateAssets>All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Myra" Version="1.5.5"/>
+    </ItemGroup>
 
-	<ItemGroup>
-        <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj" />
-        <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj"/>
+        <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<None Update="Content\Fonts\Downlink-gav1.ttf">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\UIs\IconsAtlas.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Content\UIs\IconsAtlas.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Levels\Demo.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+    <ItemGroup>
+        <None Update="Content\Fonts\Downlink-gav1.ttf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\UIs\IconsAtlas.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\UIs\IconsAtlas.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Levels\Demo.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
 </Project>

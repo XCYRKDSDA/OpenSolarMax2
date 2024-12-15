@@ -60,7 +60,7 @@ internal static class InitializerHelper
 
 /// <summary>
 /// 原型定义。
-/// 之所以不使用Arch推荐的<see cref="ComponentType[]"/>作为原型是因为其根据原型创建实体时不会对组件进行初始构造。
+/// 之所以不使用Arch推荐的<see cref="ComponentType"/>作为原型是因为其根据原型创建实体时不会对组件进行初始构造。
 /// 使用该原型以及其扩展方法<see cref="ArchetypeExtensions.Construct(World, in Archetype)"/>可以在新建实体时对其组件进行初始化
 /// </summary>
 /// <param name="types">该原型拥有的所有组件类型</param>

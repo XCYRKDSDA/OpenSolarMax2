@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Runtime.InteropServices;
-using Arch.Core;
-using Arch.Core.Extensions;
-using Microsoft.Xna.Framework;
+﻿using System.Runtime.InteropServices;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
@@ -22,7 +18,7 @@ public struct ShippingStatus_Travelling
     /// 由于充能耽搁的时间
     /// </summary>
     public float DelayedTime;
-    
+
     /// <summary>
     /// 已经飞行了的时间
     /// </summary>
@@ -40,10 +36,10 @@ public struct ShippingStatus
 {
     [FieldOffset(0)]
     public ShippingState State;
-    
+
     [FieldOffset(sizeof(ShippingState))]
     public ShippingStatus_Charging Charging;
-    
+
     [FieldOffset(sizeof(ShippingState))]
     public ShippingStatus_Travelling Travelling;
 }

@@ -23,7 +23,7 @@ public sealed partial class ProgressCombatSystem(World world, IAssetsManager ass
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
     private static void ProgressCombat([Data] GameTime time,
-                                     in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
+                                       in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
     {
         var ships = shipsRegistry.Ships;
         var damage = battle.FrontlineDamage;

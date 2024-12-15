@@ -31,8 +31,8 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
         var memberType = componentType;
         foreach (var part in memberPath.Split('.'))
             memberType = memberType.GetField(part) is { } field ? field.FieldType :
-                memberType.GetProperty(part) is { } property ? property.PropertyType :
-                throw new KeyNotFoundException();
+                         memberType.GetProperty(part) is { } property ? property.PropertyType :
+                         throw new KeyNotFoundException();
         return memberType;
     }
 

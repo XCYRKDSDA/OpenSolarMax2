@@ -13,7 +13,7 @@ public struct ExpiredAfterTimeout
     /// 已经经过的时间
     /// </summary>
     public TimeSpan ElapsedTime;
-    
+
     /// <summary>
     /// 实体存活的时间。<br/>
     /// 当其为<see cref="Timeout.InfiniteTimeSpan"/>可以实际上造成实体永不销毁，

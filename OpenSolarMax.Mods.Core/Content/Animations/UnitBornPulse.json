@@ -1,13 +1,13 @@
 {
-  "duration": 1,
-  "curves": {
-    "Sprite::Alpha": [
-      { "time": 0, "value": 0, "type": "linear" },
-      { "time": 1, "value": 0.75, "type": "linear" }
-    ],
-    "Sprite::Scale": [
-      { "time": 0, "value": [ 1.5, 1.5 ], "type": "linear" },
-      { "time": 1, "value": [ 0.1, 0.1 ], "type": "linear" }
-    ]
-  }
+    "duration": 1,
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 0, "type": "linear" },
+            { "time": 1, "value": 0.75, "type": "linear" }
+        ],
+        "Sprite::Scale": [
+            { "time": 0, "value": [ 1.5, 1.5 ], "type": "linear" },
+            { "time": 1, "value": [ 0.1, 0.1 ], "type": "linear" }
+        ]
+    }
 }

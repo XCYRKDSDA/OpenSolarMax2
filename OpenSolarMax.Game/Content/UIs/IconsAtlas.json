@@ -1,23 +1,23 @@
 {
-  "image": "IconsAtlas.png",
-  "regions": {
-    "SlowSpeedBtn_Idle": { "x": 0, "y": 0, "w": 60, "h": 60 },
-    "NormalSpeedBtn_Idle": { "x": 60, "y": 0, "w": 90, "h": 60 },
-    "FastSpeedBtn_Idle": { "x": 150, "y": 0, "w": 120, "h": 60 },
-    "SlowSpeedBtn_Pressed": { "x": 0, "y": 60, "w": 60, "h": 60 },
-    "NormalSpeedBtn_Pressed": { "x": 60, "y": 60, "w": 90, "h": 60 },
-    "FastSpeedBtn_Pressed": { "x": 150, "y": 60, "w": 120, "h": 60 },
+    "image": "IconsAtlas.png",
+    "regions": {
+        "SlowSpeedBtn_Idle": { "x": 0, "y": 0, "w": 60, "h": 60 },
+        "NormalSpeedBtn_Idle": { "x": 60, "y": 0, "w": 90, "h": 60 },
+        "FastSpeedBtn_Idle": { "x": 150, "y": 0, "w": 120, "h": 60 },
+        "SlowSpeedBtn_Pressed": { "x": 0, "y": 60, "w": 60, "h": 60 },
+        "NormalSpeedBtn_Pressed": { "x": 60, "y": 60, "w": 90, "h": 60 },
+        "FastSpeedBtn_Pressed": { "x": 150, "y": 60, "w": 120, "h": 60 },
 
-    "ExitBtn_Idle": { "x": 0, "y": 120, "w": 60, "h": 60 },
-    "ExitBtn_Pressed": { "x": 0, "y": 180, "w": 60, "h": 60 },
+        "ExitBtn_Idle": { "x": 0, "y": 120, "w": 60, "h": 60 },
+        "ExitBtn_Pressed": { "x": 0, "y": 180, "w": 60, "h": 60 },
 
-    "PauseBtn_Idle": { "x": 60, "y": 120, "w": 60, "h": 60 },
-    "PauseBtn_Pressed": { "x": 60, "y": 180, "w": 60, "h": 60 },
+        "PauseBtn_Idle": { "x": 60, "y": 120, "w": 60, "h": 60 },
+        "PauseBtn_Pressed": { "x": 60, "y": 180, "w": 60, "h": 60 },
 
-    "ResumeBtn_Idle": { "x": 120, "y": 120, "w": 60, "h": 60 },
-    "ResumeBtn_Pressed": { "x": 120, "y": 180, "w": 60, "h": 60 },
+        "ResumeBtn_Idle": { "x": 120, "y": 120, "w": 60, "h": 60 },
+        "ResumeBtn_Pressed": { "x": 120, "y": 180, "w": 60, "h": 60 },
 
-    "SliderBar": { "x": 180, "y": 120, "w": 60, "h": 60 },
-    "SliderBtn": { "x": 180, "y": 180, "w": 60, "h": 60 }
-  }
+        "SliderBar": { "x": 180, "y": 120, "w": 60, "h": 60 },
+        "SliderBtn": { "x": 180, "y": 180, "w": 60, "h": 60 }
+    }
 }

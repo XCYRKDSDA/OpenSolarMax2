@@ -4,7 +4,6 @@ using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
-using OpenSolarMax.Mods.Core.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Configurators;

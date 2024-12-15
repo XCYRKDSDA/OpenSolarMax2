@@ -20,7 +20,8 @@ public sealed partial class UpdateListener3DAttributesSystem(World world, IAsset
 {
     [Query]
     [All<FmodSystem, AbsoluteTransform, Camera>]
-    private static void SetHearer3DAttributes(ref FmodSystem fmodSystem, in AbsoluteTransform transform, in Camera camera)
+    private static void SetHearer3DAttributes(ref FmodSystem fmodSystem, in AbsoluteTransform transform,
+                                              in Camera camera)
     {
         fmodSystem.setListenerAttributes(0, new Fmod3DAttributes()
         {

@@ -406,7 +406,7 @@ public class SolarMax : XNAGame
                 { typeof(Vector3), (new ParametricVector3JsonConverter(), typeof(CubicCurve<Vector3>)) },
             }
         });
-        
+
         _fmodFlag = FMOD.Studio.System.create(out _localFmodSystem);
         _fmodFlag = _localFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0);
         localAssets.RegisterLoader(new FmodBankLoader(_localFmodSystem));

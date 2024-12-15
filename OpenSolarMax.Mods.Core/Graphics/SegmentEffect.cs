@@ -138,7 +138,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
         if ((_dirtyFlags & DirtyFlags.Thickness) != DirtyFlags.None)
             _thicknessParam.SetValue(_thickness);
-        
+
         if ((_dirtyFlags & DirtyFlags.Round) != DirtyFlags.None)
             _roundParam.SetValue(_round);
 

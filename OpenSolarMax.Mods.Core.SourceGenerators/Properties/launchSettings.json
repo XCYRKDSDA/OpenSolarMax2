@@ -1,9 +1,9 @@
 {
-	"$schema": "http://json.schemastore.org/launchsettings.json",
-	"profiles": {
-		"Generators": {
-			"commandName": "DebugRoslynComponent",
-			"targetProject": "../OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj"
-		}
-	}
+    "$schema": "http://json.schemastore.org/launchsettings.json",
+    "profiles": {
+        "Generators": {
+            "commandName": "DebugRoslynComponent",
+            "targetProject": "../OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj"
+        }
+    }
 }

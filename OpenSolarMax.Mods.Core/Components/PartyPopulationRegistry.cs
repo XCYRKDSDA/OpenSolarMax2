@@ -1,5 +1,3 @@
-using Arch.Core;
-
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>

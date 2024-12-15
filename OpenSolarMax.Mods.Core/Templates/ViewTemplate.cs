@@ -1,6 +1,5 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;

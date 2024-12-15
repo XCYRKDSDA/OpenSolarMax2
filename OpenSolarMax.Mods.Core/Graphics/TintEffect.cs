@@ -34,7 +34,7 @@ public class TintEffect : Effect, IEffectMatrices
     private TintEffect.DirtyFlags _dirtyFlags = TintEffect.DirtyFlags.All;
 
     #endregion
-    
+
     #region Proporties
 
     public Matrix World
@@ -90,7 +90,7 @@ public class TintEffect : Effect, IEffectMatrices
     {
         if ((_dirtyFlags & DirtyFlags.WorldViewProj) != DirtyFlags.None)
             _toNdcParam.SetValue(_world * _view * _proj);
-        
+
         if ((_dirtyFlags & DirtyFlags.Texture) != DirtyFlags.None)
             _textureParam.SetValue(_texture);
     }

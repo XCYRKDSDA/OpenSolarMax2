@@ -1,8 +1,8 @@
 {
-  "duration": 1,
-  "curves": {
-    "Sprite::Alpha": [
-      { "time": 0, "value": 0, "type": "step" }
-    ]
-  }
+    "duration": 1,
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 0, "type": "step" }
+        ]
+    }
 }

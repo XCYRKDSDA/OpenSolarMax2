@@ -1,20 +1,20 @@
 {
-  "duration": 1,
-  "loopMode": "Loop",
-  "curves": {
-    "Sprite::Alpha": [
-      { "time": 0, "value": 1, "type": "smooth", "gradient": 0.62832 },
-      { "time": 0.25, "value": 1.1, "type": "smooth", "gradient": 0 },
-      { "time": 0.5, "value": 1, "type": "smooth", "gradient": -0.62832 },
-      { "time": 0.75, "value": 0.9, "type": "smooth", "gradient": 0 },
-      { "time": 1, "value": 1, "type": "smooth", "gradient": 0.62832 }
-    ],
-    "Sprite::Scale": [
-      { "time": 0, "value": [ 1, 1 ], "type": "smooth", "gradient": [ 0.62832, 0.62832 ] },
-      { "time": 0.25, "value": [ 1.1, 1.1 ], "type": "smooth", "gradient": [ 0, 0 ] },
-      { "time": 0.5, "value": [ 1, 1 ], "type": "smooth", "gradient": [ -0.62832, -0.62832 ] },
-      { "time": 0.75, "value": [ 0.9, 0.9 ], "type": "smooth", "gradient": [ 0, 0 ] },
-      { "time": 1, "value": [ 1, 1 ], "type": "smooth", "gradient": [ 0.62832, 0.62832 ] }
-    ]
-  }
+    "duration": 1,
+    "loopMode": "Loop",
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 1, "type": "smooth", "gradient": 0.62832 },
+            { "time": 0.25, "value": 1.1, "type": "smooth", "gradient": 0 },
+            { "time": 0.5, "value": 1, "type": "smooth", "gradient": -0.62832 },
+            { "time": 0.75, "value": 0.9, "type": "smooth", "gradient": 0 },
+            { "time": 1, "value": 1, "type": "smooth", "gradient": 0.62832 }
+        ],
+        "Sprite::Scale": [
+            { "time": 0, "value": [ 1, 1 ], "type": "smooth", "gradient": [ 0.62832, 0.62832 ] },
+            { "time": 0.25, "value": [ 1.1, 1.1 ], "type": "smooth", "gradient": [ 0, 0 ] },
+            { "time": 0.5, "value": [ 1, 1 ], "type": "smooth", "gradient": [ -0.62832, -0.62832 ] },
+            { "time": 0.75, "value": [ 0.9, 0.9 ], "type": "smooth", "gradient": [ 0, 0 ] },
+            { "time": 1, "value": [ 1, 1 ], "type": "smooth", "gradient": [ 0.62832, 0.62832 ] }
+        ]
+    }
 }
