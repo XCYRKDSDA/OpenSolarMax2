@@ -2,6 +2,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
+using Nine.Animations.Parametric;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;

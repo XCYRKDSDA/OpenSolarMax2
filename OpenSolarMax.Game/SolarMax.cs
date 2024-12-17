@@ -8,6 +8,7 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Nine.Animations;
 using Nine.Assets;
+using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using Nine.Graphics;
 using OpenSolarMax.Game.Assets;
@@ -389,21 +390,48 @@ public class SolarMax : XNAGame
         localAssets.RegisterLoader(new EntityAnimationClipLoader()
         {
             ComponentTypes = componentTypes,
-            ValueTypes =
+            CurveLoaders =
             {
-                { typeof(float), (null, typeof(CubicCurve<float>)) },
-                { typeof(Vector2), (new Vector2JsonConverter(), typeof(CubicCurve<Vector2>)) },
-                { typeof(Vector3), (new Vector3JsonConverter(), typeof(CubicCurve<Vector3>)) },
+                {
+                    typeof(float),
+                    new SingleCubicKeyFrameCurveLoader(null)
+                },
+                {
+                    typeof(Vector2),
+                    new Vector2CubicKeyFrameCurveLoader(new Vector2JsonConverter())
+                },
+                {
+                    typeof(Vector3),
+                    new Vector3CubicKeyFrameCurveLoader(new Vector3JsonConverter())
+                },
+                {
+                    typeof(Quaternion),
+                    new SphereKeyFrameCurveLoader(new RotationJsonConverter(), new Vector3JsonConverter())
+                }
             }
         });
         localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader()
         {
             ComponentTypes = componentTypes,
-            ValueTypes =
+            CurveLoaders =
             {
-                { typeof(float), (new ParametricFloatJsonConverter(), typeof(CubicCurve<float>)) },
-                { typeof(Vector2), (new ParametricVector2JsonConverter(), typeof(CubicCurve<Vector2>)) },
-                { typeof(Vector3), (new ParametricVector3JsonConverter(), typeof(CubicCurve<Vector3>)) },
+                {
+                    typeof(float),
+                    new ParametricSingleCubicKeyFrameCurveLoader(new ParametricFloatJsonConverter())
+                },
+                {
+                    typeof(Vector2),
+                    new ParametricVector2CubicKeyFrameCurveLoader(new ParametricVector2JsonConverter())
+                },
+                {
+                    typeof(Vector3),
+                    new ParametricVector3CubicKeyFrameCurveLoader(new ParametricVector3JsonConverter())
+                },
+                {
+                    typeof(Quaternion),
+                    new ParametricSphereKeyFrameCurveLoader(new ParametricRotationJsonConverter(),
+                                                            new ParametricVector3JsonConverter())
+                }
             }
         });
 

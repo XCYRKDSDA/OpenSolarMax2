@@ -1,5 +1,6 @@
 ﻿using Arch.Core;
 using Nine.Animations;
+using Nine.Animations.Parametric;
 using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;
