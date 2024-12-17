@@ -57,4 +57,9 @@ public struct Sprite()
     /// 精灵纹理的混合模式
     /// </summary>
     public SpriteBlend Blend = SpriteBlend.Alpha;
+
+    /// <summary>
+    /// 是否为平面纹理
+    /// </summary>
+    public bool Billboard = true;
 }

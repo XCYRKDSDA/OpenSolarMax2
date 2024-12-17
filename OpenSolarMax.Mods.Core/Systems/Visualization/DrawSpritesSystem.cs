@@ -26,16 +26,22 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         if (sprite.Texture is null)
             return;
 
-        // 将实体投影到二维XY平面
-        var rotatedUnitX = Vector3.Transform(Vector3.UnitX, absoluteTransform.Rotation);
-        var frameToWorld = Matrix.CreateRotationZ(MathF.Atan2(rotatedUnitX.Y, rotatedUnitX.X))
-                           * Matrix.CreateTranslation(absoluteTransform.Translation);
-
         // 计算精灵纹理锚点到世界的变换
-        var anchorToWorld = Matrix.CreateScale(sprite.Scale.X, sprite.Scale.Y, 1)
-                            * Matrix.CreateRotationZ(sprite.Rotation)
+        var anchorToWorld = Matrix.CreateRotationZ(sprite.Rotation)
                             * Matrix.CreateTranslation(sprite.Position.X, sprite.Position.Y, 0)
-                            * frameToWorld;
+                            * absoluteTransform.TransformToRoot;
+
+        if (sprite.Billboard)
+        {
+            // 将变换投影到二维平面
+            var rotatedUnitX = Vector3.Transform(Vector3.UnitX, absoluteTransform.Rotation);
+            anchorToWorld = Matrix.CreateRotationZ(MathF.Atan2(rotatedUnitX.Y, rotatedUnitX.X))
+                            * Matrix.CreateTranslation(anchorToWorld.Translation);
+        }
+
+        // 完成最后的缩放
+        anchorToWorld = Matrix.CreateScale(sprite.Scale.X, sprite.Scale.Y, 1)
+                        * anchorToWorld;
 
         // 计算四个顶点的坐标
         _vertices[0].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
