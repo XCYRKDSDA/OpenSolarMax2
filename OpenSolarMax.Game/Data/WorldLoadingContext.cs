@@ -1,4 +1,5 @@
 ﻿using Arch.Core;
+using OpenSolarMax.Game.Utils;
 
 namespace OpenSolarMax.Game.Data;
 
@@ -7,5 +8,6 @@ namespace OpenSolarMax.Game.Data;
 /// </summary>
 /// <param name="OtherEntities"></param>
 public record class WorldLoadingContext(
-    IReadOnlyDictionary<string, Entity> OtherEntities
+    IReadOnlyDictionary<string, ITemplate[]> OtherTemplates,
+    IReadOnlyDictionary<string, EntityReference> OtherEntities
 );

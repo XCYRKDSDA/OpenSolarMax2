@@ -10,11 +10,6 @@ namespace OpenSolarMax.Mods.Core.Components;
 public struct ProductionAbility
 {
     /// <summary>
-    /// 星球可以生产的单位类型。由一组模板来描述
-    /// </summary>
-    public ITemplate[] ProductTemplates;
-
-    /// <summary>
     /// 星球提供的人口数目
     /// </summary>
     public int Population;

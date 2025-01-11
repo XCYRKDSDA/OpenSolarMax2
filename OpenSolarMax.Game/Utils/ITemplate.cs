@@ -1,4 +1,5 @@
 ﻿using Arch.Core;
+using Nine.Assets;
 
 namespace OpenSolarMax.Game.Utils;
 
@@ -11,4 +12,14 @@ public interface ITemplate
     Archetype Archetype { get; }
 
     void Apply(Entity entity);
+}
+
+public static class TemplateExtensions
+{
+    public static Entity Make(this World world, ITemplate template)
+    {
+        var entity = world.Construct(template.Archetype);
+        template.Apply(entity);
+        return entity;
+    }
 }

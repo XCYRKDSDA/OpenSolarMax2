@@ -13,6 +13,7 @@
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Myra" Version="1.5.5"/>
+        <PackageReference Include="ValueOf" Version="2.0.31" />
     </ItemGroup>
 
     <ItemGroup>

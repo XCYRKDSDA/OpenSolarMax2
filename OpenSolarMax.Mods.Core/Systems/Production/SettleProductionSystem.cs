@@ -38,23 +38,9 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
         // 生产一个新部队
         if (state.Progress >= producible.WorkloadPerShip)
         {
-            var unionArchetype = new Archetype();
-            foreach (var template in ability.ProductTemplates)
-                unionArchetype += template.Archetype;
-            var newShip = World.Construct(in unionArchetype);
-            foreach (var template in ability.ProductTemplates)
-                template.Apply(newShip);
+            var newShip = World.Make(new ShipTemplate(assets) { Party = party, Planet = planet.Reference() });
 
-            // 设置单位阵营
-            World.Create(new InParty(party, newShip.Reference()));
-
-            // 将单位泊入星球
-            var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(newShip, planet);
-
-            // 随机设置轨道
-            RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, planet);
-
-            // 设置出生后动画
+            // 添加出生后动画
             newShip.Add(new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });
 
             // 生成出生动画

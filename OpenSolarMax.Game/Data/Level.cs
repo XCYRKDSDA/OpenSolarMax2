@@ -2,7 +2,7 @@
 
 internal class Level
 {
-    public Dictionary<string, LevelStatement> Templates { get; } = [];
+    public Dictionary<string, ConfigurationStatement> Templates { get; } = [];
 
-    public List<(string?, LevelStatement, int)> Entities { get; } = [];
+    public List<(string? Id, ConfigurationStatement Statement, int Num)> Entities { get; } = [];
 }

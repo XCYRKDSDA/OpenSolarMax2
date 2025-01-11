@@ -1,7 +1,7 @@
 {
     "templates": {
-        "planet30": { "$base": "planet", "radius": 30, "population": 30, "produceSpeed": 1 },
-        "planet60": { "$base": "planet", "radius": 60, "population": 60, "produceSpeed": 1 },
+        "planet30": { "$base": "planet", "radius": 30, "volume": 100, "population": 30, "produceSpeed": 1 },
+        "planet60": { "$base": "planet", "radius": 60, "volume": 150, "population": 60, "produceSpeed": 1 },
         "blue": { "$base": "party", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
     },
 
@@ -11,13 +11,13 @@
 
         { "$base": "view", "size": [ 1920, 1080 ], "depth": [ -1000, 1000 ], "party": "blue" },
 
-        { "$id": "orbit01", "$base": "orbit", "shape": [ 1200, 800 ], "period": 30 },
+        { "$id": "center", "$base": "empty" },
 
         { "$base": "barrier", "head": [ -300, 0 ], "tail": [ 300, 0 ] },
         { "$base": "barrier", "head": [ 0, -200 ], "tail": [ 0, 200 ] },
 
-        { "$id": "planet01", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0 } },
-        { "$id": "planet02", "$base": "planet60", "party": "blue", "orbit": { "parent": "orbit01", "phase": 0.5 } },
+        { "$id": "planet01", "$base": "planet60", "party": "blue", "parent": "center", "orbit": { "shape": [ 1200, 800 ], "period": 30, "phase": 0 } },
+        { "$id": "planet02", "$base": "planet60", "party": "blue", "parent": "center", "orbit": { "shape": [ 1200, 800 ], "period": 30, "phase": 0.5 } },
         { "$id": "planet03", "$base": "planet30", "position": [ 225, 150 ] },
         { "$id": "planet04", "$base": "planet30", "position": [ -225, -150 ] },
 

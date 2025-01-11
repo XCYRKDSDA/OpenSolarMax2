@@ -1,100 +1,80 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
 using Arch.Core;
+using Arch.Core.Extensions;
+using Nine.Assets;
 using OpenSolarMax.Game.Utils;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Game.Data;
 
-internal sealed class WorldLoader
+internal sealed class WorldLoader(IAssetsManager assets)
 {
-    public IReadOnlyCollection<IEntityConfigurator> Configurators => _configurators.Values;
-
-    // 从配置类型到配置器的映射
-    private readonly Dictionary<Type, IEntityConfigurator> _configurators = [];
-
-    public void RegisterConfigurator(IEntityConfigurator configurator)
+    private static IEntityConfiguration[] GetAllConfigs(
+        ConfigurationStatement statement, IReadOnlyDictionary<string, IEntityConfiguration[]> cache)
     {
-        if (_configurators.ContainsKey(configurator.GetType()))
-            _configurators[configurator.ConfigurationType] = configurator;
-        else
-            _configurators.Add(configurator.ConfigurationType, configurator);
+        if (statement.Bases.Length == 0)
+            return statement.Configurations;
+
+        var configs = cache[statement.Bases[0]];
+        for (var i = 1; i < statement.Bases.Length; i++)
+            configs = Aggregate(configs, cache[statement.Bases[i]]);
+        configs = Aggregate(configs, statement.Configurations);
+        return configs;
     }
 
-    private static IEnumerable<IEntityConfiguration> GetAllConfigs(
-        LevelStatement statement, IReadOnlyDictionary<string, LevelStatement> templates)
+    private static IEntityConfiguration[] Aggregate(IEntityConfiguration[] cfgs, IEntityConfiguration[] newCfgs)
     {
-        if (statement.Base == null)
-            return statement.Configs;
-
-        var configs = Enumerable.Empty<IEntityConfiguration>();
-
-        foreach (var @base in statement.Base)
-            configs = Enumerable.Concat(configs, GetAllConfigs(templates[@base], templates));
-
-        return Enumerable.Concat(configs, statement.Configs);
-    }
-
-    private static List<Type> GetAllTypes(IEnumerable<IEntityConfiguration> configs)
-    {
-        var record = new HashSet<Type>();
-        var ans = new List<Type>();
-
-        foreach (var config in configs)
-        {
-            var configType = config.GetType();
-
-            if (record.Contains(configType))
-                continue;
-
-            ans.Add(configType);
-            record.Add(configType);
-        }
-
-        return ans;
+        Debug.Assert(cfgs.Length == newCfgs.Length);
+        return cfgs.Zip(newCfgs).Select(pair => pair.First.Aggregate(pair.Second)).ToArray();
     }
 
     public void Load(Level level, World world)
     {
-        var namedEntities = new Dictionary<string, Entity>();
+        var namedTemplates = new Dictionary<string, ITemplate[]>();
+        var namedEntities = new Dictionary<string, EntityReference>();
+        var ctx = new WorldLoadingContext(namedTemplates, namedEntities);
 
-        var configuratorsTable = _configurators.Values.ToLookup(
-            (c) => c.GetType().GetCustomAttribute<ConfiguratorKeyAttribute>()!.Key);
+        var cache = new Dictionary<string, IEntityConfiguration[]>();
 
-        var ctx = new WorldLoadingContext(namedEntities);
-        var env = new WorldLoadingEnvironment(configuratorsTable);
-
-        foreach (var (optionalId, entityStatment, num) in level.Entities)
+        // 首先解析所有模板
+        foreach (var (id, templateStatement) in level.Templates)
         {
             // 解析引用关系，获得所有配置项
-            var allConfigs = GetAllConfigs(entityStatment, level.Templates);
-            var allConfigTypes = GetAllTypes(allConfigs);
+            var allConfigs = GetAllConfigs(templateStatement, cache);
+            cache[id] = allConfigs;
+
+            var allTemplates = allConfigs.Select(c => c.ToTemplate(ctx, assets)).ToArray();
+            namedTemplates.Add(id, allTemplates);
+        }
+
+        // 解析所有实体
+        foreach (var (optionalId, entityStatement, num) in level.Entities)
+        {
+            // 解析引用关系，获得所有配置项
+            var allConfigs = GetAllConfigs(entityStatement, cache);
+            if (optionalId is not null)
+                cache[optionalId] = allConfigs;
+
+            var allTemplates = allConfigs.Select(c => c.ToTemplate(ctx, assets)).ToArray();
 
             // 合成原型
             var unionArchetype = new Archetype();
-            foreach (var configType in allConfigTypes)
-            {
-                var configurator = _configurators[configType];
-                unionArchetype += configurator.Archetype;
-            }
+            foreach (var template in allTemplates)
+                unionArchetype += template.Archetype;
 
+            // 构造实体
             for (var i = 0; i < num; i++)
             {
                 // 创造实体
                 var entity = world.Construct(unionArchetype);
 
                 // 记录实体
-                if (optionalId != null)
-                {
-                    if (!namedEntities.TryAdd(optionalId, entity))
-                        namedEntities[optionalId] = entity;
-                }
+                if (optionalId is not null)
+                    namedEntities[optionalId] = entity.Reference();
 
-                // 初始化实体
-                foreach (var configType in allConfigTypes)
-                    _configurators[configType].Initialize(in entity, ctx, env);
-
-                foreach (var config in allConfigs)
-                    _configurators[config.GetType()].Configure(config, in entity, ctx, env);
+                // 配置实体
+                foreach (var template in allTemplates)
+                    template.Apply(entity);
             }
         }
     }

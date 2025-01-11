@@ -440,18 +440,18 @@ public class SolarMax : XNAGame
         localAssets.RegisterLoader(new FmodBankLoader(_localFmodSystem));
         localAssets.RegisterLoader(new FmodEventLoader(_localFmodSystem));
 
-        // 从行为包中寻找配置器类型并实例化
-        var configurators = new Dictionary<string, List<IEntityConfigurator>>();
-        var configuratorsConstructParams = new object[] { localAssets };
+        // 从行为包中寻找配置类型
+        var configurations = new Dictionary<string, List<Type>>();
         foreach (var (dir, manifest, assembly) in loadedBehaviorMods)
         {
             Debug.Assert(assembly is not null); //行为包模组肯定是有程序集的
-            var modConfiguratorTypes = Moddings.FindConfiguratorTypes(assembly);
-            foreach (var (key, type) in modConfiguratorTypes)
+            var modConfigurationTypes = Moddings.FindConfigurationTypes(assembly);
+            foreach (var (key, type) in modConfigurationTypes)
             {
-                var configurator = (IEntityConfigurator)Activator.CreateInstance(type, configuratorsConstructParams)!;
-                if (!configurators.TryAdd(key, [configurator]))
-                    configurators[key].Add(configurator);
+                if (configurations.TryGetValue(key, out var types))
+                    types.Add(type);
+                else
+                    configurations.Add(key, [type]);
             }
         }
 
@@ -461,11 +461,7 @@ public class SolarMax : XNAGame
         var levelsAssets = new AssetsManager(levelsFileSystem);
         levelsAssets.RegisterLoader(new LevelLoader()
         {
-            ConfigurationTypes =
-                (from pair in configurators
-                 select (pair.Key,
-                         (from configurator in pair.Value select configurator.ConfigurationType).ToArray()
-                        )).ToDictionary()
+            ConfigurationTypes = configurations.Select(p => (p.Key, p.Value.ToArray())).ToDictionary()
         });
 
         // 当玩家选择了一个关卡地图时，游戏开始加载该地图。
@@ -525,12 +521,7 @@ public class SolarMax : XNAGame
         );
 
         // 构造世界加载器
-        var worldLoader = new WorldLoader();
-        foreach (var (_, configurators2) in configurators)
-        {
-            foreach (var configurator in configurators2)
-                worldLoader.RegisterConfigurator(configurator);
-        }
+        var worldLoader = new WorldLoader(localAssets);
 
         // 将关卡加载到世界中
         var level = levelsAssets.Load<Level>(targetLevelFile);
