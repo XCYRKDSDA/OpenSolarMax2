@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Nine.Drawing;
 using Nine.Graphics;
 using OpenSolarMax.Game.ECS;
 
@@ -34,7 +35,12 @@ public struct Sprite()
     public float Alpha = 1.0f;
 
     /// <summary>
-    /// 精灵纹理的锚点在纹理图片坐标系中的相对位置
+    /// 纹理在世界中的尺寸
+    /// </summary>
+    public Vector2 Size = Vector2.Zero;
+
+    /// <summary>
+    /// 精灵纹理的锚点在锚点坐标系中的相对位置
     /// </summary>
     public Vector2 Anchor = Vector2.Zero;
 

@@ -68,6 +68,7 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
         sprite.Texture = _defaultTexture;
         sprite.Color = Color.White;
         sprite.Alpha = 1;
+        sprite.Size = _defaultTexture.Bounds.Size.ToVector2();
         sprite.Anchor = sprite.Texture.Bounds.Size.ToVector2() / 2;
         sprite.Position = Vector2.Zero;
         sprite.Rotation = 0;

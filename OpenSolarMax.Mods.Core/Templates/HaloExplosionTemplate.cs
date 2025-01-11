@@ -33,6 +33,7 @@ public class HaloExplosionTemplate : ITemplate
         sprite.Texture = _haloTexture;
         sprite.Color = Color.White;
         sprite.Alpha = 1;
+        sprite.Size = _haloTexture.Bounds.Size.ToVector2();
         sprite.Anchor = new Vector2(109, 105.5f);
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;

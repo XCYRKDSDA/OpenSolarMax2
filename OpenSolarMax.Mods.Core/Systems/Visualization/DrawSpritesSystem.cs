@@ -46,11 +46,11 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         // 计算四个顶点的坐标
         _vertices[0].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
         _vertices[1].Position = Vector3.Transform(
-            new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
+            new(sprite.Size.X - sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
         _vertices[2].Position = Vector3.Transform(
-            new(-sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0), anchorToWorld);
+            new(-sprite.Anchor.X, sprite.Anchor.Y - sprite.Size.Y, 0), anchorToWorld);
         _vertices[3].Position = Vector3.Transform(
-            new(sprite.Texture.Bounds.Width - sprite.Anchor.X, sprite.Anchor.Y - sprite.Texture.Bounds.Height, 0),
+            new(sprite.Size.X - sprite.Anchor.X, sprite.Anchor.Y - sprite.Size.Y, 0),
             anchorToWorld);
 
         // 计算四个顶点对应的原始纹理的UV坐标
