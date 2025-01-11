@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
         <OutputPath>..\OpenSolarMax.Launcher\bin\$(PlatformName)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\$(RuntimeIdentifier)\Mods\OpenSolarMax.Mods.Core</OutputPath>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -24,9 +25,11 @@
 
     <ItemGroup>
         <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.4">
+            <ExcludeAssets>runtime</ExcludeAssets>
             <PrivateAssets>runtime</PrivateAssets>
         </PackageReference>
         <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
+            <ExcludeAssets>runtime</ExcludeAssets>
             <PrivateAssets>runtime</PrivateAssets>
         </PackageReference>
         <PackageReference Include="OneOf" Version="3.0.271" />
@@ -50,11 +53,6 @@
             <Private>false</Private>
             <ExcludeAssets>runtime</ExcludeAssets>
         </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.11.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0"/>
     </ItemGroup>
 
     <ItemGroup>
