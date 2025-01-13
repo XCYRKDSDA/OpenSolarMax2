@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Drawing;
 
 namespace OpenSolarMax.Mods.Core.Templates.Options;
 
@@ -14,7 +13,7 @@ public class RevolutionOptions
     /// <summary>
     /// 轨道的形状
     /// </summary>
-    public required SizeF Shape { get; set; }
+    public required Vector2 Shape { get; set; }
 
     /// <summary>
     /// 轨道的公转周期

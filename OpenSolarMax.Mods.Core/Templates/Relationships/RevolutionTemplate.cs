@@ -1,7 +1,6 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
-using Nine.Drawing;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
@@ -16,7 +15,7 @@ public class RevolutionTemplate : ITemplate
 
     public required EntityReference Child { get; set; }
 
-    public required SizeF Shape { get; set; }
+    public required Vector2 Shape { get; set; }
 
     public required float Period { get; set; }
 

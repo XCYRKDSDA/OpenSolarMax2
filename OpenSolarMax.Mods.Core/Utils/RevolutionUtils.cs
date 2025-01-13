@@ -62,8 +62,8 @@ public static class RevolutionUtils
     /// <returns>单位相对轨道所在实体的相对变换</returns>
     public static RelativeTransform CalculateTransform(in RevolutionOrbit orbit, in RevolutionState state)
         // 以+Z轴为轴, 逆时针旋转
-        => new(Matrix.CreateTranslation(orbit.Shape.Width / 2, 0, 0)
+        => new(Matrix.CreateTranslation(orbit.Shape.X / 2, 0, 0)
                * Matrix.CreateRotationZ(state.Phase)
-               * Matrix.CreateScale(1, orbit.Shape.Height / orbit.Shape.Width, 1)
+               * Matrix.CreateScale(1, orbit.Shape.Y / orbit.Shape.X, 1)
                * Matrix.CreateFromQuaternion(orbit.Rotation));
 }

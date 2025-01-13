@@ -6,7 +6,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using Nine.Drawing;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
@@ -71,12 +70,12 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             ref readonly var destinationPlanetOrbit = ref request.Destination.Entity.Get<PlanetGeostationaryOrbit>();
 
             // 计算泊入轨道
-            var orbitOffset = revolutionOrbit.Shape.Width / 2 / departurePlanetOrbit.Radius;
+            var orbitOffset = revolutionOrbit.Shape.X / 2 / departurePlanetOrbit.Radius;
             var expectedOrbit = new RevolutionOrbit()
             {
                 Rotation = destinationPlanetOrbit.Rotation,
-                Shape = new SizeF(destinationPlanetOrbit.Radius * orbitOffset * 2,
-                                  destinationPlanetOrbit.Radius * orbitOffset * 2),
+                Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2,
+                            destinationPlanetOrbit.Radius * orbitOffset * 2),
                 Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f)
             };
             var expectedPosition = expectedArrivalPlanetPosition

@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using Nine.Drawing;
 using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;
@@ -19,7 +18,7 @@ public struct RevolutionOrbit()
     /// <summary>
     /// 轨道作为一个椭圆的横纵尺寸
     /// </summary>
-    public SizeF Shape;
+    public Vector2 Shape;
 
     /// <summary>
     /// 轨道上星球公转周期
