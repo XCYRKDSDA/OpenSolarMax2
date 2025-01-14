@@ -8,8 +8,6 @@ using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
-using OpenSolarMax.Mods.Core.Utils;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -22,8 +20,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class SettleProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly UnitBornPulseTemplate _unitBornPulseTemplate = new(assets);
-
     [Query]
     [All<ProductionAbility, ProductionState, InParty.AsAffiliate>]
     private void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
@@ -44,12 +40,11 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
             newShip.Add(new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });
 
             // 生成出生动画
-            var pulse = World.Construct(_unitBornPulseTemplate.Archetype);
-            _unitBornPulseTemplate.Apply(pulse);
-            pulse.Get<Sprite>().Color = party.Entity.Get<PartyReferenceColor>().Value;
-            World.Create(new TreeRelationship<RelativeTransform>(newShip.Reference(), pulse.Reference()),
-                         new RelativeTransform());
-            World.Create(new Dependence(pulse.Reference(), newShip.Reference()));
+            _ = World.Make(new UnitBornPulseTemplate(assets)
+            {
+                Unit = newShip.Reference(),
+                Color = party.Entity.Get<PartyReferenceColor>().Value
+            });
 
             // 减去对应工作量
             state.Progress -= producible.WorkloadPerShip;
