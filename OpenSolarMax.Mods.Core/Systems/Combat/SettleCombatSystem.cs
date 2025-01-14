@@ -23,9 +23,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class SettleCombatSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly UnitFlareTemplate _unitFlareConfigurator = new(assets);
-    private readonly UnitPulseTemplate _unitPulseConfigurator = new(assets);
-
     private FmodEventDescription _destroyedSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/UnitDestroyed");
 
@@ -47,17 +44,14 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
 
                 var ship = shipEnumerator.Current;
 
+                var color = ship.Entity.Get<Sprite>().Color;
+                var position = ship.Entity.Get<AbsoluteTransform>().Translation;
+
                 // 生成闪光
-                var flare = World.Construct(_unitFlareConfigurator.Archetype);
-                _unitFlareConfigurator.Apply(flare);
-                flare.Get<Sprite>().Color = ship.Entity.Get<Sprite>().Color;
-                flare.Get<AbsoluteTransform>().Translation = ship.Entity.Get<AbsoluteTransform>().Translation;
+                _ = World.Make(new UnitFlareTemplate(assets) { Color = color, Position = position });
 
                 // 生成冲击波
-                var pulse = World.Construct(_unitPulseConfigurator.Archetype);
-                _unitPulseConfigurator.Apply(pulse);
-                pulse.Get<Sprite>().Color = ship.Entity.Get<Sprite>().Color;
-                pulse.Get<AbsoluteTransform>().Translation = ship.Entity.Get<AbsoluteTransform>().Translation;
+                _ = World.Make(new UnitPulseTemplate(assets) { Color = color, Position = position });
 
                 // 播放音效
                 _destroyedSoundEvent.createInstance(out var instance);

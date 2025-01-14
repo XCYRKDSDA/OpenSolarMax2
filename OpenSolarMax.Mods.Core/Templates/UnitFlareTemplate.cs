@@ -12,7 +12,25 @@ namespace OpenSolarMax.Mods.Core.Templates;
 
 public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 {
-    public Archetype Archetype => Archetypes.CountDownAnimation;
+    #region Options
+
+    public required Vector3 Position { get; set; }
+
+    public required Color Color { get; set; }
+
+    #endregion
+
+    private static readonly Archetype _archetype = new(
+        // 位姿变换
+        typeof(AbsoluteTransform),
+        // 效果
+        typeof(Sprite),
+        // 动画
+        typeof(Animation),
+        typeof(ExpireAfterAnimationCompleted)
+    );
+
+    public Archetype Archetype => _archetype;
 
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipFlare");
 
@@ -21,10 +39,14 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 
     public void Apply(Entity entity)
     {
+        // 设置位置
+        ref var transform = ref entity.Get<AbsoluteTransform>();
+        transform.Translation = Position;
+
         // 设置纹理
         ref var sprite = ref entity.Get<Sprite>();
         sprite.Texture = _flareTexture;
-        sprite.Color = Color.White;
+        sprite.Color = Color;
         sprite.Alpha = 1;
         sprite.Size = _flareTexture.LogicalSize;
         sprite.Scale = Vector2.One * 0.001f;
