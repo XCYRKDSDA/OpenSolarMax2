@@ -1,9 +1,9 @@
 {
     "image": "ShipAtlas.png",
     "regions": {
-        "Ship": { "x": 314, "y": 97, "w": 16, "h": 16 },
-        "ShipFlare": { "x": 0, "y": 7, "w": 296, "h": 296 },
-        "ShipPulse": { "x": 299, "y": 131, "w": 172, "h": 172 },
-        "ShipTrail": { "x": 0, "y": 2, "w": 179, "h": 4 }
+        "Ship": { "x": 314, "y": 97, "w": 16, "h": 16, "anchor": [ 8, 8 ] },
+        "ShipFlare": { "x": 0, "y": 7, "w": 296, "h": 296, "anchor": [ 148, 148 ] },
+        "ShipPulse": { "x": 299, "y": 131, "w": 172, "h": 172, "anchor": [ 86, 86 ] },
+        "ShipTrail": { "x": 0, "y": 2, "w": 179, "h": 4, "anchor": [ 179, 2 ] }
     }
 }

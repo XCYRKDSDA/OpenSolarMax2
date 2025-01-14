@@ -40,18 +40,19 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         }
 
         // 完成最后的缩放
-        anchorToWorld = Matrix.CreateScale(sprite.Scale.X, sprite.Scale.Y, 1)
+        anchorToWorld = Matrix.CreateScale(sprite.Scale.X * sprite.Size.X / sprite.Texture.LogicalSize.X,
+                                           sprite.Scale.Y * sprite.Size.Y / sprite.Texture.LogicalSize.Y, 1)
                         * anchorToWorld;
 
+        var leftTop = new Vector3(-sprite.Texture.LogicalOrigin.X, sprite.Texture.LogicalOrigin.Y, 0);
+        var leftToRight = new Vector3(sprite.Texture.Bounds.Width, 0, 0);
+        var topToBottom = new Vector3(0, -sprite.Texture.Bounds.Height, 0);
+
         // 计算四个顶点的坐标
-        _vertices[0].Position = Vector3.Transform(new(-sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
-        _vertices[1].Position = Vector3.Transform(
-            new(sprite.Size.X - sprite.Anchor.X, sprite.Anchor.Y, 0), anchorToWorld);
-        _vertices[2].Position = Vector3.Transform(
-            new(-sprite.Anchor.X, sprite.Anchor.Y - sprite.Size.Y, 0), anchorToWorld);
-        _vertices[3].Position = Vector3.Transform(
-            new(sprite.Size.X - sprite.Anchor.X, sprite.Anchor.Y - sprite.Size.Y, 0),
-            anchorToWorld);
+        _vertices[0].Position = Vector3.Transform(leftTop, anchorToWorld);
+        _vertices[1].Position = Vector3.Transform(leftTop + leftToRight, anchorToWorld);
+        _vertices[2].Position = Vector3.Transform(leftTop + topToBottom, anchorToWorld);
+        _vertices[3].Position = Vector3.Transform(leftTop + leftToRight + topToBottom, anchorToWorld);
 
         // 计算四个顶点对应的原始纹理的UV坐标
         _vertices[0].TextureCoordinate = new(sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,

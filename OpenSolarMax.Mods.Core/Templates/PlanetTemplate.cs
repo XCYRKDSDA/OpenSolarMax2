@@ -100,7 +100,6 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         sprite.Texture = _defaultPlanetTextures[randomIndex];
         sprite.Alpha = 1;
         sprite.Size = new(ReferenceRadius * 2);
-        sprite.Anchor = new(ReferenceRadius);
         sprite.Position = Vector2.Zero;
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;

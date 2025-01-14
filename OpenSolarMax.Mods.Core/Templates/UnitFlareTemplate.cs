@@ -26,8 +26,7 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
         sprite.Texture = _flareTexture;
         sprite.Color = Color.White;
         sprite.Alpha = 1;
-        sprite.Size = _flareTexture.Bounds.Size.ToVector2();
-        sprite.Anchor = new(148, 148);
+        sprite.Size = _flareTexture.LogicalSize;
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;
 

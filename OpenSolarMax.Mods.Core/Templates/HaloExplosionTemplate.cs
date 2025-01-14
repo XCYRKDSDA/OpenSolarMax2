@@ -2,7 +2,6 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
-using Nine.Animations.Parametric;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
@@ -17,13 +16,12 @@ public class HaloExplosionTemplate : ITemplate
 
     private readonly TextureRegion _haloTexture;
 
-    private readonly ParametricAnimationClip<Entity> _rawExplosionAnimation;
+    private readonly AnimationClip<Entity> _explosionAnimation;
 
     public HaloExplosionTemplate(IAssetsManager assets)
     {
-        _haloTexture = assets.Load<TextureRegion>("Textures/Halo.png");
-        _rawExplosionAnimation = assets.Load<ParametricAnimationClip<Entity>>("Animations/HaloExplosion.json");
-        _ = _rawExplosionAnimation.Bake(); // 预热代码
+        _haloTexture = assets.Load<TextureRegion>("Textures/Halo.json:Halo");
+        _explosionAnimation = assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
     }
 
     public void Apply(Entity entity)
@@ -34,13 +32,12 @@ public class HaloExplosionTemplate : ITemplate
         sprite.Color = Color.White;
         sprite.Alpha = 1;
         sprite.Size = _haloTexture.Bounds.Size.ToVector2();
-        sprite.Anchor = new Vector2(109, 105.5f);
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置动画
         ref var animation = ref entity.Get<Animation>();
-        animation.RawClip = _rawExplosionAnimation;
+        animation.Clip = _explosionAnimation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
     }

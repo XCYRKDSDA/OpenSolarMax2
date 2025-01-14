@@ -25,7 +25,6 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
         sprite.Color = Color.White;
         sprite.Alpha = 0.5f;
         sprite.Size = _trailTexture.Bounds.Size.ToVector2();
-        sprite.Anchor = new(179, 2);
         sprite.Scale = new(0.001f, 1);
         sprite.Blend = SpriteBlend.Additive;
     }

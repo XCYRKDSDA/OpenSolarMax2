@@ -27,7 +27,6 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
         sprite.Color = Color.White;
         sprite.Alpha = 1;
         sprite.Size = _pulseTexture.Bounds.Size.ToVector2();
-        sprite.Anchor = new Vector2(86, 86);
         sprite.Scale = Vector2.One * 0.001f;
         sprite.Blend = SpriteBlend.Additive;
 

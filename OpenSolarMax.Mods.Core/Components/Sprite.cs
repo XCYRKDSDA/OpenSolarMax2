@@ -34,17 +34,12 @@ public struct Sprite()
     public float Alpha = 1.0f;
 
     /// <summary>
-    /// 纹理在世界中的尺寸
+    /// 纹理逻辑边框在世界中的尺寸
     /// </summary>
     public Vector2 Size = Vector2.Zero;
 
     /// <summary>
-    /// 精灵纹理的锚点在锚点坐标系中的相对位置
-    /// </summary>
-    public Vector2 Anchor = Vector2.Zero;
-
-    /// <summary>
-    /// 精灵相对实体的坐标
+    /// 精灵逻辑原点相对实体的坐标
     /// </summary>
     public Vector2 Position = Vector2.Zero;
 

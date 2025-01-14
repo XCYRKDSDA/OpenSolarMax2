@@ -45,7 +45,7 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
         // 设置尺寸
         ref readonly var refSize = ref planet.Get<ReferenceSize>();
-        halo.Get<Animation>().RawClip!.Parameters["SCALE"] = refSize.Radius / 60;
+        halo.Get<Sprite>().Size = new(refSize.Radius * 2);
 
         // 播放音效
         _colonizedSoundEvent.createInstance(out var instance);
@@ -84,7 +84,7 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             state.Progress = -state.Progress;
             state.Party = colonizeParty;
 
-            // 解除当前阵营的殖民 
+            // 解除当前阵营的殖民
             if (planetParty is not null)
                 World.Destroy(asPartyAffiliate.Relationship!.Value.Ref);
 
