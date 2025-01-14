@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -24,28 +23,19 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 {
     private readonly CommandBuffer _commandBuffer = new();
 
-    private readonly HaloExplosionTemplate _haloExplosionTemplate = new(assets);
-
     private FmodEventDescription _colonizedSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
 
     private void CreateHaloExplosion(Entity planet, Color color)
     {
-        var halo = World.Construct(_haloExplosionTemplate.Archetype);
-        _haloExplosionTemplate.Apply(halo);
-
-        // 摆放位置
-        Debug.Assert(planet.Has<AbsoluteTransform>());
         ref var planetAbsoluteTransform = ref planet.Get<AbsoluteTransform>();
-        halo.Get<AbsoluteTransform>() = planetAbsoluteTransform;
-        halo.Get<AbsoluteTransform>().Translation.Z = 1000; // 一定位于最前边
-
-        // 设置颜色
-        halo.Get<Sprite>().Color = color;
-
-        // 设置尺寸
         ref readonly var refSize = ref planet.Get<ReferenceSize>();
-        halo.Get<Sprite>().Size = new(refSize.Radius * 2);
+        _ = World.Make(new HaloExplosionTemplate(assets)
+        {
+            Color = color,
+            Position = planetAbsoluteTransform.Translation,
+            PlanetRadius = refSize.Radius
+        });
 
         // 播放音效
         _colonizedSoundEvent.createInstance(out var instance);

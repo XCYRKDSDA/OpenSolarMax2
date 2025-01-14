@@ -10,28 +10,47 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
-public class HaloExplosionTemplate : ITemplate
+public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 {
-    public Archetype Archetype => Archetypes.CountDownAnimation;
+    #region Options
 
-    private readonly TextureRegion _haloTexture;
+    public required Color Color { get; set; }
 
-    private readonly AnimationClip<Entity> _explosionAnimation;
+    public required Vector3 Position { get; set; }
 
-    public HaloExplosionTemplate(IAssetsManager assets)
-    {
-        _haloTexture = assets.Load<TextureRegion>("Textures/Halo.json:Halo");
-        _explosionAnimation = assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
-    }
+    public required float PlanetRadius { get; set; }
+
+    #endregion
+
+    private static readonly Archetype _archetype = new(
+        // 位姿变换
+        typeof(AbsoluteTransform),
+        // 效果
+        typeof(Sprite),
+        // 动画
+        typeof(Animation),
+        typeof(ExpireAfterAnimationCompleted)
+    );
+
+    public Archetype Archetype => _archetype;
+
+    private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>("Textures/Halo.json:Halo");
+
+    private readonly AnimationClip<Entity> _explosionAnimation =
+        assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
 
     public void Apply(Entity entity)
     {
+        // 摆放位置
+        ref var transform = ref entity.Get<AbsoluteTransform>();
+        transform.Translation = Position with { Z = 1000 };
+
         // 设置纹理
         ref var sprite = ref entity.Get<Sprite>();
         sprite.Texture = _haloTexture;
-        sprite.Color = Color.White;
+        sprite.Color = Color;
         sprite.Alpha = 1;
-        sprite.Size = _haloTexture.Bounds.Size.ToVector2();
+        sprite.Size = new(PlanetRadius * 2);
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
 
