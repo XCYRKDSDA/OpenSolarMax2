@@ -23,7 +23,6 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();
-    private readonly UnitTrailTemplate _trailTemplate = new(assets);
 
     private FmodEventDescription _chargingSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
@@ -111,15 +110,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             ship.Entity.Get<SoundEffect>().EventInstance = instance;
             instance.start();
 
-            // 创建单位的尾迹，并挂载到星球上
-            var trail = world.Construct(_trailTemplate.Archetype);
-            _trailTemplate.Apply(trail);
-            world.Create(new TrailOf(ship.Entity.Reference(), trail.Reference()));
-            world.Create(new TreeRelationship<TrailOf>());
-            _ = world.Create(
-                new TreeRelationship<RelativeTransform>(ship.Entity.Reference(), trail.Reference()),
-                new RelativeTransform());
-            world.Create(new Dependence(trail.Reference(), ship));
+            // 创建单位的尾迹
+            _ = world.Make(new UnitTrailTemplate(assets) { Unit = ship });
         }
 
         // 移除任务
