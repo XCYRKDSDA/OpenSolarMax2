@@ -47,7 +47,8 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
     protected static void BuildIndex<TParticipant>(EntityReference relationship, EntityReference participant)
         where TParticipant : IParticipantIndex
     {
-        participant.Entity.Get<TParticipant>().Add(relationship);
+        if (participant.Entity.Has<TParticipant>())
+            participant.Entity.Get<TParticipant>().Add(relationship);
     }
 
     #region `BuildIndex` Cache
