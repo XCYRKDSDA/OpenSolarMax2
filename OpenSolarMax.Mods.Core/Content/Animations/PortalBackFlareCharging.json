@@ -1,0 +1,17 @@
+{
+    "duration": "T * 4",
+    "variables": {
+        "T": 0.6
+    },
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": "T * 2", "value": 1, "type": "smooth", "gradient": 0},
+            { "time": "T * 3", "value": 0, "type": "smooth" }
+        ],
+        "Sprite::Scale": [
+            { "time": 0, "value": [ 1, 1 ], "type": "smooth", "gradient": [ 0, 0 ] },
+            { "time": "T", "value": [ 0.7, 0.7 ], "type": "smooth" },
+            { "time": "T * 4", "value": [ 0.1, 0.1 ], "type": "smooth" }
+        ]
+    }
+}

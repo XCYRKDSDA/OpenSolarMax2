@@ -1,0 +1,10 @@
+{
+    "image": "PortalBackFlare.png",
+    "regions": {
+        "PortalBackFlare": {
+            "x": 0, "y": 0, "w": 768, "h": 768,
+            "anchor": [ 384, 384 ],
+            "size": [ 512, 512 ]
+        }
+    }
+}

@@ -34,3 +34,9 @@ public sealed class IndexTransformTreeSystem(World world, IAssetsManager assets)
 public sealed class IndexTrailAffiliationSystem(World world, IAssetsManager assets)
     : IndexRelationshipSystemBase<TrailOf>(world)
 { }
+
+[LateUpdateSystem]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed class IndexPortalChargingEffectSystem(World world, IAssetsManager assets)
+    : IndexRelationshipSystemBase<InPortalEffect>(world)
+{ }

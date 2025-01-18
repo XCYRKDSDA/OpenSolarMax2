@@ -1,0 +1,17 @@
+{
+    "duration": "T * 4",
+    "variables": {
+        "i": 0,
+        "T": 0.6
+    },
+    "curves": {
+        "RelativeTransform::Rotation": [
+            { "time": "i * T / 3 + 0", "value": [ "xyz", 0, 0, 0 ], "type": "linear" },
+            { "time": "i * T / 3 + T", "value": [ "xyz", 0, -1.4908, 0 ], "type": "linear" },
+            { "time": "i * T / 3 + T + 0.01", "value": [ "xyz", 0, 0, 0 ], "type": "linear" },
+            { "time": "i * T / 3 + T * 2", "value": [ "xyz", 0, -1.4908, 0 ], "type": "linear" },
+            { "time": "i * T / 3 + T * 2 + 0.01", "value": [ "xyz", 0, 0, 0 ], "type": "linear" },
+            { "time": "i * T / 3 + T * 3", "value": [ "xyz", 0, -1.4908, 0 ], "type": "linear" }
+        ]
+    }
+}
