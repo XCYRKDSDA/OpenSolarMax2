@@ -9,7 +9,6 @@ using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -23,9 +22,6 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 {
     private readonly CommandBuffer _commandBuffer = new();
 
-    private FmodEventDescription _colonizedSoundEvent =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
-
     private void CreateHaloExplosion(Entity planet, Color color)
     {
         ref var planetAbsoluteTransform = ref planet.Get<AbsoluteTransform>();
@@ -36,11 +32,6 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             Position = planetAbsoluteTransform.Translation,
             PlanetRadius = refSize.Radius
         });
-
-        // 播放音效
-        _colonizedSoundEvent.createInstance(out var instance);
-        World.Create(new SoundEffect() { EventInstance = instance }, planetAbsoluteTransform);
-        instance.start();
     }
 
     [Query]

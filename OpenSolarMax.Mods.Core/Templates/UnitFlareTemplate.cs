@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
+using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -25,9 +26,10 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
         typeof(AbsoluteTransform),
         // 效果
         typeof(Sprite),
+        typeof(SoundEffect),
         // 动画
         typeof(Animation),
-        typeof(ExpireAfterAnimationCompleted)
+        typeof(ExpireAfterAnimationAndSoundEffectCompleted)
     );
 
     public Archetype Archetype => _archetype;
@@ -36,6 +38,9 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 
     private readonly AnimationClip<Entity> _flareAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/UnitFlare.json");
+
+    private FmodEventDescription _destroyedSoundEvent =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/UnitDestroyed");
 
     public void Apply(Entity entity)
     {
@@ -57,5 +62,10 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _flareAnimation;
         animation.TimeOffset = TimeSpan.Zero;
         animation.TimeElapsed = TimeSpan.Zero;
+
+        // 设置音效
+        ref var soundEffect = ref entity.Get<SoundEffect>();
+        _destroyedSoundEvent.createInstance(out soundEffect.EventInstance);
+        soundEffect.EventInstance.start();
     }
 }

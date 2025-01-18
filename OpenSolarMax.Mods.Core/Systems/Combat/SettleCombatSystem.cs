@@ -23,9 +23,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class SettleCombatSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private FmodEventDescription _destroyedSoundEvent =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/UnitDestroyed");
-
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
     private void SettleCombat(in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
@@ -52,11 +49,6 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
 
                 // 生成冲击波
                 _ = World.Make(new UnitPulseTemplate(assets) { Color = color, Position = position });
-
-                // 播放音效
-                _destroyedSoundEvent.createInstance(out var instance);
-                World.Create(new SoundEffect() { EventInstance = instance }, ship.Entity.Get<AbsoluteTransform>());
-                instance.start();
 
                 // 移除单位
                 World.Destroy(ship);

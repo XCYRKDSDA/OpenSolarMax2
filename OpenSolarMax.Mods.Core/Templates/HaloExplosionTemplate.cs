@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
+using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -27,9 +28,10 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
         typeof(AbsoluteTransform),
         // 效果
         typeof(Sprite),
+        typeof(SoundEffect),
         // 动画
         typeof(Animation),
-        typeof(ExpireAfterAnimationCompleted)
+        typeof(ExpireAfterAnimationAndSoundEffectCompleted)
     );
 
     public Archetype Archetype => _archetype;
@@ -38,6 +40,9 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 
     private readonly AnimationClip<Entity> _explosionAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
+
+    private FmodEventDescription _colonizedSoundEvent =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
 
     public void Apply(Entity entity)
     {
@@ -59,5 +64,10 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _explosionAnimation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
+
+        // 设置音效
+        ref var soundEffect = ref entity.Get<SoundEffect>();
+        _colonizedSoundEvent.createInstance(out soundEffect.EventInstance);
+        soundEffect.EventInstance.start();
     }
 }
