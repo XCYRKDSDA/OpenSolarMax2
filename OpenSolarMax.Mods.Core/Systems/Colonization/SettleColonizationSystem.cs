@@ -35,41 +35,31 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
     }
 
     [Query]
-    [All<Colonizable, ColonizationState, InParty.AsAffiliate, AnchoredShipsRegistry>]
-    private void SettleColonization(Entity planet,
-                                    in Colonizable colonizable, ref ColonizationState state,
-                                    in InParty.AsAffiliate asPartyAffiliate,
-                                    in AnchoredShipsRegistry shipsRegistry)
+    [All<Colonizable, ColonizationState, ColonizationStateHistory, InParty.AsAffiliate>]
+    private void SettleColonization(Entity planet, in Colonizable colonizable,
+                                    ref ColonizationState state, ref ColonizationStateHistory history,
+                                    in InParty.AsAffiliate asPartyAffiliate)
     {
-        if (shipsRegistry.Ships.Count != 1)
-            return;
-
-        var colonizeParty = shipsRegistry.Ships.First().Key;
         var planetParty = asPartyAffiliate.Relationship?.Copy.Party;
 
-        if (state.Progress > colonizable.Volume)
+        if (history.Previous.Progress < colonizable.Volume && state.Progress >= colonizable.Volume)
         {
-            state.Progress = colonizable.Volume;
+            // 不管怎样，先开香槟
+            CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
 
             // 完成殖民
             if (planetParty is null)
-                World.Create(new InParty(state.Party, planet.Reference()));
-
-            CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
-
-            // 移除“占领中”组件
-            _commandBuffer.Remove<ColonizationState>(planet);
+                World.Make(new InPartyTemplate() { Party = state.Party, Affiliate = planet.Reference() });
         }
-        else if (state.Progress < 0)
+        else if (state.Party != history.Previous.Party)
         {
-            state.Progress = -state.Progress;
-            state.Party = colonizeParty;
+            if (history.Previous.Party != EntityReference.Null)
+                // 如果之前有阵营在殖民，则开香槟
+                CreateHaloExplosion(planet, Color.White);
 
             // 解除当前阵营的殖民
             if (planetParty is not null)
                 World.Destroy(asPartyAffiliate.Relationship!.Value.Ref);
-
-            CreateHaloExplosion(planet, Color.White);
         }
     }
 

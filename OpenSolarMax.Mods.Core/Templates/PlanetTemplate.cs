@@ -72,6 +72,8 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(ReferenceSize),
         typeof(Battlefield),
         typeof(Colonizable),
+        typeof(ColonizationState),
+        typeof(ColonizationStateHistory),
         typeof(InParty.AsAffiliate),
         typeof(TreeRelationship<Anchorage>.AsParent)
     );
@@ -118,13 +120,21 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         geostationaryOrbit.Radius = ReferenceRadius * 2;
         geostationaryOrbit.Period = geostationaryOrbit.Radius / 12;
 
-        // 设置阵营
-        if (Party != EntityReference.Null)
-            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() });
-
-        // 设置人口
+        // 设置殖民体量
         ref var colonizable = ref entity.Get<Colonizable>();
         colonizable.Volume = Volume;
+
+        // 设置阵营
+        if (Party != EntityReference.Null)
+        {
+            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() });
+
+            ref var colonizationState = ref entity.Get<ColonizationState>();
+            colonizationState.Party = Party;
+            colonizationState.Progress = colonizable.Volume;
+            ref var colonizationStateHistory = ref entity.Get<ColonizationStateHistory>();
+            colonizationStateHistory.Previous = colonizationState;
+        }
 
         // 设置生产能力
         ref var productionAbility = ref entity.Get<ProductionAbility>();

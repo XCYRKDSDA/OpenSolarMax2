@@ -13,14 +13,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 推进殖民进度的系统
 /// </summary>
 [CoreUpdateSystem]
+[ExecuteAfter(typeof(RecordColonizationStateHistorySystem))]
 #pragma warning disable CS9113 // 参数未读。
 public sealed partial class ProgressColonizationSystem(World world, IAssetsManager assets)
 #pragma warning restore CS9113 // 参数未读。
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<ColonizationState, InParty.AsAffiliate, AnchoredShipsRegistry>]
-    private static void UpdateColonization([Data] GameTime time, ref ColonizationState state,
+    [All<ColonizationState, Colonizable, InParty.AsAffiliate, AnchoredShipsRegistry>]
+    private static void UpdateColonization([Data] GameTime time,
+                                           ref ColonizationState state, in Colonizable colonizable,
                                            in AnchoredShipsRegistry shipsRegistry)
     {
         if (shipsRegistry.Ships.Count != 1)
@@ -32,9 +34,23 @@ public sealed partial class ProgressColonizationSystem(World world, IAssetsManag
         var deltaProgress = shipsNum * colonizeParty.Entity.Get<ColonizationAbility>().ProgressPerSecond
                                      * (float)time.ElapsedGameTime.TotalSeconds;
 
-        if (state.Party == colonizeParty || colonizeParty == EntityReference.Null)
+        if (state.Party == colonizeParty || state.Party == EntityReference.Null)
+        {
+            state.Party = colonizeParty;
             state.Progress += deltaProgress;
+
+            if (state.Progress > colonizable.Volume)
+                state.Progress = colonizable.Volume;
+        }
         else
+        {
             state.Progress -= deltaProgress;
+
+            if (state.Progress < 0)
+            {
+                state.Progress = -state.Progress;
+                state.Party = colonizeParty;
+            }
+        }
     }
 }

@@ -38,6 +38,10 @@ public sealed partial class VisualizeColonizationSystem(
         if (colonizationState.Progress >= colonizable.Volume)
             return;
 
+        // 当无人占领时不绘制占领环
+        if (colonizationState.Party == EntityReference.Null)
+            return;
+
         // 计算从世界到UI画布的缩放
         var scale2D = Vector2.TransformNormal(new Vector2(1, 1), worldToCanvas);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
