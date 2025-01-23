@@ -17,22 +17,20 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [StructuralChangeSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(ProgressProductionSystem))]
+[ExecuteBefore(typeof(SettleColonizationSystem))]
 public sealed partial class SettleProductionSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<ProductionAbility, ProductionState, InParty.AsAffiliate>]
-    private void SettleProduction(Entity planet, in ProductionAbility ability, ref ProductionState state,
-                                  in InParty.AsAffiliate partyRelationship)
+    [All<ProductionState, InParty.AsAffiliate>]
+    private void SettleProduction(Entity planet, in ProductionState state, in InParty.AsAffiliate partyRelationship)
     {
         if (partyRelationship.Relationship is null)
             return;
         var party = partyRelationship.Relationship!.Value.Copy.Party;
 
-        ref readonly var producible = ref party.Entity.Get<Producible>();
-
         // 生产一个新部队
-        if (state.Progress >= producible.WorkloadPerShip)
+        for (int i = 0; i < state.UnitsProducedThisFrame; i++)
         {
             var newShip = World.Make(new ShipTemplate(assets) { Party = party, Planet = planet.Reference() });
 
@@ -45,9 +43,6 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
                 Unit = newShip.Reference(),
                 Color = party.Entity.Get<PartyReferenceColor>().Value
             });
-
-            // 减去对应工作量
-            state.Progress -= producible.WorkloadPerShip;
         }
     }
 }

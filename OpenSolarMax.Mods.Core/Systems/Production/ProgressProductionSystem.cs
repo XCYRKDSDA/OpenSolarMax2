@@ -50,6 +50,8 @@ public sealed partial class ProgressProductionSystem(World world, IAssetsManager
     private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability,
                                          ref ProductionState state)
     {
+        state.UnitsProducedThisFrame = 0;
+
         if (!CanProduce(planet))
         {
             // 如果当前星球上无法进行生产, 则归零生产进度
@@ -59,5 +61,14 @@ public sealed partial class ProgressProductionSystem(World world, IAssetsManager
 
         // 增加生产进度
         state.Progress += ability.ProgressPerSecond * (float)time.ElapsedGameTime.TotalSeconds;
+
+        // 记录生产个数
+        ref readonly var asAffiliate = ref planet.Get<InParty.AsAffiliate>();
+        ref var producible = ref asAffiliate.Relationship!.Value.Copy.Party.Entity.Get<Producible>();
+        while (state.Progress > producible.WorkloadPerShip)
+        {
+            state.Progress -= producible.WorkloadPerShip;
+            state.UnitsProducedThisFrame += 1;
+        }
     }
 }
