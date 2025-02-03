@@ -49,6 +49,7 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
         typeof(InParty.AsAffiliate),
         typeof(TreeRelationship<Anchorage>.AsChild),
         typeof(TrailOf.AsShip),
+        typeof(ShippingStatus),
         typeof(PopulationCost)
     );
 
@@ -91,5 +92,9 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
         // 设置所属阵营
         var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() };
         _ = world.Make(inPartyTemplate);
+
+        // 初始化飞行状态
+        ref var shippingStatus = ref entity.Get<ShippingStatus>();
+        shippingStatus.State = ShippingState.Idle;
     }
 }

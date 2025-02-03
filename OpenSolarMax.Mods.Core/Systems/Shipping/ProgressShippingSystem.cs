@@ -21,6 +21,8 @@ public sealed partial class UpdateShipsStateSystem(World world, IAssetsManager a
     [All<ShippingStatus>]
     private static void Proceed([Data] GameTime time, ref ShippingStatus status)
     {
+        if (status.State == ShippingState.Idle) return;
+
         if (status.State == ShippingState.Charging)
             status.Charging.ElapsedTime += (float)time.ElapsedGameTime.TotalSeconds;
         else if (status.State == ShippingState.Travelling)

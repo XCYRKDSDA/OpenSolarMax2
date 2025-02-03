@@ -39,15 +39,17 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         assets.Load<AnimationClip<Entity>>("Animations/TrailExtinguished.json");
 
     [Query]
-    [All<TrailOf.AsShip, ShippingTask, ShippingStatus, Sprite, Animation>]
-    private void CalculateAnimation(Entity ship, in TrailOf.AsShip asShip,
-                                    in ShippingTask shippingTask, in ShippingStatus shippingStatus, in Sprite sprite)
+    [All<TrailOf.AsShip, ShippingStatus, Sprite, Animation>]
+    private void CalculateAnimation(Entity ship, in TrailOf.AsShip asShip, in ShippingStatus status, in Sprite sprite)
     {
+        if (status.State == ShippingState.Idle)
+            return;
+
         // Charging状态下播放起飞动画
-        if (shippingStatus.State == ShippingState.Charging)
+        if (status.State == ShippingState.Charging)
         {
-            var takingOffAnimationTime = shippingStatus.Charging.ElapsedTime;
-            var fadeInTime = shippingStatus.Charging.ElapsedTime;
+            var takingOffAnimationTime = status.Charging.ElapsedTime;
+            var fadeInTime = status.Charging.ElapsedTime;
             var fadeInRatio = fadeInTime / _unitShippingFadeInDuration;
 
             switch (fadeInRatio)
@@ -65,11 +67,11 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
             }
         }
         // Travelling状态下播放飞行动画
-        else if (shippingStatus.State == ShippingState.Travelling)
+        else if (status.State == ShippingState.Travelling)
         {
-            var shippingAnimationTime = shippingStatus.Travelling.ElapsedTime;
-            var fadeOutTime = shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime -
-                              (shippingTask.ExpectedTravelDuration - _unitShippingFadeOutDuration);
+            var shippingAnimationTime = status.Travelling.ElapsedTime;
+            var fadeOutTime = status.Travelling.ElapsedTime + status.Travelling.DelayedTime -
+                              (status.Task.ExpectedTravelDuration - _unitShippingFadeOutDuration);
             var fadeOutRatio = fadeOutTime / _unitShippingFadeOutDuration;
 
             switch (fadeOutRatio)
@@ -95,20 +97,20 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         trail.Get<Sprite>().Color = sprite.Color;
 
         // 应用尾迹动画
-        if (shippingStatus.State == ShippingState.Travelling)
+        if (status.State == ShippingState.Travelling)
         {
-            if (shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime
-                < shippingTask.ExpectedTravelDuration - _landDuration)
+            if (status.Travelling.ElapsedTime + status.Travelling.DelayedTime
+                < status.Task.ExpectedTravelDuration - _landDuration)
             {
-                var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
+                var stretchingAnimationTime = status.Travelling.ElapsedTime;
                 AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation,
                                                           stretchingAnimationTime);
             }
             else
             {
-                var stretchingAnimationTime = shippingStatus.Travelling.ElapsedTime;
-                var crossTime = shippingStatus.Travelling.ElapsedTime + shippingStatus.Travelling.DelayedTime -
-                                (shippingTask.ExpectedTravelDuration - _landDuration);
+                var stretchingAnimationTime = status.Travelling.ElapsedTime;
+                var crossTime = status.Travelling.ElapsedTime + status.Travelling.DelayedTime -
+                                (status.Task.ExpectedTravelDuration - _landDuration);
                 var crossRatio = crossTime / _landDuration;
 
                 // 此处不是淡出，而只是单纯地用多个动画的交融构造效果

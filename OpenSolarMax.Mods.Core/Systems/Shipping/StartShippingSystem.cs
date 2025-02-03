@@ -54,11 +54,6 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
         {
             var ship = shipsEnumerator.Current;
 
-            // 添加运输任务
-            ship.Entity.Add<ShippingTask, ShippingStatus>();
-            ref var shippingTask = ref ship.Entity.Get<ShippingTask>();
-            ref var shippingState = ref ship.Entity.Get<ShippingStatus>();
-
             // 获取相关信息
             ref readonly var pose = ref ship.Entity.Get<AbsoluteTransform>();
             var transformRelationship =
@@ -88,8 +83,10 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                                   -_maxOffsetRatio * expectedTravelDuration / 2,
                                   _maxOffsetRatio * expectedTravelDuration / 2);
 
+            ref var shippingStatus = ref ship.Entity.Get<ShippingStatus>();
+
             // 设置任务
-            shippingTask = new ShippingTask()
+            shippingStatus.Task = new()
             {
                 DestinationPlanet = request.Destination,
                 ExpectedTravelDuration = expectedTravelDuration + dt,
@@ -99,8 +96,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                 ExpectedRevolutionState = revolutionState
             };
             // 初始化状态
-            shippingState.State = ShippingState.Charging;
-            shippingState.Charging.ElapsedTime = 0;
+            shippingStatus.State = ShippingState.Charging;
+            shippingStatus.Charging.ElapsedTime = 0;
 
             // 解除到星球的锚定
             AnchorageUtils.UnanchorShipFromPlanet(ship, request.Departure);

@@ -25,24 +25,25 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipDone");
 
     [Query]
-    [All<ShippingTask, ShippingStatus>]
-    private static void FindArrivedShips(Entity ship, in ShippingTask task, ref ShippingStatus status,
-                                         [Data] List<Entity> arrivedEntities)
+    [All<ShippingStatus>]
+    private static void FindArrivedShips(Entity ship, in ShippingStatus status, [Data] List<Entity> arrivedEntities)
     {
+        if (status.State == ShippingState.Idle) return;
+
         if (status.State != ShippingState.Travelling) return;
 
-        if (status.Travelling.ElapsedTime + status.Travelling.DelayedTime >= task.ExpectedTravelDuration)
+        if (status.Travelling.ElapsedTime + status.Travelling.DelayedTime >= status.Task.ExpectedTravelDuration)
             arrivedEntities.Add(ship);
     }
 
-    private void LandShip(Entity ship, in ShippingTask task, ref SoundEffect soundEffect)
+    private void LandShip(Entity ship, ref ShippingStatus status, ref SoundEffect soundEffect)
     {
-        // 将单位挂载到目标星球
-        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, task.DestinationPlanet);
-        transformRelationship.Set(task.ExpectedRevolutionOrbit, task.ExpectedRevolutionState);
+        // 结束飞行
+        status.State = ShippingState.Idle;
 
-        // 结束飞行。此后不能再访问task和status
-        ship.Remove<ShippingTask, ShippingStatus>();
+        // 将单位挂载到目标星球
+        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, status.Task.DestinationPlanet);
+        transformRelationship.Set(status.Task.ExpectedRevolutionOrbit, status.Task.ExpectedRevolutionState);
 
         // 销毁单位的尾迹实体
         var world = World.Worlds[ship.WorldId];
@@ -60,8 +61,8 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
 
         foreach (var entity in _arrivedEntities)
         {
-            var refs = entity.Get<ShippingTask, SoundEffect>();
-            LandShip(entity, in refs.t0, ref refs.t1);
+            var refs = entity.Get<ShippingStatus, SoundEffect>();
+            LandShip(entity, ref refs.t0, ref refs.t1);
         }
         _arrivedEntities.Clear();
     }
