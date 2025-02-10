@@ -13,7 +13,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 推进殖民进度的系统
 /// </summary>
 [CoreUpdateSystem]
-[ExecuteAfter(typeof(RecordColonizationStateHistorySystem))]
 #pragma warning disable CS9113 // 参数未读。
 public sealed partial class ProgressColonizationSystem(World world, IAssetsManager assets)
 #pragma warning restore CS9113 // 参数未读。
@@ -26,7 +25,10 @@ public sealed partial class ProgressColonizationSystem(World world, IAssetsManag
                                            in AnchoredShipsRegistry shipsRegistry)
     {
         if (shipsRegistry.Ships.Count != 1)
+        {
+            state.Event = ColonizationEvent.Idle;
             return;
+        }
 
         var colonizeParty = shipsRegistry.Ships.First().Key;
         var shipsNum = shipsRegistry.Ships.First().Count();
@@ -36,11 +38,22 @@ public sealed partial class ProgressColonizationSystem(World world, IAssetsManag
 
         if (state.Party == colonizeParty || state.Party == EntityReference.Null)
         {
-            state.Party = colonizeParty;
-            state.Progress += deltaProgress;
+            if (state.Progress >= colonizable.Volume)
+                state.Event = ColonizationEvent.Idle;
+            else
+            {
+                state.Party = colonizeParty;
+                state.Progress += deltaProgress;
 
-            if (state.Progress > colonizable.Volume)
-                state.Progress = colonizable.Volume;
+                if (state.Progress > colonizable.Volume)
+                {
+                    state.Progress = colonizable.Volume;
+                    state.Event = ColonizationEvent.Finished;
+                }
+                else
+                    state.Event = ColonizationEvent.Progressing;
+            }
+
         }
         else
         {
@@ -50,7 +63,10 @@ public sealed partial class ProgressColonizationSystem(World world, IAssetsManag
             {
                 state.Progress = -state.Progress;
                 state.Party = colonizeParty;
+                state.Event = ColonizationEvent.Destroyed;
             }
+            else
+                state.Event = ColonizationEvent.Destroying;
         }
     }
 }

@@ -74,7 +74,6 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(Battlefield),
         typeof(Colonizable),
         typeof(ColonizationState),
-        typeof(ColonizationStateHistory),
         typeof(InParty.AsAffiliate),
         typeof(TreeRelationship<Anchorage>.AsParent)
     );
@@ -133,8 +132,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
             ref var colonizationState = ref entity.Get<ColonizationState>();
             colonizationState.Party = Party;
             colonizationState.Progress = colonizable.Volume;
-            ref var colonizationStateHistory = ref entity.Get<ColonizationStateHistory>();
-            colonizationStateHistory.Previous = colonizationState;
+            colonizationState.Event = ColonizationEvent.Idle;
         }
 
         // 设置生产能力

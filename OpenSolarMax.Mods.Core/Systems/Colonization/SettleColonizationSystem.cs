@@ -35,14 +35,13 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
     }
 
     [Query]
-    [All<Colonizable, ColonizationState, ColonizationStateHistory, InParty.AsAffiliate>]
-    private void SettleColonization(Entity planet, in Colonizable colonizable,
-                                    ref ColonizationState state, ref ColonizationStateHistory history,
+    [All<Colonizable, ColonizationState, InParty.AsAffiliate>]
+    private void SettleColonization(Entity planet, in Colonizable colonizable, ref ColonizationState state,
                                     in InParty.AsAffiliate asPartyAffiliate)
     {
         var planetParty = asPartyAffiliate.Relationship?.Copy.Party;
 
-        if (history.Previous.Progress < colonizable.Volume && state.Progress >= colonizable.Volume)
+        if (state.Event == ColonizationEvent.Finished)
         {
             // 不管怎样，先开香槟
             CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
@@ -51,11 +50,10 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
             if (planetParty is null)
                 World.Make(new InPartyTemplate() { Party = state.Party, Affiliate = planet.Reference() });
         }
-        else if (state.Party != history.Previous.Party)
+        else if (state.Event == ColonizationEvent.Destroyed)
         {
-            if (history.Previous.Party != EntityReference.Null)
-                // 如果之前有阵营在殖民，则开香槟
-                CreateHaloExplosion(planet, Color.White);
+            // 开香槟
+            CreateHaloExplosion(planet, Color.White);
 
             // 解除当前阵营的殖民
             if (planetParty is not null)
