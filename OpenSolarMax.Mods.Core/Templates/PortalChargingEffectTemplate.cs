@@ -16,6 +16,8 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
 
     public required float PortalRadius { get; set; }
 
+    public required Color Color { get; set; }
+
     #endregion
 
     private static readonly Archetype _archetype = new(
@@ -27,7 +29,7 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
         typeof(TreeRelationship<RelativeTransform>.AsChild),
         typeof(TreeRelationship<RelativeTransform>.AsParent),
         //
-        typeof(InPortalEffect)
+        typeof(PortalChargingEffectAssignment)
     );
 
     public Archetype Archetype => _archetype;
@@ -36,36 +38,37 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
     {
         var world = World.Worlds[entity.WorldId];
 
-        ref var registry = ref entity.Get<InPortalEffect>();
-
-        registry.Portal = Portal;
-
-        registry.BackFlare = world.Make(new PortalChargingBackFlareTemplate(assets)
+        var backFlare = world.Make(new PortalChargingBackFlareTemplate(assets)
         {
             Effect = entity.Reference(),
-            Radius = PortalRadius, Color = Color.White
-        }).Reference();
+            Radius = PortalRadius, Color = Color
+        });
 
-        registry.SurroundFlare1 = world.Make(new PortalChargingSurroundFlareTemplate(assets)
+        var surroundFlare1 = world.Make(new PortalChargingSurroundFlareTemplate(assets)
         {
             Effect = entity.Reference(),
-            Radius = PortalRadius, Color = Color.White,
+            Radius = PortalRadius, Color = Color,
             Index = 0
-        }).Reference();
+        });
 
-        registry.SurroundFlare2 = world.Make(new PortalChargingSurroundFlareTemplate(assets)
+        var surroundFlare2 = world.Make(new PortalChargingSurroundFlareTemplate(assets)
         {
             Effect = entity.Reference(),
-            Radius = PortalRadius, Color = Color.White,
+            Radius = PortalRadius, Color = Color,
             Index = 1
-        }).Reference();
+        });
 
-        registry.SurroundFlare3 = world.Make(new PortalChargingSurroundFlareTemplate(assets)
+        var surroundFlare3 = world.Make(new PortalChargingSurroundFlareTemplate(assets)
         {
             Effect = entity.Reference(),
-            Radius = PortalRadius, Color = Color.White,
+            Radius = PortalRadius, Color = Color,
             Index = 2
-        }).Reference();
+        });
+
+        entity.Set(new PortalChargingEffectAssignment(
+                       surroundFlare1.Reference(), surroundFlare2.Reference(), surroundFlare3.Reference(),
+                       backFlare.Reference()
+                   ));
 
         _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Portal });
         _ = world.Make(new RelativeTransformTemplate()

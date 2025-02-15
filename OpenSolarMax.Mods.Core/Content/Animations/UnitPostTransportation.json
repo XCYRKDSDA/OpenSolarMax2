@@ -1,0 +1,11 @@
+{
+    "duration": 1,
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 1.5 }
+        ],
+        "Sprite::Scale": [
+            { "time": 0, "value": [ 2, 2 ] }
+        ]
+    }
+}

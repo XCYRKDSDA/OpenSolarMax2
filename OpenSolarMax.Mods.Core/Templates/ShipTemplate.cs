@@ -50,7 +50,8 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
         typeof(TreeRelationship<Anchorage>.AsChild),
         typeof(TrailOf.AsShip),
         typeof(ShippingStatus),
-        typeof(PopulationCost)
+        typeof(PopulationCost),
+        typeof(TransportingStatus)
     );
 
     public Archetype Archetype => _archetype;
@@ -96,5 +97,9 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
         // 初始化飞行状态
         ref var shippingStatus = ref entity.Get<ShippingStatus>();
         shippingStatus.State = ShippingState.Idle;
+
+        // 初始化传送状态
+        ref var transportingStatus = ref entity.Get<TransportingStatus>();
+        transportingStatus.State = TransportingState.Idle;
     }
 }
