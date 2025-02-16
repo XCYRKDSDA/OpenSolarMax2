@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 [StructuralChangeSystem]
 [ExecuteBefore(typeof(ManageDependenceSystem))]
-public sealed partial class DestroyFinishedPortalChargingEffectsSystem(World world, IAssetsManager assets)
+public sealed partial class DestroyFinishedPortalChargingEffectsSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private static bool AnimationDone(in Animation animation)

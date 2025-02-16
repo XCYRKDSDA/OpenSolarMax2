@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 [ReactivelyStructuralChangeSystem]
 [ExecuteAfter(typeof(ManageDependenceSystem))]
-public sealed partial class FinishPortalChargingSystem(World world, IAssetsManager assets)
+public sealed partial class FinishPortalChargingSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

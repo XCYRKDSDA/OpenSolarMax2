@@ -3,7 +3,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -13,9 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 根据动画播放时间将动画应用于实体的系统
 /// </summary>
 [LateUpdateSystem]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class ApplyAnimationSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class ApplyAnimationSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

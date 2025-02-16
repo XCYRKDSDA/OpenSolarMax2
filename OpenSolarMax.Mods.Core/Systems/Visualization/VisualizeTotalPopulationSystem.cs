@@ -17,8 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(UpdateCameraOutputSystem))]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
 [ExecuteAfter(typeof(VisualizeBarriersSystem))]
-public sealed partial class VisualizeTotalPopulationSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const int _textSize = 36;

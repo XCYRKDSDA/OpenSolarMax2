@@ -3,7 +3,6 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -13,9 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 推进殖民进度的系统
 /// </summary>
 [CoreUpdateSystem]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class ProgressColonizationSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class ProgressColonizationSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
@@ -53,7 +50,6 @@ public sealed partial class ProgressColonizationSystem(World world, IAssetsManag
                 else
                     state.Event = ColonizationEvent.Progressing;
             }
-
         }
         else
         {

@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 负责将FMOD.Studio.System的位置同步到Fmod体系中
 /// </summary>
 [LateUpdateSystem]
-public sealed partial class UpdateListener3DAttributesSystem(World world, IAssetsManager assets)
+public sealed partial class UpdateListener3DAttributesSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

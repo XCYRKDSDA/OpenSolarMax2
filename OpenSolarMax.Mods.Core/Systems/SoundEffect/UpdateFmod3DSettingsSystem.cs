@@ -12,7 +12,7 @@ using FmodSystem = FMOD.Studio.System;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [LateUpdateSystem]
-public sealed partial class UpdateFmod3DSettingsSystem(World world, IAssetsManager assets)
+public sealed partial class UpdateFmod3DSettingsSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

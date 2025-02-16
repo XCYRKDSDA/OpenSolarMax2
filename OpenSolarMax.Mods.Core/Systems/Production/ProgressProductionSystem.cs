@@ -14,9 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [CoreUpdateSystem]
 [ExecuteBefore(typeof(SettleProductionSystem))]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class ProgressProductionSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class ProgressProductionSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private static bool CanProduce(Entity planet)

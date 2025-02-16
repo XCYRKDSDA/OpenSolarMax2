@@ -7,30 +7,30 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexDependenceSystem(World world, IAssetsManager assets)
+public sealed class IndexDependenceSystem(World world)
     : IndexRelationshipSystemBase<Dependence>(world)
 { }
 
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexPartyAffiliationSystem(World world, IAssetsManager assets)
+public sealed class IndexPartyAffiliationSystem(World world)
     : IndexRelationshipSystemBase<InParty>(world)
 { }
 
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexAnchorageSystem(World world, IAssetsManager assets)
+public sealed class IndexAnchorageSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<Anchorage>>(world)
 { }
 
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexTransformTreeSystem(World world, IAssetsManager assets)
+public sealed class IndexTransformTreeSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<RelativeTransform>>(world)
 { }
 
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexTrailAffiliationSystem(World world, IAssetsManager assets)
+public sealed class IndexTrailAffiliationSystem(World world)
     : IndexRelationshipSystemBase<TrailOf>(world)
 { }

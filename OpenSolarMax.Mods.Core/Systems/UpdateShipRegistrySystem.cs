@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(IndexAnchorageSystem))]
-public sealed partial class UpdateShipRegistrySystem(World world, IAssetsManager assets)
+public sealed partial class UpdateShipRegistrySystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

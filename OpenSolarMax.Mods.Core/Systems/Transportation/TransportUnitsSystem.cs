@@ -14,7 +14,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 [CoreUpdateSystem]
-public partial class ProgressUnitsTransportationSystem(World world, IAssetsManager _)
+public partial class ProgressUnitsTransportationSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

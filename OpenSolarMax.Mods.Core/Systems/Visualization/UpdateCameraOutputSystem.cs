@@ -11,7 +11,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [DrawSystem]
-public sealed partial class UpdateCameraOutputSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+public sealed partial class UpdateCameraOutputSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

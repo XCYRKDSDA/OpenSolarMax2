@@ -11,9 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-#pragma warning disable CS9113 // 参数未读。
-public sealed class ApplyPartyColorSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed class ApplyPartyColorSystem(World world)
     : ApplyPartyReferenceSystemBase<Sprite, PartyReferenceColor>(world)
 {
     protected override void ApplyDefaultValueImpl(ref Sprite target)

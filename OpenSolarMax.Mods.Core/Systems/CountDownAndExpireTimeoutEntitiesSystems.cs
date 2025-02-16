@@ -10,7 +10,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [CoreUpdateSystem]
-public sealed partial class CountDownExpirationTimeSystem(World world, IAssetsManager assets)
+public sealed partial class CountDownExpirationTimeSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
@@ -22,7 +22,7 @@ public sealed partial class CountDownExpirationTimeSystem(World world, IAssetsMa
 }
 
 [StructuralChangeSystem]
-public sealed partial class ExpireTimeoutEntitiesSystem(World world, IAssetsManager assets)
+public sealed partial class ExpireTimeoutEntitiesSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();

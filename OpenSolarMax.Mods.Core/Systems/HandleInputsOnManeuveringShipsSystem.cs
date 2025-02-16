@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [StructuralChangeSystem]
 [ExecuteAfter(typeof(SettleProductionSystem))]
 [ExecuteAfter(typeof(SettleCombatSystem))]
-public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IAssetsManager assets)
+public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private const int _minimalSelectPixels = 10;

@@ -15,7 +15,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
 
@@ -68,7 +67,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         _vertices[0].Color = _vertices[1].Color = _vertices[2].Color = _vertices[3].Color = sprite.Color * sprite.Alpha;
 
         // 设置混合模式
-        _graphicsDevice.BlendState = sprite.Blend switch
+        graphicsDevice.BlendState = sprite.Blend switch
         {
             SpriteBlend.Alpha => BlendState.AlphaBlend,
             SpriteBlend.Additive => BlendState.Additive,
@@ -84,7 +83,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2);
+            graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2);
         }
     }
 
@@ -98,13 +97,13 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         _effect.Parameters["to_ndc"].SetValue(view * projection);
 
         // 设置绘图区域
-        _graphicsDevice.Viewport = camera.Output;
+        graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图设备参数
-        _graphicsDevice.BlendState = BlendState.AlphaBlend;
-        _graphicsDevice.DepthStencilState = DepthStencilState.None;
-        _graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-        _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+        graphicsDevice.BlendState = BlendState.AlphaBlend;
+        graphicsDevice.DepthStencilState = DepthStencilState.None;
+        graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 逐个绘制
         foreach (var entity in entities)

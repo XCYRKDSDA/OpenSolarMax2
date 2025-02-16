@@ -12,9 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 更新默认动画组件的播放时间的系统
 /// </summary>
 [CoreUpdateSystem]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class UpdateAnimationTimeSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class UpdateAnimationTimeSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

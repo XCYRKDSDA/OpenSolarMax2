@@ -3,16 +3,13 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [StructuralChangeSystem]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();

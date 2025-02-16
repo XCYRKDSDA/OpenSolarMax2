@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(IndexTransformTreeSystem))] //需要在更新完坐标变换树后再执行
-public sealed partial class CalculateAbsoluteTransformSystem(World world, IAssetsManager assets)
+public sealed partial class CalculateAbsoluteTransformSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(Entity entity)

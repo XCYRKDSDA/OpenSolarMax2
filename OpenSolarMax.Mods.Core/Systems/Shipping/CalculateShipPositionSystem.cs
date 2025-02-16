@@ -14,9 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteBefore(typeof(CalculateAbsoluteTransformSystem))]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class CalculateShipPositionSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class CalculateShipPositionSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

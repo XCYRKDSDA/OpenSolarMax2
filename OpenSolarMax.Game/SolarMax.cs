@@ -2,6 +2,7 @@
 using System.Reflection;
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra;
 using Myra.Graphics2D;
@@ -492,31 +493,34 @@ public class SolarMax : XNAGame
         });
 
         // 对系统进行分别排序，然后进行构造
-        var updateSystemsConstructParams = new object[] { _world, localAssets };
+        var systemsConstructParams = new Dictionary<Type, object>
+        {
+            { typeof(GraphicsDevice), GraphicsDevice },
+            { typeof(IAssetsManager), localAssets }
+        };
         _coreUpdateSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.CoreUpdate])
-                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
                     .ToArray()
         );
         _structuralChangeSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.StructuralChange])
-                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
                     .ToArray()
         );
         _reactivelyStructuralChangeSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.ReactivelyStructuralChange])
-                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
                     .ToArray()
         );
         _lateUpdateSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.LateUpdate])
-                    .Select((type) => Activator.CreateInstance(type, updateSystemsConstructParams) as ISystem)
+                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
                     .ToArray()
         );
-        var drawSystemsConstructParams = new object[] { _world, GraphicsDevice, localAssets };
         _drawSystems.Add(
             Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.Draw])
-                    .Select((type) => Activator.CreateInstance(type, drawSystemsConstructParams) as ISystem)
+                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
                     .ToArray()
         );
 

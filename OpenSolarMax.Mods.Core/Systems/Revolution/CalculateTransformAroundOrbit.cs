@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdateSystem]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteBefore(typeof(CalculateAbsoluteTransformSystem))]
-public sealed partial class CalculateTransformAroundOrbitSystem(World world, IAssetsManager assets)
+public sealed partial class CalculateTransformAroundOrbitSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

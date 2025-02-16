@@ -19,7 +19,7 @@ internal static class UnitPostBornEffectParams
 }
 
 [CoreUpdateSystem]
-public partial class UpdateUnitPostBornEffectSystem(World world, IAssetsManager _)
+public partial class UpdateUnitPostBornEffectSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
@@ -31,7 +31,7 @@ public partial class UpdateUnitPostBornEffectSystem(World world, IAssetsManager 
 }
 
 [StructuralChangeSystem]
-public partial class RemoveUnitPostBornEffectSystem(World world, IAssetsManager _)
+public partial class RemoveUnitPostBornEffectSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();

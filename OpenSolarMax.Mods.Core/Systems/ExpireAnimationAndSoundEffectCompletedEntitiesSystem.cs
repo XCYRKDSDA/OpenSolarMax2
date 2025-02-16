@@ -11,9 +11,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [StructuralChangeSystem]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
+public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();

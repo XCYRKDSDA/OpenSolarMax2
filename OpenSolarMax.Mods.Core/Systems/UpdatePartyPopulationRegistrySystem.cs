@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(IndexAnchorageSystem))]
 [ExecuteAfter(typeof(IndexPartyAffiliationSystem))]
-public sealed partial class UpdatePartyPopulationRegistrySystem(World world, IAssetsManager assets)
+public sealed partial class UpdatePartyPopulationRegistrySystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]

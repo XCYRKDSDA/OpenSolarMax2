@@ -23,7 +23,6 @@ public sealed partial class VisualizeColonizationSystem(
     private const float _ringThickness = 3;
     private const float _defaultAlpha = 0.2f;
 
-    private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
 
     private void VisualizeOnePlanet(in AnchoredShipsRegistry shipsRegistry,
@@ -78,13 +77,13 @@ public sealed partial class VisualizeColonizationSystem(
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
-        _graphicsDevice.Viewport = camera.Output;
+        graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图参数
-        _graphicsDevice.BlendState = BlendState.AlphaBlend;
-        _graphicsDevice.DepthStencilState = DepthStencilState.None;
-        _graphicsDevice.RasterizerState = RasterizerState.CullClockwise; // 在UI空间绘图，方向被反转
-        _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+        graphicsDevice.BlendState = BlendState.AlphaBlend;
+        graphicsDevice.DepthStencilState = DepthStencilState.None;
+        graphicsDevice.RasterizerState = RasterizerState.CullClockwise; // 在UI空间绘图，方向被反转
+        graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
         _ringRenderer.Effect.Projection = canvasToNdc;

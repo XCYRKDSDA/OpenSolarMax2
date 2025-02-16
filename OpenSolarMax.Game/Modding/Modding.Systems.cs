@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
+using Arch.Core;
 using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Game.Modding;
@@ -68,5 +70,28 @@ internal static partial class Moddings
 
             yield return node.Key;
         }
+    }
+
+    public static ISystem CreateSystem(Type type, World world, IReadOnlyDictionary<Type, object> @params)
+    {
+        Debug.Assert(type.GetInterfaces().Contains(typeof(ISystem)));
+
+        var constructorInfos = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+        if (constructorInfos.Length > 1)
+            throw new Exception($"{type} has more than one public constructors!");
+        else if (constructorInfos.Length == 0)
+            throw new Exception($"{type} has no public constructor!");
+        var constructor = constructorInfos[0];
+
+        var parameterInfos = constructor.GetParameters();
+        if (parameterInfos[0].ParameterType != typeof(World))
+            throw new Exception($"{type}'s constructor doesn't take Arch.Core.World as its first parameter!");
+
+        var parameters = new object[parameterInfos.Length];
+        parameters[0] = world;
+        for (int i = 1; i < parameterInfos.Length; i++)
+            parameters[i] = @params[parameterInfos[i].ParameterType];
+
+        return (ISystem)constructor.Invoke(parameters);
     }
 }

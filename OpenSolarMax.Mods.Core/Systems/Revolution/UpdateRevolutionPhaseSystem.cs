@@ -14,7 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [CoreUpdateSystem]
 [ExecuteBefore(typeof(CalculateTransformAroundOrbitSystem))]
-public sealed partial class UpdateRevolutionPhaseSystem(World world, IAssetsManager assets)
+public sealed partial class UpdateRevolutionPhaseSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
