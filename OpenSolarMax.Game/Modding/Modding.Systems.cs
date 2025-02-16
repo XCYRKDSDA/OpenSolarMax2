@@ -31,7 +31,7 @@ internal static partial class Moddings
     /// <summary>
     /// 根据系统之间的执行顺序关系进行拓扑排序，得到满足要求的系统执行顺序
     /// </summary>
-    public static IEnumerable<Type> TopologicalSortSystems(IEnumerable<Type> systemTypes)
+    public static IEnumerable<Type> TopologicalSortSystemsByExecutionOrder(IEnumerable<Type> systemTypes)
     {
         // 缓存依赖关系
         var graph = systemTypes.ToDictionary(node => node, node => new HashSet<Type>());
@@ -55,6 +55,34 @@ internal static partial class Moddings
                     if (graph.TryGetValue(executeBeforeAttribute.TheOther, out var types))
                         types.Add(systemType);
                 }
+            }
+        }
+
+        // 拓扑排序
+        while (graph.Count > 0)
+        {
+            var node = graph.FirstOrDefault((pair) => pair.Value.Count == 0);
+            if (node.Key == null)
+                throw new ArgumentException("Cyclic connections are not allowed");
+            graph.Remove(node.Key);
+            foreach (var (type, dependencies) in graph)
+                dependencies.Remove(node.Key);
+
+            yield return node.Key;
+        }
+    }
+
+    public static IEnumerable<Type> TopologicalSortSystemsByCreationOrder(IEnumerable<Type> systemTypes)
+    {
+        // 缓存依赖关系
+        var graph = systemTypes.ToDictionary(node => node, node => new HashSet<Type>());
+        foreach (var systemType in graph.Keys)
+        {
+            var createAfterAttributes = systemType.GetCustomAttributes<CreateAfterAttribute>();
+            foreach (var executeAfterAttribute in createAfterAttributes)
+            {
+                if (graph.ContainsKey(executeAfterAttribute.TheOther))
+                    graph[systemType].Add(executeAfterAttribute.TheOther);
             }
         }
 

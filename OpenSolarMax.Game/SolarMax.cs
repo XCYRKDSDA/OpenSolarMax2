@@ -492,36 +492,40 @@ public class SolarMax : XNAGame
                 throw new Exception("A system must specify a type");
         });
 
-        // 对系统进行分别排序，然后进行构造
+        // 按照指定的构造先后顺序进行构造
+        var createdSystems = new SystemCollection();
         var systemsConstructParams = new Dictionary<Type, object>
         {
             { typeof(GraphicsDevice), GraphicsDevice },
-            { typeof(IAssetsManager), localAssets }
+            { typeof(IAssetsManager), localAssets },
+            { typeof(ISystemProvider), createdSystems }
         };
+        foreach (var type in Moddings.TopologicalSortSystemsByCreationOrder(systemTypes))
+        {
+            var system = Moddings.CreateSystem(type, _world, systemsConstructParams);
+            createdSystems.Add(type, system);
+        }
+
+        // 按照每组中系统间执行先后顺序进行注册
         _coreUpdateSystems.Add(
-            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.CoreUpdate])
-                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
-                    .ToArray()
+            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.CoreUpdate])
+                    .Select(type => createdSystems[type]).ToArray()
         );
         _structuralChangeSystems.Add(
-            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.StructuralChange])
-                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
-                    .ToArray()
+            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.StructuralChange])
+                    .Select(type => createdSystems[type]).ToArray()
         );
         _reactivelyStructuralChangeSystems.Add(
-            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.ReactivelyStructuralChange])
-                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
-                    .ToArray()
+            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.ReactivelyStructuralChange])
+                    .Select(type => createdSystems[type]).ToArray()
         );
         _lateUpdateSystems.Add(
-            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.LateUpdate])
-                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
-                    .ToArray()
+            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.LateUpdate])
+                    .Select(type => createdSystems[type]).ToArray()
         );
         _drawSystems.Add(
-            Moddings.TopologicalSortSystems(systemTypesTable[SystemTypes.Draw])
-                    .Select((type) => Moddings.CreateSystem(type, _world, systemsConstructParams))
-                    .ToArray()
+            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.Draw])
+                    .Select(type => createdSystems[type]).ToArray()
         );
 
         // 构造世界加载器
