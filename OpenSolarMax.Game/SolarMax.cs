@@ -493,39 +493,42 @@ public class SolarMax : XNAGame
         });
 
         // 按照指定的构造先后顺序进行构造
-        var createdSystems = new SystemCollection();
+        var systems = new SystemCollection();
         var systemsConstructParams = new Dictionary<Type, object>
         {
             { typeof(GraphicsDevice), GraphicsDevice },
-            { typeof(IAssetsManager), localAssets },
-            { typeof(ISystemProvider), createdSystems }
+            { typeof(IAssetsManager), localAssets }
         };
         foreach (var type in Moddings.TopologicalSortSystemsByCreationOrder(systemTypes))
         {
             var system = Moddings.CreateSystem(type, _world, systemsConstructParams);
-            createdSystems.Add(type, system);
+            systems.Add(type, system);
         }
+
+        // 按照指定的修改顺序调用各个系统修改其他系统
+        foreach (var type in Moddings.TopologicalSortSystemsByModificationOrder(systemTypes))
+            systems[type].ModifyOthers(systems);
 
         // 按照每组中系统间执行先后顺序进行注册
         _coreUpdateSystems.Add(
             Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.CoreUpdate])
-                    .Select(type => createdSystems[type]).ToArray()
+                    .Select(type => systems[type]).ToArray()
         );
         _structuralChangeSystems.Add(
             Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.StructuralChange])
-                    .Select(type => createdSystems[type]).ToArray()
+                    .Select(type => systems[type]).ToArray()
         );
         _reactivelyStructuralChangeSystems.Add(
             Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.ReactivelyStructuralChange])
-                    .Select(type => createdSystems[type]).ToArray()
+                    .Select(type => systems[type]).ToArray()
         );
         _lateUpdateSystems.Add(
             Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.LateUpdate])
-                    .Select(type => createdSystems[type]).ToArray()
+                    .Select(type => systems[type]).ToArray()
         );
         _drawSystems.Add(
             Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.Draw])
-                    .Select(type => createdSystems[type]).ToArray()
+                    .Select(type => systems[type]).ToArray()
         );
 
         // 构造世界加载器

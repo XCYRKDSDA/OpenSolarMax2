@@ -100,6 +100,41 @@ internal static partial class Moddings
         }
     }
 
+    public static IEnumerable<Type> TopologicalSortSystemsByModificationOrder(IEnumerable<Type> systemTypes)
+    {
+        // 缓存依赖关系
+        var graph = systemTypes.ToDictionary(node => node, node => new HashSet<Type>());
+        foreach (var systemType in graph.Keys)
+        {
+            var modifyAfterAttributes = systemType.GetCustomAttributes<ModifyAfterAttribute>();
+            foreach (var modifyAfterAttribute in modifyAfterAttributes)
+            {
+                if (graph.ContainsKey(modifyAfterAttribute.TheOther))
+                    graph[systemType].Add(modifyAfterAttribute.TheOther);
+            }
+
+            var modifyBeforeAttributes = systemType.GetCustomAttributes<ModifyBeforeAttribute>();
+            foreach (var modifyBeforeAttribute in modifyBeforeAttributes)
+            {
+                if (graph.TryGetValue(modifyBeforeAttribute.TheOther, out var types))
+                    types.Add(systemType);
+            }
+        }
+
+        // 拓扑排序
+        while (graph.Count > 0)
+        {
+            var node = graph.FirstOrDefault((pair) => pair.Value.Count == 0);
+            if (node.Key == null)
+                throw new ArgumentException("Cyclic connections are not allowed");
+            graph.Remove(node.Key);
+            foreach (var (type, dependencies) in graph)
+                dependencies.Remove(node.Key);
+
+            yield return node.Key;
+        }
+    }
+
     public static ISystem CreateSystem(Type type, World world, IReadOnlyDictionary<Type, object> @params)
     {
         Debug.Assert(type.GetInterfaces().Contains(typeof(ISystem)));
