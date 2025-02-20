@@ -134,11 +134,24 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         }
     }
 
+    public delegate bool ReachabilityChecker(World world, Entity departure, Vector3 destination);
+
+    public List<ReachabilityChecker> ReachabilityCheckers { get; } =
+    [
+        (world1, departure, destination)
+            => !ManeuveringUtils.CheckBarriersBlocking(world1,
+                                                       departure.Get<AbsoluteTransform>().Translation, destination)
+    ];
+
+    private bool CheckReachability(World world, Entity departure, Vector3 destination)
+    {
+        return ReachabilityCheckers.Any(checker => checker.Invoke(world, departure, destination));
+    }
+
     private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Entity destination)
     {
         return departures.Select(
-            departure => ManeuveringUtils.CheckBarriersBlocking(
-                World, departure, destination)
+            departure => !CheckReachability(World, departure, destination.Get<AbsoluteTransform>().Translation)
         );
     }
 
@@ -147,8 +160,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     {
         var tailLocation = Vector3.Transform(new Vector3(tailInCanvas, 0), canvasToWorld);
         return departures.Select(
-            departure => ManeuveringUtils.CheckBarriersBlocking(
-                World, departure.Get<AbsoluteTransform>().Translation, tailLocation)
+            departure => !CheckReachability(World, departure, tailLocation)
         );
     }
 

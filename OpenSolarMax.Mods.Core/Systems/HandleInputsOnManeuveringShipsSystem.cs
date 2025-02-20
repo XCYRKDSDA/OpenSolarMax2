@@ -73,6 +73,18 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
         return boxedPlanets;
     }
 
+    public delegate bool ReachabilityChecker(World world, Entity departure, Entity destination);
+
+    public List<ReachabilityChecker> ReachabilityCheckers { get; } =
+    [
+        (world1, departure, destination) => !ManeuveringUtils.CheckBarriersBlocking(world1, departure, destination)
+    ];
+
+    private bool CheckReachability(World world, Entity departure, Entity destination)
+    {
+        return ReachabilityCheckers.Any(checker => checker.Invoke(world, departure, destination));
+    }
+
     private void HandleSelectionStateTransition(ref ShipsSelection selection,
                                                 in Matrix worldToViewport, in Viewport viewport, EntityReference party,
                                                 ref EntityReference? pointedPlanet)
@@ -124,7 +136,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
                         continue;
 
                     // 排除目标星球和出发星球之间被障碍物遮挡的情况
-                    if (ManeuveringUtils.CheckBarriersBlocking(
+                    if (!CheckReachability(
                             World, departure.Entity, selection.SimpleSelecting.TappingDestination.Entity))
                         continue;
 
@@ -175,7 +187,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
                             continue;
 
                         // 排除目标星球和出发星球之间被障碍物遮挡的情况
-                        if (ManeuveringUtils.CheckBarriersBlocking(
+                        if (!CheckReachability(
                                 World, departure.Entity, selection.DraggingToDestination.CandidateDestination.Entity))
                             continue;
 

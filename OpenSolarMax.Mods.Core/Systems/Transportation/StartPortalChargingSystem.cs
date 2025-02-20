@@ -7,6 +7,7 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
@@ -22,6 +23,16 @@ public sealed partial class StartPortalChargingSystem(World world, IAssetsManage
     : BaseSystem<World, GameTime>(world), ISystem
 {
     private readonly CommandBuffer _commandBuffer = new();
+
+    public void ModifyOthers(ISystemProvider systems)
+    {
+        systems.Get<HandleInputsOnManeuveringShipsSystem>().ReachabilityCheckers.Add(
+            (_, departure, _) => departure.Has<PortalChargingJobs>()
+        );
+        systems.Get<VisualizeManeuveringShipsStatusSystem>().ReachabilityCheckers.Add(
+            (_, departure, _) => departure.Has<PortalChargingJobs>()
+        );
+    }
 
     [Query]
     [All<StartShippingRequest>]

@@ -15,15 +15,27 @@ public enum ShipsSelection_State
 [StructLayout(LayoutKind.Explicit)]
 public struct ShipsSelection_SimpleSelecting()
 {
+    /// <summary>
+    /// 当前不管有没有点击，总之鼠标所在的星球
+    /// </summary>
     [FieldOffset(0)]
     public EntityReference PointingPlanet = EntityReference.Null;
 
+    /// <summary>
+    /// 当前正在点击的出发星球星球
+    /// </summary>
     [FieldOffset(16)]
     public EntityReference TappingSource = EntityReference.Null;
 
+    /// <summary>
+    /// 当前正在点击的目标星球
+    /// </summary>
     [FieldOffset(32)]
     public EntityReference TappingDestination = EntityReference.Null;
 
+    /// <summary>
+    /// 当前状态下积累的所有出发星球
+    /// </summary>
     [FieldOffset(48)]
     public HashSet<EntityReference> SelectedSources;
 }
@@ -31,15 +43,27 @@ public struct ShipsSelection_SimpleSelecting()
 [StructLayout(LayoutKind.Explicit)]
 public struct ShipsSelection_BoxSelectingSources
 {
+    /// <summary>
+    /// 在 Viewport 坐标系下，选框的起始点
+    /// </summary>
     [FieldOffset(0)]
     public Point BoxStartInViewport;
 
+    /// <summary>
+    /// 在 Viewport 坐标系下，选框当前的矩形
+    /// </summary>
     [FieldOffset(8)]
     public Rectangle BoxInViewport;
 
+    /// <summary>
+    /// 在进入框选状态前已经选中了的星球
+    /// </summary>
     [FieldOffset(48)]
     public HashSet<EntityReference> OtherSelectedPlanets;
 
+    /// <summary>
+    /// 选框中的星球
+    /// </summary>
     [FieldOffset(64)]
     public HashSet<EntityReference> PlanetsInBox;
 }
@@ -47,9 +71,15 @@ public struct ShipsSelection_BoxSelectingSources
 [StructLayout(LayoutKind.Explicit)]
 public struct ShipsSelection_DraggingToDestination()
 {
+    /// <summary>
+    /// 当前拖拽到的目标星球
+    /// </summary>
     [FieldOffset(0)]
     public EntityReference CandidateDestination = EntityReference.Null;
 
+    /// <summary>
+    /// 当前选中的出发星球
+    /// </summary>
     [FieldOffset(48)]
     public HashSet<EntityReference> SelectedSources;
 }
