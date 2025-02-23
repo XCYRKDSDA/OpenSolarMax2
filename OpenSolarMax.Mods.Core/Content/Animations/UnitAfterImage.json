@@ -1,0 +1,13 @@
+{
+    "duration": 0.2,
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 0.75, "gradient": 0, "type": "smooth" },
+            { "time": 0.2, "value": 0 }
+        ],
+        "Sprite::Scale": [
+            { "time": 0, "value": [ 3.75, 0.625 ] },
+            { "time": 0.2, "value": [ 1.5, 0.25 ] }
+        ]
+    }
+}

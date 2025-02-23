@@ -1,7 +1,6 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
-using Nine.Animations;
 using Nine.Animations.Parametric;
 using Nine.Assets;
 using Nine.Graphics;
@@ -11,7 +10,7 @@ using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
-internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplate
+internal class DestinationBackFlareTemplate(IAssetsManager assets) : ITemplate
 {
     #region Options
 
@@ -42,8 +41,8 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
     private readonly TextureRegion _flareTexture =
         assets.Load<TextureRegion>("Textures/SolarMax2.Atlas.json:SpotGlow");
 
-    private readonly AnimationClip<Entity> _rawFlareCharging =
-        assets.Load<AnimationClip<Entity>>("Animations/PortalBackFlareCharging.json");
+    private readonly ParametricAnimationClip<Entity> _rawFlareCharging =
+        assets.Load<ParametricAnimationClip<Entity>>("Animations/DestinationBackFlareCharging.json");
 
     public void Apply(Entity entity)
     {
@@ -65,7 +64,7 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
         ref var animation = ref entity.Get<Animation>();
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
-        animation.Clip = _rawFlareCharging;
+        animation.Clip = _rawFlareCharging.Bake();
 
         // 设置到总特效实体的关系
         _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Effect });

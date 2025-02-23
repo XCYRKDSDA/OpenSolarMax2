@@ -6,13 +6,15 @@ using CommunityToolkit.HighPerformance;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 [ReactivelyStructuralChangeSystem]
 [ExecuteAfter(typeof(ManageDependenceSystem))]
-public sealed partial class FinishPortalChargingSystem(World world)
+public sealed partial class FinishPortalChargingSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
@@ -59,6 +61,13 @@ public sealed partial class FinishPortalChargingSystem(World world)
                 };
                 transportingStatus.PreTransportation = new() { ElapsedTime = TimeSpan.Zero };
             }
+
+            World.Make(new DestinationEffectTemplate(assets)
+            {
+                Portal = job.Task.Destination,
+                Color = job.Task.Party.Entity.Get<PartyReferenceColor>().Value,
+                PortalRadius = job.Task.Destination.Entity.Get<ReferenceSize>().Radius
+            });
         }
 
         jobs.RemoveAll(j => !j.Effect.IsAlive());

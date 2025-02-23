@@ -2,16 +2,16 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
-using Nine.Animations.Parametric;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates.Options;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
-internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplate
+internal class DestinationSurroundFlareTemplate(IAssetsManager assets) : ITemplate
 {
     #region Options
 
@@ -20,6 +20,8 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
     public required float Radius { get; set; }
 
     public required Color Color { get; set; }
+
+    public required float Angle { get; set; }
 
     #endregion
 
@@ -39,11 +41,13 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
 
     public Archetype Archetype => _archetype;
 
-    private readonly TextureRegion _flareTexture =
-        assets.Load<TextureRegion>("Textures/SolarMax2.Atlas.json:SpotGlow");
+    private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/SolarMax2.Atlas.json:Halo");
 
-    private readonly AnimationClip<Entity> _rawFlareCharging =
-        assets.Load<AnimationClip<Entity>>("Animations/PortalBackFlareCharging.json");
+    private readonly AnimationClip<Entity> _flareRotating =
+        assets.Load<AnimationClip<Entity>>("Animations/DestinationSurroundFlareRotating.json");
+
+    private readonly AnimationClip<Entity> _flareCharging =
+        assets.Load<AnimationClip<Entity>>("Animations/DestinationSurroundFlareCharging.json");
 
     public void Apply(Entity entity)
     {
@@ -56,7 +60,7 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
         sprite.Alpha = 1;
         sprite.Size = new(Radius * 2);
         sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
+        sprite.Rotation = -MathF.PI / 2;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
         sprite.Billboard = false;
@@ -65,10 +69,25 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
         ref var animation = ref entity.Get<Animation>();
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
-        animation.Clip = _rawFlareCharging;
+        animation.Clip = _flareCharging;
 
         // 设置到总特效实体的关系
         _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Effect });
-        _ = world.Make(new RelativeTransformTemplate() { Parent = Effect, Child = entity.Reference() });
+        var baseCoord = world.Make(new EmptyCoordTemplate()
+        {
+            Transform = new RelativeTransformOptions()
+            {
+                Parent = Effect,
+                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Angle)
+            }
+        });
+        var transform = world.Make(new RelativeTransformTemplate()
+                                       { Parent = baseCoord.Reference(), Child = entity.Reference() });
+        transform.Add(new Animation()
+        {
+            Clip = _flareRotating,
+            TimeOffset = TimeSpan.Zero,
+            TimeElapsed = TimeSpan.Zero
+        });
     }
 }

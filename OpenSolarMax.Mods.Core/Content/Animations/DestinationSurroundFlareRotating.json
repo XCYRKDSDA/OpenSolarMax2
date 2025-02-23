@@ -1,0 +1,9 @@
+{
+    "duration": 1,
+    "curves": {
+        "RelativeTransform::Rotation": [
+            { "time": 0, "value": [ "xyz", 0, -1.570796327, 0 ] },
+            { "time": 1, "value": [ "xyz", 0, 0, 0 ] }
+        ]
+    }
+}

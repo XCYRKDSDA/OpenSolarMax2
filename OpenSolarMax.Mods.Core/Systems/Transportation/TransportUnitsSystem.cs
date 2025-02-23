@@ -63,11 +63,11 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
             // 播放动画
             var animationTime = (float)status.PreTransportation.ElapsedTime.TotalSeconds;
 
-            if (animationTime < 0.5f) // 用0.5秒渐入
+            if (animationTime < 0.25f) // 用0.5秒渐入
                 AnimationEvaluator<Entity>.TweenAndSet(ref ship,
                                                        null, float.NaN,
                                                        _unitPreTransportationAnimationClip, animationTime,
-                                                       null, animationTime / 0.5f);
+                                                       null, animationTime / 0.25f);
             else
                 AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitPreTransportationAnimationClip, animationTime);
         }
@@ -83,7 +83,7 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
                 AnimationEvaluator<Entity>.TweenAndSet(ref ship,
                                                        _unitPostTransportationAnimationClip, animationTime,
                                                        null, float.NaN,
-                                                       null, (animationTime - 0.25f) / 0.5f);
+                                                       null, (animationTime - 0.25f) / 0.75f);
         }
     }
 }
@@ -93,15 +93,24 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
     [Query]
-    [All<TransportingStatus, TreeRelationship<Anchorage>.AsChild, TreeRelationship<RelativeTransform>.AsChild, InParty.AsAffiliate>]
+    [All<TransportingStatus, AbsoluteTransform, Sprite, TreeRelationship<Anchorage>.AsChild,
+        TreeRelationship<RelativeTransform>.AsChild, InParty.AsAffiliate>]
     private void TransportUnits(Entity ship, ref TransportingStatus status,
+                                in AbsoluteTransform pose, in Sprite sprite,
                                 in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate)
     {
         if (status.State == TransportingState.PreTransportation &&
-            status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.75))
+            status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9))
         {
             var departure = asChild.Relationship!.Value.Copy.Parent;
             var destination = status.Task.DestinationPlanet;
+
+            World.Make(new UnitAfterImageTemplate(assets)
+            {
+                Position = pose.Translation,
+                Rotation = pose.Rotation,
+                Color = sprite.Color
+            });
 
             AnchorageUtils.UnanchorShipFromPlanet(ship, asChild.Relationship!.Value.Copy.Parent);
             var (_, newTfRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, status.Task.DestinationPlanet);
@@ -121,7 +130,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
             status.PostTransportation = new() { ElapsedTime = TimeSpan.Zero };
         }
         else if (status.State == TransportingState.PostTransportation &&
-                 status.PostTransportation.ElapsedTime > TimeSpan.FromSeconds(0.75))
+                 status.PostTransportation.ElapsedTime > TimeSpan.FromSeconds(1))
         {
             status.State = TransportingState.Idle;
         }

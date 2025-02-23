@@ -3,11 +3,12 @@
     "curves": {
         "Sprite::Alpha": [
             { "time": 0, "value": 0 },
-            { "time": 1, "value": 1 }
+            { "time": 0.01, "value": 1 },
+            { "time": 1, "value": 0 }
         ],
         "Sprite::Scale": [
             { "time": 0, "value": [ 1, 1 ] },
-            { "time": 1, "value": [ 0.001, 0.001 ] }
+            { "time": 1, "value": [ 1, 2 ] }
         ]
     }
 }

@@ -99,7 +99,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
                                       Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
         geostationaryOrbit.Radius = _referenceRadius * 2;
-        geostationaryOrbit.Period = geostationaryOrbit.Radius / 12;
+        geostationaryOrbit.Period = geostationaryOrbit.Radius / 6;
 
         // 设置殖民体量
         ref var colonizable = ref entity.Get<Colonizable>();

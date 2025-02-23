@@ -21,7 +21,13 @@ internal class PortalChargingSurroundFlareTemplate(IAssetsManager assets) : ITem
 
     public required Color Color { get; set; }
 
-    public required int Index { get; set; }
+    public required float Angle { get; set; }
+
+    public required float MaxSize { get; set; }
+
+    public required float Ratio { get; set; }
+
+    public required float Delay { get; set; }
 
     #endregion
 
@@ -41,8 +47,7 @@ internal class PortalChargingSurroundFlareTemplate(IAssetsManager assets) : ITem
 
     public Archetype Archetype => _archetype;
 
-    private readonly TextureRegion _flareTexture =
-        assets.Load<TextureRegion>("Textures/PortalSurroundFlare.json:PortalSurroundFlare");
+    private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/SolarMax2.Atlas.json:Halo");
 
     private readonly ParametricAnimationClip<Entity> _rawFlareRotating =
         assets.Load<ParametricAnimationClip<Entity>>("Animations/PortalSurroundFlareRotating.json");
@@ -61,7 +66,7 @@ internal class PortalChargingSurroundFlareTemplate(IAssetsManager assets) : ITem
         sprite.Alpha = 1;
         sprite.Size = new(Radius * 2);
         sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
+        sprite.Rotation = -MathF.PI / 2;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
         sprite.Billboard = false;
@@ -69,8 +74,9 @@ internal class PortalChargingSurroundFlareTemplate(IAssetsManager assets) : ITem
         // 初始化动画
         ref var animation = ref entity.Get<Animation>();
         animation.TimeElapsed = TimeSpan.Zero;
-        animation.TimeOffset = TimeSpan.Zero;
-        _rawFlareCharging.Parameters["i"] = Index;
+        animation.TimeOffset = TimeSpan.FromSeconds(-Delay);
+        _rawFlareCharging.Parameters["MAX_SIZE"] = MaxSize;
+        _rawFlareCharging.Parameters["RATIO"] = Ratio;
         animation.Clip = _rawFlareCharging.Bake();
 
         // 设置到总特效实体的关系
@@ -80,13 +86,18 @@ internal class PortalChargingSurroundFlareTemplate(IAssetsManager assets) : ITem
             Transform = new RelativeTransformOptions()
             {
                 Parent = Effect,
-                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Index * MathF.PI * 2 / 3)
+                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Angle)
             }
         });
         var transform = world.Make(new RelativeTransformTemplate()
                                        { Parent = baseCoord.Reference(), Child = entity.Reference() });
-        _rawFlareRotating.Parameters["i"] = Index;
+        _rawFlareRotating.Parameters["MAX_SIZE"] = MaxSize;
+        _rawFlareRotating.Parameters["RATIO"] = Ratio;
         transform.Add(new Animation()
-                          { Clip = _rawFlareRotating.Bake(), TimeOffset = TimeSpan.Zero, TimeElapsed = TimeSpan.Zero });
+        {
+            Clip = _rawFlareRotating.Bake(),
+            TimeOffset = TimeSpan.FromSeconds(-Delay),
+            TimeElapsed = TimeSpan.Zero
+        });
     }
 }
