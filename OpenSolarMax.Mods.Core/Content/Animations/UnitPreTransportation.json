@@ -1,13 +1,13 @@
 {
-    "duration": 0.9,
+    "duration": 0.933,
     "curves": {
         "Sprite::Alpha": [
             { "time": 0, "value": 2 }
         ],
         "Sprite::Scale": [
             { "time": 0, "value": [ 1, 1 ] },
-            { "time": 0.7, "value": [ 6, 1 ] },
-            { "time": 0.9, "value": [ 3.75, 0.625 ] }
+            { "time": 0.833, "value": [ 6, 0.75 ] },
+            { "time": 0.933, "value": [ 2, 0.9167 ] }
         ]
     }
 }
