@@ -5,7 +5,7 @@
             { "time": 0, "value": 2 }
         ],
         "Sprite::Scale": [
-            { "time": 0, "value": [ 3, 3 ] }
+            { "time": 0, "value": [ 2, 2 ] }
         ]
     }
 }

@@ -76,14 +76,10 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
             // 播放动画
             var animationTime = (float)status.PostTransportation.ElapsedTime.TotalSeconds;
 
-            if (animationTime < 0.25f) // 用0.5秒渐出
-                AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitPostTransportationAnimationClip,
-                                                          animationTime);
-            else
-                AnimationEvaluator<Entity>.TweenAndSet(ref ship,
-                                                       _unitPostTransportationAnimationClip, animationTime,
-                                                       null, float.NaN,
-                                                       null, (animationTime - 0.25f) / 0.75f);
+            AnimationEvaluator<Entity>.TweenAndSet(ref ship,
+                                                   _unitPostTransportationAnimationClip, animationTime,
+                                                   null, float.NaN,
+                                                   null, animationTime);
         }
     }
 }
@@ -97,10 +93,11 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
         TreeRelationship<RelativeTransform>.AsChild, InParty.AsAffiliate>]
     private void TransportUnits(Entity ship, ref TransportingStatus status,
                                 in AbsoluteTransform pose, in Sprite sprite,
-                                in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate)
+                                in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate,
+                                [Data] HashSet<(EntityReference, EntityReference)> arrivals)
     {
         if (status.State == TransportingState.PreTransportation &&
-            status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9))
+            status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9333))
         {
             var departure = asChild.Relationship!.Value.Copy.Parent;
             var destination = status.Task.DestinationPlanet;
@@ -128,11 +125,31 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
 
             status.State = TransportingState.PostTransportation;
             status.PostTransportation = new() { ElapsedTime = TimeSpan.Zero };
+
+            arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Party));
         }
         else if (status.State == TransportingState.PostTransportation &&
                  status.PostTransportation.ElapsedTime > TimeSpan.FromSeconds(1))
         {
             status.State = TransportingState.Idle;
+        }
+    }
+
+    private readonly HashSet<(EntityReference, EntityReference)> _arrivalsPerFrame = [];
+
+    public override void Update(in GameTime t)
+    {
+        _arrivalsPerFrame.Clear();
+        TransportUnitsQuery(World, _arrivalsPerFrame);
+
+        foreach (var (destination, party) in _arrivalsPerFrame)
+        {
+            World.Make(new DestinationEffectTemplate(assets)
+            {
+                Portal = destination,
+                Color = party.Entity.Get<PartyReferenceColor>().Value,
+                PortalRadius = destination.Entity.Get<ReferenceSize>().Radius
+            });
         }
     }
 }
