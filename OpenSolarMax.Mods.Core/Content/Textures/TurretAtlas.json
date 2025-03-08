@@ -1,0 +1,8 @@
+{
+	"image": "TurretAtlas.png",
+	"regions": {
+		"Turret": { "x": 0, "y": 0, "w": 128, "h": 128, "anchor": [ 64, 64 ], "size": [ 80, 80 ] },
+		"TurretGlow": { "x": 128, "y": 0, "w": 128, "h": 128, "anchor": [ 64, 64 ], "size": [ 80, 80 ] },
+		"Beam": { "x": 256, "y": 0, "w": 128, "h": 128, "anchor": [ 0, 64 ], "size": [ 128, 4 ] }
+	}
+}
