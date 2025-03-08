@@ -17,7 +17,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 {
     private static EntityReference? SelectTarget(in InAttackRangeShipsRegistry registry, in EntityReference myParty)
     {
-        foreach (var group in registry.Ships)
+        foreach (var group in registry.Ships.AsLookup())
         {
             if (group.Key == myParty)
                 continue;
