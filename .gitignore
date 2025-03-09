@@ -41,3 +41,6 @@ msbuild.wrn
 
 # fmod project files
 *.fspro
+
+# krita project files
+*.kra
