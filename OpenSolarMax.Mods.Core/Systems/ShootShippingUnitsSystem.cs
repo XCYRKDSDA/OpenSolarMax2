@@ -55,6 +55,16 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
             Color = Color.White
         });
 
+        if (turret.GlowTexture is not null)
+        {
+            World.Make(new LaserFlashTemplate(assets)
+            {
+                Turret = entity.Reference(),
+                Color = Color.White,
+                Texture = turret.GlowTexture
+            });
+        }
+
         timer.TimeLeft = turret.CooldownTime;
     }
 }
