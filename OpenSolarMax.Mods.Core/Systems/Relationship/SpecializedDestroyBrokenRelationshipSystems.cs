@@ -24,8 +24,3 @@ public sealed class DestroyBrokenTransformRelationshipSystem(World world)
 public sealed class DestroyBrokenTrailRelationshipSystem(World world)
     : DestroyBrokenRelationshipsSystem<TrailOf>(world), ISystem
 { }
-
-[ReactivelyStructuralChangeSystem]
-public sealed class DestroyBrokenShootRelationshipSystem(World world)
-    : DestroyBrokenRelationshipsSystem<Shoot>(world), ISystem
-{ }

@@ -34,9 +34,3 @@ public sealed class IndexTransformTreeSystem(World world)
 public sealed class IndexTrailAffiliationSystem(World world)
     : IndexRelationshipSystemBase<TrailOf>(world)
 { }
-
-[LateUpdateSystem]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexShootSystem(World world)
-    : IndexRelationshipSystemBase<Shoot>(world)
-{ }

@@ -8,7 +8,6 @@ using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using Archetype = OpenSolarMax.Game.Utils.Archetype;
 using FmodEventDescription = FMOD.Studio.EventDescription;
-using Vector3 = System.Numerics.Vector3;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -20,7 +19,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
 
     public required EntityReference Planet { get; set; }
 
-    public required EntityReference Target { get; set; }
+    public required Vector3 TargetPosition { get; set; }
 
     #endregion
 
@@ -34,9 +33,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         typeof(SoundEffect),
         // 动画
         typeof(Animation),
-        typeof(ExpireAfterAnimationAndSoundEffectCompleted),
-        //
-        typeof(Shoot.AsBeam)
+        typeof(ExpireAfterAnimationAndSoundEffectCompleted)
     );
 
     public Archetype Archetype => _archetype;
@@ -51,12 +48,18 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         var world = World.Worlds[entity.WorldId];
 
         // 摆放位置
-        // 只需要将原点放在星球位置，后续方向会自动计算
+        ref readonly var turretPose = ref Planet.Entity.Get<AbsoluteTransform>();
+        var vector = TargetPosition - turretPose.Translation;
+        var unitX = Vector3.Normalize(vector);
+        var unitY = Vector3.Normalize(new(-vector.Y, vector.X, 0));
+        var unitZ = Vector3.Cross(unitX, unitY);
+        var rotation = new Matrix { Right = unitX, Up = unitY, Backward = unitZ };
         world.Make(new RelativeTransformTemplate()
         {
             Parent = Planet,
             Child = entity.Reference(),
-            Translation = Vector3.Zero
+            Translation = Vector3.Zero,
+            Rotation = Quaternion.CreateFromRotationMatrix(rotation)
         });
 
         // 设置纹理
@@ -64,7 +67,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         sprite.Texture = _beamTexture;
         sprite.Color = Color;
         sprite.Alpha = 1;
-        sprite.Size = _beamTexture.LogicalSize; // 后续由专用系统调整
+        sprite.Size = _beamTexture.LogicalSize with {X = vector.Length()};
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
         sprite.Billboard = false;
@@ -74,12 +77,5 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _beamAnimation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
-
-        // 创建关系
-        world.Make(new ShootTemplate()
-        {
-            Beam = entity.Reference(),
-            Target = Target
-        });
     }
 }

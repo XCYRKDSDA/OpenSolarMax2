@@ -51,7 +51,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         World.Make(new LaserBeamTemplate(assets)
         {
             Planet = entity.Reference(),
-            Target = target.Value,
+            TargetPosition = target.Value.Entity.Get<AbsoluteTransform>().Translation,
             Color = Color.White
         });
 
