@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -31,6 +32,8 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         return null;
     }
 
+    private readonly CommandBuffer _commandBuffer = new();
+
     [Query]
     [All<Turret, InAttackRangeShipsRegistry, AttackTimer, InParty.AsAffiliate>]
     private void Shoot(Entity entity, in Turret turret,
@@ -43,16 +46,20 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         if (asAffiliate.Relationship is null)
             return;
 
-        var party = asAffiliate.Relationship.Value.Copy.Party;
-        var target = SelectTarget(in registry, in party);
+        var turretParty = asAffiliate.Relationship.Value.Copy.Party;
+        var target = SelectTarget(in registry, in turretParty);
         if (target is null)
             return;
 
+        timer.TimeLeft = turret.CooldownTime;
+
+        var targetPosition = target.Value.Entity.Get<AbsoluteTransform>().Translation;
+        var turretColor = turretParty.Entity.Get<PartyReferenceColor>().Value;
         World.Make(new LaserBeamTemplate(assets)
         {
             Planet = entity.Reference(),
-            TargetPosition = target.Value.Entity.Get<AbsoluteTransform>().Translation,
-            Color = Color.White
+            TargetPosition = targetPosition,
+            Color = turretColor
         });
 
         if (turret.GlowTexture is not null)
@@ -65,6 +72,20 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
             });
         }
 
-        timer.TimeLeft = turret.CooldownTime;
+        var targetParty = target.Value.Entity.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party;
+        var targetColor = targetParty.Entity.Get<PartyReferenceColor>().Value;
+        World.Make(new UnitPulseTemplate(assets)
+        {
+            Color = targetColor,
+            Position = targetPosition
+        });
+
+        _commandBuffer.Destroy(target.Value);
+    }
+
+    public override void Update(in GameTime t)
+    {
+        ShootQuery(World);
+        _commandBuffer.Playback(World);
     }
 }
