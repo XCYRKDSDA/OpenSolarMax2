@@ -6,7 +6,7 @@ namespace OpenSolarMax.Mods.Core.Components;
 public struct InAttackRangeShipsRegistry()
 {
     /// <summary>
-    /// 阵营 -> 舰船
+    /// 阵营 -> 舰船，距离
     /// </summary>
-    public MutableLookup<EntityReference, EntityReference> Ships = [];
+    public Registry<EntityReference, (EntityReference Ship, float Distance)> Ships = [];
 }

@@ -17,15 +17,15 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 {
     private static EntityReference? SelectTarget(in InAttackRangeShipsRegistry registry, in EntityReference myParty)
     {
-        foreach (var group in registry.Ships.AsLookup())
+        foreach (var (party, pairs) in registry.Ships)
         {
-            if (group.Key == myParty)
+            if (party == myParty)
                 continue;
 
-            if (!group.Any())
+            if (pairs.Count == 0)
                 continue;
 
-            return group.First();
+            return pairs[0].Ship;
         }
 
         return null;
