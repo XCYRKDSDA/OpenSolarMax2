@@ -18,9 +18,9 @@
 
         { "$id": "planet01", "$base": "planet60", "party": "blue", "parent": "center", "orbit": { "shape": [ 1200, 800 ], "period": 120, "phase": 0 } },
         { "$id": "planet02", "$base": "portal", "party": "blue", "parent": "center", "orbit": { "shape": [ 1200, 800 ], "period": 120, "phase": 0.5 } },
-        { "$id": "planet03", "$base": "planet30", "position": [ 225, 150 ] },
-        { "$id": "planet04", "$base": "planet30", "position": [ -225, -150 ] },
+        { "$id": "planet03", "$base": "turret", "party": "red", "position": [ 225, 150 ] },
+        { "$id": "planet04", "$base": "turret", "party": "red", "position": [ -225, -150 ] },
 
-        { "$base": "ship", "party": "blue", "planet": "planet02", "$num": 30 }
+        { "$base": "ship", "party": "blue", "planet": "planet01", "$num": 30 }
     ]
 }
