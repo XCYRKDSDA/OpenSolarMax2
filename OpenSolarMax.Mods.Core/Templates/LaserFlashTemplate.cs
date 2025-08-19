@@ -59,7 +59,8 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
         sprite = turretSprite with
         {
             Texture = Texture,
-            Color = Color
+            Color = Color,
+            Blend = SpriteBlend.Additive,
         };
 
         // 设置动画
