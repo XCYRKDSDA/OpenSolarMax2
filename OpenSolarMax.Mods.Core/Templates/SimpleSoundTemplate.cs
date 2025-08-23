@@ -28,7 +28,9 @@ public class SimpleSoundTemplate : ITemplate, ITransformableTemplate
         typeof(TreeRelationship<RelativeTransform>.AsChild),
         typeof(TreeRelationship<RelativeTransform>.AsParent),
         // 音效
-        typeof(SoundEffect)
+        typeof(SoundEffect),
+        // 音效结束后死亡
+        typeof(ExpireAfterSoundEffectCompleted)
     );
 
     public Archetype Archetype => _archetype;
