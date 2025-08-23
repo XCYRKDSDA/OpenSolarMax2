@@ -9,7 +9,9 @@ using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Templates.Options;
 using OpenSolarMax.Mods.Core.Utils;
+using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
@@ -88,12 +90,15 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 public partial class TransportUnitsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
+    private FmodEventDescription _warpingSoundEffect = assets.Load<FmodEventDescription>("Sounds/Master.bank:/Warping");
+
     [Query]
     [All<TransportingStatus, AbsoluteTransform, Sprite, TreeRelationship<Anchorage>.AsChild,
         TreeRelationship<RelativeTransform>.AsChild, InParty.AsAffiliate>]
     private void TransportUnits(Entity ship, ref TransportingStatus status,
                                 in AbsoluteTransform pose, in Sprite sprite,
                                 in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate,
+                                [Data] HashSet<(EntityReference, EntityReference)> jobs,
                                 [Data] HashSet<(EntityReference, EntityReference)> arrivals)
     {
         if (status.State == TransportingState.PreTransportation &&
@@ -126,6 +131,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
             status.State = TransportingState.PostTransportation;
             status.PostTransportation = new() { ElapsedTime = TimeSpan.Zero };
 
+            jobs.Add((departure, destination));
             arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Party));
         }
         else if (status.State == TransportingState.PostTransportation &&
@@ -135,13 +141,16 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
         }
     }
 
+    private readonly HashSet<(EntityReference, EntityReference)> _jobs = [];
     private readonly HashSet<(EntityReference, EntityReference)> _arrivalsPerFrame = [];
 
     public override void Update(in GameTime t)
     {
+        _jobs.Clear();
         _arrivalsPerFrame.Clear();
-        TransportUnitsQuery(World, _arrivalsPerFrame);
+        TransportUnitsQuery(World, _jobs, _arrivalsPerFrame);
 
+        // 对每个阵营每次抵达只创建一个抵达效果
         foreach (var (destination, party) in _arrivalsPerFrame)
         {
             World.Make(new DestinationEffectTemplate(assets)
@@ -149,6 +158,21 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
                 Portal = destination,
                 Color = party.Entity.Get<PartyReferenceColor>().Value,
                 PortalRadius = destination.Entity.Get<ReferenceSize>().Radius
+            });
+        }
+
+        // 对每组从某个起点到某个终点的传送任务只创建一个传送音效
+        foreach (var (departure, destination) in _jobs)
+        {
+            // 计算音效位置
+            var center = (departure.Entity.Get<AbsoluteTransform>().Translation +
+                          destination.Entity.Get<AbsoluteTransform>().Translation) / 2;
+
+            // 创建音效
+            World.Make(new SimpleSoundTemplate()
+            {
+                Transform = new AbsoluteTransformOptions() { Translation = center, Rotation = Quaternion.Identity },
+                SoundEffect = _warpingSoundEffect,
             });
         }
     }
