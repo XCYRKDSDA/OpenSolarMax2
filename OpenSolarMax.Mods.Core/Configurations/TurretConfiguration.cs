@@ -23,9 +23,9 @@ public class TurretConfiguration : IEntityConfiguration, ITransformableConfigura
 
     public IEntityConfiguration Aggregate(IEntityConfiguration @new)
     {
-        if (@new is not PortalConfiguration newCfg) throw new InvalidDataException();
+        if (@new is not TurretConfiguration newCfg) throw new InvalidDataException();
 
-        return new PortalConfiguration()
+        return new TurretConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
