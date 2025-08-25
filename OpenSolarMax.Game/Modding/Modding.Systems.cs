@@ -5,6 +5,10 @@ using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class DisableAttribute : Attribute
+{ }
+
 internal static partial class Moddings
 {
     /// <summary>
@@ -21,7 +25,7 @@ internal static partial class Moddings
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters)
                 continue;
 
-            if (type.GetInterfaces().Contains(typeof(ISystem)))
+            if (type.GetInterfaces().Contains(typeof(ISystem)) && type.GetCustomAttribute<DisableAttribute>() is null)
                 systemTypes.Add(type);
         }
 
