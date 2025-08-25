@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Extensions;
+using FMOD;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
@@ -43,6 +44,9 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
     private readonly AnimationClip<Entity> _beamAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/LaserBeam.json");
 
+    private readonly FmodEventDescription _laserSoundEffect =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/LaserShoot");
+
     public void Apply(Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
@@ -67,7 +71,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         sprite.Texture = _beamTexture;
         sprite.Color = Color;
         sprite.Alpha = 1;
-        sprite.Size = _beamTexture.LogicalSize with {X = vector.Length()};
+        sprite.Size = _beamTexture.LogicalSize with { X = vector.Length() };
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Additive;
         sprite.Billboard = false;
@@ -77,5 +81,10 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _beamAnimation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
+
+        // 设置音效
+        ref var soundEffect = ref entity.Get<SoundEffect>();
+        _laserSoundEffect.createInstance(out soundEffect.EventInstance);
+        soundEffect.EventInstance.start();
     }
 }

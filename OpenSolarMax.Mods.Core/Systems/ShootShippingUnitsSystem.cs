@@ -74,11 +74,12 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 
         var targetParty = target.Value.Entity.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party;
         var targetColor = targetParty.Entity.Get<PartyReferenceColor>().Value;
-        World.Make(new UnitPulseTemplate(assets)
-        {
-            Color = targetColor,
-            Position = targetPosition
-        });
+
+        // 生成闪光
+        _ = World.Make(new UnitFlareTemplate(assets) { Color = targetColor, Position = targetPosition });
+
+        // 生成冲击波
+        _ = World.Make(new UnitPulseTemplate(assets) { Color = targetColor, Position = targetPosition });
 
         _commandBuffer.Destroy(target.Value);
     }
