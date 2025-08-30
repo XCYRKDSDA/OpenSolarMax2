@@ -5,19 +5,11 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Systems.Timing;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [CoreUpdateSystem]
-public sealed partial class CooldownAttackTimerSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
-{
-    [Query]
-    [All<AttackTimer>]
-    private static void Cooldown(ref AttackTimer timer, [Data] GameTime time)
-    {
-        timer.TimeLeft -= time.ElapsedGameTime;
-        if (timer.TimeLeft < TimeSpan.Zero)
-            timer.TimeLeft = TimeSpan.Zero;
-    }
-}
+public sealed partial class CooldownAttackTimerSystem(World world, IAssetsManager _)
+    : CountDownSystemBase<AttackTimer>(world)
+{ }
