@@ -35,9 +35,9 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
     private readonly CommandBuffer _commandBuffer = new();
 
     [Query]
-    [All<Turret, InAttackRangeShipsRegistry, AttackTimer, InParty.AsAffiliate>]
+    [All<Turret, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InParty.AsAffiliate>]
     private void Shoot(Entity entity, in Turret turret,
-                       in InAttackRangeShipsRegistry registry, ref AttackTimer timer,
+                       in InAttackRangeShipsRegistry registry, ref AttackTimer timer, in AttackCooldown cooldown,
                        in InParty.AsAffiliate asAffiliate)
     {
         if (timer.TimeLeft > TimeSpan.Zero)
@@ -51,7 +51,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         if (target is null)
             return;
 
-        timer.TimeLeft = turret.CooldownTime;
+        timer.TimeLeft = cooldown.Duration;
 
         var targetPosition = target.Value.Entity.Get<AbsoluteTransform>().Translation;
         var turretColor = turretParty.Entity.Get<PartyReferenceColor>().Value;

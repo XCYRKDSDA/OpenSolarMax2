@@ -67,6 +67,7 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(AttackRange),
         typeof(InAttackRangeShipsRegistry),
         typeof(AttackTimer),
+        typeof(AttackCooldown),
         typeof(Turret)
     );
 
@@ -132,8 +133,9 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         // 配置炮塔属性
         ref var attackRange = ref entity.Get<AttackRange>();
         attackRange.Range = AttackRange;
+        ref var attackCooldown = ref entity.Get<AttackCooldown>();
+        attackCooldown.Duration = CooldownTime;
         ref var turret = ref entity.Get<Turret>();
-        turret.CooldownTime = CooldownTime;
         turret.GlowTexture = assets.Load<TextureRegion>("Textures/TurretAtlas.json:TurretGlow");
     }
 }
