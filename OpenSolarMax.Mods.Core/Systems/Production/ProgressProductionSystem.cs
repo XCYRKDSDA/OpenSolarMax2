@@ -17,32 +17,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class ProgressProductionSystem(World world)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private static bool CanProduce(Entity planet)
-    {
-        // 无所属阵营的不生产
-        ref readonly var asAffiliate = ref planet.Get<InParty.AsAffiliate>();
-        if (asAffiliate.Relationship is null)
-            return false;
-        var party = asAffiliate.Relationship.Value.Copy.Party;
-
-        // 无己方单位且有敌方单位的不生产
-        var ships = planet.Get<AnchoredShipsRegistry>().Ships;
-        if (ships.All(g => g.Key != party) && ships.Any(g => g.Key != party))
-            return false;
-
-        // 己方单位数量超过星球容量的不生产
-        ref readonly var productable = ref planet.Get<ProductionAbility>();
-        if (ships[party].Count() >= productable.Population)
-            return false;
-
-        // 己方各星球单位总数量超过总容量的不生产
-        ref readonly var populationRegistry = ref party.Entity.Get<PartyPopulationRegistry>();
-        if (populationRegistry.CurrentPopulation >= populationRegistry.PopulationLimit)
-            return false;
-
-        return true;
-    }
-
     [Query]
     [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InParty.AsAffiliate>]
     private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability,
@@ -50,7 +24,7 @@ public sealed partial class ProgressProductionSystem(World world)
     {
         state.UnitsProducedThisFrame = 0;
 
-        if (!CanProduce(planet))
+        if (!state.CanProduce)
         {
             // 如果当前星球上无法进行生产, 则归零生产进度
             state.Progress = 0;
