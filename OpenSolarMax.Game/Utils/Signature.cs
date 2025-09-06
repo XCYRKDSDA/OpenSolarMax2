@@ -58,46 +58,23 @@ internal static class InitializerHelper
     }
 }
 
-/// <summary>
-/// 原型定义。
-/// 之所以不使用Arch推荐的<see cref="ComponentType"/>作为原型是因为其根据原型创建实体时不会对组件进行初始构造。
-/// 使用该原型以及其扩展方法<see cref="ArchetypeExtensions.Construct(World, in Archetype)"/>可以在新建实体时对其组件进行初始化
-/// </summary>
-/// <param name="types">该原型拥有的所有组件类型</param>
-public readonly struct Archetype(params Type[] types)
-{
-    private readonly Type[] _rawTypes = types;
-
-    public readonly ComponentType[] ComponentTypes
-        = (from type in types select (ComponentType)type).ToArray();
-
-    internal readonly ComponentInitializer?[] Initializers
-        = (from type in types select GetDefaultInitializer(type)).ToArray();
-
-    /// <summary>
-    /// 对两个原型求并集，生成一个新的拥有二者所有组件类型的新原型对象
-    /// </summary>
-    /// <param name="left"></param>
-    /// <param name="right"></param>
-    /// <returns></returns>
-    public static Archetype operator +(in Archetype left, in Archetype right)
-        => new((left._rawTypes ?? []).Union(right._rawTypes ?? []).ToArray());
-}
-
-public static class ArchetypeExtensions
+public static class SignatureExtensions
 {
     /// <summary>
-    /// 根据指定原型，构造一个新实体，并对其中可初始化的组件进行原地初始化
+    /// 根据指定签名，构造一个新实体，并对其中可初始化的组件进行原地初始化
     /// </summary>
     /// <param name="world"></param>
-    /// <param name="archetype"></param>
+    /// <param name="signature"></param>
     /// <returns>新生成并初始化后的实体</returns>
-    public static Entity Construct(this World world, in Archetype archetype)
+    public static Entity Construct(this World world, in Signature signature)
     {
-        var entity = world.Create(archetype.ComponentTypes);
+        var entity = world.Create(signature);
 
-        foreach (var initializer in archetype.Initializers)
+        foreach (var component in signature.Components)
+        {
+            var initializer = GetDefaultInitializer(component.Type);
             initializer?.Invoke(in entity);
+        }
 
         return entity;
     }

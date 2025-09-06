@@ -4,7 +4,6 @@ using OneOf;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Templates;
@@ -19,7 +18,7 @@ public class SimpleSoundTemplate : ITemplate, ITransformableTemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -33,7 +32,7 @@ public class SimpleSoundTemplate : ITemplate, ITransformableTemplate
         typeof(ExpireAfterSoundEffectCompleted)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     public void Apply(Entity entity)
     {

@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Templates;
@@ -21,7 +20,7 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -34,7 +33,7 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
         typeof(PortalChargingEffectAssignment)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private FmodEventDescription _warpChargingSoundEffect =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/WarpCharging");

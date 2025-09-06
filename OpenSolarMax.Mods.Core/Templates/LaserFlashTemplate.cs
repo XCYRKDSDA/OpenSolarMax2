@@ -6,7 +6,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 using Vector3 = System.Numerics.Vector3;
 
 namespace OpenSolarMax.Mods.Core.Templates;
@@ -23,7 +22,7 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 位姿变换
         typeof(AbsoluteTransform),
         typeof(TreeRelationship<RelativeTransform>.AsChild),
@@ -35,7 +34,7 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
         typeof(ExpireAfterAnimationCompleted)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private readonly AnimationClip<Entity> _glowAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/LaserFlash.json");

@@ -7,7 +7,6 @@ using OneOf;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -33,7 +32,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -57,7 +56,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(PortalChargingJobs)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>("/Textures/Portal.json:Portal");
 

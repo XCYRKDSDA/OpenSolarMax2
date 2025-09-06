@@ -94,7 +94,7 @@ public static class ShippingUtils
     private static (World, Entity) ExtractBareTransforms(Entity tail)
     {
         var virtualWorld = World.Create();
-        var tailProxy = virtualWorld.Construct(in Archetypes.Transformable);
+        var tailProxy = virtualWorld.Construct(in Signatures.Transformable);
         tailProxy.Get<AbsoluteTransform>() = tail.Get<AbsoluteTransform>();
 
         var child = tail;
@@ -111,7 +111,7 @@ public static class ShippingUtils
             var parent = asChild.Relationship.Value.Copy.Parent;
 
             // 创建虚拟世界中关于原世界父对象的代理对象
-            var parentProxy = virtualWorld.Construct(in Archetypes.Transformable);
+            var parentProxy = virtualWorld.Construct(in Signatures.Transformable);
             parentProxy.Get<AbsoluteTransform>() = parent.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系

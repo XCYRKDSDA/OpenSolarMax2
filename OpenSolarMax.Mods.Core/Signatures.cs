@@ -1,24 +1,24 @@
-﻿using OpenSolarMax.Game;
-using OpenSolarMax.Game.Utils;
+﻿using Arch.Core;
+using OpenSolarMax.Game;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core;
 
-public static class Archetypes
+public static class Signatures
 {
-    public static readonly Archetype Transformable = new(
+    public static readonly Signature Transformable = new(
         typeof(AbsoluteTransform),
         typeof(TreeRelationship<RelativeTransform>.AsChild),
         typeof(TreeRelationship<RelativeTransform>.AsParent)
     );
 
-    public static readonly Archetype Dependentable = new(
+    public static readonly Signature Dependentable = new(
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency)
     );
 
-    public static readonly Archetype Planet =
-        Dependentable + new Archetype(
+    public static readonly Signature Planet =
+        Dependentable + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -34,8 +34,8 @@ public static class Archetypes
             typeof(Colonizable)
         );
 
-    public static readonly Archetype Ship =
-        Dependentable + new Archetype(
+    public static readonly Signature Ship =
+        Dependentable + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -50,16 +50,16 @@ public static class Archetypes
             typeof(SoundEffect)
         );
 
-    public static readonly Archetype PredefinedOrbit =
-        Dependentable + new Archetype(
+    public static readonly Signature PredefinedOrbit =
+        Dependentable + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(PredefinedOrbit)
         );
 
-    public static readonly Archetype Party =
-        Dependentable + new Archetype(
+    public static readonly Signature Party =
+        Dependentable + new Signature(
             typeof(PartyReferenceColor),
             typeof(Producible),
             typeof(Combatable),
@@ -69,8 +69,8 @@ public static class Archetypes
             typeof(ColonizationAbility)
         );
 
-    public static readonly Archetype View =
-        Dependentable + new Archetype(
+    public static readonly Signature View =
+        Dependentable + new Signature(
             typeof(AbsoluteTransform),
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
@@ -79,8 +79,8 @@ public static class Archetypes
             typeof(FMOD.Studio.System)
         );
 
-    public static readonly Archetype Animation =
-        Dependentable + new Archetype(
+    public static readonly Signature Animation =
+        Dependentable + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -88,8 +88,8 @@ public static class Archetypes
             typeof(Animation)
         );
 
-    public static readonly Archetype CountDownAnimation =
-        Dependentable + new Archetype(
+    public static readonly Signature CountDownAnimation =
+        Dependentable + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),

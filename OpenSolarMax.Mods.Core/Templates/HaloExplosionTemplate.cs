@@ -6,7 +6,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Templates;
@@ -23,7 +22,7 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 位姿变换
         typeof(AbsoluteTransform),
         // 效果
@@ -34,7 +33,7 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
         typeof(ExpireAfterAnimationAndSoundEffectCompleted)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>("Textures/Halo.json:Halo");
 

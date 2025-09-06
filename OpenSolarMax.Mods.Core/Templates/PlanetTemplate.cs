@@ -7,7 +7,6 @@ using OneOf;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -53,7 +52,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -78,7 +77,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(TreeRelationship<Anchorage>.AsParent)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private readonly TextureRegion[] _defaultPlanetTextures =
         Content.Textures.DefaultPlanetTextures.Select((k) => assets.Load<TextureRegion>(k)).ToArray();

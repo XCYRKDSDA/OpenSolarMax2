@@ -2,7 +2,6 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Templates;
@@ -13,11 +12,11 @@ public class BarrierTemplate : ITemplate
 
     public required Vector3 Tail { get; set; }
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         typeof(Barrier)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     public void Apply(Entity entity)
     {

@@ -6,7 +6,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -22,7 +21,7 @@ public class TransportationTrailTemplate(IAssetsManager assets) : ITemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -35,7 +34,7 @@ public class TransportationTrailTemplate(IAssetsManager assets) : ITemplate
         typeof(ExpireAfterAnimationCompleted)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>("/Textures/ShipAtlas.json:ShipTrail");
 

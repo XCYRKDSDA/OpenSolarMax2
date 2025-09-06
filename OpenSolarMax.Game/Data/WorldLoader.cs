@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Nine.Assets;
 using OpenSolarMax.Game.Utils;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Game.Data;
 
@@ -58,15 +56,13 @@ internal sealed class WorldLoader(IAssetsManager assets)
             var allTemplates = allConfigs.Select(c => c.ToTemplate(ctx, assets)).ToArray();
 
             // 合成原型
-            var unionArchetype = new Archetype();
-            foreach (var template in allTemplates)
-                unionArchetype += template.Archetype;
+            var unionSignature = allTemplates.Aggregate(Signature.Null, (s, t) => s + t.Signature);
 
             // 构造实体
             for (var i = 0; i < num; i++)
             {
                 // 创造实体
-                var entity = world.Construct(unionArchetype);
+                var entity = world.Construct(unionSignature);
 
                 // 记录实体
                 if (optionalId is not null)

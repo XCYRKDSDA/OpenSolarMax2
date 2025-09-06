@@ -4,7 +4,6 @@ using OneOf;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -16,7 +15,7 @@ public interface ITransformableTemplate
         RevolutionOptions
     > Transform { get; set; }
 
-    public static Archetype Archetype { get; } = new(
+    public static Signature Signature { get; } = new(
         typeof(AbsoluteTransform),
         typeof(TreeRelationship<RelativeTransform>.AsChild),
         typeof(TreeRelationship<RelativeTransform>.AsParent)

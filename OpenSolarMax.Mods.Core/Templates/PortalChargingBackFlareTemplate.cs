@@ -7,7 +7,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -23,7 +22,7 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -37,7 +36,7 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
         typeof(Animation)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     private readonly TextureRegion _flareTexture =
         assets.Load<TextureRegion>("Textures/SolarMax2.Atlas.json:SpotGlow");

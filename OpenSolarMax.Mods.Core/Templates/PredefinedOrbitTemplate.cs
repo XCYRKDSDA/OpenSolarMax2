@@ -5,7 +5,6 @@ using OneOf;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -36,14 +35,14 @@ public class PredefinedOrbitTemplate : ITemplate, ITransformableTemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         typeof(AbsoluteTransform),
         typeof(TreeRelationship<RelativeTransform>.AsChild),
         typeof(TreeRelationship<RelativeTransform>.AsParent),
         typeof(PredefinedOrbit)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     public void Apply(Entity entity)
     {

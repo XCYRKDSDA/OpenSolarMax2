@@ -7,7 +7,6 @@ using OpenSolarMax.Game;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
-using Archetype = OpenSolarMax.Game.Utils.Archetype;
 
 namespace OpenSolarMax.Mods.Core.Templates;
 
@@ -31,7 +30,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
 
     #endregion
 
-    private static readonly Archetype _archetype = new(
+    private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
         typeof(Dependence.AsDependency),
@@ -46,7 +45,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         typeof(InParty.AsAffiliate)
     );
 
-    public Archetype Archetype => _archetype;
+    public Signature Signature => _signature;
 
     public void Apply(Entity entity)
     {
