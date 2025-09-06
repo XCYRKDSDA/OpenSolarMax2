@@ -24,7 +24,7 @@
     </Target>
 
     <ItemGroup>
-        <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.4">
+        <PackageReference Include="Arch.System.SourceGenerator" Version="2.1.0">
             <ExcludeAssets>runtime</ExcludeAssets>
             <PrivateAssets>runtime</PrivateAssets>
         </PackageReference>
