@@ -12,9 +12,9 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@ : IRelationshipRecord
 {
     static Type[] IRelationshipRecord.ParticipantTypes => [@PARTICIPANTS_TYPES@];
 
-    readonly int ILookup<Type, EntityReference>.Count => @PARTICIPANTS_COUNT@;
+    readonly int ILookup<Type, Entity>.Count => @PARTICIPANTS_COUNT@;
 
-    readonly IEnumerable<EntityReference> ILookup<Type, EntityReference>.this[Type key]
+    readonly IEnumerable<Entity> ILookup<Type, Entity>.this[Type key]
     {
         get
         {
@@ -22,18 +22,18 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@ : IRelationshipRecord
         }
     }
 
-    readonly bool ILookup<Type, EntityReference>.Contains(Type key)
+    readonly bool ILookup<Type, Entity>.Contains(Type key)
     {
         return @CONTAINS_EXPRESSION@;
     }
-    
-    readonly IEnumerator<IGrouping<Type, EntityReference>> IEnumerable<IGrouping<Type, EntityReference>>.GetEnumerator()
+
+    readonly IEnumerator<IGrouping<Type, Entity>> IEnumerable<IGrouping<Type, Entity>>.GetEnumerator()
     {
         @ENUMERATOR_BODY@
     }
-    
+
     readonly IEnumerator IEnumerable.GetEnumerator()
     {
-        return (this as IEnumerable<IGrouping<Type, EntityReference>>).GetEnumerator();
+        return (this as IEnumerable<IGrouping<Type, Entity>>).GetEnumerator();
     }
 }

@@ -9,5 +9,5 @@ public readonly struct Battlefield()
     /// <summary>
     /// 阵营 -> 伤害
     /// </summary>
-    public readonly Dictionary<EntityReference, float> FrontlineDamage = [];
+    public readonly Dictionary<Entity, float> FrontlineDamage = [];
 }

@@ -49,7 +49,7 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
             return;
         }
 
-        ref readonly var reference = ref asAffiliate.Relationship.Value.Copy.Party.Entity.Get<TReference>();
+        ref readonly var reference = ref asAffiliate.Relationship.Value.Copy.Party.Get<TReference>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
 }

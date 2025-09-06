@@ -25,7 +25,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
     private static void CheckPointedPlanet(Entity planet, in AbsoluteTransform pose,
                                            [Data] in Point mouseInViewport, [Data] in Matrix worldToViewport,
-                                           [Data] ref EntityReference pointedPlanet, [Data] ref float pointedPlanetZ)
+                                           [Data] ref Entity pointedPlanet, [Data] ref float pointedPlanetZ)
     {
         float radiusInViewport = _minimalSelectPixels;
         if (planet.Has<ReferenceSize>()) // 若对象没有参考尺寸，则按照最小选择像素数判定范围；否则按照参考尺寸判定，但不得小于最小值
@@ -40,15 +40,15 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
         var delta = new Vector2(positionInViewport.X - mouseInViewport.X, positionInViewport.Y - mouseInViewport.Y);
         if (delta.Length() < radiusInViewport && positionInViewport.Z < pointedPlanetZ)
         {
-            pointedPlanet = planet.Reference();
+            pointedPlanet = planet;
             pointedPlanetZ = positionInViewport.Z;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private EntityReference GetPointedPlanet(in Point mouseInViewport, in Matrix worldToViewport)
+    private Entity GetPointedPlanet(in Point mouseInViewport, in Matrix worldToViewport)
     {
-        EntityReference pointedPlanet = EntityReference.Null;
+        Entity pointedPlanet = Entity.Null;
         float pointedPlanetZ = float.PositiveInfinity;
         CheckPointedPlanetQuery(World, in mouseInViewport, in worldToViewport, ref pointedPlanet, ref pointedPlanetZ);
         return pointedPlanet;
@@ -58,17 +58,17 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
     private static void CheckBoxedPlanets(Entity planet, in AbsoluteTransform pose,
                                           [Data] in Rectangle box, [Data] in Matrix worldToViewport,
-                                          [Data] ref HashSet<EntityReference> boxedPlanets)
+                                          [Data] ref HashSet<Entity> boxedPlanets)
     {
         var positionInViewport = Vector3.Transform(pose.Translation, worldToViewport);
         if (box.Contains(positionInViewport.X, positionInViewport.Y))
-            boxedPlanets.Add(planet.Reference());
+            boxedPlanets.Add(planet);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private HashSet<EntityReference> GetBoxedPlanets(in Rectangle box, in Matrix worldToViewport)
+    private HashSet<Entity> GetBoxedPlanets(in Rectangle box, in Matrix worldToViewport)
     {
-        var boxedPlanets = new HashSet<EntityReference>();
+        var boxedPlanets = new HashSet<Entity>();
         CheckBoxedPlanetsQuery(World, in box, in worldToViewport, ref boxedPlanets);
         return boxedPlanets;
     }
@@ -86,8 +86,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     }
 
     private void HandleSelectionStateTransition(ref ShipsSelection selection,
-                                                in Matrix worldToViewport, in Viewport viewport, EntityReference party,
-                                                ref EntityReference? pointedPlanet)
+                                                in Matrix worldToViewport, in Viewport viewport, Entity party,
+                                                ref Entity? pointedPlanet)
     {
         var mouse = Mouse.GetState();
         var keys = Keyboard.GetState();
@@ -137,7 +137,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
 
                     // 排除目标星球和出发星球之间被障碍物遮挡的情况
                     if (!CheckReachability(
-                            World, departure.Entity, selection.SimpleSelecting.TappingDestination.Entity))
+                            World, departure, selection.SimpleSelecting.TappingDestination))
                         continue;
 
                     ServiceUtils.Call(World, new StartShippingRequest()
@@ -145,7 +145,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
                         Departure = departure,
                         Destination = selection.SimpleSelecting.TappingDestination,
                         Party = party,
-                        ExpectedNum = departure.Entity.Get<AnchoredShipsRegistry>().Ships[party].Count()
+                        ExpectedNum = departure.Get<AnchoredShipsRegistry>().Ships[party].Count()
                     });
                 }
                 selection.State = ShipsSelection_State.SimpleSelecting;
@@ -188,7 +188,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
 
                         // 排除目标星球和出发星球之间被障碍物遮挡的情况
                         if (!CheckReachability(
-                                World, departure.Entity, selection.DraggingToDestination.CandidateDestination.Entity))
+                                World, departure, selection.DraggingToDestination.CandidateDestination))
                             continue;
 
                         ServiceUtils.Call(World, new StartShippingRequest()
@@ -196,7 +196,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
                             Departure = departure,
                             Destination = selection.DraggingToDestination.CandidateDestination,
                             Party = party,
-                            ExpectedNum = departure.Entity.Get<AnchoredShipsRegistry>().Ships[party].Count()
+                            ExpectedNum = departure.Get<AnchoredShipsRegistry>().Ships[party].Count()
                         });
                     }
                     selection.SimpleSelecting = new() { SelectedSources = [] };
@@ -209,8 +209,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     }
 
     private void UpdateSelectionStatus(ref ShipsSelection selection,
-                                       in Matrix worldToViewport, in Viewport viewport, EntityReference party,
-                                       ref EntityReference? pointedPlanet)
+                                       in Matrix worldToViewport, in Viewport viewport, Entity party,
+                                       ref Entity? pointedPlanet)
     {
         var mouse = Mouse.GetState();
         var keys = Keyboard.GetState();
@@ -229,7 +229,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
             {
                 var tappingSource = selection.SimpleSelecting.PointingPlanet;
                 selection.SimpleSelecting.TappingSource = selection.SimpleSelecting.PointingPlanet;
-                if (tappingSource != EntityReference.Null)
+                if (tappingSource != Entity.Null)
                 {
                     if (keys[Keys.LeftShift] != KeyState.Down)
                         selection.SimpleSelecting.SelectedSources.Clear();
@@ -237,7 +237,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
                 }
             }
             else
-                selection.SimpleSelecting.TappingSource = EntityReference.Null;
+                selection.SimpleSelecting.TappingSource = Entity.Null;
 
             if (mouse.RightButton == ButtonState.Pressed)
             {
@@ -246,7 +246,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
                 selection.SimpleSelecting.TappingDestination = tappingDestination;
             }
             else
-                selection.SimpleSelecting.TappingDestination = EntityReference.Null;
+                selection.SimpleSelecting.TappingDestination = Entity.Null;
         }
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -288,7 +288,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 处理星球选择
-        EntityReference? pointedPlanet = null;
+        Entity? pointedPlanet = null;
         HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output,
                                        ofParty.Relationship!.Value.Copy.Party, ref pointedPlanet);
         UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output,

@@ -44,11 +44,11 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
 
     #endregion
 
-    protected static void BuildIndex<TParticipant>(EntityReference relationship, EntityReference participant)
+    protected static void BuildIndex<TParticipant>(Entity relationship, Entity participant)
         where TParticipant : IParticipantIndex
     {
-        if (participant.Entity.Has<TParticipant>())
-            participant.Entity.Get<TParticipant>().Add(relationship);
+        if (participant.Has<TParticipant>())
+            participant.Get<TParticipant>().Add(relationship);
     }
 
     #region `BuildIndex` Cache
@@ -56,7 +56,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
     private static readonly MethodInfo _indexerInfo = typeof(IndexRelationshipSystemBase<TRelationship>)
         .GetMethod("BuildIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
 
-    private delegate void IndexerDelegate(EntityReference relationship, EntityReference participant);
+    private delegate void IndexerDelegate(Entity relationship, Entity participant);
 
     private static readonly Dictionary<Type, IndexerDelegate> _indexerCache = [];
 
@@ -74,7 +74,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
 
     #endregion
 
-    protected virtual void BuildIndex(EntityReference relationship, in TRelationship record)
+    protected virtual void BuildIndex(Entity relationship, in TRelationship record)
     {
         foreach (var group in record)
         {
@@ -96,7 +96,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
         {
             var recordSpan = chunk.GetSpan<TRelationship>();
             foreach (var idx in chunk)
-                BuildIndex(chunk.Entities[idx].Reference(), in recordSpan[idx]);
+                BuildIndex(chunk.Entities[idx], in recordSpan[idx]);
         }
     }
 }

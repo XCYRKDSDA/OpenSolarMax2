@@ -2,9 +2,9 @@ using Arch.Core;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public readonly struct PortalChargingEffectAssignment(EntityReference[] surroundFlares, EntityReference backFlare)
+public readonly struct PortalChargingEffectAssignment(Entity[] surroundFlares, Entity backFlare)
 {
-    public readonly EntityReference[] SurroundFlares = surroundFlares;
+    public readonly Entity[] SurroundFlares = surroundFlares;
 
-    public readonly EntityReference BackFlare = backFlare;
+    public readonly Entity BackFlare = backFlare;
 }

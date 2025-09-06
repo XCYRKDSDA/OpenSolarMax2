@@ -34,18 +34,18 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
     [All<StartShippingRequest>]
     private void StartShipping(Entity requestEntity, in StartShippingRequest request)
     {
-        Debug.Assert(requestEntity.WorldId == request.Departure.Entity.WorldId
-                     && requestEntity.WorldId == request.Destination.Entity.WorldId
-                     && requestEntity.WorldId == request.Party.Entity.WorldId);
+        Debug.Assert(requestEntity.WorldId == request.Departure.WorldId
+                     && requestEntity.WorldId == request.Destination.WorldId
+                     && requestEntity.WorldId == request.Party.WorldId);
 
         var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Entity.Get<AnchoredShipsRegistry>().Ships[request.Party];
+        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Party];
 
-        var shippable = request.Party.Entity.Get<Shippable>();
+        var shippable = request.Party.Get<Shippable>();
         var (expectedArrivalPlanetPosition, expectedTravelDuration, arrivalPlanetPositionDerivative) =
             ShippingUtils.CalculateShippingTask(request.Departure, request.Destination, shippable);
 
-        var departurePlanetPosition = request.Departure.Entity.Get<AbsoluteTransform>().Translation;
+        var departurePlanetPosition = request.Departure.Get<AbsoluteTransform>().Translation;
         var departure2Destination = Vector3.Normalize(expectedArrivalPlanetPosition - departurePlanetPosition);
 
         var world = World.Worlds[requestEntity.WorldId];
@@ -55,13 +55,13 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             var ship = shipsEnumerator.Current;
 
             // 获取相关信息
-            ref readonly var pose = ref ship.Entity.Get<AbsoluteTransform>();
+            ref readonly var pose = ref ship.Get<AbsoluteTransform>();
             var transformRelationship =
-                ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
-            ref readonly var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
-            ref readonly var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
-            ref readonly var departurePlanetOrbit = ref request.Departure.Entity.Get<PlanetGeostationaryOrbit>();
-            ref readonly var destinationPlanetOrbit = ref request.Destination.Entity.Get<PlanetGeostationaryOrbit>();
+                ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
+            ref readonly var revolutionOrbit = ref transformRelationship.Get<RevolutionOrbit>();
+            ref readonly var revolutionState = ref transformRelationship.Get<RevolutionState>();
+            ref readonly var departurePlanetOrbit = ref request.Departure.Get<PlanetGeostationaryOrbit>();
+            ref readonly var destinationPlanetOrbit = ref request.Destination.Get<PlanetGeostationaryOrbit>();
 
             // 计算泊入轨道
             var orbitOffset = revolutionOrbit.Shape.X / 2 / departurePlanetOrbit.Radius;
@@ -83,7 +83,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                                   -_maxOffsetRatio * expectedTravelDuration / 2,
                                   _maxOffsetRatio * expectedTravelDuration / 2);
 
-            ref var shippingStatus = ref ship.Entity.Get<ShippingStatus>();
+            ref var shippingStatus = ref ship.Get<ShippingStatus>();
 
             // 设置任务
             shippingStatus.Task = new()
@@ -104,7 +104,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 
             // 发出声音
             _chargingSoundEvent.createInstance(out var instance);
-            ship.Entity.Get<SoundEffect>().EventInstance = instance;
+            ship.Get<SoundEffect>().EventInstance = instance;
             instance.start();
 
             // 创建单位的尾迹

@@ -119,7 +119,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     public override void Update(in GameTime t)
     {
         var drawableEntities = new List<Entity>();
-        World.GetEntities(in _drawableDesc, drawableEntities);
+        World.Query(in _drawableDesc, entity => drawableEntities.Add(entity));
         drawableEntities.Sort(
             (l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
                                                       r.Get<AbsoluteTransform>().Translation.Z)

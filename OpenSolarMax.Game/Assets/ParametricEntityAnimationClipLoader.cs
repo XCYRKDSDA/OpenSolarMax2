@@ -37,7 +37,7 @@ internal class ParametricEntityAnimationClipLoader : ParametricAnimationClipLoad
     }
 
     private static readonly MethodInfo _componentGetter =
-        typeof(EntityExtensions).GetMethod("Get", 1, [typeof(Entity).MakeByRefType()])!;
+        typeof(Arch.Core.Extensions.EntityExtensions).GetMethod("Get", 1, [typeof(Entity).MakeByRefType()])!;
 
     private static Delegate CompileGetter(Type componentType, Type memberType, string memberPath)
     {

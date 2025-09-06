@@ -30,10 +30,10 @@ public sealed partial class ProgressColonizationSystem(World world)
         var colonizeParty = shipsRegistry.Ships.First().Key;
         var shipsNum = shipsRegistry.Ships.First().Count();
 
-        var deltaProgress = shipsNum * colonizeParty.Entity.Get<ColonizationAbility>().ProgressPerSecond
+        var deltaProgress = shipsNum * colonizeParty.Get<ColonizationAbility>().ProgressPerSecond
                                      * (float)time.ElapsedGameTime.TotalSeconds;
 
-        if (state.Party == colonizeParty || state.Party == EntityReference.Null)
+        if (state.Party == colonizeParty || state.Party == Entity.Null)
         {
             if (state.Progress >= colonizable.Volume)
                 state.Event = ColonizationEvent.Idle;

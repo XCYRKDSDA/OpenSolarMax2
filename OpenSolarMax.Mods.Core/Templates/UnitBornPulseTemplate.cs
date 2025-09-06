@@ -14,7 +14,7 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
 {
     #region Options
 
-    public required EntityReference Unit { get; set; }
+    public required Entity Unit { get; set; }
 
     public required Color Color { get; set; }
 
@@ -62,9 +62,9 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
         animation.TimeElapsed = TimeSpan.Zero;
 
         // 设置相对位置
-        _ = world.Make(new RelativeTransformTemplate() { Parent = Unit, Child = entity.Reference() });
+        _ = world.Make(new RelativeTransformTemplate() { Parent = Unit, Child = entity });
 
         // 设置依赖关系
-        _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Unit });
+        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Unit });
     }
 }

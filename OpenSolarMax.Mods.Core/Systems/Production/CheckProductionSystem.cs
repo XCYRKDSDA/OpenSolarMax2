@@ -31,7 +31,7 @@ public sealed partial class CheckProductionSystem(World world) : BaseSystem<Worl
             return false;
 
         // 己方各星球单位总数量超过总容量的不生产
-        var populationRegistry = asAffiliate.Relationship!.Value.Copy.Party.Entity.Get<PartyPopulationRegistry>();
+        var populationRegistry = asAffiliate.Relationship!.Value.Copy.Party.Get<PartyPopulationRegistry>();
         if (populationRegistry.CurrentPopulation >= populationRegistry.PopulationLimit)
             return false;
 

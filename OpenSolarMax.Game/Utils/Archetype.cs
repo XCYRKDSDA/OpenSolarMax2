@@ -18,7 +18,7 @@ internal static class InitializerHelper
 
     private static readonly Dictionary<Type, ComponentInitializer> _initializersCache = [];
 
-    private static readonly MethodInfo _componentGetter = typeof(EntityExtensions)
+    private static readonly MethodInfo _componentGetter = typeof(Arch.Core.Extensions.EntityExtensions)
         .GetMethod("Get", 1, BindingFlags.Static | BindingFlags.Public, null, [typeof(Entity).MakeByRefType()], null)!;
 
     private static ComponentInitializer? BuildDefaultInitializer(Type type)

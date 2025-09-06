@@ -21,6 +21,7 @@
         { "$id": "planet03", "$base": "turret", "party": "red", "position": [ 225, 150 ] },
         { "$id": "planet04", "$base": "turret", "party": "red", "position": [ -225, -150 ] },
 
-        { "$base": "ship", "party": "blue", "planet": "planet01", "$num": 30 }
+        { "$base": "ship", "party": "blue", "planet": "planet01", "$num": 30 },
+        { "$base": "ship", "party": "blue", "planet": "planet02", "$num": 30 }
     ]
 }

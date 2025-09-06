@@ -16,11 +16,11 @@ public static class AnchorageUtils
         var world = World.Worlds[ship.WorldId];
 
         // 设置停靠关系
-        var anchorageRelationship = world.Create(new TreeRelationship<Anchorage>(planet.Reference(), ship.Reference()));
+        var anchorageRelationship = world.Create(new TreeRelationship<Anchorage>(planet, ship));
 
         // 设置变换关系
         var transformRelationship = world.Create(
-            new TreeRelationship<RelativeTransform>(planet.Reference(), ship.Reference()),
+            new TreeRelationship<RelativeTransform>(planet, ship),
             new RelativeTransform(), new RevolutionOrbit(), new RevolutionState());
 
         return (anchorageRelationship, transformRelationship);

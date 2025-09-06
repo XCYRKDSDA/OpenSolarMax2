@@ -15,7 +15,7 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
 {
     #region Options
 
-    public required EntityReference Effect { get; set; }
+    public required Entity Effect { get; set; }
 
     public required float Radius { get; set; }
 
@@ -68,7 +68,7 @@ internal class PortalChargingBackFlareTemplate(IAssetsManager assets) : ITemplat
         animation.Clip = _rawFlareCharging;
 
         // 设置到总特效实体的关系
-        _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Effect });
-        _ = world.Make(new RelativeTransformTemplate() { Parent = Effect, Child = entity.Reference() });
+        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Effect });
+        _ = world.Make(new RelativeTransformTemplate() { Parent = Effect, Child = entity });
     }
 }

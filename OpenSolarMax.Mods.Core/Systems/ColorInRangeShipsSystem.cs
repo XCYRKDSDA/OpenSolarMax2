@@ -26,7 +26,7 @@ public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager 
         {
             foreach (var (ship, _) in pairs)
             {
-                ship.Entity.Get<Sprite>().Color = Color.Red;
+                ship.Get<Sprite>().Color = Color.Red;
             }
         }
     }

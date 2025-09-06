@@ -13,7 +13,7 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
 {
     #region Options
 
-    public required EntityReference Unit { get; set; }
+    public required Entity Unit { get; set; }
 
     #endregion
 
@@ -51,10 +51,10 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
         sprite.Blend = SpriteBlend.Additive;
 
         // 挂载到单位上
-        _ = world.Make(new TrailOfTemplate() { Ship = Unit, Trail = entity.Reference() });
-        _ = world.Make(new RelativeTransformTemplate() { Child = entity.Reference(), Parent = Unit });
+        _ = world.Make(new TrailOfTemplate() { Ship = Unit, Trail = entity });
+        _ = world.Make(new RelativeTransformTemplate() { Child = entity, Parent = Unit });
 
         // 设置依赖关系
-        _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Unit });
+        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Unit });
     }
 }

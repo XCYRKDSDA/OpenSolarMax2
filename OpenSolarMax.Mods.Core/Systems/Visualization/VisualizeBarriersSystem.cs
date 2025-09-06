@@ -97,7 +97,7 @@ public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime
     public override void Update(in GameTime data)
     {
         var barrierEntities = new List<Entity>();
-        World.GetEntities(in _barrierDesc, barrierEntities);
+        World.Query(in _barrierDesc, entity => barrierEntities.Add(entity));
         RenderToCameraQuery(World, barrierEntities);
     }
 }

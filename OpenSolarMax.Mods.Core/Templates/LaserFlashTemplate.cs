@@ -19,7 +19,7 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
 
     public required TextureRegion Texture { get; set; }
 
-    public required EntityReference Turret { get; set; }
+    public required Entity Turret { get; set; }
 
     #endregion
 
@@ -48,13 +48,13 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
         world.Make(new RelativeTransformTemplate()
         {
             Parent = Turret,
-            Child = entity.Reference(),
+            Child = entity,
             Translation = Vector3.UnitZ * 0.1f,
             Rotation = Quaternion.Identity
         });
 
         // 设置纹理
-        ref readonly var turretSprite = ref Turret.Entity.Get<Sprite>();
+        ref readonly var turretSprite = ref Turret.Get<Sprite>();
         ref var sprite = ref entity.Get<Sprite>();
         sprite = turretSprite with
         {

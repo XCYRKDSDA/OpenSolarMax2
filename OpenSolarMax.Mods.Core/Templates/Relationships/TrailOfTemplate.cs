@@ -10,9 +10,9 @@ public class TrailOfTemplate : ITemplate
 {
     #region Configurations
 
-    public required EntityReference Ship { get; set; }
+    public required Entity Ship { get; set; }
 
-    public required EntityReference Trail { get; set; }
+    public required Entity Trail { get; set; }
 
     #endregion
 

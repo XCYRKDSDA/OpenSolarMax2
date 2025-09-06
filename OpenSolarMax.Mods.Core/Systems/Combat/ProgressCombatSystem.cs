@@ -44,7 +44,7 @@ public sealed partial class ProgressCombatSystem(World world)
         foreach (var party1 in engagedParties)
         {
             // 计算该阵营造成的总伤害
-            var totalDamage = party1.Entity.Get<Combatable>().AttackPerUnitPerSecond
+            var totalDamage = party1.Get<Combatable>().AttackPerUnitPerSecond
                               * ships[party1].Count()
                               * (float)time.ElapsedGameTime.TotalSeconds;
 

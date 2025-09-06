@@ -25,13 +25,13 @@ public sealed partial class CalculateAbsoluteTransformSystem(World world)
         // 先计算子实体的变换，感觉比递归的cache miss会少一些
         foreach (var (relationship, record) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
         {
-            var transformToParent = relationship.Entity.Get<RelativeTransform>().TransformToParent;
-            record.Child.Entity.Get<AbsoluteTransform>().TransformToRoot = transformToParent * parentTransformToRoot;
+            var transformToParent = relationship.Get<RelativeTransform>().TransformToParent;
+            record.Child.Get<AbsoluteTransform>().TransformToRoot = transformToParent * parentTransformToRoot;
         }
 
         // 递归考察子实体
         foreach (var (_, record) in entity.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships)
-            RecursivelyUpdateAbsoluteTransform(record.Child.Entity);
+            RecursivelyUpdateAbsoluteTransform(record.Child);
     }
 
     [Query]

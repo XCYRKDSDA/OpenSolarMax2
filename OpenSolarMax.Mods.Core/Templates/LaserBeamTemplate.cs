@@ -18,7 +18,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
 
     public required Color Color { get; set; }
 
-    public required EntityReference Planet { get; set; }
+    public required Entity Planet { get; set; }
 
     public required Vector3 TargetPosition { get; set; }
 
@@ -52,7 +52,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         var world = World.Worlds[entity.WorldId];
 
         // 摆放位置
-        ref readonly var turretPose = ref Planet.Entity.Get<AbsoluteTransform>();
+        ref readonly var turretPose = ref Planet.Get<AbsoluteTransform>();
         var vector = TargetPosition - turretPose.Translation;
         var unitX = Vector3.Normalize(vector);
         var unitY = Vector3.Normalize(new(-vector.Y, vector.X, 0));
@@ -61,7 +61,7 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         world.Make(new RelativeTransformTemplate()
         {
             Parent = Planet,
-            Child = entity.Reference(),
+            Child = entity,
             Translation = Vector3.Zero,
             Rotation = Quaternion.CreateFromRotationMatrix(rotation)
         });

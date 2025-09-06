@@ -30,7 +30,7 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
         // 考察各个阵营的破坏度
         foreach (var party in battle.FrontlineDamage.Keys)
         {
-            ref readonly var partyCombatAbility = ref party.Entity.Get<Combatable>();
+            ref readonly var partyCombatAbility = ref party.Get<Combatable>();
             using var shipEnumerator = shipsRegistry.Ships[party].GetEnumerator();
 
             // 根据前线战损逐个移除单位
@@ -41,8 +41,8 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
 
                 var ship = shipEnumerator.Current;
 
-                var color = ship.Entity.Get<Sprite>().Color;
-                var position = ship.Entity.Get<AbsoluteTransform>().Translation;
+                var color = ship.Get<Sprite>().Color;
+                var position = ship.Get<AbsoluteTransform>().Translation;
 
                 // 生成闪光
                 _ = World.Make(new UnitFlareTemplate(assets) { Color = color, Position = position });

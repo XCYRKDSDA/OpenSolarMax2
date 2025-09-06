@@ -34,7 +34,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
     /// <summary>
     /// 星球所属的阵营
     /// </summary>
-    public EntityReference Party { get; set; } = EntityReference.Null;
+    public Entity Party { get; set; } = Entity.Null;
 
     /// <summary>
     /// 星球的体量
@@ -125,9 +125,9 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         colonizable.Volume = Volume;
 
         // 设置阵营
-        if (Party != EntityReference.Null)
+        if (Party != Entity.Null)
         {
-            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() });
+            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity });
 
             ref var colonizationState = ref entity.Get<ColonizationState>();
             colonizationState.Party = Party;

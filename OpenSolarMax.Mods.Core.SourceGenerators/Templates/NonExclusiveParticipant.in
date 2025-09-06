@@ -13,49 +13,49 @@ partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
 {
     public struct @PARTICIPANT_TYPE@(): IParticipantIndex
     {
-        public Dictionary<EntityReference, @RELATIONSHIP_TYPE@> Relationships = [];
-        
-        #region IParticipantIndex
-        
-        readonly int ICollection<EntityReference>.Count => Relationships.Count;
+        public Dictionary<Entity, @RELATIONSHIP_TYPE@> Relationships = [];
 
-        readonly bool ICollection<EntityReference>.IsReadOnly => false;
-        
-        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+        #region IParticipantIndex
+
+        readonly int ICollection<Entity>.Count => Relationships.Count;
+
+        readonly bool ICollection<Entity>.IsReadOnly => false;
+
+        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex)
         {
             Relationships.Keys.CopyTo(array, arrayIndex);
         }
-        
-        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+
+        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
         {
             return Relationships.Keys.GetEnumerator();
         }
-        
+
         readonly IEnumerator IEnumerable.GetEnumerator()
         {
-            return (this as IEnumerable<EntityReference>).GetEnumerator();
+            return (this as IEnumerable<Entity>).GetEnumerator();
         }
-        
-        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+
+        readonly bool ICollection<Entity>.Contains(Entity relationship)
         {
             return Relationships.ContainsKey(relationship);
         }
-        
-        void ICollection<EntityReference>.Add(EntityReference relationship)
+
+        void ICollection<Entity>.Add(Entity relationship)
         {
-            Relationships.Add(relationship, relationship.Entity.Get<@RELATIONSHIP_TYPE@>());
+            Relationships.Add(relationship, relationship.Get<@RELATIONSHIP_TYPE@>());
         }
-        
-        bool ICollection<EntityReference>.Remove(EntityReference relationship)
+
+        bool ICollection<Entity>.Remove(Entity relationship)
         {
             return Relationships.Remove(relationship);
         }
-        
-        void ICollection<EntityReference>.Clear()
+
+        void ICollection<Entity>.Clear()
         {
             Relationships.Clear();
         }
-        
+
         #endregion
     }
 }

@@ -29,7 +29,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
     /// <summary>
     /// 星球所属的阵营
     /// </summary>
-    public EntityReference Party { get; set; } = EntityReference.Null;
+    public Entity Party { get; set; } = Entity.Null;
 
     #endregion
 
@@ -106,9 +106,9 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         colonizable.Volume = _volume;
 
         // 设置阵营
-        if (Party != EntityReference.Null)
+        if (Party != Entity.Null)
         {
-            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() });
+            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity });
 
             ref var colonizationState = ref entity.Get<ColonizationState>();
             colonizationState.Party = Party;

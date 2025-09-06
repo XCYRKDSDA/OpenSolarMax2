@@ -207,12 +207,12 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
 
             // 绘制所有选中的星球
             // TappingSource已经包含在SelectedSources中了，故不重复绘制
-            DrawSelected(selection.SimpleSelecting.SelectedSources.Select(r => r.Entity), in worldToCanvas,
+            DrawSelected(selection.SimpleSelecting.SelectedSources, in worldToCanvas,
                          Enumerable.Repeat(_selectedRingColor, int.MaxValue), _ringThickness);
 
             // 绘制目标星球
             if (selection.SimpleSelecting.TappingDestination != Entity.Null)
-                DrawSelected(selection.SimpleSelecting.TappingDestination.Entity, in worldToCanvas,
+                DrawSelected(selection.SimpleSelecting.TappingDestination, in worldToCanvas,
                              _selectedRingColor, _ringThickness);
         }
 
@@ -222,7 +222,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             // 绘制所有选中的星球
             DrawSelected(
                 Enumerable.Concat(selection.BoxSelectingSources.OtherSelectedPlanets,
-                                  selection.BoxSelectingSources.PlanetsInBox).Select(r => r.Entity),
+                                  selection.BoxSelectingSources.PlanetsInBox),
                 in worldToCanvas, Enumerable.Repeat(_selectedRingColor, int.MaxValue), _ringThickness);
 
             // 绘制选框
@@ -236,24 +236,24 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             // 如果所有出发点都无法到达目标点，则目标点画红色圈
 
             var blockStates =
-                selection.DraggingToDestination.CandidateDestination == EntityReference.Null
-                    ? CalculateBlocking(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
+                selection.DraggingToDestination.CandidateDestination == Entity.Null
+                    ? CalculateBlocking(selection.DraggingToDestination.SelectedSources,
                                         mouseInCanvas.ToVector2(), Matrix.Invert(worldToCanvas)).ToArray()
-                    : CalculateBlocking(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
-                                        selection.DraggingToDestination.CandidateDestination.Entity).ToArray();
+                    : CalculateBlocking(selection.DraggingToDestination.SelectedSources,
+                                        selection.DraggingToDestination.CandidateDestination).ToArray();
 
             var sourceColors = blockStates.Select(b => b ? _blockedRingColor : _selectedRingColor);
-            DrawSelected(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity), in worldToCanvas,
+            DrawSelected(selection.DraggingToDestination.SelectedSources, in worldToCanvas,
                          sourceColors, _ringThickness);
 
             var edgeColors = blockStates.Select(b => b ? _blockedLineColor : _lineColor);
-            if (selection.DraggingToDestination.CandidateDestination == EntityReference.Null)
-                DrawLines(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
+            if (selection.DraggingToDestination.CandidateDestination == Entity.Null)
+                DrawLines(selection.DraggingToDestination.SelectedSources,
                           mouseInCanvas.ToVector2(), worldToCanvas, edgeColors);
             else
             {
-                DrawLines(selection.DraggingToDestination.SelectedSources.Select(r => r.Entity),
-                          selection.DraggingToDestination.CandidateDestination.Entity, worldToCanvas, edgeColors);
+                DrawLines(selection.DraggingToDestination.SelectedSources,
+                          selection.DraggingToDestination.CandidateDestination, worldToCanvas, edgeColors);
 
                 var targetColor = blockStates.All(b => b) ? _blockedRingColor : _selectedRingColor;
                 DrawSelected(selection.DraggingToDestination.CandidateDestination, in worldToCanvas,

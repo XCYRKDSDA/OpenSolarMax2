@@ -33,7 +33,7 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world)
             return;
 
         var party = asAffiliate.Relationship!.Value.Copy.Party;
-        party.Entity.Get<PartyPopulationRegistry>().PopulationLimit += productionAbility.Population;
+        party.Get<PartyPopulationRegistry>().PopulationLimit += productionAbility.Population;
     }
 
     [Query]
@@ -45,7 +45,7 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world)
             return;
 
         var party = asAffiliate.Relationship!.Value.Copy.Party;
-        party.Entity.Get<PartyPopulationRegistry>().CurrentPopulation += populationCost.Value;
+        party.Get<PartyPopulationRegistry>().CurrentPopulation += populationCost.Value;
     }
 
     public override void Update(in GameTime t)

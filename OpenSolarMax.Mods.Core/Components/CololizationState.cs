@@ -20,7 +20,7 @@ public struct ColonizationState()
     /// <summary>
     /// 殖民阵营。描述当前是哪个阵营在尝试殖民该实体
     /// </summary>
-    public EntityReference Party = EntityReference.Null;
+    public Entity Party = Entity.Null;
 
     /// <summary>
     /// 殖民度。描述当前正在尝试殖民该实体的阵营对该实体的殖民程度。为绝对值

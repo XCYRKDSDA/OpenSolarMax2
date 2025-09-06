@@ -44,11 +44,11 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
         if (state.Event == ColonizationEvent.Finished)
         {
             // 不管怎样，先开香槟
-            CreateHaloExplosion(planet, state.Party.Entity.Get<PartyReferenceColor>().Value);
+            CreateHaloExplosion(planet, state.Party.Get<PartyReferenceColor>().Value);
 
             // 完成殖民
             if (planetParty is null)
-                World.Make(new InPartyTemplate() { Party = state.Party, Affiliate = planet.Reference() });
+                World.Make(new InPartyTemplate() { Party = state.Party, Affiliate = planet });
         }
         else if (state.Event == ColonizationEvent.Destroyed)
         {

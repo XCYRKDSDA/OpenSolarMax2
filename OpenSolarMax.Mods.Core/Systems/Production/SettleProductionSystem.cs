@@ -32,7 +32,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
         // 生产一个新部队
         for (int i = 0; i < state.UnitsProducedThisFrame; i++)
         {
-            var newShip = World.Make(new ShipTemplate(assets) { Party = party, Planet = planet.Reference() });
+            var newShip = World.Make(new ShipTemplate(assets) { Party = party, Planet = planet });
 
             // 添加出生后动画
             newShip.Add(new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });
@@ -40,8 +40,8 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
             // 生成出生动画
             _ = World.Make(new UnitBornPulseTemplate(assets)
             {
-                Unit = newShip.Reference(),
-                Color = party.Entity.Get<PartyReferenceColor>().Value
+                Unit = newShip,
+                Color = party.Get<PartyReferenceColor>().Value
             });
         }
     }

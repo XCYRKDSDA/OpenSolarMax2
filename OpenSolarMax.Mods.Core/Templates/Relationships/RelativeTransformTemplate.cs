@@ -11,9 +11,9 @@ public class RelativeTransformTemplate : ITemplate
 {
     #region Configurations
 
-    public required EntityReference Parent { get; set; }
+    public required Entity Parent { get; set; }
 
-    public required EntityReference Child { get; set; }
+    public required Entity Child { get; set; }
 
     public Vector3 Translation { get; set; } = Vector3.Zero;
 

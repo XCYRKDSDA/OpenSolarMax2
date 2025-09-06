@@ -9,5 +9,5 @@ namespace OpenSolarMax.Game.Data;
 /// <param name="OtherEntities"></param>
 public record class WorldLoadingContext(
     IReadOnlyDictionary<string, ITemplate[]> OtherTemplates,
-    IReadOnlyDictionary<string, EntityReference> OtherEntities
+    IReadOnlyDictionary<string, Entity> OtherEntities
 );

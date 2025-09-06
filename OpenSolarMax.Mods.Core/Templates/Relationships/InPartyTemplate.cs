@@ -10,9 +10,9 @@ public class InPartyTemplate : ITemplate
 {
     #region Configurations
 
-    public required EntityReference Party { get; set; }
+    public required Entity Party { get; set; }
 
-    public required EntityReference Affiliate { get; set; }
+    public required Entity Affiliate { get; set; }
 
     #endregion
 

@@ -27,7 +27,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
 
     public (float Near, float Far) Depth { get; set; } = (-1001, 1001);
 
-    public required EntityReference Party { get; set; }
+    public required Entity Party { get; set; }
 
     #endregion
 
@@ -63,7 +63,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         camera.ZFar = Depth.Far;
 
         // 设置阵营
-        var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() };
+        var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity };
         _ = world.Make(inPartyTemplate);
     }
 }

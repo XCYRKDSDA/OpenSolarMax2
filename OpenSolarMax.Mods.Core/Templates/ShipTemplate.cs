@@ -23,12 +23,12 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
     /// <summary>
     /// 单位创建时所在的星球。必须提供
     /// </summary>
-    public required EntityReference Planet { get; init; }
+    public required Entity Planet { get; init; }
 
     /// <summary>
     /// 单位创建时所属的阵营。必须提供
     /// </summary>
-    public required EntityReference Party { get; init; }
+    public required Entity Party { get; init; }
 
     #endregion
 
@@ -87,11 +87,11 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
         populationCost.Value = 1;
 
         // 设置所属星球
-        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(entity, Planet.Entity);
+        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(entity, Planet);
         RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, Planet);
 
         // 设置所属阵营
-        var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity.Reference() };
+        var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity };
         _ = world.Make(inPartyTemplate);
 
         // 初始化飞行状态

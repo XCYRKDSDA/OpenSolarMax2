@@ -9,5 +9,5 @@ public struct AnchoredShipsRegistry
     /// <summary>
     /// 阵营 -> 舰船
     /// </summary>
-    public Lookup<EntityReference, EntityReference> Ships;
+    public Lookup<Entity, Entity> Ships;
 }

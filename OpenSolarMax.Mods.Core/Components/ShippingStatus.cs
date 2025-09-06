@@ -11,7 +11,7 @@ public struct ShippingTask
     /// <summary>
     /// 当前运输的目标星球
     /// </summary>
-    public EntityReference DestinationPlanet;
+    public Entity DestinationPlanet;
 
     /// <summary>
     /// 开始运输时的位置

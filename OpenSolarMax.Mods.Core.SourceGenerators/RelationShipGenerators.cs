@@ -33,7 +33,7 @@ public class RelationShipGenerator : ISourceGenerator
         var participantsCount = string.Join(
             " + ",
             info.Participants.Select(
-                p => p.Multiple ? $"({p.Member} as IEnumerable<EntityReference>).Count()" : "1")
+                p => p.Multiple ? $"({p.Member} as IEnumerable<Entity>).Count()" : "1")
         );
 
         var indexerBody = string.Join(
@@ -42,14 +42,14 @@ public class RelationShipGenerator : ISourceGenerator
                     p => p.Multiple
                              ? $"if (key == typeof({p.Type})) return {p.Member};"
                              : $"if (key == typeof({p.Type})) return Enumerable.Repeat({p.Member}, 1);")
-                .Append("return Enumerable.Empty<EntityReference>();")
+                .Append("return Enumerable.Empty<Entity>();")
         );
 
         var containsExpression = string.Join(
             " || ",
             info.Participants.Select(
                 p => p.Multiple
-                         ? $"(key == typeof({p.Type}) && ({p.Member} as IEnumerable<EntityReference>).Count() != 0)"
+                         ? $"(key == typeof({p.Type}) && ({p.Member} as IEnumerable<Entity>).Count() != 0)"
                          : $"key == typeof({p.Type})")
         );
 
@@ -57,8 +57,8 @@ public class RelationShipGenerator : ISourceGenerator
             "\n        ",
             info.Participants.Select(
                 p => p.Multiple
-                         ? $"yield return new EnumerableGroup<Type, EntityReference>(typeof({p.Type}), {p.Member});"
-                         : $"yield return new SingleItemGroup<Type, EntityReference>(typeof({p.Type}), {p.Member});")
+                         ? $"yield return new EnumerableGroup<Type, Entity>(typeof({p.Type}), {p.Member});"
+                         : $"yield return new SingleItemGroup<Type, Entity>(typeof({p.Type}), {p.Member});")
         );
 
         var relationshipCs =
@@ -94,7 +94,7 @@ public class RelationShipGenerator : ISourceGenerator
         };
 
         var genericIEnumerableSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!;
-        var entityReferenceSymbol = compilation.GetTypeByMetadataName("Arch.Core.EntityReference")!;
+        var entityReferenceSymbol = compilation.GetTypeByMetadataName("Arch.Core.Entity")!;
 
         return typeSymbol.AllInterfaces.Any(
             i => i.OriginalDefinition.Equals(genericIEnumerableSymbol, SymbolEqualityComparer.Default)

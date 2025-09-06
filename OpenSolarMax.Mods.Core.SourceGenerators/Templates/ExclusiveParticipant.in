@@ -12,63 +12,63 @@ namespace @NAMESPACE@;
 partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
 {
     public struct @PARTICIPANT_TYPE@(): IParticipantIndex
-    {        
-        public (EntityReference Ref, @RELATIONSHIP_TYPE@ Copy)? Relationship = null;
-        
-        #region IParticipantIndex
-        
-        readonly int ICollection<EntityReference>.Count => Relationship is null ? 0 : 1;
+    {
+        public (Entity Ref, @RELATIONSHIP_TYPE@ Copy)? Relationship = null;
 
-        readonly bool ICollection<EntityReference>.IsReadOnly => false;
-        
-        readonly void ICollection<EntityReference>.CopyTo(EntityReference[] array, int arrayIndex)
+        #region IParticipantIndex
+
+        readonly int ICollection<Entity>.Count => Relationship is null ? 0 : 1;
+
+        readonly bool ICollection<Entity>.IsReadOnly => false;
+
+        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex)
         {
             if (Relationship.HasValue)
                 array[arrayIndex] = Relationship.Value.Ref;
         }
-        
-        readonly IEnumerator<EntityReference> IEnumerable<EntityReference>.GetEnumerator()
+
+        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
         {
             if (Relationship.HasValue)
                 yield return Relationship.Value.Ref;
         }
-        
+
         readonly IEnumerator IEnumerable.GetEnumerator()
         {
-            return (this as IEnumerable<EntityReference>).GetEnumerator();
+            return (this as IEnumerable<Entity>).GetEnumerator();
         }
-        
-        readonly bool ICollection<EntityReference>.Contains(EntityReference relationship)
+
+        readonly bool ICollection<Entity>.Contains(Entity relationship)
         {
             if (!Relationship.HasValue)
                 return false;
             return Relationship.Value.Ref == relationship;
         }
-        
-        void ICollection<EntityReference>.Add(EntityReference relationship)
+
+        void ICollection<Entity>.Add(Entity relationship)
         {
             if (Relationship.HasValue)
                 throw new IndexOutOfRangeException();
-            Relationship = (relationship, relationship.Entity.Get<@RELATIONSHIP_TYPE@>());
+            Relationship = (relationship, relationship.Get<@RELATIONSHIP_TYPE@>());
         }
-        
-        bool ICollection<EntityReference>.Remove(EntityReference relationship)
+
+        bool ICollection<Entity>.Remove(Entity relationship)
         {
             if (!Relationship.HasValue)
                 return false;
-        
+
             if (Relationship.Value.Ref != relationship)
                 return false;
-        
+
             Relationship = null;
             return true;
         }
-        
-        void ICollection<EntityReference>.Clear()
+
+        void ICollection<Entity>.Clear()
         {
             Relationship = null;
         }
-        
+
         #endregion
     }
 }

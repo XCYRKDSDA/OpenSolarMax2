@@ -87,8 +87,8 @@ public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsM
                                             in InParty.AsAffiliate asAffiliate)
     {
         var party = asAffiliate.Relationship!.Value.Copy.Party;
-        ref readonly var populationRegistry = ref party.Entity.Get<PartyPopulationRegistry>();
-        ref readonly var partyColor = ref party.Entity.Get<PartyReferenceColor>();
+        ref readonly var populationRegistry = ref party.Get<PartyPopulationRegistry>();
+        ref readonly var partyColor = ref party.Get<PartyReferenceColor>();
 
         var prefixLabel = uiContext.TopBar.FindChildById<Label>(_prefixLabelId);
         var currentPopulationLabel = uiContext.TopBar.FindChildById<Label>(_currentPopulationLabelId);

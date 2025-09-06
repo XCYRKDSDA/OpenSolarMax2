@@ -31,7 +31,7 @@ internal sealed class WorldLoader(IAssetsManager assets)
     public void Load(Level level, World world)
     {
         var namedTemplates = new Dictionary<string, ITemplate[]>();
-        var namedEntities = new Dictionary<string, EntityReference>();
+        var namedEntities = new Dictionary<string, Entity>();
         var ctx = new WorldLoadingContext(namedTemplates, namedEntities);
 
         var cache = new Dictionary<string, IEntityConfiguration[]>();
@@ -70,7 +70,7 @@ internal sealed class WorldLoader(IAssetsManager assets)
 
                 // 记录实体
                 if (optionalId is not null)
-                    namedEntities[optionalId] = entity.Reference();
+                    namedEntities[optionalId] = entity;
 
                 // 配置实体
                 foreach (var template in allTemplates)

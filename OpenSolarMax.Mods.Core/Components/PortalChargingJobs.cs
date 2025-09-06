@@ -4,9 +4,9 @@ namespace OpenSolarMax.Mods.Core.Components;
 
 public struct PortalTransportationTask
 {
-    public EntityReference Destination;
+    public Entity Destination;
 
-    public EntityReference Party;
+    public Entity Party;
 
     public int Units;
 }
@@ -15,7 +15,7 @@ public struct PortalChargingStatus
 {
     public PortalTransportationTask Task;
 
-    public EntityReference Effect;
+    public Entity Effect;
 }
 
 public class PortalChargingJobs() : List<PortalChargingStatus>

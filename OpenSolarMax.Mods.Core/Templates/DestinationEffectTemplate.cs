@@ -13,7 +13,7 @@ public class DestinationEffectTemplate(IAssetsManager assets) : ITemplate
 {
     #region Options
 
-    public required EntityReference Portal { get; set; }
+    public required Entity Portal { get; set; }
 
     public required float PortalRadius { get; set; }
 
@@ -41,27 +41,27 @@ public class DestinationEffectTemplate(IAssetsManager assets) : ITemplate
 
         var backFlare = world.Make(new DestinationBackFlareTemplate(assets)
         {
-            Effect = entity.Reference(),
+            Effect = entity,
             Radius = PortalRadius * 2f, Color = Color
         });
 
-        var surroundFlares = new List<EntityReference>();
+        var surroundFlares = new List<Entity>();
         for (int i = 0; i < 3; i++)
         {
             surroundFlares.Add(world.Make(new DestinationSurroundFlareTemplate(assets)
             {
-                Effect = entity.Reference(),
+                Effect = entity,
                 Radius = PortalRadius * 2f, Color = Color,
                 Angle = i * MathF.PI * 2 / 3
-            }).Reference());
+            }));
         }
 
-        entity.Set(new DestinationEffectAssignment(surroundFlares.ToArray(), backFlare.Reference()));
+        entity.Set(new DestinationEffectAssignment(surroundFlares.ToArray(), backFlare));
 
-        _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Portal });
+        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Portal });
         var tf = world.Make(new RelativeTransformTemplate()
         {
-            Parent = Portal, Child = entity.Reference(),
+            Parent = Portal, Child = entity,
             Translation = Vector3.Zero with { Z = 500 } // 保证位于前边
         });
     }

@@ -4,13 +4,13 @@ using OpenSolarMax.Mods.Core.SourceGenerators;
 namespace OpenSolarMax.Mods.Core.Components;
 
 [Relationship]
-public partial struct TrailOf(EntityReference ship, EntityReference trail)
+public partial struct TrailOf(Entity ship, Entity trail)
 {
     [Participant]
-    public EntityReference Ship = ship;
+    public Entity Ship = ship;
 
     [Participant]
-    public EntityReference Trail = trail;
+    public Entity Trail = trail;
 
-    public readonly static TrailOf Empty = new(EntityReference.Null, EntityReference.Null);
+    public readonly static TrailOf Empty = new(Entity.Null, Entity.Null);
 }

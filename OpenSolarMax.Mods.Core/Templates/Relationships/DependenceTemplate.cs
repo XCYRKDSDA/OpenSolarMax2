@@ -10,9 +10,9 @@ public class DependenceTemplate : ITemplate
 {
     #region Configurations
 
-    public required EntityReference Dependent { get; set; }
+    public required Entity Dependent { get; set; }
 
-    public required EntityReference Dependency { get; set; }
+    public required Entity Dependency { get; set; }
 
     #endregion
 

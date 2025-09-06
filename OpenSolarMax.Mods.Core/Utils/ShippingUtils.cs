@@ -107,16 +107,16 @@ public static class ShippingUtils
                 return (virtualWorld, tailProxy);
             if (asChild.Relationship is null)
                 return (virtualWorld, tailProxy);
-            var relationship = asChild.Relationship.Value.Ref.Entity;
+            var relationship = asChild.Relationship.Value.Ref;
             var parent = asChild.Relationship.Value.Copy.Parent;
 
             // 创建虚拟世界中关于原世界父对象的代理对象
             var parentProxy = virtualWorld.Construct(in Archetypes.Transformable);
-            parentProxy.Get<AbsoluteTransform>() = parent.Entity.Get<AbsoluteTransform>();
+            parentProxy.Get<AbsoluteTransform>() = parent.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
             var relationshipRecord =
-                new TreeRelationship<RelativeTransform>(parentProxy.Reference(), childProxy.Reference());
+                new TreeRelationship<RelativeTransform>(parentProxy, childProxy);
             var relationshipProxy =
                 relationship.Has<RevolutionOrbit, RevolutionState>()
                     ? virtualWorld.Create(
@@ -129,11 +129,11 @@ public static class ShippingUtils
 
             // 将关系直接记录到两侧组件中
             childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship =
-                (relationshipProxy.Reference(), relationshipRecord);
+                (relationshipProxy, relationshipRecord);
             parentProxy.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships.Add(
-                relationshipProxy.Reference(), relationshipRecord);
+                relationshipProxy, relationshipRecord);
 
-            child = parent.Entity;
+            child = parent;
             childProxy = parentProxy;
         }
     }

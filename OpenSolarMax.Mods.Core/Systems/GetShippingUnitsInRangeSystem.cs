@@ -23,7 +23,7 @@ public sealed partial class GetShippingUnitsInRangeSystem(World world)
         Entity entity, in InParty.AsAffiliate asAffiliate,
         in ShippingStatus shippingStatus, in AbsoluteTransform unitPose,
         [Data] in AbsoluteTransform planetPose, [Data] in float range,
-        [Data] in Registry<EntityReference, (EntityReference Ship, float Distance)> result)
+        [Data] in Registry<Entity, (Entity Ship, float Distance)> result)
     {
         if (shippingStatus.State == ShippingState.Idle)
             return;
@@ -40,7 +40,7 @@ public sealed partial class GetShippingUnitsInRangeSystem(World world)
             return;
 
         Debug.Assert(asAffiliate.Relationship is not null);
-        result[asAffiliate.Relationship.Value.Copy.Party].Add((entity.Reference(), distance));
+        result[asAffiliate.Relationship.Value.Copy.Party].Add((entity, distance));
     }
 
     [Query]

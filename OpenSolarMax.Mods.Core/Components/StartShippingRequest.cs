@@ -7,11 +7,11 @@ namespace OpenSolarMax.Mods.Core.Components;
 /// </summary>
 public struct StartShippingRequest
 {
-    public EntityReference Departure;
+    public Entity Departure;
 
-    public EntityReference Destination;
+    public Entity Destination;
 
-    public EntityReference Party;
+    public Entity Party;
 
     public int ExpectedNum;
 }

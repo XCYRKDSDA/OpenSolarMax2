@@ -38,16 +38,16 @@ public sealed partial class StartTransportationSystem(World world, IAssetsManage
     [All<StartShippingRequest>]
     private void StartTransporting(Entity requestEntity, in StartShippingRequest request)
     {
-        Debug.Assert(requestEntity.WorldId == request.Departure.Entity.WorldId
-                     && requestEntity.WorldId == request.Destination.Entity.WorldId
-                     && requestEntity.WorldId == request.Party.Entity.WorldId);
+        Debug.Assert(requestEntity.WorldId == request.Departure.WorldId
+                     && requestEntity.WorldId == request.Destination.WorldId
+                     && requestEntity.WorldId == request.Party.WorldId);
 
-        if (!request.Departure.Entity.Has<PortalChargingJobs>())
+        if (!request.Departure.Has<PortalChargingJobs>())
             return;
 
         // 设置单位传送状态
         var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Entity.Get<AnchoredShipsRegistry>().Ships[request.Party];
+        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Party];
         using var shipsEnumerator = allShips.GetEnumerator();
         while (shipsRemain > 0 && shipsEnumerator.MoveNext())
         {
@@ -55,11 +55,11 @@ public sealed partial class StartTransportationSystem(World world, IAssetsManage
 
             // 获取相关信息
             var transformRelationship =
-                ship.Entity.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
-            ref readonly var revolutionOrbit = ref transformRelationship.Entity.Get<RevolutionOrbit>();
-            ref readonly var revolutionState = ref transformRelationship.Entity.Get<RevolutionState>();
-            ref readonly var departurePlanetOrbit = ref request.Departure.Entity.Get<PlanetGeostationaryOrbit>();
-            ref readonly var destinationPlanetOrbit = ref request.Destination.Entity.Get<PlanetGeostationaryOrbit>();
+                ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
+            ref readonly var revolutionOrbit = ref transformRelationship.Get<RevolutionOrbit>();
+            ref readonly var revolutionState = ref transformRelationship.Get<RevolutionState>();
+            ref readonly var departurePlanetOrbit = ref request.Departure.Get<PlanetGeostationaryOrbit>();
+            ref readonly var destinationPlanetOrbit = ref request.Destination.Get<PlanetGeostationaryOrbit>();
 
             // 计算泊入轨道
             var orbitOffset = revolutionOrbit.Shape.X / 2 / departurePlanetOrbit.Radius;
@@ -71,7 +71,7 @@ public sealed partial class StartTransportationSystem(World world, IAssetsManage
                 Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f)
             };
 
-            ref var transportingStatus = ref ship.Entity.Get<TransportingStatus>();
+            ref var transportingStatus = ref ship.Get<TransportingStatus>();
             transportingStatus.State = TransportingState.PreTransportation;
             transportingStatus.Task = new()
             {
@@ -86,9 +86,9 @@ public sealed partial class StartTransportationSystem(World world, IAssetsManage
         World.Make(new PortalChargingEffectTemplate(assets)
         {
             Portal = request.Departure,
-            PortalRadius = request.Departure.Entity.Get<ReferenceSize>().Radius,
-            Color = request.Party.Entity.Get<PartyReferenceColor>().Value
-        }).Reference();
+            PortalRadius = request.Departure.Get<ReferenceSize>().Radius,
+            Color = request.Party.Get<PartyReferenceColor>().Value
+        });
 
         _commandBuffer.Destroy(in requestEntity);
     }

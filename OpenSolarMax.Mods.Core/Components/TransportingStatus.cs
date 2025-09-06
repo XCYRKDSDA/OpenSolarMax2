@@ -10,7 +10,7 @@ public struct TransportingTask
     /// <summary>
     /// 当前传送的目标星球
     /// </summary>
-    public EntityReference DestinationPlanet;
+    public Entity DestinationPlanet;
 
     /// <summary>
     /// 预计泊入的轨道

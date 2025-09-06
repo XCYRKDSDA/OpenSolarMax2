@@ -8,7 +8,7 @@ public class RevolutionOptions
     /// <summary>
     /// 所围绕的实体
     /// </summary>
-    public required EntityReference Parent { get; set; }
+    public required Entity Parent { get; set; }
 
     /// <summary>
     /// 轨道的形状

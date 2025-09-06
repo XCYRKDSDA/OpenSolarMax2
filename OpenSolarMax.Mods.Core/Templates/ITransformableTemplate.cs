@@ -36,14 +36,14 @@ public static class TransformableTemplateExtensions
             transform => _ = world.Make(new RelativeTransformTemplate()
             {
                 Parent = transform.Parent,
-                Child = entity.Reference(),
+                Child = entity,
                 Translation = transform.Translation,
                 Rotation = transform.Rotation
             }),
             revolution => _ = world.Make(new RevolutionTemplate()
             {
                 Parent = revolution.Parent,
-                Child = entity.Reference(),
+                Child = entity,
                 Shape = revolution.Shape,
                 Period = revolution.Period,
                 Rotation = revolution.Rotation,

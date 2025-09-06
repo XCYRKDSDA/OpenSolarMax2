@@ -11,9 +11,9 @@ public class RevolutionTemplate : ITemplate
 {
     #region Configurations
 
-    public required EntityReference Parent { get; set; }
+    public required Entity Parent { get; set; }
 
-    public required EntityReference Child { get; set; }
+    public required Entity Child { get; set; }
 
     public required Vector2 Shape { get; set; }
 

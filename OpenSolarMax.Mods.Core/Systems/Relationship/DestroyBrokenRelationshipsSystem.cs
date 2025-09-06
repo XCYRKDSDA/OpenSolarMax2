@@ -1,5 +1,6 @@
 ﻿using Arch.Buffer;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.System;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Mods.Core.Components;

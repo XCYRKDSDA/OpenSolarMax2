@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager assets)
     : BaseSystem<World, GameTime>(world), ISystem
 {
-    private static EntityReference? SelectTarget(in InAttackRangeShipsRegistry registry, in EntityReference myParty)
+    private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myParty)
     {
         foreach (var (party, pairs) in registry.Ships)
         {
@@ -53,11 +53,11 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 
         timer.TimeLeft = cooldown.Duration;
 
-        var targetPosition = target.Value.Entity.Get<AbsoluteTransform>().Translation;
-        var turretColor = turretParty.Entity.Get<PartyReferenceColor>().Value;
+        var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
+        var turretColor = turretParty.Get<PartyReferenceColor>().Value;
         World.Make(new LaserBeamTemplate(assets)
         {
-            Planet = entity.Reference(),
+            Planet = entity,
             TargetPosition = targetPosition,
             Color = turretColor
         });
@@ -66,14 +66,14 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         {
             World.Make(new LaserFlashTemplate(assets)
             {
-                Turret = entity.Reference(),
+                Turret = entity,
                 Color = Color.White,
                 Texture = turret.GlowTexture
             });
         }
 
-        var targetParty = target.Value.Entity.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party;
-        var targetColor = targetParty.Entity.Get<PartyReferenceColor>().Value;
+        var targetParty = target.Value.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party;
+        var targetColor = targetParty.Get<PartyReferenceColor>().Value;
 
         // 生成闪光
         _ = World.Make(new UnitFlareTemplate(assets) { Color = targetColor, Position = targetPosition });

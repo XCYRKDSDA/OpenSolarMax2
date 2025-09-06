@@ -29,8 +29,8 @@ public sealed partial class DestroyFinishedPortalChargingEffectsSystem(World wor
     private static void ExpireEffects([Data] CommandBuffer commands,
                                       Entity entity, in PortalChargingEffectAssignment assignment)
     {
-        if (AnimationDone(in assignment.BackFlare.Entity.Get<Animation>())
-            && assignment.SurroundFlares.All(r => AnimationDone(in r.Entity.Get<Animation>())))
+        if (AnimationDone(in assignment.BackFlare.Get<Animation>())
+            && assignment.SurroundFlares.All(r => AnimationDone(in r.Get<Animation>())))
             commands.Destroy(entity);
     }
 

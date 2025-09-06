@@ -36,7 +36,7 @@ public sealed partial class ProgressProductionSystem(World world)
 
         // 记录生产个数
         ref readonly var asAffiliate = ref planet.Get<InParty.AsAffiliate>();
-        ref var producible = ref asAffiliate.Relationship!.Value.Copy.Party.Entity.Get<Producible>();
+        ref var producible = ref asAffiliate.Relationship!.Value.Copy.Party.Get<Producible>();
         while (state.Progress > producible.WorkloadPerShip)
         {
             state.Progress -= producible.WorkloadPerShip;

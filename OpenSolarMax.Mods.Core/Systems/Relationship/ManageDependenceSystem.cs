@@ -1,5 +1,6 @@
 ﻿using Arch.Buffer;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;

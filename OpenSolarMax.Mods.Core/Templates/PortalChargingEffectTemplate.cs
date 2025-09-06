@@ -13,7 +13,7 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
 {
     #region Options
 
-    public required EntityReference Portal { get; set; }
+    public required Entity Portal { get; set; }
 
     public required float PortalRadius { get; set; }
 
@@ -45,7 +45,7 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
 
         var backFlare = world.Make(new PortalChargingBackFlareTemplate(assets)
         {
-            Effect = entity.Reference(),
+            Effect = entity,
             Radius = PortalRadius * 3f, Color = Color
         });
 
@@ -55,17 +55,17 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
         float delayStep = 0.12f;
         float angle = 0;
 
-        var surroundFlares = new List<EntityReference>();
+        var surroundFlares = new List<Entity>();
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
             {
                 surroundFlares.Add(world.Make(new PortalChargingSurroundFlareTemplate(assets)
                 {
-                    Effect = entity.Reference(),
+                    Effect = entity,
                     Radius = PortalRadius * 3f, Color = Color,
                     MaxSize = maxSize, Ratio = rate, Angle = angle, Delay = delay
-                }).Reference());
+                }));
 
                 delay += delayStep;
                 angle += MathF.PI * 2 / 3;
@@ -75,12 +75,12 @@ public class PortalChargingEffectTemplate(IAssetsManager assets) : ITemplate
             maxSize *= 0.8f;
         }
 
-        entity.Set(new PortalChargingEffectAssignment(surroundFlares.ToArray(), backFlare.Reference()));
+        entity.Set(new PortalChargingEffectAssignment(surroundFlares.ToArray(), backFlare));
 
-        _ = world.Make(new DependenceTemplate() { Dependent = entity.Reference(), Dependency = Portal });
+        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Portal });
         _ = world.Make(new RelativeTransformTemplate()
         {
-            Parent = Portal, Child = entity.Reference(),
+            Parent = Portal, Child = entity,
             Translation = Vector3.Zero with { Z = 500 } // 保证位于前边
         });
 

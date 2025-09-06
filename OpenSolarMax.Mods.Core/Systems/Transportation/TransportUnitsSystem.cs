@@ -49,7 +49,7 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
             // 面向目标位置
             var head = ship.Get<AbsoluteTransform>().Translation;
 
-            var destinationPlanetPose = status.Task.DestinationPlanet.Entity.Get<AbsoluteTransform>().TransformToRoot;
+            var destinationPlanetPose = status.Task.DestinationPlanet.Get<AbsoluteTransform>().TransformToRoot;
             var expectedPoseInDestination = RevolutionUtils.CalculateTransform(status.Task.ExpectedRevolutionOrbit,
                                                                                status.Task.ExpectedRevolutionState)
                                                            .TransformToParent;
@@ -98,8 +98,8 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
     private void TransportUnits(Entity ship, ref TransportingStatus status,
                                 in AbsoluteTransform pose, in Sprite sprite,
                                 in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate,
-                                [Data] HashSet<(EntityReference, EntityReference)> jobs,
-                                [Data] HashSet<(EntityReference, EntityReference)> arrivals)
+                                [Data] HashSet<(Entity, Entity)> jobs,
+                                [Data] HashSet<(Entity, Entity)> arrivals)
     {
         if (status.State == TransportingState.PreTransportation &&
             status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9333))
@@ -124,8 +124,8 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
                 Tail = (RevolutionUtils
                         .CalculateTransform(status.Task.ExpectedRevolutionOrbit, status.Task.ExpectedRevolutionState)
                         .TransformToParent *
-                        destination.Entity.Get<AbsoluteTransform>().TransformToRoot).Translation,
-                Color = asAffiliate.Relationship!.Value.Copy.Party.Entity.Get<PartyReferenceColor>().Value
+                        destination.Get<AbsoluteTransform>().TransformToRoot).Translation,
+                Color = asAffiliate.Relationship!.Value.Copy.Party.Get<PartyReferenceColor>().Value
             });
 
             status.State = TransportingState.PostTransportation;
@@ -141,8 +141,8 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
         }
     }
 
-    private readonly HashSet<(EntityReference, EntityReference)> _jobs = [];
-    private readonly HashSet<(EntityReference, EntityReference)> _arrivalsPerFrame = [];
+    private readonly HashSet<(Entity, Entity)> _jobs = [];
+    private readonly HashSet<(Entity, Entity)> _arrivalsPerFrame = [];
 
     public override void Update(in GameTime t)
     {
@@ -156,8 +156,8 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
             World.Make(new DestinationEffectTemplate(assets)
             {
                 Portal = destination,
-                Color = party.Entity.Get<PartyReferenceColor>().Value,
-                PortalRadius = destination.Entity.Get<ReferenceSize>().Radius
+                Color = party.Get<PartyReferenceColor>().Value,
+                PortalRadius = destination.Get<ReferenceSize>().Radius
             });
         }
 
@@ -165,8 +165,8 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
         foreach (var (departure, destination) in _jobs)
         {
             // 计算音效位置
-            var center = (departure.Entity.Get<AbsoluteTransform>().Translation +
-                          destination.Entity.Get<AbsoluteTransform>().Translation) / 2;
+            var center = (departure.Get<AbsoluteTransform>().Translation +
+                          destination.Get<AbsoluteTransform>().Translation) / 2;
 
             // 创建音效
             World.Make(new SimpleSoundTemplate()
