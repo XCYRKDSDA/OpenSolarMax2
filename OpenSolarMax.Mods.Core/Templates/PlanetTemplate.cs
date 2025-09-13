@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -138,5 +139,70 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         ref var productionAbility = ref entity.Get<ProductionAbility>();
         productionAbility.Population = Population;
         productionAbility.ProgressPerSecond = ProduceSpeed;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        var random = new Random();
+
+        // 设置位姿
+        (this as ITransformableTemplate).Apply(commandBuffer, entity);
+
+        // 随机填充纹理
+        var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _defaultPlanetTextures[randomIndex],
+            Alpha = 1,
+            Size = new(ReferenceRadius * 2),
+            Position = Vector2.Zero,
+            Rotation = 0,
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Alpha
+        });
+
+        // 设置参考尺寸
+        commandBuffer.Set(in entity, new ReferenceSize
+        {
+            Radius = ReferenceRadius
+        });
+
+        // 设置同步轨道
+        var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
+        var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
+        commandBuffer.Set(in entity, new PlanetGeostationaryOrbit
+        {
+            Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
+                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+            Radius = ReferenceRadius * 2,
+            Period = ReferenceRadius * 2 / 6
+        });
+
+        // 设置殖民体量
+        commandBuffer.Set(in entity, new Colonizable
+        {
+            Volume = Volume
+        });
+
+        // 设置阵营
+        if (Party != Entity.Null)
+        {
+            world.Make(commandBuffer, new InPartyTemplate { Party = Party, Affiliate = entity });
+
+            commandBuffer.Set(in entity, new ColonizationState
+            {
+                Party = Party,
+                Progress = Volume,
+                Event = ColonizationEvent.Idle
+            });
+        }
+
+        // 设置生产能力
+        commandBuffer.Set(in entity, new ProductionAbility
+        {
+            Population = Population,
+            ProgressPerSecond = ProduceSpeed
+        });
     }
 }

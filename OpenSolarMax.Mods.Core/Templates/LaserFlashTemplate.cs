@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -67,5 +68,36 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _glowAnimation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 摆放位置
+        world.Make(commandBuffer, new RelativeTransformTemplate
+        {
+            Parent = Turret,
+            Child = entity,
+            Translation = Vector3.UnitZ * 0.1f,
+            Rotation = Quaternion.Identity
+        });
+
+        // 设置纹理
+        ref readonly var turretSprite = ref Turret.Get<Sprite>();
+        commandBuffer.Set(in entity, turretSprite with
+        {
+            Texture = Texture,
+            Color = Color,
+            Blend = SpriteBlend.Additive,
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _glowAnimation,
+            TimeElapsed = TimeSpan.Zero,
+            TimeOffset = TimeSpan.Zero
+        });
     }
 }

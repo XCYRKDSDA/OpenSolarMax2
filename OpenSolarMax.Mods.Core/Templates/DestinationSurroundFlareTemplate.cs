@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -83,6 +84,55 @@ internal class DestinationSurroundFlareTemplate(IAssetsManager assets) : ITempla
         var transform = world.Make(new RelativeTransformTemplate()
                                        { Parent = baseCoord, Child = entity });
         transform.Add(new Animation()
+        {
+            Clip = _flareRotating,
+            TimeOffset = TimeSpan.Zero,
+            TimeElapsed = TimeSpan.Zero
+        });
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 填充默认纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _flareTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = new(Radius * 2),
+            Position = Vector2.Zero,
+            Rotation = -MathF.PI / 2,
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Additive,
+            Billboard = false
+        });
+
+        // 初始化动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            TimeElapsed = TimeSpan.Zero,
+            TimeOffset = TimeSpan.Zero,
+            Clip = _flareCharging
+        });
+
+        // 设置到总特效实体的关系
+        world.Make(commandBuffer, new DependenceTemplate { Dependent = entity, Dependency = Effect });
+        var baseCoord = world.Make(commandBuffer, new EmptyCoordTemplate
+        {
+            Transform = new RelativeTransformOptions
+            {
+                Parent = Effect,
+                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Angle)
+            }
+        });
+        var transform = world.Make(commandBuffer, new RelativeTransformTemplate
+        {
+            Parent = baseCoord,
+            Child = entity
+        });
+        commandBuffer.Set(in transform, new Animation
         {
             Clip = _flareRotating,
             TimeOffset = TimeSpan.Zero,

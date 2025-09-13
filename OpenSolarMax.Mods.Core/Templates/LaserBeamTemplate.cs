@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using FMOD;
@@ -85,5 +86,50 @@ public class LaserBeamTemplate(IAssetsManager assets) : ITemplate
         ref var soundEffect = ref entity.Get<SoundEffect>();
         _laserSoundEffect.createInstance(out soundEffect.EventInstance);
         soundEffect.EventInstance.start();
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 摆放位置
+        ref readonly var turretPose = ref Planet.Get<AbsoluteTransform>();
+        var vector = TargetPosition - turretPose.Translation;
+        var unitX = Vector3.Normalize(vector);
+        var unitY = Vector3.Normalize(new(-vector.Y, vector.X, 0));
+        var unitZ = Vector3.Cross(unitX, unitY);
+        var rotation = new Matrix { Right = unitX, Up = unitY, Backward = unitZ };
+        world.Make(commandBuffer, new RelativeTransformTemplate
+        {
+            Parent = Planet,
+            Child = entity,
+            Translation = Vector3.Zero,
+            Rotation = Quaternion.CreateFromRotationMatrix(rotation)
+        });
+
+        // 设置纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _beamTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = _beamTexture.LogicalSize with { X = vector.Length() },
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Additive,
+            Billboard = false
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _beamAnimation,
+            TimeElapsed = TimeSpan.Zero,
+            TimeOffset = TimeSpan.Zero
+        });
+
+        // 设置音效
+        _laserSoundEffect.createInstance(out var eventInstance);
+        commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
+        eventInstance.start();
     }
 }

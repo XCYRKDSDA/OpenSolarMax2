@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -68,5 +69,36 @@ internal class DestinationBackFlareTemplate(IAssetsManager assets) : ITemplate
         // 设置到总特效实体的关系
         _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Effect });
         _ = world.Make(new RelativeTransformTemplate() { Parent = Effect, Child = entity });
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 填充默认纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _flareTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = new(Radius * 2),
+            Position = Vector2.Zero,
+            Rotation = 0,
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Additive,
+            Billboard = false
+        });
+
+        // 初始化动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            TimeElapsed = TimeSpan.Zero,
+            TimeOffset = TimeSpan.Zero,
+            Clip = _rawFlareCharging.Bake()
+        });
+
+        // 设置到总特效实体的关系
+        world.Make(commandBuffer, new DependenceTemplate { Dependent = entity, Dependency = Effect });
+        world.Make(commandBuffer, new RelativeTransformTemplate { Parent = Effect, Child = entity });
     }
 }

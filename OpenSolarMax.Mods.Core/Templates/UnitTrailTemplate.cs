@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -55,5 +56,28 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
 
         // 设置依赖关系
         _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Unit });
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 设置纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _trailTexture,
+            Color = Color.White,
+            Alpha = 0.5f,
+            Size = _trailTexture.Bounds.Size.ToVector2(),
+            Scale = new(0.001f, 1),
+            Blend = SpriteBlend.Additive
+        });
+
+        // 挂载到单位上
+        world.Make(commandBuffer, new TrailOfTemplate { Ship = Unit, Trail = entity });
+        world.Make(commandBuffer, new RelativeTransformTemplate { Child = entity, Parent = Unit });
+
+        // 设置依赖关系
+        world.Make(commandBuffer, new DependenceTemplate { Dependent = entity, Dependency = Unit });
     }
 }

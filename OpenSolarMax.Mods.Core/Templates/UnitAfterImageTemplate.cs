@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -60,5 +61,34 @@ public class UnitAfterImageTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _animation;
         animation.TimeElapsed = TimeSpan.Zero;
         animation.TimeOffset = TimeSpan.Zero;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        // 摆放位置
+        commandBuffer.Set(in entity, new AbsoluteTransform
+        {
+            Translation = Position,
+            Rotation = Rotation
+        });
+
+        // 设置纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _texture,
+            Color = Color,
+            Alpha = 1,
+            Size = _texture.LogicalSize,
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Additive
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _animation,
+            TimeElapsed = TimeSpan.Zero,
+            TimeOffset = TimeSpan.Zero
+        });
     }
 }

@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -68,5 +69,35 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
         ref var soundEffect = ref entity.Get<SoundEffect>();
         _colonizedSoundEvent.createInstance(out soundEffect.EventInstance);
         soundEffect.EventInstance.start();
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        // 摆放位置
+        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = Position with { Z = 1000 } });
+
+        // 设置纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _haloTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = new(PlanetRadius * 2),
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Additive
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _explosionAnimation,
+            TimeElapsed = TimeSpan.Zero,
+            TimeOffset = TimeSpan.Zero
+        });
+
+        // 设置音效
+        _colonizedSoundEvent.createInstance(out var eventInstance);
+        commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
+        eventInstance.start();
     }
 }

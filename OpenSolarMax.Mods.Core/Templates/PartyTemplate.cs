@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
@@ -71,5 +72,22 @@ public class PartyTemplate : ITemplate
 
         ref var colonizationAbility = ref entity.Get<ColonizationAbility>();
         colonizationAbility.ProgressPerSecond = 1;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        commandBuffer.Set(in entity, new PartyReferenceColor { Value = Color });
+
+        commandBuffer.Set(in entity, new Producible { WorkloadPerShip = Workload });
+
+        commandBuffer.Set(in entity, new Combatable
+        {
+            AttackPerUnitPerSecond = Attack,
+            MaximumDamagePerUnit = Health
+        });
+
+        commandBuffer.Set(in entity, new Shippable { Speed = 100 });
+
+        commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 1 });
     }
 }

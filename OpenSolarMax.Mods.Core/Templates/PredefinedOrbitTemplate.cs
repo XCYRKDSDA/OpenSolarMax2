@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -52,5 +53,20 @@ public class PredefinedOrbitTemplate : ITemplate, ITransformableTemplate
         orbit.Template.Shape = new(Shape.X, Shape.Y);
         orbit.Template.Period = Period;
         orbit.Template.Rotation = Rotation;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        (this as ITransformableTemplate).Apply(commandBuffer, entity);
+
+        commandBuffer.Set(in entity, new PredefinedOrbit
+        {
+            Template = new RevolutionOrbit()
+            {
+                Shape = new(Shape.X, Shape.Y),
+                Period = Period,
+                Rotation = Rotation
+            }
+        });
     }
 }

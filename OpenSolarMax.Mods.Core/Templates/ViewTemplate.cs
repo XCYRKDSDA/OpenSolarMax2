@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -64,5 +65,25 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         // 设置阵营
         var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity };
         _ = world.Make(inPartyTemplate);
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 设置位姿
+        (this as ITransformableTemplate).Apply(commandBuffer, entity);
+
+        // 设置相机尺寸
+        commandBuffer.Set(in entity, new Camera
+        {
+            Width = Size.X,
+            Height = Size.Y,
+            ZNear = Depth.Near,
+            ZFar = Depth.Far
+        });
+
+        // 设置阵营
+        world.Make(commandBuffer, new InPartyTemplate { Party = Party, Affiliate = entity });
     }
 }

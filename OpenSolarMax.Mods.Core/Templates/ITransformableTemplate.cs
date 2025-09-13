@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OneOf;
@@ -40,6 +41,33 @@ public static class TransformableTemplateExtensions
                 Rotation = transform.Rotation
             }),
             revolution => _ = world.Make(new RevolutionTemplate()
+            {
+                Parent = revolution.Parent,
+                Child = entity,
+                Shape = revolution.Shape,
+                Period = revolution.Period,
+                Rotation = revolution.Rotation,
+                InitPhase = revolution.InitPhase
+            })
+        );
+    }
+
+    public static void Apply(this ITransformableTemplate template, CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        template.Transform.Switch(
+            transform => commandBuffer.Set(in entity,
+                new AbsoluteTransform(transform.Translation, transform.Rotation)
+            ),
+            transform => _ = world.Make(commandBuffer, new RelativeTransformTemplate
+            {
+                Parent = transform.Parent,
+                Child = entity,
+                Translation = transform.Translation,
+                Rotation = transform.Rotation
+            }),
+            revolution => _ = world.Make(commandBuffer, new RevolutionTemplate
             {
                 Parent = revolution.Parent,
                 Child = entity,

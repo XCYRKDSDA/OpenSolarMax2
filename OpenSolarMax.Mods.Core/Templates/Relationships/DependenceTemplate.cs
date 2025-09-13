@@ -1,3 +1,5 @@
+using Arch.Buffer;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Utils;
@@ -24,5 +26,10 @@ public class DependenceTemplate : ITemplate
     public void Apply(Entity entity)
     {
         entity.Set(new Dependence(Dependent, Dependency));
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        commandBuffer.Set(in entity, new Dependence(Dependent, Dependency));
     }
 }

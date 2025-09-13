@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
@@ -56,5 +57,33 @@ public class UnitPulseTemplate(IAssetsManager assets) : ITemplate
         animation.Clip = _pulseAnimation;
         animation.TimeOffset = TimeSpan.Zero;
         animation.TimeElapsed = TimeSpan.Zero;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        // 设置位置
+        commandBuffer.Set(in entity, new AbsoluteTransform
+        {
+            Translation = Position
+        });
+
+        // 设置颜色
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _pulseTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = _pulseTexture.LogicalSize,
+            Scale = Vector2.One * 0.001f,
+            Blend = SpriteBlend.Additive
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _pulseAnimation,
+            TimeOffset = TimeSpan.Zero,
+            TimeElapsed = TimeSpan.Zero
+        });
     }
 }

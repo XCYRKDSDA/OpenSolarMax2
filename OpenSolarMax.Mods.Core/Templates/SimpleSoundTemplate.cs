@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OneOf;
@@ -43,5 +44,16 @@ public class SimpleSoundTemplate : ITemplate, ITransformableTemplate
         ref var effect = ref entity.Get<SoundEffect>();
         SoundEffect.createInstance(out effect.EventInstance);
         effect.EventInstance.start();
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        // 设置位姿
+        (this as ITransformableTemplate).Apply(commandBuffer, entity);
+
+        // 创建音频实例
+        SoundEffect.createInstance(out var eventInstance);
+        commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
+        eventInstance.start();
     }
 }

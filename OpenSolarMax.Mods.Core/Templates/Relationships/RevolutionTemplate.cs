@@ -1,3 +1,5 @@
+using Arch.Buffer;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -44,5 +46,12 @@ public class RevolutionTemplate : ITemplate
 
         ref var state = ref entity.Get<RevolutionState>();
         state.Phase = InitPhase;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        commandBuffer.Set(in entity, new TreeRelationship<RelativeTransform>(Parent, Child));
+        commandBuffer.Set(in entity, new RevolutionOrbit { Shape = Shape, Period = Period, Rotation = Rotation });
+        commandBuffer.Set(in entity, new RevolutionState { Phase = InitPhase });
     }
 }

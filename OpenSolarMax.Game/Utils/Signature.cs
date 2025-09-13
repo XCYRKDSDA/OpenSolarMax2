@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
+using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
-using Arch.Core.Utils;
 
 namespace OpenSolarMax.Game.Utils;
 
@@ -14,6 +13,8 @@ using static InitializerHelper;
 /// </summary>
 internal static class InitializerHelper
 {
+    #region In-place initializer
+
     public delegate void ComponentInitializer(in Entity entity);
 
     private static readonly Dictionary<Type, ComponentInitializer> _initializersCache = [];
@@ -56,6 +57,36 @@ internal static class InitializerHelper
         _initializersCache.Add(type, initializer);
         return initializer;
     }
+
+    #endregion
+
+    #region CommandBuffer constructor
+
+    public delegate void ComponentConstructor(CommandBuffer commandBuffer, in Entity entity);
+
+    private static readonly Dictionary<Type, ComponentConstructor> _constructorsCache = [];
+
+    private static void ConstructComponent<T>(CommandBuffer commandBuffer, Entity entity) where T : new()
+    {
+        commandBuffer.Add(in entity, new T());
+    }
+
+    private static readonly MethodInfo _componentConstructor = typeof(SignatureExtensions).GetMethod(
+        "ConstructComponent", 1, BindingFlags.Static | BindingFlags.NonPublic,
+        null, [typeof(CommandBuffer), typeof(Entity).MakeByRefType()], null)!;
+
+    public static ComponentConstructor GetDefaultConstructor(Type type)
+    {
+        if (_constructorsCache.TryGetValue(type, out var constructor))
+            return constructor;
+
+        constructor = _componentConstructor.MakeGenericMethod([type]).CreateDelegate<ComponentConstructor>();
+        _constructorsCache.Add(type, constructor);
+
+        return constructor;
+    }
+
+    #endregion
 }
 
 public static class SignatureExtensions
@@ -75,6 +106,16 @@ public static class SignatureExtensions
             var initializer = GetDefaultInitializer(component.Type);
             initializer?.Invoke(in entity);
         }
+
+        return entity;
+    }
+
+    public static Entity Construct(this World world, CommandBuffer commandBuffer, in Signature signature)
+    {
+        var entity = world.Create(); // 创建空实体用于占位
+
+        foreach (var component in signature.Components)
+            GetDefaultConstructor(component.Type).Invoke(commandBuffer, in entity);
 
         return entity;
     }

@@ -1,3 +1,5 @@
+using Arch.Buffer;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -31,6 +33,12 @@ public class RelativeTransformTemplate : ITemplate
     {
         entity.Set(new TreeRelationship<RelativeTransform>(Parent, Child));
         entity.Set(new RelativeTransform(Translation, Rotation));
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        commandBuffer.Set(in entity, new TreeRelationship<RelativeTransform>(Parent, Child));
+        commandBuffer.Set(in entity, new RelativeTransform(Translation, Rotation));
     }
 
     public object Clone() => MemberwiseClone();

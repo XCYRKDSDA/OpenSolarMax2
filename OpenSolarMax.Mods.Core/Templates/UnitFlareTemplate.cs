@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
@@ -66,5 +67,38 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
         ref var soundEffect = ref entity.Get<SoundEffect>();
         _destroyedSoundEvent.createInstance(out soundEffect.EventInstance);
         soundEffect.EventInstance.start();
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        // 设置位置
+        commandBuffer.Set(in entity, new AbsoluteTransform
+        {
+            Translation = Position
+        });
+
+        // 设置纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _flareTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = _flareTexture.LogicalSize,
+            Scale = Vector2.One * 0.001f,
+            Blend = SpriteBlend.Additive
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _flareAnimation,
+            TimeOffset = TimeSpan.Zero,
+            TimeElapsed = TimeSpan.Zero
+        });
+
+        // 设置音效
+        _destroyedSoundEvent.createInstance(out var eventInstance);
+        commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
+        eventInstance.start();
     }
 }

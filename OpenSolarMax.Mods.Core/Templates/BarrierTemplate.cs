@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -23,5 +24,10 @@ public class BarrierTemplate : ITemplate
         ref var barrier = ref entity.Get<Barrier>();
         barrier.Head = Head;
         barrier.Tail = Tail;
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        commandBuffer.Set(in entity, new Barrier() { Head = Head, Tail = Tail });
     }
 }

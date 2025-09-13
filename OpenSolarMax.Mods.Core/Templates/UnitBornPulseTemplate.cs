@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
@@ -65,5 +66,35 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
 
         // 设置依赖关系
         _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Unit });
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 设置颜色
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _pulseTexture,
+            Color = Color,
+            Alpha = 1,
+            Size = _pulseTexture.Bounds.Size.ToVector2(),
+            Scale = Vector2.One * 0.001f,
+            Blend = SpriteBlend.Additive
+        });
+
+        // 设置动画
+        commandBuffer.Set(in entity, new Animation
+        {
+            Clip = _bornPulseAnimationClip,
+            TimeOffset = TimeSpan.Zero,
+            TimeElapsed = TimeSpan.Zero
+        });
+
+        // 设置相对位置
+        world.Make(commandBuffer, new RelativeTransformTemplate { Parent = Unit, Child = entity });
+
+        // 设置依赖关系
+        world.Make(commandBuffer, new DependenceTemplate { Dependent = entity, Dependency = Unit });
     }
 }

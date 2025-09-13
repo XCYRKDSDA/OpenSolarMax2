@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -117,5 +118,65 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
 
         // 初始化传送任务
         entity.Set(new PortalChargingJobs());
+    }
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        var random = new Random();
+
+        // 设置位姿
+        (this as ITransformableTemplate).Apply(commandBuffer, entity);
+
+        // 填充纹理
+        commandBuffer.Set(in entity, new Sprite
+        {
+            Texture = _portalTexture,
+            Alpha = 1,
+            Size = new(_referenceRadius * 2),
+            Position = Vector2.Zero,
+            Rotation = 0,
+            Scale = Vector2.One,
+            Blend = SpriteBlend.Alpha
+        });
+
+        // 设置参考尺寸
+        commandBuffer.Set(in entity, new ReferenceSize
+        {
+            Radius = _referenceRadius
+        });
+
+        // 设置同步轨道
+        var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
+        var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
+        commandBuffer.Set(in entity, new PlanetGeostationaryOrbit
+        {
+            Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
+                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+            Radius = _referenceRadius * 2,
+            Period = _referenceRadius * 2 / 6
+        });
+
+        // 设置殖民体量
+        commandBuffer.Set(in entity, new Colonizable
+        {
+            Volume = _volume
+        });
+
+        // 设置阵营
+        if (Party != Entity.Null)
+        {
+            world.Make(commandBuffer, new InPartyTemplate { Party = Party, Affiliate = entity });
+
+            commandBuffer.Set(in entity, new ColonizationState
+            {
+                Party = Party,
+                Progress = _volume,
+                Event = ColonizationEvent.Idle
+            });
+        }
+
+        // 初始化传送任务
+        commandBuffer.Set(in entity, new PortalChargingJobs());
     }
 }
