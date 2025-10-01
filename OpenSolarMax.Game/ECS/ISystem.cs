@@ -1,18 +1,13 @@
-﻿using Arch.System;
-using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding;
+﻿using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
-/// 限制使用<see cref="GameTime"/>作为系统更新参数
+/// 执行非结构化变更的系统
 /// </summary>
-public interface ISystem : ISystem<GameTime>
+public interface ISystem
 {
-    /// <summary>
-    /// 修改其他系统的入口方法<br/>
-    /// 允许模组系统修改其他系统的配置。该方法将在所有系统构造完毕后执行
-    /// </summary>
-    /// <param name="systems"></param>
-    void ModifyOthers(ISystemProvider systems) { }
+    void Initialize();
+
+    void Update(GameTime gameTime);
 }

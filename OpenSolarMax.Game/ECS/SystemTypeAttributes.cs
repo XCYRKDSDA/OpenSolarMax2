@@ -1,36 +1,29 @@
 ﻿namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
-/// 更新核心状态的系统
+/// 处理用户输入的系统
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class CoreUpdateSystemAttribute : Attribute
+public sealed class InputSystemAttribute : Attribute
 { }
 
 /// <summary>
-/// 对世界状态做出结构性变化的系统。此处的系统特指考察实体状态而做出结构性变化的系统
+/// 实现 AI 的系统
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class StructuralChangeSystemAttribute() : Attribute
+public sealed class AiSystemAttribute : Attribute
 { }
 
 /// <summary>
-/// 对世界状态做出结构性变化的系统。此处的系统特指响应其他结构性变化而做出结构性变化的系统
+/// 更新世界的系统
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class ReactivelyStructuralChangeSystemAttribute() : Attribute
+public sealed class SimulateSystemAttribute() : Attribute
 { }
 
 /// <summary>
-/// 在更新完核心状态后，更新附属状态的系统
+/// 将状态渲染到画面、音频的系统
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class LateUpdateSystemAttribute : Attribute
-{ }
-
-/// <summary>
-/// 将世界绘制到屏幕的系统
-/// </summary>
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class DrawSystemAttribute : Attribute
+public sealed class RenderSystemAttribute : Attribute
 { }
