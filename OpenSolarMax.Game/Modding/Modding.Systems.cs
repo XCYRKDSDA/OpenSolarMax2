@@ -123,7 +123,7 @@ internal static partial class Moddings
                 foreach (var reader in readers)
                 {
                     graph[reader].UnionWith(
-                        componentsReaders.TryGetValue(componentType, out var writers)
+                        componentsWriters.TryGetValue(componentType, out var writers)
                             ? writers
                             : Enumerable.Empty<Type>());
                 }
