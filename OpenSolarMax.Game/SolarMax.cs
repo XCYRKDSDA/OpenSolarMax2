@@ -485,7 +485,7 @@ public class SolarMax : XNAGame
         // 构造所有系统
 
         _inputSystem = new DualStageAggregateSystem(
-            _world, systemTypes.SimulateSystemTypes,
+            _world, systemTypes.InputSystemTypes,
             new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
         );
 
@@ -517,7 +517,7 @@ public class SolarMax : XNAGame
         // 初始化所有系统
         _inputSystem.Initialize();
         _aiSystem.Initialize();
-        _simulateSystem.Update(new GameTime());
+        _simulateSystem.Initialize();
         _renderSystem.Initialize();
     }
 
