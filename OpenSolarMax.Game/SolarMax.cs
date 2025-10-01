@@ -1,6 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Frozen;
+using System.Diagnostics;
 using System.Reflection;
+using Arch.Buffer;
 using Arch.Core;
+using Arch.System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -57,11 +60,10 @@ public class SolarMax : XNAGame
     #region Model
 
     private readonly World _world = World.Create();
-    private readonly Arch.System.Group<GameTime> _coreUpdateSystems = new("coreUpdate");
-    private readonly Arch.System.Group<GameTime> _structuralChangeSystems = new("structuralChange");
-    private readonly Arch.System.Group<GameTime> _reactivelyStructuralChangeSystems = new("reactivelyStructuralChange");
-    private readonly Arch.System.Group<GameTime> _lateUpdateSystems = new("lateUpdate");
-    private readonly Arch.System.Group<GameTime> _drawSystems = new("draw");
+    private DualStageAggregateSystem _inputSystem;
+    private DualStageAggregateSystem _aiSystem;
+    private DualStageAggregateSystem _simulateSystem;
+    private DualStageAggregateSystem _renderSystem;
 
     private float _updateSpeed;
 
@@ -471,72 +473,40 @@ public class SolarMax : XNAGame
 
         // 在加载世界前，需要先构建所有系统，以防有些系统使用响应式策略。
         // 首先寻找所有系统
-        var systemTypes = new HashSet<Type>();
+        var systemTypes = new SystemTypeCollection();
         foreach (var (path, manifest, assembly) in loadedBehaviorMods)
             systemTypes.UnionWith(Moddings.FindSystemTypes(assembly));
+        // 手动注入关卡加载系统
+        systemTypes.SimulateSystemTypes.Add(typeof(LoadLevelSystem));
 
-        // 按照系统指定的特性对系统进行分类
-        var systemTypesTable = systemTypes.ToLookup((type) =>
-        {
-            if (type.GetCustomAttribute<CoreUpdateSystemAttribute>() != null)
-                return SystemTypes.CoreUpdate;
-            else if (type.GetCustomAttribute<StructuralChangeSystemAttribute>() != null)
-                return SystemTypes.StructuralChange;
-            else if (type.GetCustomAttribute<ReactivelyStructuralChangeSystemAttribute>() != null)
-                return SystemTypes.ReactivelyStructuralChange;
-            else if (type.GetCustomAttribute<LateUpdateSystemAttribute>() != null)
-                return SystemTypes.LateUpdate;
-            else if (type.GetCustomAttribute<DrawSystemAttribute>() != null)
-                return SystemTypes.Draw;
-            else
-                throw new Exception("A system must specify a type");
-        });
-
-        // 按照指定的构造先后顺序进行构造
-        var systems = new SystemCollection();
-        var systemsConstructParams = new Dictionary<Type, object>
-        {
-            { typeof(GraphicsDevice), GraphicsDevice },
-            { typeof(IAssetsManager), localAssets }
-        };
-        foreach (var type in Moddings.TopologicalSortSystemsByCreationOrder(systemTypes))
-        {
-            var system = Moddings.CreateSystem(type, _world, systemsConstructParams);
-            systems.Add(type, system);
-        }
-
-        // 按照指定的修改顺序调用各个系统修改其他系统
-        foreach (var type in Moddings.TopologicalSortSystemsByModificationOrder(systemTypes))
-            systems[type].ModifyOthers(systems);
-
-        // 按照每组中系统间执行先后顺序进行注册
-        _coreUpdateSystems.Add(
-            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.CoreUpdate])
-                    .Select(type => systems[type]).ToArray()
-        );
-        _structuralChangeSystems.Add(
-            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.StructuralChange])
-                    .Select(type => systems[type]).ToArray()
-        );
-        _reactivelyStructuralChangeSystems.Add(
-            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.ReactivelyStructuralChange])
-                    .Select(type => systems[type]).ToArray()
-        );
-        _lateUpdateSystems.Add(
-            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.LateUpdate])
-                    .Select(type => systems[type]).ToArray()
-        );
-        _drawSystems.Add(
-            Moddings.TopologicalSortSystemsByExecutionOrder(systemTypesTable[SystemTypes.Draw])
-                    .Select(type => systems[type]).ToArray()
-        );
-
-        // 构造世界加载器
-        var worldLoader = new WorldLoader(localAssets);
-
-        // 将关卡加载到世界中
+        // 加载关卡内容
         var level = levelsAssets.Load<Level>(targetLevelFile);
-        worldLoader.Load(level, _world);
+
+        // 构造所有系统
+
+        _inputSystem = new DualStageAggregateSystem(
+            _world, systemTypes.SimulateSystemTypes,
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
+        );
+
+        _aiSystem = new DualStageAggregateSystem(
+            _world, systemTypes.AiSystemTypes,
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
+        );
+
+        _simulateSystem = new DualStageAggregateSystem(
+            _world, systemTypes.SimulateSystemTypes,
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets, [typeof(Level)] = level }
+        );
+
+        _renderSystem = new DualStageAggregateSystem(
+            _world, systemTypes.RenderSystemTypes,
+            new Dictionary<Type, object>
+            {
+                [typeof(GraphicsDevice)] = GraphicsDevice,
+                [typeof(IAssetsManager)] = localAssets,
+            }
+        );
 
         // 将当前UI记录到世界的View实体中
         _world.Query(new QueryDescription().WithAll<LevelUIContext>(),
@@ -545,14 +515,10 @@ public class SolarMax : XNAGame
                      (ref FMOD.Studio.System fmodSystem) => fmodSystem = _localFmodSystem);
 
         // 初始化所有系统
-        _coreUpdateSystems.Initialize();
-        _structuralChangeSystems.Initialize();
-        _reactivelyStructuralChangeSystems.Initialize();
-        _lateUpdateSystems.Initialize();
-        _drawSystems.Initialize();
-
-        // 对新加入的实体进行事后求解
-        _lateUpdateSystems.JustUpdate(new GameTime());
+        _inputSystem.Initialize();
+        _aiSystem.Initialize();
+        _simulateSystem.Update(new GameTime());
+        _renderSystem.Initialize();
     }
 
     protected override void UnloadContent()
@@ -574,10 +540,9 @@ public class SolarMax : XNAGame
         _globalFmodSystem.update();
         _localFmodSystem.update();
 
-        _coreUpdateSystems.JustUpdate(in gameTime);
-        _structuralChangeSystems.JustUpdate(in gameTime);
-        _reactivelyStructuralChangeSystems.JustUpdate(in gameTime);
-        _lateUpdateSystems.JustUpdate(in gameTime);
+        _inputSystem.Update(gameTime);
+        _aiSystem.Update(gameTime);
+        _simulateSystem.Update(gameTime);
 
         base.Update(gameTime);
     }
@@ -586,7 +551,7 @@ public class SolarMax : XNAGame
     {
         GraphicsDevice.Clear(Color.Black);
 
-        _drawSystems.JustUpdate(in gameTime);
+        _renderSystem.Update(gameTime);
 
         //_desktop.UpdateLayout();
         //_desktop.RenderVisual();
