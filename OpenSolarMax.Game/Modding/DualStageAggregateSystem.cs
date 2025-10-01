@@ -35,8 +35,8 @@ public class DualStageAggregateSystem : ISystem
             // 指定了 Stage1 的系统为 CoreUpdateSystem
             if (systemType.GetCustomAttribute<Stage1Attribute>() is not null)
                 coreUpdateSystemTypes.Add(systemType);
-            // 指定了 Stage2 的系统为 LateUpdateSystem，但是具体类型还要再判断
-            else if (systemType.GetCustomAttribute<Stage2Attribute>() is not null)
+            // 指定了 Stage2 的或者未指定 Stage 的系统为 LateUpdateSystem，但是具体类型还要再判断
+            else
             {
                 // 指定了 CreateEntities 和 DestroyEntities 的系统为 StructuralChangeSystem，但是具体类型还要再判断
                 if (systemType.GetCustomAttribute<CreateEntitiesAttribute>() is not null ||
@@ -53,9 +53,6 @@ public class DualStageAggregateSystem : ISystem
                 else
                     lateUpdateSystemTypes.Add(systemType);
             }
-            // 若未指定 Stage，默认为 Stage1
-            else
-                coreUpdateSystemTypes.Add(systemType);
         }
 
         // 获取各组系统的顺序
