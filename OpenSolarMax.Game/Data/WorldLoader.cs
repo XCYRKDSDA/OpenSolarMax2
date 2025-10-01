@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Arch.Buffer;
 using Arch.Core;
 using Nine.Assets;
 using OpenSolarMax.Game.Utils;
@@ -26,7 +27,7 @@ internal sealed class WorldLoader(IAssetsManager assets)
         return cfgs.Zip(newCfgs).Select(pair => pair.First.Aggregate(pair.Second)).ToArray();
     }
 
-    public void Load(Level level, World world)
+    public void Load(Level level, World world, CommandBuffer commandBuffer)
     {
         var namedTemplates = new Dictionary<string, ITemplate[]>();
         var namedEntities = new Dictionary<string, Entity>();
@@ -62,7 +63,7 @@ internal sealed class WorldLoader(IAssetsManager assets)
             for (var i = 0; i < num; i++)
             {
                 // 创造实体
-                var entity = world.Construct(unionSignature);
+                var entity = world.Construct(commandBuffer, unionSignature);
 
                 // 记录实体
                 if (optionalId is not null)
