@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Reflection.Emit;
 using Arch.Buffer;
 using Arch.Core;
@@ -66,19 +66,22 @@ internal static class InitializerHelper
 
     private static readonly Dictionary<Type, ComponentConstructor> _constructorsCache = [];
 
-    private static void ConstructComponent<T>(CommandBuffer commandBuffer, Entity entity) where T : new()
+    private static void ConstructComponent<T>(CommandBuffer commandBuffer, in Entity entity) where T : new()
     {
         commandBuffer.Add(in entity, new T());
     }
 
-    private static readonly MethodInfo _componentConstructor = typeof(SignatureExtensions).GetMethod(
-        "ConstructComponent", 1, BindingFlags.Static | BindingFlags.NonPublic,
-        null, [typeof(CommandBuffer), typeof(Entity).MakeByRefType()], null)!;
+    private static readonly MethodInfo _componentConstructor = typeof(InitializerHelper).GetMethod(
+        "ConstructComponent", BindingFlags.Static | BindingFlags.NonPublic)!;
 
-    public static ComponentConstructor GetDefaultConstructor(Type type)
+    public static ComponentConstructor? GetDefaultConstructor(Type type)
     {
         if (_constructorsCache.TryGetValue(type, out var constructor))
             return constructor;
+
+        // 如果没有默认构造函数，则返回空
+        if (type.GetConstructor([]) is null)
+            return null;
 
         constructor = _componentConstructor.MakeGenericMethod([type]).CreateDelegate<ComponentConstructor>();
         _constructorsCache.Add(type, constructor);
@@ -115,7 +118,7 @@ public static class SignatureExtensions
         var entity = world.Create(); // 创建空实体用于占位
 
         foreach (var component in signature.Components)
-            GetDefaultConstructor(component.Type).Invoke(commandBuffer, in entity);
+            GetDefaultConstructor(component.Type)?.Invoke(commandBuffer, in entity);
 
         return entity;
     }
