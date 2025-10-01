@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.ECS;
+namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
 /// 处理用户输入的系统

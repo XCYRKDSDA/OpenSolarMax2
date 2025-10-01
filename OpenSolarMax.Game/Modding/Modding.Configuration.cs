@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using OpenSolarMax.Game.Data;
 
 namespace OpenSolarMax.Game.Modding;

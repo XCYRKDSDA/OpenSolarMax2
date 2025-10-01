@@ -1,4 +1,4 @@
-﻿using Nine.Assets;
+using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Templates;

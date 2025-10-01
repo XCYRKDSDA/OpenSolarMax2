@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;

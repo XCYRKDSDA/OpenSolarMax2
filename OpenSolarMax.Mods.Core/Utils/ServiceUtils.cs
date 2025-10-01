@@ -1,4 +1,4 @@
-﻿using Arch.Core;
+using Arch.Core;
 using Arch.Core.Extensions;
 
 namespace OpenSolarMax.Mods.Core.Utils;

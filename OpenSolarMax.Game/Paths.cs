@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game;
+namespace OpenSolarMax.Game;
 
 internal static class Paths
 {

@@ -1,4 +1,4 @@
-﻿using FontStashSharp.Interfaces;
+using FontStashSharp.Interfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

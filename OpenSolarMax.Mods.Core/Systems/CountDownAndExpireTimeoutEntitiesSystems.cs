@@ -1,4 +1,4 @@
-﻿using Arch.Buffer;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;

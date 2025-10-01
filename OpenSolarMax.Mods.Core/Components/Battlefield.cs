@@ -1,4 +1,4 @@
-﻿using Arch.Core;
+using Arch.Core;
 using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;

@@ -1,4 +1,4 @@
-﻿using Arch.Core;
+using Arch.Core;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;

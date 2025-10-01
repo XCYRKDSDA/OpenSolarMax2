@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Nine.Assets;

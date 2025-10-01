@@ -1,4 +1,4 @@
-﻿using Nine.Assets;
+using Nine.Assets;
 using OpenSolarMax.Game.Utils;
 
 namespace OpenSolarMax.Game.Data;

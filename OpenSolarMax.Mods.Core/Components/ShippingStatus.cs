@@ -1,4 +1,4 @@
-﻿using Arch.Core;
+using Arch.Core;
 using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Mods.Core.Components;

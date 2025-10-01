@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Mods.Core;
+namespace OpenSolarMax.Mods.Core;
 
 public static partial class Content
 {

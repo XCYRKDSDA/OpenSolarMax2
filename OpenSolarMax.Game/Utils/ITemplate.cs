@@ -1,4 +1,4 @@
-﻿using Arch.Buffer;
+using Arch.Buffer;
 using Arch.Core;
 
 namespace OpenSolarMax.Game.Utils;

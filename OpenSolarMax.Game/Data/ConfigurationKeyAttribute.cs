@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.Data;
+namespace OpenSolarMax.Game.Data;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class ConfigurationKeyAttribute(string key) : Attribute

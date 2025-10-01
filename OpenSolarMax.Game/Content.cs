@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game;
+namespace OpenSolarMax.Game;
 
 public static partial class Content
 {

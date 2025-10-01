@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Nine.Graphics;
 using OpenSolarMax.Game.ECS;
 

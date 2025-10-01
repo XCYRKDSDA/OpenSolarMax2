@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.Data;
+namespace OpenSolarMax.Game.Data;
 
 internal class Level
 {

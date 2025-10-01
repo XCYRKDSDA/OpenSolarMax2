@@ -1,4 +1,4 @@
-﻿using OpenSolarMax.Game;
+using OpenSolarMax.Game;
 
 namespace OpenSolarMax.Launcher;
 

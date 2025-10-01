@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;

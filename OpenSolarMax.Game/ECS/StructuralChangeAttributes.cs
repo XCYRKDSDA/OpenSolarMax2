@@ -1,4 +1,4 @@
-﻿namespace OpenSolarMax.Game.ECS;
+namespace OpenSolarMax.Game.ECS;
 
 /// <summary>
 /// 该系统将创建实体

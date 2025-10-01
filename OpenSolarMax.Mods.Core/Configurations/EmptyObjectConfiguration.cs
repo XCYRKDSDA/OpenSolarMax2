@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Utils;
