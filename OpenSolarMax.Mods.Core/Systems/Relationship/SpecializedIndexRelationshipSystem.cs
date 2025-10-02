@@ -11,7 +11,10 @@ public sealed class IndexDependenceSystem(World world)
     : IndexRelationshipSystemBase<Dependence>(world)
 { }
 
-[LateUpdateSystem]
+[SimulateSystem, Stage2]
+[Read(typeof(InParty), withEntities: true)]
+[Write(typeof(InParty.AsParty), withEntities: true)]
+[Write(typeof(InParty.AsAffiliate), withEntities: true)]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexPartyAffiliationSystem(World world)
     : IndexRelationshipSystemBase<InParty>(world)

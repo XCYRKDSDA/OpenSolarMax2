@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.System;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
@@ -13,8 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 /// <typeparam name="TTarget">将要被设置的实体上属性的类型</typeparam>
 /// <typeparam name="TReference">用于参考的阵营上属性的类型</typeparam>
-public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World world) : ISystem
 {
     /// <summary>
     /// 当实体不属于任何一个阵营时设置其目标属性
@@ -29,9 +27,9 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
     private static readonly QueryDescription _entitiesDesc =
         new QueryDescription().WithAll<InParty.AsAffiliate, TTarget>();
 
-    public override void Update(in GameTime t)
+    public void Update(GameTime gameTime)
     {
-        var query = World.Query(in _entitiesDesc);
+        var query = world.Query(in _entitiesDesc);
         foreach (ref var chunk in query.GetChunkIterator())
         {
             chunk.GetSpan<InParty.AsAffiliate, TTarget>(out var relationshipSpan, out var componentSpan);
