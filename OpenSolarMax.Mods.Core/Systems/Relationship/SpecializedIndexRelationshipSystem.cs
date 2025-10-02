@@ -23,8 +23,10 @@ public sealed class IndexAnchorageSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<Anchorage>>(world)
 { }
 
-[LateUpdateSystem]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[SimulateSystem, Stage2]
+[Read(typeof(TreeRelationship<RelativeTransform>), withEntities: true)]
+[Write(typeof(TreeRelationship<RelativeTransform>.AsParent), withEntities: true)]
+[Write(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
 public sealed class IndexTransformTreeSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<RelativeTransform>>(world)
 { }

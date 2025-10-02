@@ -10,10 +10,10 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[DrawSystem]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
+[RenderSystem]
+[Read(typeof(Camera)), Read(typeof(Sprite)), Read(typeof(AbsoluteTransform))]
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ISystem
 {
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
@@ -116,15 +116,13 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     private static readonly QueryDescription _drawableDesc
         = new QueryDescription().WithAll<Sprite, AbsoluteTransform>();
 
-    public override void Update(in GameTime t)
+    public void Update(GameTime gameTime)
     {
         var drawableEntities = new List<Entity>();
-        World.Query(in _drawableDesc, entity => drawableEntities.Add(entity));
-        drawableEntities.Sort(
-            (l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
-                                                      r.Get<AbsoluteTransform>().Translation.Z)
-        );
+        world.Query(in _drawableDesc, entity => drawableEntities.Add(entity));
+        drawableEntities.Sort((l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
+                                                                        r.Get<AbsoluteTransform>().Translation.Z));
 
-        RenderToCameraQuery(World, drawableEntities);
+        RenderToCameraQuery(world, drawableEntities);
     }
 }
