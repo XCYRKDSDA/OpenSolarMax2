@@ -8,7 +8,5 @@ namespace OpenSolarMax.Game.ECS;
 /// </summary>
 public interface IStructuralChangeSystem
 {
-    void Initialize(CommandBuffer commandBuffer);
-
     void Update(GameTime gameTime, CommandBuffer commandBuffer);
 }
