@@ -15,6 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Read(typeof(TreeRelationship<RelativeTransform>.AsParent), withEntities: true)]
 [Read(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
 [Read(typeof(RelativeTransform)), Write(typeof(AbsoluteTransform))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateAbsoluteTransformSystem(World world) : ISystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(Entity entity)

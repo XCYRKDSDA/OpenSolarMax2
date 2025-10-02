@@ -8,12 +8,11 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[StructuralChangeSystem]
-public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, Stage2]
+[Read(typeof(ExpireAfterAnimationCompleted)), Read(typeof(Animation)), DestroyEntities]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) : IStructuralChangeSystem
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
     [Query]
     [All<ExpireAfterAnimationCompleted, Animation>]
     private static void ExpireEntities([Data] CommandBuffer commands,
@@ -27,15 +26,5 @@ public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
             commands.Destroy(entity);
     }
 
-    public override void Update(in GameTime d)
-    {
-        ExpireEntitiesQuery(World, _commandBuffer);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
+    public void Update(GameTime _, CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }

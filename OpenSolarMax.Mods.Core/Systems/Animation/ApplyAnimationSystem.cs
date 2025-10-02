@@ -11,9 +11,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据动画播放时间将动画应用于实体的系统
 /// </summary>
-[LateUpdateSystem]
-public sealed partial class ApplyAnimationSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, Stage2]
+public sealed partial class ApplyAnimationSystem(World world) : ISystem
 {
     [Query]
     [All<Animation>]
@@ -32,4 +31,6 @@ public sealed partial class ApplyAnimationSystem(World world)
         var animationTime = (float)(animation.TimeElapsed + animation.TimeOffset).TotalSeconds;
         AnimationEvaluator<Entity>.EvaluateAndSet(ref entity, animation.Clip, animationTime);
     }
+
+    public void Update(GameTime gameTime) => AnimateQuery(world);
 }
