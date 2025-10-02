@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Nine.Assets;
 using OpenSolarMax.Game.Utils;
 
@@ -27,9 +29,10 @@ internal sealed class WorldLoader(IAssetsManager assets)
         return cfgs.Zip(newCfgs).Select(pair => pair.First.Aggregate(pair.Second)).ToArray();
     }
 
-    public void Load(Level level, World world, CommandBuffer commandBuffer)
+    public IEnumerator LoadStepByStep(Level level, World world, CommandBuffer commandBuffer)
     {
         var namedTemplates = new Dictionary<string, ITemplate[]>();
+        var satisfiedEntities = new HashSet<string>();
         var namedEntities = new Dictionary<string, Entity>();
         var ctx = new WorldLoadingContext(namedTemplates, namedEntities);
 
@@ -56,6 +59,15 @@ internal sealed class WorldLoader(IAssetsManager assets)
 
             var allTemplates = allConfigs.Select(c => c.ToTemplate(ctx, assets)).ToArray();
 
+            // 检查是否所有依赖均已满足
+            var allRequirements = allConfigs.SelectMany(c => c.Requirements).ToHashSet();
+            if (allRequirements.Any(s => !satisfiedEntities.Contains(s)))
+            {
+                yield return null;
+                Debug.Assert(namedEntities.Values.All(e => e.GetComponentTypes().Count > 0));
+                satisfiedEntities.UnionWith(namedEntities.Keys);
+            }
+
             // 合成原型
             var unionSignature = allTemplates.Aggregate(Signature.Null, (s, t) => s + t.Signature);
 
@@ -71,8 +83,10 @@ internal sealed class WorldLoader(IAssetsManager assets)
 
                 // 配置实体
                 foreach (var template in allTemplates)
-                    template.Apply(entity);
+                    template.Apply(commandBuffer, entity);
             }
         }
+
+        yield return null;
     }
 }

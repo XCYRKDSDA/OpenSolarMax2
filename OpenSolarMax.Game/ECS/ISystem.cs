@@ -7,7 +7,5 @@ namespace OpenSolarMax.Game.ECS;
 /// </summary>
 public interface ISystem
 {
-    void Initialize();
-
     void Update(GameTime gameTime);
 }

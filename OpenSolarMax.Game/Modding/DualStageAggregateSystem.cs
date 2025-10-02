@@ -7,7 +7,7 @@ using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 
-public class DualStageAggregateSystem : ISystem
+internal class DualStageAggregateSystem : ISystem
 {
     private readonly World _world;
 
@@ -90,31 +90,14 @@ public class DualStageAggregateSystem : ISystem
                 .Select(type => Moddings.CreateSystem<ISystem>(type, world, @params)).ToList();
     }
 
-    public void Initialize()
-    {
-        foreach (var system in _coreUpdateSystems)
-            system.Initialize();
-
-        Debug.Assert(_commandBuffer.Size == 0);
-        foreach (var system in _structuralChangeSystems)
-            system.Initialize(_commandBuffer);
-
-        while (_commandBuffer.Size > 0)
-        {
-            _commandBuffer.Playback(_world, dispose: true);
-            foreach (var system in _reactivelyStructuralChangeSystems)
-                system.Initialize(_commandBuffer);
-        }
-
-        foreach (var system in _lateUpdateSystems)
-            system.Initialize();
-    }
-
-    public void Update(GameTime gameTime)
+    public void CoreUpdate(GameTime gameTime)
     {
         foreach (var system in _coreUpdateSystems)
             system.Update(gameTime);
+    }
 
+    public void LateUpdate(GameTime gameTime)
+    {
         Debug.Assert(_commandBuffer.Size == 0);
         foreach (var system in _structuralChangeSystems)
             system.Update(gameTime, _commandBuffer);
@@ -128,5 +111,11 @@ public class DualStageAggregateSystem : ISystem
 
         foreach (var system in _lateUpdateSystems)
             system.Update(gameTime);
+    }
+
+    public void Update(GameTime gameTime)
+    {
+        CoreUpdate(gameTime);
+        LateUpdate(gameTime);
     }
 }

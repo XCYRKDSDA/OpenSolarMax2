@@ -476,11 +476,6 @@ public class SolarMax : XNAGame
         var systemTypes = new SystemTypeCollection();
         foreach (var (path, manifest, assembly) in loadedBehaviorMods)
             systemTypes.UnionWith(Moddings.FindSystemTypes(assembly));
-        // 手动注入关卡加载系统
-        systemTypes.SimulateSystemTypes.Add(typeof(LoadLevelSystem));
-
-        // 加载关卡内容
-        var level = levelsAssets.Load<Level>(targetLevelFile);
 
         // 构造所有系统
 
@@ -496,7 +491,7 @@ public class SolarMax : XNAGame
 
         _simulateSystem = new DualStageAggregateSystem(
             _world, systemTypes.SimulateSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets, [typeof(Level)] = level }
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
         );
 
         _renderSystem = new DualStageAggregateSystem(
@@ -508,17 +503,23 @@ public class SolarMax : XNAGame
             }
         );
 
+        // 加载关卡内容
+        var level = levelsAssets.Load<Level>(targetLevelFile);
+        var gameTime = new GameTime();
+        var worldLoader = new WorldLoader(localAssets);
+        var commandBuffer = new CommandBuffer();
+        var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
+        while (enumerator.MoveNext())
+        {
+            commandBuffer.Playback(_world);
+            _simulateSystem.LateUpdate(gameTime);
+        }
+
         // 将当前UI记录到世界的View实体中
         _world.Query(new QueryDescription().WithAll<LevelUIContext>(),
                      (ref LevelUIContext uiContext) => uiContext = _uiContext);
         _world.Query(new QueryDescription().WithAll<FMOD.Studio.System>(),
                      (ref FMOD.Studio.System fmodSystem) => fmodSystem = _localFmodSystem);
-
-        // 初始化所有系统
-        _inputSystem.Initialize();
-        _aiSystem.Initialize();
-        _simulateSystem.Initialize();
-        _renderSystem.Initialize();
     }
 
     protected override void UnloadContent()

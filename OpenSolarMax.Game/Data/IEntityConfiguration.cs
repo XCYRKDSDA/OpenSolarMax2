@@ -9,5 +9,7 @@ public interface IEntityConfiguration
 
     IEntityConfiguration Aggregate(IEntityConfiguration @new);
 
+    string[] Requirements => [];
+
     ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets);
 }
