@@ -62,31 +62,38 @@ internal static class InitializerHelper
 
     #region CommandBuffer constructor
 
-    public delegate void ComponentConstructor(CommandBuffer commandBuffer, in Entity entity);
+    public delegate void DelayedComponentInitializer(CommandBuffer commandBuffer, in Entity entity);
 
-    private static readonly Dictionary<Type, ComponentConstructor> _constructorsCache = [];
+    private static readonly Dictionary<Type, DelayedComponentInitializer> _constructorsCache = [];
 
-    private static void ConstructComponent<T>(CommandBuffer commandBuffer, in Entity entity) where T : new()
+    private static void DelayConstructComponent<T>(CommandBuffer commandBuffer, in Entity entity) where T : new()
     {
         commandBuffer.Add(in entity, new T());
     }
 
-    private static readonly MethodInfo _componentConstructor = typeof(InitializerHelper).GetMethod(
-        "ConstructComponent", BindingFlags.Static | BindingFlags.NonPublic)!;
-
-    public static ComponentConstructor? GetDefaultConstructor(Type type)
+    private static void DelayAddComponent<T>(CommandBuffer commandBuffer, in Entity entity)
     {
-        if (_constructorsCache.TryGetValue(type, out var constructor))
-            return constructor;
+        commandBuffer.Add<T>(in entity);
+    }
 
-        // 如果没有默认构造函数，则返回空
-        if (type.GetConstructor([]) is null)
-            return null;
+    private static readonly MethodInfo _componentDelayedConstructor = typeof(InitializerHelper).GetMethod(
+        "DelayConstructComponent", BindingFlags.Static | BindingFlags.NonPublic)!;
 
-        constructor = _componentConstructor.MakeGenericMethod([type]).CreateDelegate<ComponentConstructor>();
-        _constructorsCache.Add(type, constructor);
+    private static readonly MethodInfo _componentDelayedAdder = typeof(InitializerHelper).GetMethod(
+        "DelayAddComponent", BindingFlags.Static | BindingFlags.NonPublic)!;
 
-        return constructor;
+    public static DelayedComponentInitializer GetDelayedInitializer(Type type)
+    {
+        if (_constructorsCache.TryGetValue(type, out var delayedInitializer))
+            return delayedInitializer;
+
+        var delayedInitializerInfo =
+            type.GetConstructor([]) is null ? _componentDelayedAdder : _componentDelayedConstructor;
+        delayedInitializer =
+            delayedInitializerInfo.MakeGenericMethod(type).CreateDelegate<DelayedComponentInitializer>();
+        _constructorsCache.Add(type, delayedInitializer);
+
+        return delayedInitializer;
     }
 
     #endregion
@@ -118,7 +125,7 @@ public static class SignatureExtensions
         var entity = world.Create(); // 创建空实体用于占位
 
         foreach (var component in signature.Components)
-            GetDefaultConstructor(component.Type)?.Invoke(commandBuffer, in entity);
+            GetDelayedInitializer(component.Type).Invoke(commandBuffer, in entity);
 
         return entity;
     }
