@@ -23,6 +23,8 @@ public class ShipConfiguration : IEntityConfiguration
         };
     }
 
+    public string[] Requirements => [Planet!];
+
     public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
     {
         if (Planet is null) throw new NullReferenceException();
