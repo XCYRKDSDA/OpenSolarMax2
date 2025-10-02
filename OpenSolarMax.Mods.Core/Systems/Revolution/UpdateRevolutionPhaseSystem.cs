@@ -3,7 +3,6 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -12,10 +11,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新公转相位的系统
 /// </summary>
-[CoreUpdateSystem]
+[SimulateSystem, Stage1]
 [ExecuteBefore(typeof(CalculateTransformAroundOrbitSystem))]
-public sealed partial class UpdateRevolutionPhaseSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[Read(typeof(RevolutionOrbit)), Write(typeof(RevolutionState))]
+public sealed partial class UpdateRevolutionPhaseSystem(World world) : ISystem
 {
     [Query]
     [All<RevolutionOrbit, RevolutionState>]
@@ -25,4 +24,6 @@ public sealed partial class UpdateRevolutionPhaseSystem(World world)
         // 更新旋转状态
         state.Phase += MathF.PI * 2 * (float)time.ElapsedGameTime.TotalSeconds / orbit.Period;
     }
+
+    public void Update(GameTime gameTime) => UpdateRevolutionQuery(world, gameTime);
 }
