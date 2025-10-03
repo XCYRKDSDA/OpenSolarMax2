@@ -3,17 +3,16 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[LateUpdateSystem]
+[SimulateSystem, Stage2]
+[Read(typeof(TreeRelationship<Anchorage>.AsParent), withEntities: true)]
+[Write(typeof(AnchoredShipsRegistry), withEntities: true)]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(IndexAnchorageSystem))]
-public sealed partial class UpdateShipRegistrySystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+public sealed partial class UpdateShipRegistrySystem(World world) : ISystem
 {
     [Query]
     [All<TreeRelationship<Anchorage>.AsParent, AnchoredShipsRegistry>]
@@ -25,4 +24,6 @@ public sealed partial class UpdateShipRegistrySystem(World world)
             copy => copy.Child
         );
     }
+
+    public void Update(GameTime gameTime) => CountAnchoredShipsQuery(world);
 }
