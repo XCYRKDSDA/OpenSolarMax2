@@ -13,11 +13,13 @@ using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[DrawSystem]
+[RenderSystem]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
 [ExecuteAfter(typeof(UpdateCameraOutputSystem))]
-public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime>, ISystem
+public sealed partial class VisualizeBarriersSystem : ISystem
 {
+    private readonly World _world;
+
     private const float _nodeSize = 16;
     private static readonly Color _nodeColor = Color.White;
     private const float _edgeThickness = 8f;
@@ -33,8 +35,8 @@ public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime
     private readonly NinePatchRegion _barrierTexture;
 
     public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(world)
     {
+        _world = world;
         _graphicsDevice = graphicsDevice;
         _spriteBatch = new SpriteBatch(graphicsDevice);
         _lineRenderer = new SpriteBatchLineRenderer(_spriteBatch);
@@ -94,10 +96,10 @@ public sealed partial class VisualizeBarriersSystem : BaseSystem<World, GameTime
 
     private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<Barrier>();
 
-    public override void Update(in GameTime data)
+    public void Update(GameTime data)
     {
         var barrierEntities = new List<Entity>();
-        World.Query(in _barrierDesc, entity => barrierEntities.Add(entity));
-        RenderToCameraQuery(World, barrierEntities);
+        _world.Query(in _barrierDesc, entity => barrierEntities.Add(entity));
+        RenderToCameraQuery(_world, barrierEntities);
     }
 }
