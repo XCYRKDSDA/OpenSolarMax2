@@ -16,6 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
 [ExecuteAfter(typeof(UpdateCameraOutputSystem))]
+[Priority((int)GraphicsLayer.Entities)]
 public sealed partial class VisualizeBarriersSystem : ISystem
 {
     private readonly World _world;

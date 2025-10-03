@@ -27,6 +27,9 @@ internal class DualStageAggregateSystem : ISystem
         var componentsReaders = new Dictionary<Type, HashSet<Type>>();
         var componentsWriters = new Dictionary<Type, HashSet<Type>>();
 
+        // 优先级分组
+        var priorityGroups = new SortedDictionary<int, HashSet<Type>>();
+
         foreach (var systemType in systemTypes)
         {
             // 检查 ExecuteAfter 属性
@@ -64,6 +67,17 @@ internal class DualStageAggregateSystem : ISystem
                 else
                     componentsWriters.Add(writeAttribute.Type, [systemType]);
             }
+
+            // 检查 Priority 属性
+            var priorityAttribute = systemType.GetCustomAttributes<PriorityAttribute>().FirstOrDefault();
+            if (priorityAttribute is not null)
+            {
+                if (priorityGroups.TryGetValue(priorityAttribute.Value, out var group))
+                    group.Add(systemType);
+                else
+                    priorityGroups.Add(priorityAttribute.Value, [systemType]);
+            }
+            // TODO: 是否支持默认优先级？
         }
 
         // 将 Read/Write 也排入 graph
@@ -97,6 +111,17 @@ internal class DualStageAggregateSystem : ISystem
         }
         else
             throw new KeyNotFoundException();
+
+        // 将优先级关系也排入 graph
+        foreach (var (priority1, group1) in priorityGroups)
+        {
+            foreach (var (priority2, group2) in priorityGroups.Reverse()) // 从大到小
+            {
+                if (priority2 <= priority1) break; // 当访问到第一个比自己优先级相同或低的就结束遍历
+                foreach (var type in group1)
+                    graph[type].UnionWith(group2); // 高优先级的系统更靠后执行
+            }
+        }
 
         return graph;
     }

@@ -12,6 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem]
 [Read(typeof(Camera)), Read(typeof(Sprite)), Read(typeof(AbsoluteTransform))]
+[Priority((int)GraphicsLayer.Entities)]
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : ISystem
 {
