@@ -6,19 +6,18 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[DrawSystem]
+[Disable]
+[RenderSystem]
 [ExecuteAfter(typeof(UpdateCameraOutputSystem))]
-[ExecuteAfter(typeof(DrawSpritesSystem))]
-[ExecuteAfter(typeof(VisualizeBarriersSystem))]
-[ExecuteAfter(typeof(VisualizeAnchoredUnitsSystem))]
-[ExecuteAfter(typeof(VisualizeColonizationSystem))]
+[Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ISystem
 {
     private const int _textSize = 18;
     private static readonly Color _textColor = Color.Red;
@@ -66,11 +65,8 @@ public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice
         // 设置着色器坐标变换参数
         _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNdc;
 
-        VisualizeQuery(World, in worldToCanvas);
+        VisualizeQuery(world, in worldToCanvas);
     }
 
-    public override void Update(in GameTime t)
-    {
-        RenderToCameraQuery(World);
-    }
+    public void Update(GameTime t) => RenderToCameraQuery(world);
 }
