@@ -10,8 +10,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新默认动画组件的播放时间的系统
 /// </summary>
-[SimulateSystem, Stage1, Write(typeof(Animation))]
-public sealed partial class UpdateAnimationTimeSystem(World world) : ISystem
+[SimulateSystem, Write(typeof(Animation))]
+public sealed partial class UpdateAnimationTimeSystem(World world) : ICoreUpdateSystem
 {
     [Query]
     [All<Animation>]

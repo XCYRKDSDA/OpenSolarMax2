@@ -13,10 +13,10 @@ using OpenSolarMax.Mods.Core.Graphics;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
+[Read(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredUnitsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ISystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ILateUpdateSystem
 {
     private const int _textSize = 36;
     private const string _textFormat = "{0}";
@@ -187,7 +187,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
     private static readonly QueryDescription _planetDesc =
         new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
 
-    public void Update(GameTime t)
+    public void Update()
     {
         var planetEntities = new List<Entity>();
         world.Query(in _planetDesc, entity => planetEntities.Add(entity));

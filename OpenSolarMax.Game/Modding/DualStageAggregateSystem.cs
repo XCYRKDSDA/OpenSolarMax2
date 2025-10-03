@@ -7,7 +7,7 @@ using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class DualStageAggregateSystem : ISystem
+internal class DualStageAggregateSystem
 {
     #region Helpers
 
@@ -203,9 +203,9 @@ internal class DualStageAggregateSystem : ISystem
 
     private readonly World _world;
 
-    private readonly List<ISystem> _coreUpdateSystems;
-    private readonly List<object> _lateUpdateSystems1;
-    private readonly List<ISystem> _lateUpdateSystems2;
+    private readonly List<object> _coreUpdateSystems; // ICoreUpdateSystem || ICoreUpdateWithStructuralChangesSystem
+    private readonly List<object> _lateUpdateSystems1; // ILateUpdateSystem || ILateUpdateWithStructuralChangesSystem
+    private readonly List<ILateUpdateSystem> _lateUpdateSystems2;
 
     private readonly CommandBuffer _commandBuffer = new();
 
@@ -218,22 +218,17 @@ internal class DualStageAggregateSystem : ISystem
 
         var coreUpdateSystemTypes = new HashSet<Type>();
         var lateUpdateSystemTypes = new HashSet<Type>();
-        var structuralChangeSystemTypes = new HashSet<Type>();
 
         foreach (var systemType in systemTypes)
         {
-            // 指定了 Stage1 的系统为 CoreUpdateSystem
-            if (systemType.GetCustomAttribute<Stage1Attribute>() is not null)
+            if (systemType.GetInterfaces().Contains(typeof(ICoreUpdateSystem))
+                || systemType.GetInterfaces().Contains(typeof(ICoreUpdateWithStructuralChangesSystem)))
                 coreUpdateSystemTypes.Add(systemType);
-            // 指定了 Stage2 的或者未指定 Stage 的系统为 LateUpdateSystem
-            else
-            {
+            else if (systemType.GetInterfaces().Contains(typeof(ILateUpdateSystem))
+                     || systemType.GetInterfaces().Contains(typeof(ILateUpdateWithStructuralChangesSystem)))
                 lateUpdateSystemTypes.Add(systemType);
-                // 指定了 CreateEntities 和 DestroyEntities 的系统为 StructuralChangeSystem
-                if (systemType.GetCustomAttribute<CreateEntitiesAttribute>() is not null ||
-                    systemType.GetCustomAttribute<DestroyEntitiesAttribute>() is not null)
-                    structuralChangeSystemTypes.Add(systemType);
-            }
+            else
+                throw new Exception();
         }
 
         // 获取各组系统的顺序
@@ -242,33 +237,42 @@ internal class DualStageAggregateSystem : ISystem
 
         // 拓扑排序
         var (_, sortedCoreUpdateSystemTypes) = TopologicalSortSystems(coreUpdateSystemExecutionOrders, []);
-        var (sortedLateUpdateSystemTypes1, sortedLateUpdateSystemTypes2) =
-            TopologicalSortSystems(lateUpdateSystemExecutionOrders, structuralChangeSystemTypes);
+        var (sortedLateUpdateSystemTypes1, sortedLateUpdateSystemTypes2) = TopologicalSortSystems(
+            lateUpdateSystemExecutionOrders,
+            lateUpdateSystemTypes.Where(t => t.GetInterfaces().Contains(typeof(ILateUpdateWithStructuralChangesSystem)))
+                                 .ToHashSet()
+        );
 
         // 实例化
         _coreUpdateSystems =
-            sortedCoreUpdateSystemTypes.Select(type => (ISystem)CreateSystem(type, world, @params)).ToList();
+            sortedCoreUpdateSystemTypes.Select(type => CreateSystem(type, world, @params)).ToList();
         _lateUpdateSystems1 =
             sortedLateUpdateSystemTypes1.Select(type => CreateSystem(type, world, @params)).ToList();
         _lateUpdateSystems2 =
-            sortedLateUpdateSystemTypes2.Select(type => (ISystem)CreateSystem(type, world, @params)).ToList();
+            sortedLateUpdateSystemTypes2.Select(type => (ILateUpdateSystem)CreateSystem(type, world, @params)).ToList();
     }
 
     public void CoreUpdate(GameTime gameTime)
     {
+        Debug.Assert(_commandBuffer.Size == 0);
         foreach (var system in _coreUpdateSystems)
-            system.Update(gameTime);
+        {
+            if (system is ICoreUpdateSystem s1) s1.Update(gameTime);
+            else if (system is ICoreUpdateWithStructuralChangesSystem s2) s2.Update(gameTime, _commandBuffer);
+            else throw new Exception();
+        }
+        _commandBuffer.Playback(_world, dispose: true);
     }
 
-    public void LateUpdate(GameTime gameTime)
+    public void LateUpdate()
     {
         Debug.Assert(_commandBuffer.Size == 0);
         while (true)
         {
             foreach (var system in _lateUpdateSystems1)
             {
-                if (system is ISystem s1) s1.Update(gameTime);
-                else if (system is IStructuralChangeSystem s2) s2.Update(gameTime, _commandBuffer);
+                if (system is ILateUpdateSystem s1) s1.Update();
+                else if (system is ILateUpdateWithStructuralChangesSystem s2) s2.Update(_commandBuffer);
                 else throw new Exception();
             }
             if (_commandBuffer.Size == 0) break;
@@ -276,12 +280,12 @@ internal class DualStageAggregateSystem : ISystem
         }
 
         foreach (var system in _lateUpdateSystems2)
-            system.Update(gameTime);
+            system.Update();
     }
 
     public void Update(GameTime gameTime)
     {
         CoreUpdate(gameTime);
-        LateUpdate(gameTime);
+        LateUpdate();
     }
 }

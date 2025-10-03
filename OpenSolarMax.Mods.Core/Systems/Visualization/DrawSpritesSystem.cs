@@ -14,7 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Read(typeof(Camera)), Read(typeof(Sprite)), Read(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : ISystem
+    : ILateUpdateSystem
 {
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
@@ -117,7 +117,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     private static readonly QueryDescription _drawableDesc
         = new QueryDescription().WithAll<Sprite, AbsoluteTransform>();
 
-    public void Update(GameTime gameTime)
+    public void Update()
     {
         var drawableEntities = new List<Entity>();
         world.Query(in _drawableDesc, entity => drawableEntities.Add(entity));

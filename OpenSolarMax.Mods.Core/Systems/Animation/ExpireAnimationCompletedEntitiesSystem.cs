@@ -2,16 +2,15 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, Stage2]
-[Read(typeof(ExpireAfterAnimationCompleted)), Read(typeof(Animation)), DestroyEntities]
+[SimulateSystem]
+[Read(typeof(ExpireAfterAnimationCompleted)), Read(typeof(Animation))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) : IStructuralChangeSystem
+public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) : ILateUpdateWithStructuralChangesSystem
 {
     [Query]
     [All<ExpireAfterAnimationCompleted, Animation>]
@@ -26,5 +25,5 @@ public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) 
             commands.Destroy(entity);
     }
 
-    public void Update(GameTime _, CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }

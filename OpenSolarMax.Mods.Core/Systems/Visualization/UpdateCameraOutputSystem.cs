@@ -1,7 +1,6 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game;
 using OpenSolarMax.Game.ECS;
@@ -12,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem]
 [Write(typeof(Camera))]
 // LevelUIContext 粒度太粗，此处不写
-public sealed partial class UpdateCameraOutputSystem(World world) : ISystem
+public sealed partial class UpdateCameraOutputSystem(World world) : ILateUpdateSystem
 {
     [Query]
     [All<Camera, LevelUIContext>]
@@ -28,5 +27,5 @@ public sealed partial class UpdateCameraOutputSystem(World world) : ISystem
                                      (int)MathF.Round(scale * camera.Width), (int)MathF.Round(scale * camera.Height));
     }
 
-    public void Update(GameTime gameTime) => UpdateOutputQuery(world);
+    public void Update() => UpdateOutputQuery(world);
 }

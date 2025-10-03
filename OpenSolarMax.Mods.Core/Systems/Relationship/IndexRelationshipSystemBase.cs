@@ -1,7 +1,6 @@
 using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,7 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 将关系实体描述的关系缓存到各个参与者的参与组件的索引中
 /// </summary>
 public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
-    : ISystem where TRelationship : IRelationshipRecord
+    : ILateUpdateSystem where TRelationship : IRelationshipRecord
 {
     private readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
 
@@ -83,7 +82,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
         }
     }
 
-    public void Update(GameTime gameTime)
+    public void Update()
     {
         // 清空所有索引
         foreach (var participantType in TRelationship.ParticipantTypes)

@@ -14,10 +14,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
 [RenderSystem]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
+[Read(typeof(Camera))]
 [Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : ISystem
+    : ILateUpdateSystem
 {
     private const int _textSize = 18;
     private static readonly Color _textColor = Color.Red;
@@ -68,5 +68,5 @@ public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice
         VisualizeQuery(world, in worldToCanvas);
     }
 
-    public void Update(GameTime t) => RenderToCameraQuery(world);
+    public void Update() => RenderToCameraQuery(world);
 }

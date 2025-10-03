@@ -1,7 +1,6 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
@@ -11,11 +10,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相位计算实体绕其轨道的位姿变换的系统
 /// </summary>
-[SimulateSystem, Stage2]
+[SimulateSystem]
 [Read(typeof(TreeRelationship<RelativeTransform>)), Read(typeof(RevolutionOrbit)), Read(typeof(RevolutionState))]
 [Write(typeof(RelativeTransform))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class CalculateTransformAroundOrbitSystem(World world) : ISystem
+public sealed partial class CalculateTransformAroundOrbitSystem(World world) : ILateUpdateSystem
 {
     [Query]
     [All<TreeRelationship<RelativeTransform>, RelativeTransform, RevolutionOrbit, RevolutionState>]
@@ -26,5 +25,5 @@ public sealed partial class CalculateTransformAroundOrbitSystem(World world) : I
         transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;
     }
 
-    public void Update(GameTime gameTime) => CalculateTransformQuery(world);
+    public void Update() => CalculateTransformQuery(world);
 }

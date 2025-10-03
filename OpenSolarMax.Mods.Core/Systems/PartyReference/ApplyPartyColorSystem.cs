@@ -8,7 +8,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 将阵营参考颜色设置到属于阵营的实体的系统
 /// </summary>
-[SimulateSystem, Stage2]
+[SimulateSystem]
 [Read(typeof(InParty.AsAffiliate), withEntities: true)]
 [Read(typeof(PartyReferenceColor)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]

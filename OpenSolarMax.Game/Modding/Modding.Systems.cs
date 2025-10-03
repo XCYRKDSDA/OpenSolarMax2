@@ -30,9 +30,11 @@ internal static partial class Moddings
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters)
                 continue;
 
-            // 筛选实现了ISystem或IStructuralChangeSystem的类型
-            if (!type.GetInterfaces().Contains(typeof(ISystem)) &&
-                !type.GetInterfaces().Contains(typeof(IStructuralChangeSystem)))
+            // 筛选系统类型
+            if (!type.GetInterfaces().Intersect([
+                    typeof(ICoreUpdateSystem), typeof(ICoreUpdateWithStructuralChangesSystem),
+                    typeof(ILateUpdateSystem), typeof(ILateUpdateWithStructuralChangesSystem),
+                ]).Any())
                 continue;
 
             // 排除禁用的系统

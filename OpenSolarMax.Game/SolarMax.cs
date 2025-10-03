@@ -505,14 +505,13 @@ public class SolarMax : XNAGame
 
         // 加载关卡内容
         var level = levelsAssets.Load<Level>(targetLevelFile);
-        var gameTime = new GameTime();
         var worldLoader = new WorldLoader(localAssets);
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
         while (enumerator.MoveNext())
         {
             commandBuffer.Playback(_world);
-            _simulateSystem.LateUpdate(gameTime);
+            _simulateSystem.LateUpdate();
         }
 
         // 将当前UI记录到世界的View实体中

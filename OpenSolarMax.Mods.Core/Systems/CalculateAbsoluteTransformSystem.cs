@@ -2,7 +2,6 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,12 +10,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相对变换<see cref="RelativeTransform"/>及其树型关系计算每个实体的绝对变换
 /// </summary>
-[SimulateSystem, Stage2]
+[SimulateSystem]
 [Read(typeof(TreeRelationship<RelativeTransform>.AsParent), withEntities: true)]
 [Read(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
 [Read(typeof(RelativeTransform)), Write(typeof(AbsoluteTransform))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class CalculateAbsoluteTransformSystem(World world) : ISystem
+public sealed partial class CalculateAbsoluteTransformSystem(World world) : ILateUpdateSystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(Entity entity)
     {
@@ -45,5 +44,5 @@ public sealed partial class CalculateAbsoluteTransformSystem(World world) : ISys
         RecursivelyUpdateAbsoluteTransform(root);
     }
 
-    public void Update(GameTime gameTime) => UpdateFromRootQuery(world);
+    public void Update() => UpdateFromRootQuery(world);
 }

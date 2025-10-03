@@ -14,10 +14,9 @@ using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem]
-[ExecuteAfter(typeof(DrawSpritesSystem))]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
+[Read(typeof(Camera))]
 [Priority((int)GraphicsLayer.Entities)]
-public sealed partial class VisualizeBarriersSystem : ISystem
+public sealed partial class VisualizeBarriersSystem : ILateUpdateSystem
 {
     private readonly World _world;
 
@@ -97,7 +96,7 @@ public sealed partial class VisualizeBarriersSystem : ISystem
 
     private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<Barrier>();
 
-    public void Update(GameTime data)
+    public void Update()
     {
         var barrierEntities = new List<Entity>();
         _world.Query(in _barrierDesc, entity => barrierEntities.Add(entity));

@@ -1,14 +1,13 @@
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World world)
-    : IStructuralChangeSystem where TRelationship : IRelationshipRecord
+    : ILateUpdateWithStructuralChangesSystem where TRelationship : IRelationshipRecord
 {
     private static readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
 
@@ -27,7 +26,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World worl
         }
     }
 
-    public void Update(GameTime t, CommandBuffer commandBuffer)
+    public void Update(CommandBuffer commandBuffer)
     {
         foreach (var chunk in world.Query(in _relationshipDesc))
         {

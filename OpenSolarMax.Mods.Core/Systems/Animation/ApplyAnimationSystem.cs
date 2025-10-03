@@ -1,7 +1,6 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Nine.Animations;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
@@ -11,8 +10,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据动画播放时间将动画应用于实体的系统
 /// </summary>
-[SimulateSystem, Stage2]
-public sealed partial class ApplyAnimationSystem(World world) : ISystem
+[SimulateSystem]
+public sealed partial class ApplyAnimationSystem(World world) : ILateUpdateSystem
 {
     [Query]
     [All<Animation>]
@@ -32,5 +31,5 @@ public sealed partial class ApplyAnimationSystem(World world) : ISystem
         AnimationEvaluator<Entity>.EvaluateAndSet(ref entity, animation.Clip, animationTime);
     }
 
-    public void Update(GameTime gameTime) => AnimateQuery(world);
+    public void Update() => AnimateQuery(world);
 }
