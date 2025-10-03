@@ -1,20 +1,18 @@
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.System;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World world)
-    : BaseSystem<World, GameTime>(world) where TRelationship : IRelationshipRecord
+    : IStructuralChangeSystem where TRelationship : IRelationshipRecord
 {
-    private readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
+    private static readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
 
-    private readonly CommandBuffer _commandBuffer = new();
-
-    private void CheckRelationship(Entity relationship, in TRelationship record)
+    private static void CheckRelationship(Entity relationship, in TRelationship record, CommandBuffer commandBuffer)
     {
         foreach (var group in record)
         {
@@ -22,21 +20,21 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World worl
             {
                 if (!participant.IsAlive())
                 {
-                    _commandBuffer.Destroy(relationship);
+                    commandBuffer.Destroy(relationship);
                     return;
                 }
             }
         }
     }
 
-    public override void Update(in GameTime t)
+    public void Update(GameTime t, CommandBuffer commandBuffer)
     {
-        foreach (var chunk in World.Query(in _relationshipDesc))
+        foreach (var chunk in world.Query(in _relationshipDesc))
         {
             var recordSpan = chunk.GetSpan<TRelationship>();
             foreach (var idx in chunk)
-                CheckRelationship(chunk.Entities[idx], recordSpan[idx]);
+                CheckRelationship(chunk.Entities[idx], recordSpan[idx], commandBuffer);
         }
-        _commandBuffer.Playback(World);
+        commandBuffer.Playback(world);
     }
 }

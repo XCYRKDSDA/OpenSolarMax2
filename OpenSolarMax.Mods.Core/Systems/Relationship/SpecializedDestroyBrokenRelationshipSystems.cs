@@ -1,26 +1,33 @@
 using Arch.Core;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[ReactivelyStructuralChangeSystem]
+[SimulateSystem, Stage2]
+[Read(typeof(InParty), withEntities: true)]
+[DestroyEntities]
 public sealed class DestroyBrokenPartyRelationshipSystem(World world)
-    : DestroyBrokenRelationshipsSystem<InParty>(world), ISystem
+    : DestroyBrokenRelationshipsSystem<InParty>(world)
 { }
 
-[ReactivelyStructuralChangeSystem]
+[SimulateSystem, Stage2]
+[Read(typeof(TreeRelationship<Anchorage>), withEntities: true)]
+[DestroyEntities]
 public sealed class DestroyBrokenAnchorageRelationshipSystem(World world)
-    : DestroyBrokenRelationshipsSystem<TreeRelationship<Anchorage>>(world), ISystem
+    : DestroyBrokenRelationshipsSystem<TreeRelationship<Anchorage>>(world)
 { }
 
-[ReactivelyStructuralChangeSystem]
+[SimulateSystem, Stage2]
+[Read(typeof(TreeRelationship<RelativeTransform>), withEntities: true)]
+[DestroyEntities]
 public sealed class DestroyBrokenTransformRelationshipSystem(World world)
-    : DestroyBrokenRelationshipsSystem<TreeRelationship<RelativeTransform>>(world), ISystem
+    : DestroyBrokenRelationshipsSystem<TreeRelationship<RelativeTransform>>(world)
 { }
 
-[ReactivelyStructuralChangeSystem]
+[SimulateSystem, Stage2]
+[Read(typeof(TrailOf), withEntities: true)]
+[DestroyEntities]
 public sealed class DestroyBrokenTrailRelationshipSystem(World world)
-    : DestroyBrokenRelationshipsSystem<TrailOf>(world), ISystem
+    : DestroyBrokenRelationshipsSystem<TrailOf>(world)
 { }
