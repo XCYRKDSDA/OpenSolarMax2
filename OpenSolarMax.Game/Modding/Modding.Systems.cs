@@ -33,7 +33,7 @@ internal static partial class Moddings
             // 筛选系统类型
             if (!type.GetInterfaces().Intersect([
                     typeof(ICoreUpdateSystem), typeof(ICoreUpdateWithStructuralChangesSystem),
-                    typeof(ILateUpdateSystem), typeof(ILateUpdateWithStructuralChangesSystem),
+                    typeof(ILateUpdateSystem), typeof(IStructuralChangeSystem),
                 ]).Any())
                 continue;
 

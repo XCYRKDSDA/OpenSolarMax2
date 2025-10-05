@@ -20,8 +20,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Write(typeof(SoundEffect))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))] // 以防一帧就抵达
-public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
-    : ILateUpdateWithStructuralChangesSystem
+public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets) : IStructuralChangeSystem
 {
     private readonly List<Entity> _arrivedEntities = [];
 

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -14,37 +15,47 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [SimulateSystem]
 [Read(typeof(Dependence), withEntities: true)]
-public sealed partial class ManageDependenceSystem(World world) : ILateUpdateWithStructuralChangesSystem
+public sealed partial class ManageDependenceSystem(World world) : IStructuralChangeSystem
 {
-    [Query]
-    [All<Dependence>]
-    private static void FindBrokenDependence1(Entity relationship, in Dependence record,
-                                              [Data] CommandBuffer commandBuffer)
-    {
-        if (record.Dependency.IsAlive())
-            return;
-
-        commandBuffer.Destroy(relationship);
-        if (record.Dependent.IsAlive())
-            commandBuffer.Destroy(record.Dependent);
-    }
+    private readonly HashSet<Entity> _entitiesToDestroy = [];
 
     [Query]
     [All<Dependence>]
-    private static void FindBrokenDependence2(Entity relationship, in Dependence record,
-                                              [Data] CommandBuffer commandBuffer)
+    private static void FindBrokenDependence(Entity relationship, in Dependence record,
+                                             [Data] HashSet<Entity> entitiesToDestroy)
     {
-        if (record.Dependent.IsAlive())
-            return;
+        if (entitiesToDestroy.Contains(relationship)) return;
 
-        commandBuffer.Destroy(relationship);
+        if (!record.Dependency.IsAlive() || entitiesToDestroy.Contains(record.Dependency))
+        {
+            // 如果上游依赖消失，则移除关系本身和下游实体
+            entitiesToDestroy.Add(relationship);
+            if (record.Dependent.IsAlive())
+                entitiesToDestroy.Add(record.Dependent);
+        }
+        else if (!record.Dependent.IsAlive() || entitiesToDestroy.Contains(record.Dependent))
+        {
+            // 如果下游实体消失，则只移除关系本身
+            entitiesToDestroy.Add(relationship);
+        }
     }
 
     public void Update(CommandBuffer commandBuffer)
     {
-        // 找到所有被依赖实体被销毁的依赖关系，并销毁其关系和依赖对方的实体
-        FindBrokenDependence1Query(world, commandBuffer);
-        // 找到所有依赖对方的实体被销毁的依赖关系，销毁其关系并记录在被依赖的实体的组件中
-        FindBrokenDependence2Query(world, commandBuffer);
+        Debug.Assert(_entitiesToDestroy.Count == 0);
+        var previousEntitiesToDestroy = 0;
+
+        while (true)
+        {
+            FindBrokenDependenceQuery(world, _entitiesToDestroy);
+
+            if (_entitiesToDestroy.Count == previousEntitiesToDestroy)
+                break;
+            previousEntitiesToDestroy = _entitiesToDestroy.Count;
+        }
+
+        foreach (var entity in _entitiesToDestroy)
+            commandBuffer.Destroy(entity);
+        _entitiesToDestroy.Clear();
     }
 }

@@ -229,42 +229,26 @@ internal class DualStageAggregateSystem
     /// 根据系统之间的执行顺序关系进行拓扑排序，得到满足要求的系统执行顺序
     /// </summary>
     /// <param name="orders">一个集合，记录了所有代码中声明了的执行顺序关系</param>
-    /// <param name="structuralChangeSystemTypes">执行结构化变更的系统。这类系统将优先排序</param>
-    /// <returns>(最短的含结构化变更的系统，剩余其他系统)</returns>
-    private static (List<Type>, List<Type>) TopologicalSortSystems(HashSet<Type> systemTypes,
-                                                                   HashSet<OrderedTypePair> orders,
-                                                                   HashSet<Type> structuralChangeSystemTypes)
+    private static List<Type> TopologicalSortSystems(HashSet<Type> systemTypes, HashSet<OrderedTypePair> orders)
     {
         // 要求 graph 反向。然后从反向开始排序，优先排普通系统，
         // 直到无法排入普通系统。此时剩下的所有系统就是最小的循环集合。
         // 排序完后顺序需要取反
 
-        // 构建反向 graph
-        var reversedOrdersLookup = orders.ToLookup(p => p.Before, p => p.After);
-        var graph = systemTypes.ToDictionary(t => t, t => reversedOrdersLookup[t].ToHashSet());
+        // 构建 graph
+        var ordersLookup = orders.ToLookup(p => p.After, p => p.Before);
+        var graph = systemTypes.ToDictionary(t => t, t => ordersLookup[t].ToHashSet());
 
         // 声明结果
-        var systems1 = new List<Type>();
-        var systems2 = new List<Type>();
+        var systems = new List<Type>();
 
         // 拓扑排序
-        var systemsRef = systems2; // 先排后部系统
         while (graph.Count > 0)
         {
             var okSystemTypes = graph.Where(pair => pair.Value.Count == 0).Select(pair => pair.Key).ToList();
 
             if (okSystemTypes.Count == 0)
                 throw new ArgumentException("Cyclic connections are not allowed");
-
-            // 判断是否所有可以在结构化变更之后执行的系统都排序完了
-            if (ReferenceEquals(systemsRef, systems2))
-            {
-                var normalOkSystemTypes = okSystemTypes.Where(t => !structuralChangeSystemTypes.Contains(t)).ToList();
-                if (normalOkSystemTypes.Count == 0)
-                    systemsRef = systems1; // 如果所有能在结构化变更之后执行的系统都排完了，就切换系统记录列表
-                else
-                    okSystemTypes = normalOkSystemTypes; // 否则本次 ok 的系统仅考虑非结构化变更系统
-            }
 
             foreach (var okSystemType in okSystemTypes)
             {
@@ -273,14 +257,10 @@ internal class DualStageAggregateSystem
                     dependencies.Remove(okSystemType);
             }
 
-            systemsRef.AddRange(okSystemTypes);
+            systems.AddRange(okSystemTypes);
         }
 
-        // 反向
-        systems1.Reverse();
-        systems2.Reverse();
-
-        return (systems1, systems2);
+        return systems;
     }
 
     private static object CreateSystem(Type type, World world, IReadOnlyDictionary<Type, object> @params)
@@ -308,9 +288,10 @@ internal class DualStageAggregateSystem
 
     private readonly World _world;
 
-    private readonly List<object> _coreUpdateSystems; // ICoreUpdateSystem || ICoreUpdateWithStructuralChangesSystem
-    private readonly List<object> _lateUpdateSystems1; // ILateUpdateSystem || ILateUpdateWithStructuralChangesSystem
-    private readonly List<ILateUpdateSystem> _lateUpdateSystems2;
+    private readonly List<object> _coreUpdateSystems; // ICoreUpdateSystem 或 ICoreUpdateWithStructuralChangesSystem
+    private readonly List<IStructuralChangeSystem> _structuralChangeSystems;
+    private readonly List<IStructuralChangeSystem> _reactivelyStructuralChangeSystems;
+    private readonly List<ILateUpdateSystem> _lateUpdateSystems;
 
     private readonly CommandBuffer _commandBuffer = new();
 
@@ -322,15 +303,23 @@ internal class DualStageAggregateSystem
         // 区分两类系统
 
         var coreUpdateSystemTypes = new HashSet<Type>();
+        var structuralChangeSystemTypes = new HashSet<Type>();
+        var reactivelyStructuralChangeSystemTypes = new HashSet<Type>();
         var lateUpdateSystemTypes = new HashSet<Type>();
 
         foreach (var systemType in systemTypes)
         {
-            if (systemType.GetInterfaces().Contains(typeof(ICoreUpdateSystem))
-                || systemType.GetInterfaces().Contains(typeof(ICoreUpdateWithStructuralChangesSystem)))
+            if (systemType.GetInterfaces().Contains(typeof(ICoreUpdateSystem)) ||
+                systemType.GetInterfaces().Contains(typeof(ICoreUpdateWithStructuralChangesSystem)))
                 coreUpdateSystemTypes.Add(systemType);
-            else if (systemType.GetInterfaces().Contains(typeof(ILateUpdateSystem))
-                     || systemType.GetInterfaces().Contains(typeof(ILateUpdateWithStructuralChangesSystem)))
+            else if (systemType.GetInterfaces().Contains(typeof(IStructuralChangeSystem)))
+            {
+                if (systemType.GetCustomAttributes<ReadAttribute>().All(a => !a.WithEntities))
+                    structuralChangeSystemTypes.Add(systemType);
+                else
+                    reactivelyStructuralChangeSystemTypes.Add(systemType);
+            }
+            else if (systemType.GetInterfaces().Contains(typeof(ILateUpdateSystem)))
                 lateUpdateSystemTypes.Add(systemType);
             else
                 throw new Exception();
@@ -338,33 +327,57 @@ internal class DualStageAggregateSystem
 
         // 获取各组系统的顺序
         var coreUpdateSystemExecutionOrders = ExtractExecutionOrders(coreUpdateSystemTypes, ReadReference.LastFrame);
+        var structuralChangeSystemExecutionOrders =
+            ExtractExecutionOrders(structuralChangeSystemTypes, ReadReference.NextFrame);
+        var reactivelyStructuralChangeSystemExecutionOrders =
+            ExtractExecutionOrders(reactivelyStructuralChangeSystemTypes, ReadReference.NextFrame);
         var lateUpdateSystemExecutionOrders = ExtractExecutionOrders(lateUpdateSystemTypes, ReadReference.NextFrame);
 
         // 拓扑排序
-        var (_, sortedCoreUpdateSystemTypes) =
-            TopologicalSortSystems(
-                coreUpdateSystemTypes, coreUpdateSystemExecutionOrders, []
-            );
-        var (sortedLateUpdateSystemTypes1, sortedLateUpdateSystemTypes2) =
-            TopologicalSortSystems(
-                lateUpdateSystemTypes, lateUpdateSystemExecutionOrders,
-                lateUpdateSystemTypes
-                    .Where(t => t.GetInterfaces().Contains(typeof(ILateUpdateWithStructuralChangesSystem)))
-                    .ToHashSet()
-            );
+        var sortedCoreUpdateSystemTypes = TopologicalSortSystems(
+            coreUpdateSystemTypes, coreUpdateSystemExecutionOrders
+        );
+        var sortedStructuralChangeSystemTypes = TopologicalSortSystems(
+            structuralChangeSystemTypes, structuralChangeSystemExecutionOrders
+        );
+        var sortedReactivelyStructuralChangeSystemTypes = TopologicalSortSystems(
+            reactivelyStructuralChangeSystemTypes, reactivelyStructuralChangeSystemExecutionOrders
+        );
+        var sortedLateUpdateSystemTypes = TopologicalSortSystems(
+            lateUpdateSystemTypes, lateUpdateSystemExecutionOrders
+        );
 
         // 实例化
         _coreUpdateSystems =
             sortedCoreUpdateSystemTypes.Select(type => CreateSystem(type, world, @params)).ToList();
-        _lateUpdateSystems1 =
-            sortedLateUpdateSystemTypes1.Select(type => CreateSystem(type, world, @params)).ToList();
-        _lateUpdateSystems2 =
-            sortedLateUpdateSystemTypes2.Select(type => (ILateUpdateSystem)CreateSystem(type, world, @params)).ToList();
+        _structuralChangeSystems =
+            sortedStructuralChangeSystemTypes
+                .Select(type => (IStructuralChangeSystem)CreateSystem(type, world, @params)).ToList();
+        _reactivelyStructuralChangeSystems =
+            sortedReactivelyStructuralChangeSystemTypes
+                .Select(type => (IStructuralChangeSystem)CreateSystem(type, world, @params)).ToList();
+        _lateUpdateSystems =
+            sortedLateUpdateSystemTypes.Select(type => (ILateUpdateSystem)CreateSystem(type, world, @params)).ToList();
     }
 
-    public void CoreUpdate(GameTime gameTime)
+    private void LateUpdateImpl()
+    {
+        foreach (var system in _structuralChangeSystems)
+            system.Update(_commandBuffer);
+        _commandBuffer.Playback(_world, dispose: true);
+
+        foreach (var system in _reactivelyStructuralChangeSystems)
+            system.Update(_commandBuffer);
+        _commandBuffer.Playback(_world, dispose: true);
+
+        foreach (var system in _lateUpdateSystems)
+            system.Update();
+    }
+
+    public void Update(GameTime gameTime)
     {
         Debug.Assert(_commandBuffer.Size == 0);
+
         foreach (var system in _coreUpdateSystems)
         {
             if (system is ICoreUpdateSystem s1) s1.Update(gameTime);
@@ -372,30 +385,13 @@ internal class DualStageAggregateSystem
             else throw new Exception();
         }
         _commandBuffer.Playback(_world, dispose: true);
+
+        LateUpdateImpl();
     }
 
     public void LateUpdate()
     {
         Debug.Assert(_commandBuffer.Size == 0);
-        while (true)
-        {
-            foreach (var system in _lateUpdateSystems1)
-            {
-                if (system is ILateUpdateSystem s1) s1.Update();
-                else if (system is ILateUpdateWithStructuralChangesSystem s2) s2.Update(_commandBuffer);
-                else throw new Exception();
-            }
-            if (_commandBuffer.Size == 0) break;
-            _commandBuffer.Playback(_world, dispose: true);
-        }
-
-        foreach (var system in _lateUpdateSystems2)
-            system.Update();
-    }
-
-    public void Update(GameTime gameTime)
-    {
-        CoreUpdate(gameTime);
-        LateUpdate();
+        LateUpdateImpl();
     }
 }
