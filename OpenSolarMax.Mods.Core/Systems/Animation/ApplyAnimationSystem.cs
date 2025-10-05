@@ -10,7 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据动画播放时间将动画应用于实体的系统
 /// </summary>
-[SimulateSystem]
+[SimulateSystem, Write(typeof(AllComponents))]
 public sealed partial class ApplyAnimationSystem(World world) : ILateUpdateSystem
 {
     [Query]
