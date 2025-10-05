@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 注意：该系统仅仅处理由<see cref="Dependence"/>定义的依赖关系，且在销毁实体时不提供hook。有个性化需求的请自行实现系统
 /// </summary>
 [SimulateSystem]
-[Read(typeof(InParty), withEntities: true)]
+[Read(typeof(Dependence), withEntities: true)]
 public sealed partial class ManageDependenceSystem(World world) : ILateUpdateWithStructuralChangesSystem
 {
     [Query]
