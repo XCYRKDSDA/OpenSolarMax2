@@ -2,7 +2,6 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,11 +10,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 运输系统。根据运输时间计算单位动画、位置和方向
 /// </summary>
-[LateUpdateSystem]
+[SimulateSystem]
+[Read(typeof(ShippingStatus)), Write(typeof(AbsoluteTransform))]
+[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 运输单位应当不再有相对变换，因此和计算绝对位姿的系统无干扰
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteBefore(typeof(CalculateAbsoluteTransformSystem))]
-public sealed partial class CalculateShipPositionSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+public sealed partial class CalculateShipPositionSystem(World world) : ILateUpdateSystem
 {
     [Query]
     [All<ShippingStatus, AbsoluteTransform>]
@@ -41,4 +40,6 @@ public sealed partial class CalculateShipPositionSystem(World world)
         var rotation = new Matrix { Right = headX, Up = headY, Backward = headZ };
         pose.Rotation = Quaternion.CreateFromRotationMatrix(rotation);
     }
+
+    public void Update() => CalculatePositionQuery(world);
 }

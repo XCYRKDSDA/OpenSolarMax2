@@ -14,13 +14,12 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[DrawSystem]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
-[ExecuteAfter(typeof(DrawSpritesSystem))]
-[ExecuteAfter(typeof(VisualizeBarriersSystem))]
+[RenderSystem]
+[Priority((int)GraphicsLayer.Interface)]
+[Read(typeof(Camera)), Read(typeof(AbsoluteTransform))]
+[Read(typeof(ReferenceSize)), Read(typeof(ManeuvaringShipsStatus))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ILateUpdateSystem
 {
     private const float _ringRadiusFactor = 1.6f;
     private const float _ringThickness = 3f;
@@ -143,15 +142,16 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                                                        departure.Get<AbsoluteTransform>().Translation, destination)
     ];
 
-    private bool CheckReachability(World world, Entity departure, Vector3 destination)
+    private bool CheckReachability(Entity departure, Vector3 destination)
     {
         return ReachabilityCheckers.Any(checker => checker.Invoke(world, departure, destination));
     }
 
     private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Entity destination)
     {
-        return departures.Select(
-            departure => !CheckReachability(World, departure, destination.Get<AbsoluteTransform>().Translation)
+        return departures.Select(departure =>
+                                     !CheckReachability(departure,
+                                                        destination.Get<AbsoluteTransform>().Translation)
         );
     }
 
@@ -159,8 +159,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                                                 in Matrix canvasToWorld)
     {
         var tailLocation = Vector3.Transform(new Vector3(tailInCanvas, 0), canvasToWorld);
-        return departures.Select(
-            departure => !CheckReachability(World, departure, tailLocation)
+        return departures.Select(departure => !CheckReachability(departure, tailLocation)
         );
     }
 
@@ -262,5 +261,5 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         }
     }
 
-    public override void Update(in GameTime data) => DrawSelectionQuery(World);
+    public void Update() => DrawSelectionQuery(world);
 }

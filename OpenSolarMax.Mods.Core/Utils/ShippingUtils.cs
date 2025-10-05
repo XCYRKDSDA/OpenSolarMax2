@@ -1,8 +1,7 @@
 using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.System;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game;
+using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Systems;
@@ -151,11 +150,12 @@ public static class ShippingUtils
         ref readonly var destinationPositionRef = ref destinationProxy.Get<AbsoluteTransform>().Translation;
 
         // 生成模拟系统
-        var simulateSystems = new Group<GameTime>($"simulateSystem_{virtualWorld.GetHashCode()}",
-                                                  new UpdateRevolutionPhaseSystem(virtualWorld),
-                                                  new CalculateTransformAroundOrbitSystem(virtualWorld),
-                                                  new CalculateAbsoluteTransformSystem(virtualWorld)
-        );
+        var simulateSystems = new object[]
+        {
+            new UpdateRevolutionPhaseSystem(virtualWorld),
+            new CalculateTransformAroundOrbitSystem(virtualWorld),
+            new CalculateAbsoluteTransformSystem(virtualWorld),
+        };
 
         // 开始求解
         var t = 0f;
@@ -166,7 +166,11 @@ public static class ShippingUtils
             // 步进系统
             t += _dt;
             var simTime = new GameTime(TimeSpan.FromSeconds(t), TimeSpan.FromSeconds(_dt));
-            simulateSystems.JustUpdate(in simTime);
+            foreach (var system in simulateSystems)
+            {
+                if (system is ICoreUpdateSystem s1) s1.Update(simTime);
+                else if (system is ILateUpdateSystem s2) s2.Update();
+            }
 
             // 计算距离
             var distance = (destinationPositionRef - departurePosition).Length();

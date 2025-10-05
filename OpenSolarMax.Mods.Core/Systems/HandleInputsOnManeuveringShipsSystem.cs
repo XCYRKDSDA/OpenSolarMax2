@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -6,18 +7,18 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[StructuralChangeSystem]
-[ExecuteAfter(typeof(SettleProductionSystem))]
-[ExecuteAfter(typeof(SettleCombatSystem))]
-public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[InputSystem]
+[Read(typeof(Camera)), Read(typeof(AbsoluteTransform)), Read(typeof(InParty.AsAffiliate))]
+[Write(typeof(ShippingStatus))]
+public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : ICoreUpdateWithStructuralChangesSystem
 {
     private const int _minimalSelectPixels = 10;
 
@@ -50,7 +51,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     {
         Entity pointedPlanet = Entity.Null;
         float pointedPlanetZ = float.PositiveInfinity;
-        CheckPointedPlanetQuery(World, in mouseInViewport, in worldToViewport, ref pointedPlanet, ref pointedPlanetZ);
+        CheckPointedPlanetQuery(world, in mouseInViewport, in worldToViewport, ref pointedPlanet, ref pointedPlanetZ);
         return pointedPlanet;
     }
 
@@ -69,7 +70,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     private HashSet<Entity> GetBoxedPlanets(in Rectangle box, in Matrix worldToViewport)
     {
         var boxedPlanets = new HashSet<Entity>();
-        CheckBoxedPlanetsQuery(World, in box, in worldToViewport, ref boxedPlanets);
+        CheckBoxedPlanetsQuery(world, in box, in worldToViewport, ref boxedPlanets);
         return boxedPlanets;
     }
 
@@ -80,14 +81,14 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
         (world1, departure, destination) => !ManeuveringUtils.CheckBarriersBlocking(world1, departure, destination)
     ];
 
-    private bool CheckReachability(World world, Entity departure, Entity destination)
+    private bool CheckReachability(Entity departure, Entity destination)
     {
         return ReachabilityCheckers.Any(checker => checker.Invoke(world, departure, destination));
     }
 
     private void HandleSelectionStateTransition(ref ShipsSelection selection,
                                                 in Matrix worldToViewport, in Viewport viewport, Entity party,
-                                                ref Entity? pointedPlanet)
+                                                ref Entity? pointedPlanet, CommandBuffer commandBuffer)
     {
         var mouse = Mouse.GetState();
         var keys = Keyboard.GetState();
@@ -137,10 +138,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
 
                     // 排除目标星球和出发星球之间被障碍物遮挡的情况
                     if (!CheckReachability(
-                            World, departure, selection.SimpleSelecting.TappingDestination))
+                            departure, selection.SimpleSelecting.TappingDestination))
                         continue;
 
-                    ServiceUtils.Call(World, new StartShippingRequest()
+                    world.Make(commandBuffer, new ShippingRequestTemplate()
                     {
                         Departure = departure,
                         Destination = selection.SimpleSelecting.TappingDestination,
@@ -188,10 +189,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
 
                         // 排除目标星球和出发星球之间被障碍物遮挡的情况
                         if (!CheckReachability(
-                                World, departure, selection.DraggingToDestination.CandidateDestination))
+                                departure, selection.DraggingToDestination.CandidateDestination))
                             continue;
 
-                        ServiceUtils.Call(World, new StartShippingRequest()
+                        world.Make(commandBuffer, new ShippingRequestTemplate()
                         {
                             Departure = departure,
                             Destination = selection.DraggingToDestination.CandidateDestination,
@@ -278,7 +279,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
     [Query]
     [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, InParty.AsAffiliate>]
     private void HandleInputs(in Camera camera, in AbsoluteTransform pose, ref ManeuvaringShipsStatus status,
-                              in InParty.AsAffiliate ofParty)
+                              in InParty.AsAffiliate ofParty, [Data] CommandBuffer commandBuffer)
     {
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
@@ -290,10 +291,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world)
         // 处理星球选择
         Entity? pointedPlanet = null;
         HandleSelectionStateTransition(ref status.Selection, in worldToCanvas, in camera.Output,
-                                       ofParty.Relationship!.Value.Copy.Party, ref pointedPlanet);
+                                       ofParty.Relationship!.Value.Copy.Party, ref pointedPlanet, commandBuffer);
         UpdateSelectionStatus(ref status.Selection, in worldToCanvas, in camera.Output,
                               ofParty.Relationship!.Value.Copy.Party, ref pointedPlanet);
     }
 
-    public override void Update(in GameTime data) => HandleInputsQuery(World);
+    public void Update(GameTime _, CommandBuffer commandBuffer) => HandleInputsQuery(world, commandBuffer);
 }

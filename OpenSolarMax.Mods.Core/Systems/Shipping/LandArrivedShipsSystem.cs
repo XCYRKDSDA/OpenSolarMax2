@@ -1,12 +1,13 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Utils;
+using OpenSolarMax.Mods.Core.Templates;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
@@ -14,10 +15,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 考察移动进度，将单位降落到目标星球的系统
 /// </summary>
-[StructuralChangeSystem]
-[ExecuteAfter(typeof(StartShippingSystem))]
+[SimulateSystem]
+[Write(typeof(ShippingStatus)), Read(typeof(TrailOf.AsShip), withEntities: true)]
+[Write(typeof(SoundEffect))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))] // 以防一帧就抵达
 public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ILateUpdateWithStructuralChangesSystem
 {
     private readonly List<Entity> _arrivedEntities = [];
 
@@ -36,18 +40,32 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
             arrivedEntities.Add(ship);
     }
 
-    private void LandShip(Entity ship, ref ShippingStatus status, ref SoundEffect soundEffect)
+    private void LandShip(Entity ship, ref ShippingStatus status, ref SoundEffect soundEffect,
+                          CommandBuffer commandBuffer)
     {
         // 结束飞行
         status.State = ShippingState.Idle;
 
         // 将单位挂载到目标星球
-        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, status.Task.DestinationPlanet);
-        transformRelationship.Set(status.Task.ExpectedRevolutionOrbit, status.Task.ExpectedRevolutionState);
+        world.Make(commandBuffer, new AnchorageTemplate()
+        {
+            Planet = status.Task.DestinationPlanet,
+            Ship = ship,
+        });
+
+        // 创建公转关系
+        world.Make(commandBuffer, new RevolutionTemplate()
+        {
+            Parent = status.Task.DestinationPlanet,
+            Child = ship,
+            Shape = status.Task.ExpectedRevolutionOrbit.Shape,
+            Period = status.Task.ExpectedRevolutionOrbit.Period,
+            Rotation = status.Task.ExpectedRevolutionOrbit.Rotation,
+            InitPhase = status.Task.ExpectedRevolutionState.Phase,
+        });
 
         // 销毁单位的尾迹实体
-        var world = World.Worlds[ship.WorldId];
-        world.Destroy(ship.Get<TrailOf.AsShip>().Relationship!.Value.Copy.Trail);
+        commandBuffer.Destroy(ship.Get<TrailOf.AsShip>().Relationship!.Value.Copy.Trail);
 
         // 播放音效
         _travelDoneSoundEvent.createInstance(out var instance);
@@ -55,14 +73,14 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
         instance.start();
     }
 
-    public override void Update(in GameTime t)
+    public void Update(CommandBuffer commandBuffer)
     {
-        FindArrivedShipsQuery(World, _arrivedEntities);
+        FindArrivedShipsQuery(world, _arrivedEntities);
 
         foreach (var entity in _arrivedEntities)
         {
             var refs = entity.Get<ShippingStatus, SoundEffect>();
-            LandShip(entity, ref refs.t0, ref refs.t1);
+            LandShip(entity, ref refs.t0, ref refs.t1, commandBuffer);
         }
         _arrivedEntities.Clear();
     }

@@ -2,7 +2,6 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,11 +10,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新运输任务状态的系统。该系统作用于运输任务的所有阶段
 /// </summary>
-[CoreUpdateSystem]
-#pragma warning disable CS9113 // 参数未读。
-public sealed partial class UpdateShipsStateSystem(World world, IAssetsManager assets)
-#pragma warning restore CS9113 // 参数未读。
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem]
+public sealed partial class UpdateShipsStateSystem(World world) : ICoreUpdateSystem
 {
     [Query]
     [All<ShippingStatus>]
@@ -30,4 +26,6 @@ public sealed partial class UpdateShipsStateSystem(World world, IAssetsManager a
         else
             throw new ArgumentOutOfRangeException();
     }
+
+    public void Update(GameTime gameTime) => ProceedQuery(world, gameTime);
 }

@@ -3,7 +3,6 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
@@ -14,12 +13,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据运输任务执行的时间和阶段，应用单位及其尾焰的动画
 /// </summary>
-[LateUpdateSystem]
-[ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
+[SimulateSystem]
+[Read(typeof(TrailOf.AsShip), withEntities: true), Read(typeof(ShippingStatus))]
+[Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(IndexTrailAffiliationSystem))]
-public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+[FineWith(typeof(ApplyPartyColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
+public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets) : ILateUpdateSystem
 {
     private const float _landDuration = 0.5f;
 
@@ -121,4 +120,6 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
             }
         }
     }
+
+    public void Update() => CalculateAnimationQuery(world);
 }

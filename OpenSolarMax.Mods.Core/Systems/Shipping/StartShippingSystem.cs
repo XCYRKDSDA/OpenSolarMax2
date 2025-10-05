@@ -18,12 +18,15 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
-[StructuralChangeSystem]
+[SimulateSystem]
+[Read(typeof(StartShippingRequest), withEntities: true)]
+[Read(typeof(AnchoredShipsRegistry), withEntities: true), Read(typeof(Shippable))]
+[Read(typeof(AbsoluteTransform)), Read(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
+[Read(typeof(RevolutionOrbit)), Read(typeof(RevolutionState)), Read(typeof(PlanetGeostationaryOrbit))]
+[Write(typeof(ShippingStatus)), Write(typeof(SoundEffect))]
 public sealed partial class StartShippingSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ICoreUpdateWithStructuralChangesSystem
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
     private FmodEventDescription _chargingSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
 
@@ -32,7 +35,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
 
     [Query]
     [All<StartShippingRequest>]
-    private void StartShipping(Entity requestEntity, in StartShippingRequest request)
+    private void StartShipping(Entity requestEntity, in StartShippingRequest request,
+                               [Data] CommandBuffer commandBuffer)
     {
         Debug.Assert(requestEntity.WorldId == request.Departure.WorldId
                      && requestEntity.WorldId == request.Destination.WorldId
@@ -48,7 +52,6 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
         var departurePlanetPosition = request.Departure.Get<AbsoluteTransform>().Translation;
         var departure2Destination = Vector3.Normalize(expectedArrivalPlanetPosition - departurePlanetPosition);
 
-        var world = World.Worlds[requestEntity.WorldId];
         using var shipsEnumerator = allShips.GetEnumerator();
         while (shipsRemain > 0 && shipsEnumerator.MoveNext())
         {
@@ -100,7 +103,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             shippingStatus.Charging.ElapsedTime = 0;
 
             // 解除到星球的锚定
-            AnchorageUtils.UnanchorShipFromPlanet(ship, request.Departure);
+            commandBuffer.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref);
+            commandBuffer.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref);
 
             // 发出声音
             _chargingSoundEvent.createInstance(out var instance);
@@ -108,22 +112,12 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             instance.start();
 
             // 创建单位的尾迹
-            _ = world.Make(new UnitTrailTemplate(assets) { Unit = ship });
+            _ = world.Make(commandBuffer, new UnitTrailTemplate(assets) { Unit = ship });
         }
 
         // 移除任务
-        _commandBuffer.Destroy(in requestEntity);
+        commandBuffer.Destroy(in requestEntity);
     }
 
-    public override void Update(in GameTime t)
-    {
-        StartShippingQuery(World);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
+    public void Update(GameTime t, CommandBuffer commandBuffer) => StartShippingQuery(world, commandBuffer);
 }

@@ -1,7 +1,6 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
@@ -12,9 +11,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 检查充能时间，从充能阶段切换到移动阶段的系统
 /// </summary>
-[StructuralChangeSystem]
+[SimulateSystem]
+[Write(typeof(ShippingStatus)), Write(typeof(SoundEffect))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class TransitFromChargingToTravellingSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ILateUpdateSystem
 {
     private const float _chargingTime = 0.5f;
 
@@ -42,4 +43,6 @@ public sealed partial class TransitFromChargingToTravellingSystem(World world, I
             instance.start();
         }
     }
+
+    public void Update() => ProceedQuery(world);
 }
