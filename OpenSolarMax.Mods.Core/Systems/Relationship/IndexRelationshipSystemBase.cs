@@ -78,7 +78,10 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
         {
             var indexer = GetIndexer(group.Key);
             foreach (var participant in group)
-                indexer.Invoke(relationship, participant);
+            {
+                if (participant.IsAlive())
+                    indexer.Invoke(relationship, participant);
+            }
         }
     }
 
