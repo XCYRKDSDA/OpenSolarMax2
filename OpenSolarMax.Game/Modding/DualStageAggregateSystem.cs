@@ -23,6 +23,12 @@ internal class DualStageAggregateSystem
     private record UnorderedTypePair(Type Sys1, Type Sys2)
     {
         public override int GetHashCode() => Sys1.GetHashCode() ^ Sys2.GetHashCode();
+
+        public virtual bool Equals(UnorderedTypePair? other)
+        {
+            if (other is null) return false;
+            return (Sys1 == other.Sys1 && Sys2 == other.Sys2) || (Sys1 == other.Sys2 && Sys2 == other.Sys1);
+        }
     }
 
     /// <summary>
