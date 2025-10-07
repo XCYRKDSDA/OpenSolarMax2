@@ -15,18 +15,20 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 监测殖民进度，切换或者移除殖民状态，同时播放动画
 /// </summary>
-[StructuralChangeSystem]
-[ExecuteBefore(typeof(IndexPartyAffiliationSystem))]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(ReferenceSize)), ReadPrev(typeof(PartyReferenceColor))]
+[ReadPrev(typeof(InParty.AsAffiliate), withEntities: true), Iterate(typeof(ColonizationState)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+// 先计算进度，再判断是否完成殖民
+[ExecuteAfter(typeof(ProgressColonizationSystem))]
 public sealed partial class SettleColonizationSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ICalcSystemWithStructuralChanges
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
-    private void CreateHaloExplosion(Entity planet, Color color)
+    private void CreateHaloExplosion(CommandBuffer commandBuffer, Entity planet, Color color)
     {
         ref var planetAbsoluteTransform = ref planet.Get<AbsoluteTransform>();
         ref readonly var refSize = ref planet.Get<ReferenceSize>();
-        _ = World.Make(new HaloExplosionTemplate(assets)
+        _ = world.Make(commandBuffer, new HaloExplosionTemplate(assets)
         {
             Color = color,
             Position = planetAbsoluteTransform.Translation,
@@ -35,41 +37,31 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
     }
 
     [Query]
-    [All<Colonizable, ColonizationState, InParty.AsAffiliate>]
-    private void SettleColonization(Entity planet, in Colonizable colonizable, ref ColonizationState state,
-                                    in InParty.AsAffiliate asPartyAffiliate)
+    [All<ColonizationState, InParty.AsAffiliate>]
+    private void SettleColonization(Entity planet, ref ColonizationState state, in InParty.AsAffiliate asPartyAffiliate,
+                                    [Data] CommandBuffer commandBuffer)
     {
         var planetParty = asPartyAffiliate.Relationship?.Copy.Party;
 
         if (state.Event == ColonizationEvent.Finished)
         {
             // 不管怎样，先开香槟
-            CreateHaloExplosion(planet, state.Party.Get<PartyReferenceColor>().Value);
+            CreateHaloExplosion(commandBuffer, planet, state.Party.Get<PartyReferenceColor>().Value);
 
             // 完成殖民
             if (planetParty is null)
-                World.Make(new InPartyTemplate() { Party = state.Party, Affiliate = planet });
+                world.Make(commandBuffer, new InPartyTemplate() { Party = state.Party, Affiliate = planet });
         }
         else if (state.Event == ColonizationEvent.Destroyed)
         {
             // 开香槟
-            CreateHaloExplosion(planet, Color.White);
+            CreateHaloExplosion(commandBuffer, planet, Color.White);
 
             // 解除当前阵营的殖民
             if (planetParty is not null)
-                World.Destroy(asPartyAffiliate.Relationship!.Value.Ref);
+                commandBuffer.Destroy(asPartyAffiliate.Relationship!.Value.Ref);
         }
     }
 
-    public override void Update(in GameTime t)
-    {
-        SettleColonizationQuery(World);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
+    public void Update(CommandBuffer commandBuffer) => SettleColonizationQuery(world, commandBuffer);
 }

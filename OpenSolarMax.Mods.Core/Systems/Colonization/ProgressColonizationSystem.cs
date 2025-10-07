@@ -11,9 +11,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 推进殖民进度的系统
 /// </summary>
-[CoreUpdateSystem]
-public sealed partial class ProgressColonizationSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(Colonizable)), ReadPrev(typeof(AnchoredShipsRegistry), withEntities: true),
+ ReadPrev(typeof(ColonizationAbility))]
+[Iterate(typeof(ColonizationState))]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public sealed partial class ProgressColonizationSystem(World world) : ITickSystem
 {
     [Query]
     [All<ColonizationState, Colonizable, InParty.AsAffiliate, AnchoredShipsRegistry>]
@@ -65,4 +68,6 @@ public sealed partial class ProgressColonizationSystem(World world)
                 state.Event = ColonizationEvent.Destroying;
         }
     }
+
+    public void Update(GameTime gameTime) => UpdateColonizationQuery(world, gameTime);
 }
