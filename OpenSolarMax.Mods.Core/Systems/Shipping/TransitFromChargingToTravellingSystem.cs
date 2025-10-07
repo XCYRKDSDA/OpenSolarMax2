@@ -11,11 +11,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 检查充能时间，从充能阶段切换到移动阶段的系统
 /// </summary>
-[SimulateSystem]
-[Write(typeof(ShippingStatus)), Write(typeof(SoundEffect))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class TransitFromChargingToTravellingSystem(World world, IAssetsManager assets)
-    : ILateUpdateSystem
+[SimulateSystem, BeforeStructuralChanges]
+[Iterate(typeof(ShippingStatus)), Write(typeof(SoundEffect))]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+// 状态先量变才能质变
+[ExecuteAfter(typeof(UpdateShipsStateSystem))]
+public sealed partial class TransitFromChargingToTravellingSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     private const float _chargingTime = 0.5f;
 

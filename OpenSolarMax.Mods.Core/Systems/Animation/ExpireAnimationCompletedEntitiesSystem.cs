@@ -7,10 +7,10 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem]
-[Read(typeof(ExpireAfterAnimationCompleted)), Read(typeof(Animation))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) : IStructuralChangeSystem
+[SimulateSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(ExpireAfterAnimationCompleted)), ReadCurr(typeof(Animation)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<ExpireAfterAnimationCompleted, Animation>]

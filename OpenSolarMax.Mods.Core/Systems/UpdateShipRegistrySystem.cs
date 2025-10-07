@@ -7,11 +7,11 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem]
-[Read(typeof(TreeRelationship<Anchorage>.AsParent), withEntities: true)]
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(TreeRelationship<Anchorage>.AsParent), withEntities: true)]
 [Write(typeof(AnchoredShipsRegistry), withEntities: true)]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class UpdateShipRegistrySystem(World world) : ILateUpdateSystem
+public sealed partial class UpdateShipRegistrySystem(World world) : ICalcSystem
 {
     [Query]
     [All<TreeRelationship<Anchorage>.AsParent, AnchoredShipsRegistry>]

@@ -13,11 +13,11 @@ using OpenSolarMax.Mods.Core.Graphics;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
-[RenderSystem]
-[Read(typeof(Camera))]
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : ILateUpdateSystem
+    : ICalcSystem
 {
     private const int _textSize = 18;
     private static readonly Color _textColor = Color.Red;

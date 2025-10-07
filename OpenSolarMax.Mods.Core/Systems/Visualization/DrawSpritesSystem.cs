@@ -10,11 +10,11 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem]
-[Read(typeof(Camera)), Read(typeof(Sprite)), Read(typeof(AbsoluteTransform))]
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : ILateUpdateSystem
+    : ICalcSystem
 {
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];

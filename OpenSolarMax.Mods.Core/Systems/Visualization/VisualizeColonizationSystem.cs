@@ -11,13 +11,11 @@ using OpenSolarMax.Mods.Core.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[DrawSystem]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
-[ExecuteAfter(typeof(DrawSpritesSystem))]
-[ExecuteAfter(typeof(VisualizeBarriersSystem))]
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera))]
+[Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeColonizationSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
 {
     private const float _ringRadiusFactor = 1.8f;
     private const float _ringThickness = 3;
@@ -100,10 +98,10 @@ public sealed partial class VisualizeColonizationSystem(
     private static readonly QueryDescription _planetDesc = new QueryDescription()
         .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
 
-    public override void Update(in GameTime t)
+    public void Update()
     {
         var planetEntities = new List<Entity>();
-        World.Query(in _planetDesc, entity => planetEntities.Add(entity));
-        RenderToCameraQuery(World, planetEntities);
+        world.Query(in _planetDesc, entity => planetEntities.Add(entity));
+        RenderToCameraQuery(world, planetEntities);
     }
 }

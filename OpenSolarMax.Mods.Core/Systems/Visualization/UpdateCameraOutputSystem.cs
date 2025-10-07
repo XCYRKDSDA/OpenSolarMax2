@@ -8,10 +8,10 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem]
+[RenderSystem, AfterStructuralChanges]
 [Write(typeof(Camera))]
 // LevelUIContext 粒度太粗，此处不写
-public sealed partial class UpdateCameraOutputSystem(World world) : ILateUpdateSystem
+public sealed partial class UpdateCameraOutputSystem(World world) : ICalcSystem
 {
     [Query]
     [All<Camera, LevelUIContext>]

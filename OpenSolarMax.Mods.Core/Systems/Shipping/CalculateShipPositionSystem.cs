@@ -10,11 +10,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 运输系统。根据运输时间计算单位动画、位置和方向
 /// </summary>
-[SimulateSystem]
-[Read(typeof(ShippingStatus)), Write(typeof(AbsoluteTransform))]
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(ShippingStatus)), Write(typeof(AbsoluteTransform))]
 [FineWith(typeof(CalculateAbsoluteTransformSystem))] // 运输单位应当不再有相对变换，因此和计算绝对位姿的系统无干扰
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class CalculateShipPositionSystem(World world) : ILateUpdateSystem
+public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
 {
     [Query]
     [All<ShippingStatus, AbsoluteTransform>]

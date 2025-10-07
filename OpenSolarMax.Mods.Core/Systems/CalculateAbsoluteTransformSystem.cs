@@ -10,12 +10,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相对变换<see cref="RelativeTransform"/>及其树型关系计算每个实体的绝对变换
 /// </summary>
-[SimulateSystem]
-[Read(typeof(TreeRelationship<RelativeTransform>.AsParent), withEntities: true)]
-[Read(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
-[Read(typeof(RelativeTransform)), Write(typeof(AbsoluteTransform))]
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsParent), withEntities: true)]
+[ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
+[ReadCurr(typeof(RelativeTransform)), Write(typeof(AbsoluteTransform))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class CalculateAbsoluteTransformSystem(World world) : ILateUpdateSystem
+public sealed partial class CalculateAbsoluteTransformSystem(World world) : ICalcSystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(Entity entity)
     {

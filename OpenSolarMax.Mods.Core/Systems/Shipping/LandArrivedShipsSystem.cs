@@ -15,12 +15,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 考察移动进度，将单位降落到目标星球的系统
 /// </summary>
-[SimulateSystem]
-[Write(typeof(ShippingStatus)), Read(typeof(TrailOf.AsShip), withEntities: true)]
-[Write(typeof(SoundEffect))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))] // 以防一帧就抵达
-public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets) : IStructuralChangeSystem
+[SimulateSystem, BeforeStructuralChanges]
+[Iterate(typeof(ShippingStatus)), ReadPrev(typeof(TrailOf.AsShip), withEntities: true)]
+[Write(typeof(SoundEffect)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+// 状态先量变才能质变
+[ExecuteAfter(typeof(UpdateShipsStateSystem))]
+// 以防一帧内抵达，要允许一帧内先从 Charging 到 Travelling，然后立刻降落
+[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
+public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
+    : ICalcSystemWithStructuralChanges
 {
     private readonly List<Entity> _arrivedEntities = [];
 

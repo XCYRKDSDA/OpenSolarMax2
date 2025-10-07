@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 /// <typeparam name="TTarget">将要被设置的实体上属性的类型</typeparam>
 /// <typeparam name="TReference">用于参考的阵营上属性的类型</typeparam>
-public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World world) : ILateUpdateSystem
+public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World world) : ICalcSystem
 {
     /// <summary>
     /// 当实体不属于任何一个阵营时设置其目标属性

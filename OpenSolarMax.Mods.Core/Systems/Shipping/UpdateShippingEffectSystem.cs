@@ -13,12 +13,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据运输任务执行的时间和阶段，应用单位及其尾焰的动画
 /// </summary>
-[SimulateSystem]
-[Read(typeof(TrailOf.AsShip), withEntities: true), Read(typeof(ShippingStatus))]
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(TrailOf.AsShip), withEntities: true), ReadCurr(typeof(ShippingStatus))]
 [Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyPartyColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
-public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets) : ILateUpdateSystem
+public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     private const float _landDuration = 0.5f;
 

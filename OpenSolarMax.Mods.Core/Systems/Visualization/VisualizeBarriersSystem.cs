@@ -13,10 +13,11 @@ using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem]
-[Read(typeof(Camera))]
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Entities)]
-public sealed partial class VisualizeBarriersSystem : ILateUpdateSystem
+[ExecuteAfter(typeof(DrawSpritesSystem))]
+public sealed partial class VisualizeBarriersSystem : ICalcSystem
 {
     private readonly World _world;
 

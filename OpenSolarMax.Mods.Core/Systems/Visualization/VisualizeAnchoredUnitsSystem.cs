@@ -12,11 +12,11 @@ using OpenSolarMax.Mods.Core.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem]
-[Read(typeof(Camera))]
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredUnitsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ILateUpdateSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
 {
     private const int _textSize = 36;
     private const string _textFormat = "{0}";

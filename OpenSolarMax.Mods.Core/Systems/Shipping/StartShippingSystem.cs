@@ -18,14 +18,18 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
-[SimulateSystem]
-[Read(typeof(StartShippingRequest), withEntities: true)]
-[Read(typeof(AnchoredShipsRegistry), withEntities: true), Read(typeof(Shippable))]
-[Read(typeof(AbsoluteTransform)), Read(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
-[Read(typeof(RevolutionOrbit)), Read(typeof(RevolutionState)), Read(typeof(PlanetGeostationaryOrbit))]
-[Write(typeof(ShippingStatus)), Write(typeof(SoundEffect))]
-public sealed partial class StartShippingSystem(World world, IAssetsManager assets)
-    : ICoreUpdateWithStructuralChangesSystem
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(StartShippingRequest), withEntities: true)]
+[ReadPrev(typeof(AnchoredShipsRegistry), withEntities: true), ReadPrev(typeof(Shippable))]
+[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
+[ReadPrev(typeof(RevolutionOrbit)), ReadPrev(typeof(RevolutionState)), ReadPrev(typeof(PlanetGeostationaryOrbit))]
+[Iterate(typeof(ShippingStatus)), Write(typeof(SoundEffect)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+// 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
+[ExecuteAfter(typeof(UpdateShipsStateSystem)), ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
+// 这一帧刚抵达的单位不会立刻出发
+[ExecuteBefore(typeof(LandArrivedShipsSystem))]
+public sealed partial class StartShippingSystem(World world, IAssetsManager assets) : ICalcSystemWithStructuralChanges
 {
     private FmodEventDescription _chargingSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
@@ -119,5 +123,5 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
         commandBuffer.Destroy(in requestEntity);
     }
 
-    public void Update(GameTime t, CommandBuffer commandBuffer) => StartShippingQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer) => StartShippingQuery(world, commandBuffer);
 }

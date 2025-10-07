@@ -15,10 +15,10 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[InputSystem]
-[Read(typeof(Camera)), Read(typeof(AbsoluteTransform)), Read(typeof(InParty.AsAffiliate))]
-[Write(typeof(ShippingStatus))]
-public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : ICoreUpdateWithStructuralChangesSystem
+[InputSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InParty.AsAffiliate))]
+[Iterate(typeof(ShippingStatus)), ChangeStructure]
+public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     private const int _minimalSelectPixels = 10;
 
@@ -296,5 +296,5 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : 
                               ofParty.Relationship!.Value.Copy.Party, ref pointedPlanet);
     }
 
-    public void Update(GameTime _, CommandBuffer commandBuffer) => HandleInputsQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer) => HandleInputsQuery(world, commandBuffer);
 }

@@ -168,8 +168,8 @@ public static class ShippingUtils
             var simTime = new GameTime(TimeSpan.FromSeconds(t), TimeSpan.FromSeconds(_dt));
             foreach (var system in simulateSystems)
             {
-                if (system is ICoreUpdateSystem s1) s1.Update(simTime);
-                else if (system is ILateUpdateSystem s2) s2.Update();
+                if (system is ITickSystem s1) s1.Update(simTime);
+                else if (system is ICalcSystem s2) s2.Update();
             }
 
             // 计算距离

@@ -13,9 +13,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 依赖管理系统。当被依赖的父实体死亡后，依赖其的子实体也需要一并销毁。<br/>
 /// 注意：该系统仅仅处理由<see cref="Dependence"/>定义的依赖关系，且在销毁实体时不提供hook。有个性化需求的请自行实现系统
 /// </summary>
-[SimulateSystem]
-[Read(typeof(Dependence), withEntities: true)]
-public sealed partial class ManageDependenceSystem(World world) : IStructuralChangeSystem
+[SimulateSystem, ReactToStructuralChanges]
+[ReadCurr(typeof(Dependence), withEntities: true), ChangeStructure]
+public sealed partial class ManageDependenceSystem(World world) : ICalcSystemWithStructuralChanges
 {
     private readonly HashSet<Entity> _entitiesToDestroy = [];
 

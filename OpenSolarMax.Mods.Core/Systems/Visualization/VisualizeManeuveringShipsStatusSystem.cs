@@ -14,12 +14,12 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem]
+[RenderSystem, AfterStructuralChanges]
 [Priority((int)GraphicsLayer.Interface)]
-[Read(typeof(Camera)), Read(typeof(AbsoluteTransform))]
-[Read(typeof(ReferenceSize)), Read(typeof(ManeuvaringShipsStatus))]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ILateUpdateSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
 {
     private const float _ringRadiusFactor = 1.6f;
     private const float _ringThickness = 3f;
