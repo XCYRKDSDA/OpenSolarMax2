@@ -1,31 +1,32 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
-[StructuralChangeSystem]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(AnchoredShipsRegistry), withEntities: true), ReadPrev(typeof(Combatable))]
+[ReadPrev(typeof(Sprite)), ReadPrev(typeof(AbsoluteTransform))]
+[Iterate(typeof(Battlefield)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+// 先量变再质变
 [ExecuteAfter(typeof(ProgressCombatSystem))]
-[ExecuteAfter(typeof(ProgressProductionSystem))]
-[ExecuteAfter(typeof(SettleProductionSystem))]
-public sealed partial class SettleCombatSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+public sealed partial class SettleCombatSystem(World world, IAssetsManager assets) : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
-    private void SettleCombat(in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
+    private void SettleCombat(in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle,
+                              [Data] CommandBuffer commandBuffer)
     {
         // 考察各个阵营的破坏度
         foreach (var party in battle.FrontlineDamage.Keys)
@@ -45,15 +46,17 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
                 var position = ship.Get<AbsoluteTransform>().Translation;
 
                 // 生成闪光
-                _ = World.Make(new UnitFlareTemplate(assets) { Color = color, Position = position });
+                _ = world.Make(commandBuffer, new UnitFlareTemplate(assets) { Color = color, Position = position });
 
                 // 生成冲击波
-                _ = World.Make(new UnitPulseTemplate(assets) { Color = color, Position = position });
+                _ = world.Make(commandBuffer, new UnitPulseTemplate(assets) { Color = color, Position = position });
 
                 // 移除单位
-                World.Destroy(ship);
+                commandBuffer.Destroy(ship);
             }
             battle.FrontlineDamage[party] = damage;
         }
     }
+
+    public void Update(CommandBuffer commandBuffer) => SettleCombatQuery(world, commandBuffer);
 }
