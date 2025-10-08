@@ -11,12 +11,13 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
-[LateUpdateSystem]
-[ExecuteAfter(typeof(ApplyPartyColorSystem))]
-[ExecuteAfter(typeof(UpdateShippingEffectSystem))]
-[ExecuteAfter(typeof(GetShippingUnitsInRangeSystem))]
-public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(InAttackRangeShipsRegistry)), Write(typeof(Sprite))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+// 在其他设置外观的系统之后执行以覆写
+[ExecuteAfter(typeof(ApplyPartyColorSystem)), ExecuteAfter(typeof(UpdateShippingEffectSystem)),
+ ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
+public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     [Query]
     [All<InAttackRangeShipsRegistry>]
@@ -30,4 +31,6 @@ public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager 
             }
         }
     }
+
+    public void Update() => SetColorQuery(world);
 }

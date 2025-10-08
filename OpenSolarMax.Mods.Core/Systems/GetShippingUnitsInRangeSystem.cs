@@ -1,25 +1,22 @@
 using System.Diagnostics;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[LateUpdateSystem]
-[ExecuteAfter(typeof(CalculateShipPositionSystem))]
-[ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
-[ExecuteAfter(typeof(IndexPartyAffiliationSystem))]
-public sealed partial class GetShippingUnitsInRangeSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(ShippingStatus)), ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(AttackRange)), Write(typeof(InAttackRangeShipsRegistry))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed partial class GetShippingUnitsInRangeSystem(World world) : ICalcSystem
 {
     [Query]
     [All<InParty.AsAffiliate, ShippingStatus, AbsoluteTransform>]
-    private static void GetShippingUnitsInRange(
+    private static void GetShippingUnitsInRangeForCertainEntity(
         Entity entity, in InParty.AsAffiliate asAffiliate,
         in ShippingStatus shippingStatus, in AbsoluteTransform unitPose,
         [Data] in AbsoluteTransform planetPose, [Data] in float range,
@@ -45,16 +42,13 @@ public sealed partial class GetShippingUnitsInRangeSystem(World world)
 
     [Query]
     [All<InAttackRangeShipsRegistry, AttackRange, AbsoluteTransform>]
-    private void GetShippingUnitsInRange2(ref InAttackRangeShipsRegistry registry,
-                                          in AttackRange attackRange, in AbsoluteTransform pose)
+    private void GetShippingUnitsInRange(ref InAttackRangeShipsRegistry registry,
+                                         in AttackRange attackRange, in AbsoluteTransform pose)
     {
         foreach (var (_, pairs) in registry.Ships) pairs.Clear();
-        GetShippingUnitsInRangeQuery(World, in pose, in attackRange.Range, registry.Ships);
+        GetShippingUnitsInRangeForCertainEntityQuery(world, in pose, in attackRange.Range, registry.Ships);
         foreach (var (_, pairs) in registry.Ships) pairs.Sort((p1, p2) => p1.Item2.CompareTo(p2.Item2));
     }
 
-    public override void Update(in GameTime t)
-    {
-        GetShippingUnitsInRange2Query(World);
-    }
+    public void Update() => GetShippingUnitsInRangeQuery(world);
 }

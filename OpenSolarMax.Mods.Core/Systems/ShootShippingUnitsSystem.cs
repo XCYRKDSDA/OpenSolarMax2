@@ -12,9 +12,14 @@ using OpenSolarMax.Mods.Core.Templates;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[StructuralChangeSystem]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(Turret)), ReadPrev(typeof(InAttackRangeShipsRegistry)), ReadPrev(typeof(AttackCooldown)),
+ ReadPrev(typeof(InParty.AsAffiliate)), ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(PartyReferenceColor))]
+[Iterate(typeof(AttackTimer)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
 public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ICalcSystemWithStructuralChanges
 {
     private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myParty)
     {
@@ -32,13 +37,12 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         return null;
     }
 
-    private readonly CommandBuffer _commandBuffer = new();
-
     [Query]
     [All<Turret, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InParty.AsAffiliate>]
     private void Shoot(Entity entity, in Turret turret,
                        in InAttackRangeShipsRegistry registry, ref AttackTimer timer, in AttackCooldown cooldown,
-                       in InParty.AsAffiliate asAffiliate)
+                       in InParty.AsAffiliate asAffiliate,
+                       [Data] CommandBuffer commandBuffer)
     {
         if (timer.TimeLeft > TimeSpan.Zero)
             return;
@@ -55,7 +59,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
         var turretColor = turretParty.Get<PartyReferenceColor>().Value;
-        World.Make(new LaserBeamTemplate(assets)
+        world.Make(commandBuffer, new LaserBeamTemplate(assets)
         {
             Planet = entity,
             TargetPosition = targetPosition,
@@ -64,7 +68,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 
         if (turret.GlowTexture is not null)
         {
-            World.Make(new LaserFlashTemplate(assets)
+            world.Make(commandBuffer, new LaserFlashTemplate(assets)
             {
                 Turret = entity,
                 Color = Color.White,
@@ -76,17 +80,13 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         var targetColor = targetParty.Get<PartyReferenceColor>().Value;
 
         // 生成闪光
-        _ = World.Make(new UnitFlareTemplate(assets) { Color = targetColor, Position = targetPosition });
+        _ = world.Make(commandBuffer, new UnitFlareTemplate(assets) { Color = targetColor, Position = targetPosition });
 
         // 生成冲击波
-        _ = World.Make(new UnitPulseTemplate(assets) { Color = targetColor, Position = targetPosition });
+        _ = world.Make(commandBuffer, new UnitPulseTemplate(assets) { Color = targetColor, Position = targetPosition });
 
-        _commandBuffer.Destroy(target.Value);
+        commandBuffer.Destroy(target.Value);
     }
 
-    public override void Update(in GameTime t)
-    {
-        ShootQuery(World);
-        _commandBuffer.Playback(World);
-    }
+    public void Update(CommandBuffer commandBuffer) => ShootQuery(world, commandBuffer);
 }
