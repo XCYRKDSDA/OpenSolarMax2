@@ -2,16 +2,16 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[LateUpdateSystem]
-[ExecuteAfter(typeof(UpdateShipRegistrySystem))]
-[ExecuteAfter(typeof(UpdatePartyPopulationRegistrySystem))]
-public sealed partial class CheckProductionSystem(World world) : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(AnchoredShipsRegistry)), ReadCurr(typeof(ProductionAbility))]
+[Write(typeof(ProductionCondition))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed partial class CheckProductionSystem(World world) : ICalcSystem
 {
     private static bool CanProduce(in InParty.AsAffiliate asAffiliate, in AnchoredShipsRegistry shipsRegistry,
                                    in ProductionAbility productable)
@@ -41,8 +41,10 @@ public sealed partial class CheckProductionSystem(World world) : BaseSystem<Worl
     [Query]
     [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InParty.AsAffiliate>]
     private static void CheckProduction(in InParty.AsAffiliate asAffiliate, in AnchoredShipsRegistry shipsRegistry,
-                                        in ProductionAbility productable, ref ProductionState productionState)
+                                        in ProductionAbility productable, ref ProductionCondition productionCondition)
     {
-        productionState.CanProduce = CanProduce(in asAffiliate, in shipsRegistry, in productable);
+        productionCondition.IsMet = CanProduce(in asAffiliate, in shipsRegistry, in productable);
     }
+
+    public void Update() => CheckProductionQuery(world);
 }

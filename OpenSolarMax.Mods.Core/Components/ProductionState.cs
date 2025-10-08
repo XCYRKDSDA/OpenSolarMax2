@@ -9,11 +9,6 @@ namespace OpenSolarMax.Mods.Core.Components;
 public struct ProductionState()
 {
     /// <summary>
-    /// 这一帧当前星球是否能够生产
-    /// </summary>
-    public bool CanProduce = false;
-
-    /// <summary>
     /// 当前单位的生产进度
     /// </summary>
     public float Progress = 0;
