@@ -2,19 +2,16 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[LateUpdateSystem]
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(ProductionAbility)), ReadCurr(typeof(PopulationCost))]
+[Write(typeof(PartyPopulationRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(IndexAnchorageSystem))]
-[ExecuteAfter(typeof(IndexPartyAffiliationSystem))]
-public sealed partial class UpdatePartyPopulationRegistrySystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : ICalcSystem
 {
     [Query]
     [All<PartyPopulationRegistry>]
@@ -48,10 +45,10 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world)
         party.Get<PartyPopulationRegistry>().CurrentPopulation += populationCost.Value;
     }
 
-    public override void Update(in GameTime t)
+    public void Update()
     {
-        ClearRegistryQuery(World);
-        CountPopulationLimitQuery(World);
-        CountCurrentPopulationQuery(World);
+        ClearRegistryQuery(world);
+        CountPopulationLimitQuery(world);
+        CountCurrentPopulationQuery(world);
     }
 }
