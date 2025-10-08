@@ -3,8 +3,6 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FontStashSharp;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
 using OpenSolarMax.Game;
@@ -13,18 +11,17 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[DrawSystem]
-[ExecuteAfter(typeof(UpdateCameraOutputSystem))]
-[ExecuteAfter(typeof(DrawSpritesSystem))]
-[ExecuteAfter(typeof(VisualizeBarriersSystem))]
-public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(PartyPopulationRegistry))]
+[ReadCurr(typeof(PartyReferenceColor))]
+public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     private const int _textSize = 36;
-    private const string _prefixLabelId = "PrefixLabelId";
-    private const string _currentPopulationLabelId = "CurrentPopulationLabel";
-    private const string _splitterLabelId = "SplitterLabelId";
-    private const string _populationLimitLabelId = "PopulationLimitLabel";
+    private const string _stackId = "TotalPopulation.Stack";
+    private const string _prefixLabelId = "TotalPopulation.PrefixLabelId";
+    private const string _currentPopulationLabelId = "TotalPopulation.CurrentPopulationLabel";
+    private const string _splitterLabelId = "TotalPopulation.SplitterLabelId";
+    private const string _populationLimitLabelId = "TotalPopulation.PopulationLimitLabel";
     private const string _populationTextPrefix = "Population: ";
     private const string _populationTextFormat = "{0}";
     private const string _splitterString = " / ";
@@ -63,6 +60,7 @@ public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsM
 
         var stack = new HorizontalStackPanel()
         {
+            Id = _stackId,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         };
@@ -75,20 +73,16 @@ public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsM
         uiContext.TopBar.Widgets.Add(stack);
     }
 
-    public override void Initialize()
-    {
-        World.Query(in VisualizePopulation_QueryDescription,
-                    (ref LevelUIContext uiContext) => InitializeUi(uiContext));
-    }
-
     [Query]
     [All<LevelUIContext, InParty.AsAffiliate>]
-    private static void VisualizePopulation(ref LevelUIContext uiContext,
-                                            in InParty.AsAffiliate asAffiliate)
+    private void VisualizePopulation(ref LevelUIContext uiContext, in InParty.AsAffiliate asAffiliate)
     {
         var party = asAffiliate.Relationship!.Value.Copy.Party;
         ref readonly var populationRegistry = ref party.Get<PartyPopulationRegistry>();
         ref readonly var partyColor = ref party.Get<PartyReferenceColor>();
+
+        if (uiContext.TopBar.FindChildById(_stackId) is null)
+            InitializeUi(uiContext);
 
         var prefixLabel = uiContext.TopBar.FindChildById<Label>(_prefixLabelId);
         var currentPopulationLabel = uiContext.TopBar.FindChildById<Label>(_currentPopulationLabelId);
@@ -100,4 +94,6 @@ public sealed partial class VisualizeTotalPopulationSystem(World world, IAssetsM
         prefixLabel.TextColor = currentPopulationLabel.TextColor =
                                     splitterLabel.TextColor = populationLimitLabel.TextColor = partyColor.Value;
     }
+
+    public void Update() => VisualizePopulationQuery(world);
 }
