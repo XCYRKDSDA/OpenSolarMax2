@@ -1,8 +1,6 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using Fmod3DAttributes = FMOD.ATTRIBUTES_3D;
@@ -13,9 +11,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 设置所有音效的3D属性的系统,
 /// 负责将音效的位置同步到Fmod体系中
 /// </summary>
-[LateUpdateSystem]
-public sealed partial class UpdateSoundEffect3DAttributesSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(AbsoluteTransform)), Write(typeof(SoundEffect))]
+public sealed partial class UpdateSoundEffect3DAttributesSystem(World world) : ICalcSystem
 {
     [Query]
     [All<SoundEffect, AbsoluteTransform>]
@@ -34,4 +32,6 @@ public sealed partial class UpdateSoundEffect3DAttributesSystem(World world)
             velocity = { x = 0, y = 0, z = 0 },
         });
     }
+
+    public void Update() => Set3DAttributesQuery(world);
 }

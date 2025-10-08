@@ -1,8 +1,6 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using FmodSystem = FMOD.Studio.System;
@@ -14,9 +12,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 设置监听器3D属性的系统，
 /// 负责将FMOD.Studio.System的位置同步到Fmod体系中
 /// </summary>
-[LateUpdateSystem]
-public sealed partial class UpdateListener3DAttributesSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), Write(typeof(FmodSystem))]
+[FineWith(typeof(UpdateFmod3DSettingsSystem))]
+public sealed partial class UpdateListener3DAttributesSystem(World world) : ICalcSystem
 {
     [Query]
     [All<FmodSystem, AbsoluteTransform, Camera>]
@@ -36,4 +35,6 @@ public sealed partial class UpdateListener3DAttributesSystem(World world)
             velocity = { x = 0, y = 0, z = 0 },
         });
     }
+
+    public void Update() => SetHearer3DAttributesQuery(world);
 }

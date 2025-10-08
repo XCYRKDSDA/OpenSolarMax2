@@ -2,8 +2,6 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FMOD;
-using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
@@ -11,9 +9,9 @@ using FmodSystem = FMOD.Studio.System;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[LateUpdateSystem]
-public sealed partial class UpdateFmod3DSettingsSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[RenderSystem, AfterStructuralChanges]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(LevelUIContext)), Write(typeof(FmodSystem))]
+public sealed partial class UpdateFmod3DSettingsSystem(World world) : ICalcSystem
 {
     [Query]
     [All<FmodSystem, Camera, LevelUIContext>]
@@ -27,4 +25,6 @@ public sealed partial class UpdateFmod3DSettingsSystem(World world)
 
         fmodCoreSystem.set3DSettings(1, scale, scale);
     }
+
+    public void Update() => SetHearer3DAttributesQuery(world);
 }
