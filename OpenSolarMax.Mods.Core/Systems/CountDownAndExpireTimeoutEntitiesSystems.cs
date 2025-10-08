@@ -3,15 +3,14 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[CoreUpdateSystem]
-public sealed partial class CountDownExpirationTimeSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(ExpiredAfterTimeout))]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSystem
 {
     [Query]
     [All<ExpiredAfterTimeout>]
@@ -19,14 +18,14 @@ public sealed partial class CountDownExpirationTimeSystem(World world)
     {
         expiration.ElapsedTime += time.ElapsedGameTime;
     }
+
+    public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
 }
 
-[StructuralChangeSystem]
-public sealed partial class ExpireTimeoutEntitiesSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges, ReadCurr(typeof(ExpiredAfterTimeout)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public sealed partial class ExpireTimeoutEntitiesSystem(World world) : ICalcSystemWithStructuralChanges
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
     [Query]
     [All<ExpiredAfterTimeout>]
     private static void ExpireEntities([Data] CommandBuffer commands,
@@ -36,15 +35,5 @@ public sealed partial class ExpireTimeoutEntitiesSystem(World world)
             commands.Destroy(entity);
     }
 
-    public override void Update(in GameTime d)
-    {
-        ExpireEntitiesQuery(World, _commandBuffer);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
+    public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }

@@ -3,19 +3,17 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FMOD.Studio;
-using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[StructuralChangeSystem]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(Animation)), ReadCurr(typeof(SoundEffect)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ICalcSystemWithStructuralChanges
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
     [Query]
     [All<ExpireAfterAnimationAndSoundEffectCompleted, Animation>]
     private static void ExpireEntities([Data] CommandBuffer commands,
@@ -35,15 +33,5 @@ public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem
             commands.Destroy(entity);
     }
 
-    public override void Update(in GameTime d)
-    {
-        ExpireEntitiesQuery(World, _commandBuffer);
-        _commandBuffer.Playback(World);
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _commandBuffer.Dispose();
-    }
+    public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }
