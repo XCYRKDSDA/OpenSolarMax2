@@ -18,9 +18,9 @@ internal static class UnitPostBornEffectParams
     internal static readonly TimeSpan FadeOutDuration = PostBornDuration * 0.1;
 }
 
-[CoreUpdateSystem]
-public partial class UpdateUnitPostBornEffectSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(UnitPostBornEffect))]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
 {
     [Query]
     [All<UnitPostBornEffect>]
@@ -28,32 +28,31 @@ public partial class UpdateUnitPostBornEffectSystem(World world)
     {
         effect.TimeElapsed += time.ElapsedGameTime;
     }
+
+    public void Update(GameTime gameTime) => UpdateBlinkEffectQuery(world, gameTime);
 }
 
-[StructuralChangeSystem]
-public partial class RemoveUnitPostBornEffectSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges, ReadCurr(typeof(UnitPostBornEffect)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public partial class RemoveUnitPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
     [Query]
     [All<UnitPostBornEffect>]
-    private void RemoveUnitPostBornEffect(Entity entity, in UnitPostBornEffect effect)
+    private static void RemoveUnitPostBornEffect(Entity entity, in UnitPostBornEffect effect,
+                                                 [Data] CommandBuffer commandBuffer)
     {
         if (effect.TimeElapsed >= Params.PostBornDuration)
-            _commandBuffer.Remove<UnitPostBornEffect>(entity);
+            commandBuffer.Remove<UnitPostBornEffect>(entity);
     }
 
-    public override void Update(in GameTime time)
-    {
-        RemoveUnitPostBornEffectQuery(World);
-        _commandBuffer.Playback(World);
-    }
+    public void Update(CommandBuffer commandBuffer) => RemoveUnitPostBornEffectQuery(world, commandBuffer);
 }
 
-[LateUpdateSystem]
-public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(UnitPostBornEffect)), Write(typeof(Sprite))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[FineWith(typeof(ApplyPartyColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
+public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     /// <summary>
     /// 外置的单位出生后动画。<br/>
@@ -82,4 +81,6 @@ public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager a
                 break;
         }
     }
+
+    public void Update() => ApplyBlinkEffectQuery(world);
 }
