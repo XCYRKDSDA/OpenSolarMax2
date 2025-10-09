@@ -46,6 +46,8 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
                      && requestEntity.WorldId == request.Destination.WorldId
                      && requestEntity.WorldId == request.Party.WorldId);
 
+        if (!request.Departure.Has<DefaultLaunchPad>()) return;
+
         var shipsRemain = request.ExpectedNum;
         var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Party];
 

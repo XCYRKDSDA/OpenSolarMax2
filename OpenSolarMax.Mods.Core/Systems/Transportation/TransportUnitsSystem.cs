@@ -1,3 +1,4 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -15,9 +16,9 @@ using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
-[CoreUpdateSystem]
-public partial class ProgressUnitsTransportationSystem(World world)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(TransportingStatus))]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+public partial class ProgressUnitsTransportationSystem(World world) : ITickSystem
 {
     [Query]
     [All<TransportingStatus>]
@@ -28,11 +29,23 @@ public partial class ProgressUnitsTransportationSystem(World world)
         else if (status.State == TransportingState.PostTransportation)
             status.PostTransportation.ElapsedTime += time.ElapsedGameTime;
     }
+
+    public void Update(GameTime gameTime) => ProgressEffectQuery(world, gameTime);
 }
 
-[LateUpdateSystem]
-public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, AfterStructuralChanges]
+[ReadCurr(typeof(TransportingStatus))]
+[Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+// 在自动计算绝对位姿系统之后以覆盖位姿
+[ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
+// 与普通运输系统完全不相干
+[FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateShippingEffectSystem))]
+// 动画不会设置颜色，因此和阵营颜色应用系统不相干
+[FineWith(typeof(ApplyPartyColorSystem))]
+// 覆盖新生单位动画
+[ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
+public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     private readonly AnimationClip<Entity> _unitPreTransportationAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitPreTransportation.json");
@@ -84,11 +97,18 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
                                                    null, animationTime);
         }
     }
+
+    public void Update() => ApplyEffectQuery(world);
 }
 
-[StructuralChangeSystem]
-public partial class TransportUnitsSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(Sprite)), ReadPrev(typeof(PartyReferenceColor)),
+ ReadPrev(typeof(TreeRelationship<Anchorage>.AsChild)), ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
+ ReadPrev(typeof(InParty.AsAffiliate))]
+[Iterate(typeof(TransportingStatus)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ProgressUnitsTransportationSystem))]
+public partial class TransportUnitsSystem(World world, IAssetsManager assets) : ICalcSystemWithStructuralChanges
 {
     private FmodEventDescription _warpingSoundEffect = assets.Load<FmodEventDescription>("Sounds/Master.bank:/Warping");
 
@@ -99,7 +119,8 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
                                 in AbsoluteTransform pose, in Sprite sprite,
                                 in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate,
                                 [Data] HashSet<(Entity, Entity)> jobs,
-                                [Data] HashSet<(Entity, Entity)> arrivals)
+                                [Data] HashSet<(Entity, Entity)> arrivals,
+                                [Data] CommandBuffer commandBuffer)
     {
         if (status.State == TransportingState.PreTransportation &&
             status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9333))
@@ -107,18 +128,33 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
             var departure = asChild.Relationship!.Value.Copy.Parent;
             var destination = status.Task.DestinationPlanet;
 
-            World.Make(new UnitAfterImageTemplate(assets)
+            world.Make(commandBuffer, new UnitAfterImageTemplate(assets)
             {
                 Position = pose.Translation,
                 Rotation = pose.Rotation,
                 Color = sprite.Color
             });
 
-            AnchorageUtils.UnanchorShipFromPlanet(ship, asChild.Relationship!.Value.Copy.Parent);
-            var (_, newTfRelationship) = AnchorageUtils.AnchorShipToPlanet(ship, status.Task.DestinationPlanet);
-            newTfRelationship.Set(status.Task.ExpectedRevolutionOrbit, status.Task.ExpectedRevolutionState);
+            // 解除到星球的锚定
+            commandBuffer.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref);
+            commandBuffer.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref);
+            // 锚定单位到新星球
+            world.Make(commandBuffer, new AnchorageTemplate()
+            {
+                Planet = status.Task.DestinationPlanet,
+                Ship = ship
+            });
+            world.Make(commandBuffer, new RevolutionTemplate()
+            {
+                Parent = status.Task.DestinationPlanet,
+                Child = ship,
+                Shape = status.Task.ExpectedRevolutionOrbit.Shape,
+                Period = status.Task.ExpectedRevolutionOrbit.Period,
+                Rotation = status.Task.ExpectedRevolutionOrbit.Rotation,
+                InitPhase = status.Task.ExpectedRevolutionState.Phase
+            });
 
-            World.Make(new TransportationTrailTemplate(assets)
+            world.Make(commandBuffer, new TransportationTrailTemplate(assets)
             {
                 Head = ship.Get<AbsoluteTransform>().Translation,
                 Tail = (RevolutionUtils
@@ -144,16 +180,16 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
     private readonly HashSet<(Entity, Entity)> _jobs = [];
     private readonly HashSet<(Entity, Entity)> _arrivalsPerFrame = [];
 
-    public override void Update(in GameTime t)
+    public void Update(CommandBuffer commandBuffer)
     {
         _jobs.Clear();
         _arrivalsPerFrame.Clear();
-        TransportUnitsQuery(World, _jobs, _arrivalsPerFrame);
+        TransportUnitsQuery(world, _jobs, _arrivalsPerFrame, commandBuffer);
 
         // 对每个阵营每次抵达只创建一个抵达效果
         foreach (var (destination, party) in _arrivalsPerFrame)
         {
-            World.Make(new DestinationEffectTemplate(assets)
+            world.Make(commandBuffer, new DestinationEffectTemplate(assets)
             {
                 Portal = destination,
                 Color = party.Get<PartyReferenceColor>().Value,
@@ -169,7 +205,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets)
                           destination.Get<AbsoluteTransform>().Translation) / 2;
 
             // 创建音效
-            World.Make(new SimpleSoundTemplate()
+            world.Make(commandBuffer, new SimpleSoundTemplate()
             {
                 Transform = new AbsoluteTransformOptions() { Translation = center, Rotation = Quaternion.Identity },
                 SoundEffect = _warpingSoundEffect,

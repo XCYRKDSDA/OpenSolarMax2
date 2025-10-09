@@ -4,10 +4,8 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.ECS;
-using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
@@ -17,26 +15,22 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 /// <summary>
 /// 处理<see cref="StartShippingRequest"/>使传送门上单位开始传送的系统
 /// </summary>
-[StructuralChangeSystem]
-[ExecuteBefore(typeof(StartShippingSystem))]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadPrev(typeof(StartShippingRequest))]
+[ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild))]
+[ReadPrev(typeof(RevolutionOrbit)), ReadPrev(typeof(RevolutionState)), ReadPrev(typeof(PlanetGeostationaryOrbit))]
+[ReadPrev(typeof(ReferenceSize)), ReadPrev(typeof(PartyReferenceColor))]
+[Write(typeof(TransportingStatus)), Write(typeof(PortalChargingJobs)), ChangeStructure]
+[ExecuteBefore(typeof(ApplyAnimationSystem))]
+// 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
+[ExecuteAfter(typeof(ProgressUnitsTransportationSystem)), ExecuteAfter(typeof(TransportUnitsSystem))]
 public sealed partial class StartTransportationSystem(World world, IAssetsManager assets)
-    : BaseSystem<World, GameTime>(world), ISystem
+    : ICalcSystemWithStructuralChanges
 {
-    private readonly CommandBuffer _commandBuffer = new();
-
-    public void ModifyOthers(ISystemProvider systems)
-    {
-        systems.Get<HandleInputsOnManeuveringShipsSystem>().ReachabilityCheckers.Add(
-            (_, departure, _) => departure.Has<PortalChargingJobs>()
-        );
-        systems.Get<VisualizeManeuveringShipsStatusSystem>().ReachabilityCheckers.Add(
-            (_, departure, _) => departure.Has<PortalChargingJobs>()
-        );
-    }
-
     [Query]
     [All<StartShippingRequest>]
-    private void StartTransporting(Entity requestEntity, in StartShippingRequest request)
+    private void StartTransporting(Entity requestEntity, in StartShippingRequest request,
+                                   [Data] CommandBuffer commandBuffer)
     {
         Debug.Assert(requestEntity.WorldId == request.Departure.WorldId
                      && requestEntity.WorldId == request.Destination.WorldId
@@ -83,19 +77,13 @@ public sealed partial class StartTransportationSystem(World world, IAssetsManage
         }
 
         // 创建传送门特效
-        World.Make(new PortalChargingEffectTemplate(assets)
+        world.Make(commandBuffer, new PortalChargingEffectTemplate(assets)
         {
             Portal = request.Departure,
             PortalRadius = request.Departure.Get<ReferenceSize>().Radius,
             Color = request.Party.Get<PartyReferenceColor>().Value
         });
-
-        _commandBuffer.Destroy(in requestEntity);
     }
 
-    public override void Update(in GameTime t)
-    {
-        StartTransportingQuery(World);
-        _commandBuffer.Playback(World);
-    }
+    public void Update(CommandBuffer commandBuffer) => StartTransportingQuery(world, commandBuffer);
 }

@@ -68,6 +68,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         //
         typeof(PlanetGeostationaryOrbit),
         typeof(AnchoredShipsRegistry),
+        typeof(DefaultLaunchPad),
         typeof(ProductionAbility),
         typeof(ProductionCondition),
         typeof(ProductionState),

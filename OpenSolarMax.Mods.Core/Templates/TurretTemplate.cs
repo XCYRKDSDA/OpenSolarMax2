@@ -58,6 +58,7 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         //
         typeof(PlanetGeostationaryOrbit),
         typeof(AnchoredShipsRegistry),
+        typeof(DefaultLaunchPad),
         typeof(ReferenceSize),
         typeof(Battlefield),
         typeof(Colonizable),
