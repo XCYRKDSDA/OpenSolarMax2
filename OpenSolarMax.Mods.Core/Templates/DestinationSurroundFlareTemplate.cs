@@ -132,7 +132,7 @@ internal class DestinationSurroundFlareTemplate(IAssetsManager assets) : ITempla
             Parent = baseCoord,
             Child = entity
         });
-        commandBuffer.Set(in transform, new Animation
+        commandBuffer.Add(in transform, new Animation
         {
             Clip = _flareRotating,
             TimeOffset = TimeSpan.Zero,

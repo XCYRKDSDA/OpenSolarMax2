@@ -147,7 +147,7 @@ internal class PortalChargingSurroundFlareTemplate(IAssetsManager assets) : ITem
 
         _rawFlareRotating.Parameters["MAX_SIZE"] = MaxSize;
         _rawFlareRotating.Parameters["RATIO"] = Ratio;
-        commandBuffer.Set(in transform, new Animation
+        commandBuffer.Add(in transform, new Animation
         {
             Clip = _rawFlareRotating.Bake(),
             TimeOffset = TimeSpan.FromSeconds(-Delay),
