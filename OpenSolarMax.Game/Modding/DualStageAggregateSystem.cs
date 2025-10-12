@@ -299,12 +299,41 @@ internal class DualStageAggregateSystem
         // 以显式顺序为基础
         var finalOrders = explicitOrders.ToHashSet();
 
-        // 添加所有结构化变更阶段关系。若结构化变更关系与显式关系冲突，需要在拓扑排序时暴露
-        finalOrders.UnionWith(structuralChangeOrders);
-
         // 添加所有组件读写关系。若组件读写关系与显式顺序冲突，以显式顺序为准；但是若组件读写顺序与结构化变更顺序冲突，需要暴露
         finalOrders.UnionWith(readWriteOrders.Where(p => !explicitOrders.Contains(p.Reverse()) &&
                                                          !explicitFinePairs.Contains(p.Unorder())));
+
+        // 构建 graphviz 文本
+        var dotsBuilder = new StringBuilder();
+        dotsBuilder.AppendLine("strict digraph {");
+        dotsBuilder.AppendLine("  rankdir=LR;");
+        // 添加三个阶段
+        dotsBuilder.AppendLine("  subgraph BeforeStructuralChanges {");
+        dotsBuilder.AppendLine("    cluster=true;");
+        dotsBuilder.AppendLine("    label=\"BeforeStructuralChanges\"");
+        foreach (var system in beforeStructuralChangesSystems)
+            dotsBuilder.AppendLine($"    \"{system.Name}\";");
+        dotsBuilder.AppendLine("  }");
+        dotsBuilder.AppendLine("  subgraph ReactToStructuralChanges {");
+        dotsBuilder.AppendLine("    cluster=true;");
+        dotsBuilder.AppendLine("    label=\"ReactToStructuralChanges\"");
+        foreach (var system in reactToStructuralChangesSystems)
+            dotsBuilder.AppendLine($"    \"{system.Name}\";");
+        dotsBuilder.AppendLine("  }");
+        dotsBuilder.AppendLine("  subgraph AfterStructuralChanges {");
+        dotsBuilder.AppendLine("    cluster=true;");
+        dotsBuilder.AppendLine("    label=\"AfterStructuralChanges\"");
+        foreach (var system in afterStructuralChangesSystems)
+            dotsBuilder.AppendLine($"    \"{system.Name}\";");
+        dotsBuilder.AppendLine("  }");
+        // 添加依赖关系
+        foreach (var (before, after) in finalOrders)
+            dotsBuilder.AppendLine($"  \"{after.Name}\" -> \"{before.Name}\";");
+        dotsBuilder.AppendLine("}");
+        Debug.WriteLine(dotsBuilder.ToString());
+
+        // 添加所有结构化变更阶段关系。若结构化变更关系与显式关系冲突，需要在拓扑排序时暴露
+        finalOrders.UnionWith(structuralChangeOrders);
 
         return finalOrders;
     }
@@ -324,14 +353,6 @@ internal class DualStageAggregateSystem
         // 构建 graph
         var ordersLookup = orders.ToLookup(p => p.After, p => p.Before);
         var graph = systemTypes.ToDictionary(t => t, t => ordersLookup[t].ToHashSet());
-
-        // 构建 graphviz 文本
-        var dotsBuilder = new StringBuilder();
-        dotsBuilder.AppendLine("strict digraph {");
-        foreach (var (before, after) in orders)
-            dotsBuilder.AppendLine($"  \"{after.Name}\" -> \"{before.Name}\"");
-        dotsBuilder.AppendLine("}");
-        Debug.WriteLine(dotsBuilder.ToString());
 
         // 声明结果
         var systems = new List<Type>();
