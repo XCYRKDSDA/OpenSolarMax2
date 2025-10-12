@@ -17,7 +17,6 @@ using Nine.Assets.Serialization;
 using Nine.Graphics;
 using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.ECS;
 using OpenSolarMax.Game.Modding;
 using Zio;
 using Zio.FileSystems;
@@ -310,7 +309,7 @@ public class SolarMax : XNAGame
 
         // 扫描所有的模组
         var modsDirectory = currentDirectory.EnumerateDirectories(Paths.Mods).First()!;
-        var allMods = Moddings.FindAllMods(modsDirectory);
+        var allMods = Modding.Modding.FindAllMods(modsDirectory);
 
         // 当玩家选择了一个地图包时，游戏将加载地图包指定的模组，并构建层叠资产管理器。
         // 层叠资产管理器以全局资产为最底层，随后是行为包的内置资产，最后是资产包的资产。
@@ -448,7 +447,7 @@ public class SolarMax : XNAGame
         foreach (var (dir, manifest, assembly) in loadedBehaviorMods)
         {
             Debug.Assert(assembly is not null); //行为包模组肯定是有程序集的
-            var modConfigurationTypes = Moddings.FindConfigurationTypes(assembly);
+            var modConfigurationTypes = Modding.Modding.FindConfigurationTypes(assembly);
             foreach (var (key, type) in modConfigurationTypes)
             {
                 if (configurations.TryGetValue(key, out var types))
@@ -475,7 +474,7 @@ public class SolarMax : XNAGame
         // 首先寻找所有系统
         var systemTypes = new SystemTypeCollection();
         foreach (var (path, manifest, assembly) in loadedBehaviorMods)
-            systemTypes.UnionWith(Moddings.FindSystemTypes(assembly));
+            systemTypes.UnionWith(Modding.Modding.FindSystemTypes(assembly));
 
         // 构造所有系统
 

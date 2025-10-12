@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;

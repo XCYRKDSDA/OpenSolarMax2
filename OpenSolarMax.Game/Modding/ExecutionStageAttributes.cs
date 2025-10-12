@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.ECS;
+namespace OpenSolarMax.Game.Modding;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public class BeforeStructuralChangesAttribute : Attribute

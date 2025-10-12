@@ -3,7 +3,7 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using FMOD;
 using OpenSolarMax.Game;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 using FmodSystem = FMOD.Studio.System;
 

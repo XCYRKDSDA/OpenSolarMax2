@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.ECS;
+namespace OpenSolarMax.Game.Modding;
 
 /// <summary>
 /// 描述当前系统需要在某另一个系统执行之前执行

@@ -4,7 +4,6 @@ using System.Text;
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 

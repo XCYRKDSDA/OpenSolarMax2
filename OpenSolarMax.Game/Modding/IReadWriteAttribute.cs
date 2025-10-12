@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.ECS;
+namespace OpenSolarMax.Game.Modding;
 
 public interface IReadWriteAttribute
 {

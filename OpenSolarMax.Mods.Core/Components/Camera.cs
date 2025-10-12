@@ -1,5 +1,5 @@
 using Microsoft.Xna.Framework.Graphics;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 
 namespace OpenSolarMax.Mods.Core.Components;
 

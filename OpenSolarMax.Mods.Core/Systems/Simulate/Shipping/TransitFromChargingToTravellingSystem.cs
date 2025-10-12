@@ -2,7 +2,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Nine.Assets;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 

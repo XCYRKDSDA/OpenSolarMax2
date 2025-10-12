@@ -6,7 +6,7 @@ using FontStashSharp;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
 using OpenSolarMax.Game;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;

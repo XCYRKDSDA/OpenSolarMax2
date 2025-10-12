@@ -1,7 +1,7 @@
 using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;

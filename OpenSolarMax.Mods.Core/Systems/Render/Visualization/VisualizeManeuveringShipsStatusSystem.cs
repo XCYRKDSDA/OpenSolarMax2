@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nine.Assets;
-using OpenSolarMax.Game.ECS;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using OpenSolarMax.Mods.Core.Utils;
