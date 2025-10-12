@@ -8,8 +8,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TreeRelationship<Anchorage>.AsParent), withEntities: true)]
-[Write(typeof(AnchoredShipsRegistry), withEntities: true)]
+[ReadCurr(typeof(TreeRelationship<Anchorage>.AsParent)), Write(typeof(AnchoredShipsRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdateShipRegistrySystem(World world) : ICalcSystem
 {

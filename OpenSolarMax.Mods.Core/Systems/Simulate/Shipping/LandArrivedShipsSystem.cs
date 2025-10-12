@@ -16,8 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 考察移动进度，将单位降落到目标星球的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[Iterate(typeof(ShippingStatus)), ReadPrev(typeof(TrailOf.AsShip), withEntities: true)]
-[Write(typeof(SoundEffect)), ChangeStructure]
+[Iterate(typeof(ShippingStatus)), ReadPrev(typeof(TrailOf.AsShip)), Write(typeof(SoundEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 状态先量变才能质变
 [ExecuteAfter(typeof(UpdateShipsStateSystem))]

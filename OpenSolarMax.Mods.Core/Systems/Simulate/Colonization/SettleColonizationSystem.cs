@@ -17,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(ReferenceSize)), ReadPrev(typeof(PartyReferenceColor))]
-[ReadPrev(typeof(InParty.AsAffiliate), withEntities: true), Iterate(typeof(ColonizationState)), ChangeStructure]
+[ReadPrev(typeof(InParty.AsAffiliate)), Iterate(typeof(ColonizationState)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 先计算进度，再判断是否完成殖民
 [ExecuteAfter(typeof(ProgressColonizationSystem))]

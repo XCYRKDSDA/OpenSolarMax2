@@ -12,8 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 推进殖民进度的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(Colonizable)), ReadPrev(typeof(AnchoredShipsRegistry), withEntities: true),
- ReadPrev(typeof(ColonizationAbility))]
+[ReadPrev(typeof(Colonizable)), ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(ColonizationAbility))]
 [Iterate(typeof(ColonizationState))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ProgressColonizationSystem(World world) : ITickSystem

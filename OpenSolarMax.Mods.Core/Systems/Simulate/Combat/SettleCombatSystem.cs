@@ -15,8 +15,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(AnchoredShipsRegistry), withEntities: true), ReadPrev(typeof(Combatable))]
-[ReadPrev(typeof(Sprite)), ReadPrev(typeof(AbsoluteTransform))]
+[ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(Combatable)), ReadPrev(typeof(Sprite)),
+ ReadPrev(typeof(AbsoluteTransform))]
 [Iterate(typeof(Battlefield)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 先量变再质变

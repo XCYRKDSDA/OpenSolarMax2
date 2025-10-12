@@ -19,9 +19,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(StartShippingRequest), withEntities: true)]
-[ReadPrev(typeof(AnchoredShipsRegistry), withEntities: true), ReadPrev(typeof(Shippable))]
-[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild), withEntities: true)]
+[ReadPrev(typeof(StartShippingRequest))]
+[ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(Shippable))]
+[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ReadPrev(typeof(RevolutionOrbit)), ReadPrev(typeof(RevolutionState)), ReadPrev(typeof(PlanetGeostationaryOrbit))]
 [Iterate(typeof(ShippingStatus)), Write(typeof(SoundEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]

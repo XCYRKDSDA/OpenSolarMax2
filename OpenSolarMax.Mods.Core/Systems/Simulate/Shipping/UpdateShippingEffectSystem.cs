@@ -14,8 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 根据运输任务执行的时间和阶段，应用单位及其尾焰的动画
 /// </summary>
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TrailOf.AsShip), withEntities: true), ReadCurr(typeof(ShippingStatus))]
-[Write(typeof(Sprite))]
+[ReadCurr(typeof(TrailOf.AsShip)), ReadCurr(typeof(ShippingStatus)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyPartyColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))] // 如果一个单位刚出生就移动，则用移动动画覆盖其出生动画
