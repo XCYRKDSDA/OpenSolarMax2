@@ -90,4 +90,47 @@ internal static partial class Modding
 
         return systemTypes;
     }
+
+    /// <summary>
+    /// 从一个程序集中找到所有的 Hook 实现方法
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <returns></returns>
+    public static ILookup<string, MethodInfo> FindHookImplementations(Assembly assembly)
+    {
+        const BindingFlags implFlags = BindingFlags.Public | BindingFlags.Static;
+        return assembly.GetExportedTypes()
+                       .Where(t => t.GetCustomAttributes<HookProviderAttribute>().Any())
+                       .SelectMany(t => t.GetMethods(implFlags))
+                       .SelectMany(m => m.GetCustomAttributes<HookOnAttribute>(), (m, a) => (hook: a.Hook, method: m))
+                       .ToLookup(p => p.hook, p => p.method);
+    }
+
+    /// <summary>
+    /// 将给定的 Hook 实现追加到目标对象的 Hook 委托属性上
+    /// </summary>
+    /// <param name="systems"></param>
+    /// <param name="hookImplInfos"></param>
+    /// <returns></returns>
+    public static void RegisterHook(IEnumerable<object> systems, ILookup<string, MethodInfo> hookImplInfos)
+    {
+        // 收集所有的挂载点
+        const BindingFlags hookFlags = BindingFlags.Public | BindingFlags.Instance;
+        var hookPropertyInfos =
+            systems.SelectMany(s => s.GetType().GetProperties(hookFlags), (s, p) => (obj: s, prop: p))
+                   .SelectMany(p => p.prop.GetCustomAttributes<HookAttribute>(),
+                               (p, a) => (hook: a.Name, p.obj, p.prop));
+
+        // 为每个挂载追加委托实现
+        foreach (var (name, obj, prop) in hookPropertyInfos)
+        {
+            prop.SetValue(
+                obj,
+                hookImplInfos[name].Aggregate(
+                    (Delegate)prop.GetValue(obj)!,
+                    (d, m) => Delegate.Combine(d, m.CreateDelegate(prop.PropertyType))
+                )
+            );
+        }
+    }
 }

@@ -409,13 +409,17 @@ internal class DualStageAggregateSystem
     private readonly CommandBuffer _commandBuffer = new();
 
     public DualStageAggregateSystem(World world, IReadOnlyCollection<Type> systemTypes,
-                                    IReadOnlyDictionary<Type, object> @params)
+                                    IReadOnlyDictionary<Type, object> @params,
+                                    ILookup<string, MethodInfo> hookImplInfos)
     {
         _world = world;
 
         var systemOrders = ExtractExecutionOrders(systemTypes);
         var sortedSystemTypes = TopologicalSortSystems(systemTypes, systemOrders);
         var systems = sortedSystemTypes.Select(t => CreateSystem(t, world, @params)).ToList();
+
+        // 注册 hook
+        Modding.RegisterHook(systems, hookImplInfos);
 
         // 寻找响应式结构化变更的部分，根据其划分为三部分
         foreach (var (type, system) in sortedSystemTypes.Zip(systems))

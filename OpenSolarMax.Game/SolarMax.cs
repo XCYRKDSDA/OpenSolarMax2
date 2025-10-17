@@ -475,22 +475,30 @@ public class SolarMax : XNAGame
         var systemTypes = new SystemTypeCollection();
         foreach (var (path, manifest, assembly) in loadedBehaviorMods)
             systemTypes.UnionWith(Modding.Modding.FindSystemTypes(assembly));
+        // 寻找所有 Hook 实现
+        var hookImplInfos = loadedBehaviorMods.Select(p => p.Item3)
+                                              .SelectMany(Modding.Modding.FindHookImplementations)
+                                              .SelectMany(x => x, (g, i) => (g.Key, i))
+                                              .ToLookup(p => p.Key, p => p.i);
 
         // 构造所有系统
 
         _inputSystem = new DualStageAggregateSystem(
             _world, systemTypes.InputSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets },
+            hookImplInfos
         );
 
         _aiSystem = new DualStageAggregateSystem(
             _world, systemTypes.AiSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets },
+            hookImplInfos
         );
 
         _simulateSystem = new DualStageAggregateSystem(
             _world, systemTypes.SimulateSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets }
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets },
+            hookImplInfos
         );
 
         _renderSystem = new DualStageAggregateSystem(
@@ -499,7 +507,8 @@ public class SolarMax : XNAGame
             {
                 [typeof(GraphicsDevice)] = GraphicsDevice,
                 [typeof(IAssetsManager)] = localAssets,
-            }
+            },
+            hookImplInfos
         );
 
         // 加载关卡内容
