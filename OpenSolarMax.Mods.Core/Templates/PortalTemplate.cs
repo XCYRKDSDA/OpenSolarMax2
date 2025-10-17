@@ -48,6 +48,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         //
         typeof(PlanetGeostationaryOrbit),
         typeof(AnchoredShipsRegistry),
+        typeof(ReachabilityRegistry),
         typeof(ReferenceSize),
         typeof(Battlefield),
         typeof(Colonizable),

@@ -14,6 +14,10 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
+public delegate bool? CheckLocationReachabilityCallback(World world,
+                                                        Entity departure, in AbsoluteTransform departurePose,
+                                                        in Vector3 destinationPose);
+
 [RenderSystem, AfterStructuralChanges]
 [Priority((int)GraphicsLayer.Interface)]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
@@ -133,18 +137,21 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         }
     }
 
-    public delegate bool ReachabilityChecker(World world, Entity departure, Vector3 destination);
-
-    public List<ReachabilityChecker> ReachabilityCheckers { get; } =
-    [
-        (world1, departure, destination)
-            => !ManeuveringUtils.CheckBarriersBlocking(world1,
-                                                       departure.Get<AbsoluteTransform>().Translation, destination)
-    ];
+    [Hook("CheckLocationReachability")]
+    public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }
 
     private bool CheckReachability(Entity departure, Vector3 destination)
     {
-        return ReachabilityCheckers.Any(checker => checker.Invoke(world, departure, destination));
+        foreach (var @delegate in CheckReachabilityDelegate?.GetInvocationList() ?? [])
+        {
+            var checker = (CheckLocationReachabilityCallback)@delegate;
+            var result = checker.Invoke(world, departure, in departure.Get<AbsoluteTransform>(), in destination);
+            if (result is not null)
+                return result.Value;
+        }
+
+        return !ManeuveringUtils.CheckBarriersBlocking(world, departure.Get<AbsoluteTransform>().Translation,
+                                                       destination);
     }
 
     private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Entity destination)

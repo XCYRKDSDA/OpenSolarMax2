@@ -11,12 +11,12 @@ using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates;
-using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [InputSystem, BeforeStructuralChanges]
-[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InParty.AsAffiliate))]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InParty.AsAffiliate)),
+ ReadCurr(typeof(ReachabilityRegistry))]
 [Iterate(typeof(ShippingStatus)), ChangeStructure]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : ICalcSystemWithStructuralChanges
 {
@@ -74,16 +74,9 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : 
         return boxedPlanets;
     }
 
-    public delegate bool ReachabilityChecker(World world, Entity departure, Entity destination);
-
-    public List<ReachabilityChecker> ReachabilityCheckers { get; } =
-    [
-        (world1, departure, destination) => !ManeuveringUtils.CheckBarriersBlocking(world1, departure, destination)
-    ];
-
     private bool CheckReachability(Entity departure, Entity destination)
     {
-        return ReachabilityCheckers.Any(checker => checker.Invoke(world, departure, destination));
+        return departure.Get<ReachabilityRegistry>().FromHereTo[destination];
     }
 
     private void HandleSelectionStateTransition(ref ShipsSelection selection,
