@@ -68,6 +68,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         //
         typeof(PlanetGeostationaryOrbit),
         typeof(AnchoredShipsRegistry),
+        typeof(ShippingUnitsRegistry),
         typeof(ReachabilityRegistry),
         typeof(DefaultLaunchPad),
         typeof(ProductionAbility),
@@ -177,7 +178,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         commandBuffer.Set(in entity, new PlanetGeostationaryOrbit
         {
             Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
-                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+                       Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
             Radius = ReferenceRadius * 2,
             Period = ReferenceRadius * 2 / 6
         });
