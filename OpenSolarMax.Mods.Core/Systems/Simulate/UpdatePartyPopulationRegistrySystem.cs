@@ -19,6 +19,7 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
     {
         registry.PopulationLimit = 0;
         registry.CurrentPopulation = 0;
+        registry.Planets.Clear();
     }
 
     [Query]
@@ -31,6 +32,16 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
 
         var party = asAffiliate.Relationship!.Value.Copy.Party;
         party.Get<PartyPopulationRegistry>().PopulationLimit += productionAbility.Population;
+    }
+
+    [Query]
+    [All<InParty.AsAffiliate, Colonizable>]
+    private static void CountColonizedPlanets(Entity planet, in InParty.AsAffiliate asAffiliate)
+    {
+        if (asAffiliate.Relationship is null) return;
+
+        var party = asAffiliate.Relationship!.Value.Copy.Party;
+        party.Get<PartyPopulationRegistry>().Planets.Add(planet);
     }
 
     [Query]
@@ -49,6 +60,7 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
     {
         ClearRegistryQuery(world);
         CountPopulationLimitQuery(world);
+        CountColonizedPlanetsQuery(world);
         CountCurrentPopulationQuery(world);
     }
 }
