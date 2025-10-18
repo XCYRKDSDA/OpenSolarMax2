@@ -36,9 +36,13 @@ public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
                                                     [Data]
                                                     Dictionary<Entity, List<(Entity Party, Entity Unit)>> shippingUnits)
     {
-        if (!shippingUnits.TryGetValue(destination, out var unitInfos)) return;
+        if (!shippingUnits.TryGetValue(destination, out var unitInfos))
+        {
+            shipRegistry.IncomingUnits = Enumerable.Empty<Entity>().ToLookup(_ => default(Entity));
+            return;
+        }
 
-        shipRegistry.IncomingUnits = (Lookup<Entity, Entity>)unitInfos.ToLookup(p => p.Party, p => p.Unit);
+        shipRegistry.IncomingUnits = unitInfos.ToLookup(p => p.Party, p => p.Unit);
     }
 
     public void Update()

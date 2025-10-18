@@ -9,5 +9,5 @@ public struct ShippingUnitsRegistry
     /// <summary>
     /// 阵营 -> 舰船
     /// </summary>
-    public Lookup<Entity, Entity> IncomingUnits;
+    public ILookup<Entity, Entity> IncomingUnits;
 }
