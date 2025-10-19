@@ -50,7 +50,11 @@ public class PartyTemplate : ITemplate
         typeof(ColonizationAbility),
         // 隶属关系
         typeof(InParty.AsParty),
-        typeof(PartyPopulationRegistry)
+        typeof(PartyPopulationRegistry),
+        // Ai
+        typeof(Ai),
+        typeof(AiTimer),
+        typeof(AiCooldown)
     );
 
     public Signature Signature => _signature;
@@ -72,6 +76,13 @@ public class PartyTemplate : ITemplate
 
         ref var colonizationAbility = ref entity.Get<ColonizationAbility>();
         colonizationAbility.ProgressPerSecond = 1;
+
+        ref var ai = ref entity.Get<Ai>();
+        ref var aiCooldown = ref entity.Get<AiCooldown>();
+        ref var aiTimer = ref entity.Get<AiTimer>();
+        ai.Enabled = true;
+        aiCooldown.Duration = TimeSpan.FromSeconds(3);
+        aiTimer.TimeLeft = TimeSpan.FromSeconds(2);
     }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
@@ -89,5 +100,9 @@ public class PartyTemplate : ITemplate
         commandBuffer.Set(in entity, new Shippable { Speed = 100 });
 
         commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 1 });
+
+        commandBuffer.Set(in entity, new Ai { Enabled = true });
+        commandBuffer.Set(in entity, new AiCooldown { Duration = TimeSpan.FromSeconds(3) });
+        commandBuffer.Set(in entity, new AiTimer { TimeLeft = TimeSpan.FromSeconds(2) });
     }
 }

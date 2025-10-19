@@ -71,7 +71,8 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(InAttackRangeShipsRegistry),
         typeof(AttackTimer),
         typeof(AttackCooldown),
-        typeof(Turret)
+        typeof(Turret),
+        typeof(PlanetAiTimers)
     );
 
     public Signature Signature => _signature;

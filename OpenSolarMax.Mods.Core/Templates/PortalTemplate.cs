@@ -56,7 +56,8 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(ColonizationState),
         typeof(InParty.AsAffiliate),
         typeof(TreeRelationship<Anchorage>.AsParent),
-        typeof(PortalChargingJobs)
+        typeof(PortalChargingJobs),
+        typeof(PlanetAiTimers)
     );
 
     public Signature Signature => _signature;

@@ -79,7 +79,8 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(Colonizable),
         typeof(ColonizationState),
         typeof(InParty.AsAffiliate),
-        typeof(TreeRelationship<Anchorage>.AsParent)
+        typeof(TreeRelationship<Anchorage>.AsParent),
+        typeof(PlanetAiTimers)
     );
 
     public Signature Signature => _signature;
