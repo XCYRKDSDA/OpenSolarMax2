@@ -1,0 +1,17 @@
+{
+    "duration": 2,
+    "variables": {
+        "OFFSET": 100
+    },
+    "curves": {
+        "Opacity": [
+            { "time": 0, "value": 0, "type": "smooth", "gradient": 0 },
+            { "time": 0.75, "value": 1, "type": "smooth", "gradient": 0 }
+        ],
+        "Left": [
+            { "time": 1, "value": 0, "type": "smooth", "gradient": 0 },
+            { "time": 1.5, "value": "OFFSET / 2", "type": "smooth", "gradient": "OFFSET * 3" },
+            { "time": 2, "value": "OFFSET", "type": "smooth", "gradient": 0 }
+        ]
+    }
+}

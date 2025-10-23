@@ -1,0 +1,9 @@
+{
+    "duration": 2,
+    "curves": {
+        "Opacity": [
+            { "time": 1.25, "value": 0, "type": "smooth", "gradient": 0 },
+            { "time": 2.00, "value": 1, "type": "smooth", "gradient": 0 }
+        ]
+    }
+}

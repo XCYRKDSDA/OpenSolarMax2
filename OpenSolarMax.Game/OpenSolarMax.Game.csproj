@@ -34,6 +34,12 @@
         <None Update="Levels\Demo.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="Content\Animations\TitleScreen\PrefixAnimation.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\Animations\TitleScreen\LogoAnimation.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
