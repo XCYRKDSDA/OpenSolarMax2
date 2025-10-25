@@ -257,7 +257,6 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (!_lastTouchPos.HasValue || Desktop is null)
             return;
 
-        UpdateScrolling();
         if (_firstTouchPos == _lastTouchPos)
         {
             (_, _, _targetIndex) =
@@ -292,10 +291,13 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         if (_lastTouchPos is not null) return;
 
-        // 以线性控制率将选中元素拉向中心
-        const float kp = 10;
+        // 计算当前偏差
         var target = ActualBounds.Center.X - GetRelativeCenters()[_targetIndex];
         var error = target - _thumbnailContainer.Left;
+        if (error == 0) return;
+
+        // 以线性控制率将选中元素拉向中心
+        const float kp = 10;
         var velocity = error * kp;
         var movementF = velocity * gameTime.ElapsedGameTime.TotalSeconds;
         var movement = movementF switch
