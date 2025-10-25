@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Microsoft.Xna.Framework;
+using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Container = Myra.Graphics2D.UI.Container;
 
@@ -8,13 +9,32 @@ namespace OpenSolarMax.Game.UI;
 
 public sealed class CustomHorizontalScrollViewer : Container
 {
+    private class Circle : IImage
+    {
+        public int Thickness { get; set; }
+
+        public int Radius { get; set; }
+
+        public int Steps { get; set; } = 64;
+
+        public void Draw(RenderContext context, Rectangle dest, Color color)
+        {
+            context.DrawCircle(dest.Center.ToVector2(), Radius, Steps, color, Thickness);
+        }
+
+        public Point Size => new(Radius * 2);
+    }
+
     private readonly Panel _previewPanel;
     private readonly Panel _thumbnailsPanel;
     private readonly ObservableCollection<Widget> _thumbnails;
     private readonly HorizontalStackPanel _thumbnailContainer;
+    private readonly Circle _circle;
+    private readonly Image _circleImage;
 
     private int _thumbnailsInterval = 240;
     private int _thumbnailsHeight = 160;
+    private int _selectionRadius = 80;
 
     private bool _widgetsDirty = true;
     private List<int> _relativeCenters;
@@ -55,6 +75,18 @@ public sealed class CustomHorizontalScrollViewer : Container
         }
     }
 
+    public Color SelectionColor
+    {
+        get => _circleImage.Color;
+        set => _circleImage.Color = value;
+    }
+
+    public int SelectionRadius
+    {
+        get => _selectionRadius;
+        set => _selectionRadius = value;
+    }
+
     public Widget NearestWidget => _thumbnails[_nearestIndex];
 
     public int LeftIndex => _leftIndex;
@@ -89,6 +121,14 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         get => _targetIndex;
         set => _targetIndex = value;
+    }
+
+    private event EventHandler? _thumbnailsPositionChangedHandlers;
+
+    public event EventHandler ThumbnailsPositionChanged
+    {
+        add => _thumbnailsPositionChangedHandlers += value;
+        remove => _thumbnailsPositionChangedHandlers -= value;
     }
 
     #endregion
@@ -238,6 +278,14 @@ public sealed class CustomHorizontalScrollViewer : Container
         // 设置渐变透明度
         for (int i = 0; i < _thumbnailContainer.Widgets.Count; i++)
             _thumbnailContainer.Widgets[i].Opacity = MathF.Max(1 - 0.2f * MathF.Abs(i - _nearestIndex), 0);
+
+        // 设置选框尺寸和透明度
+        var ratio = _leftIndex == _rightIndex ? 1 : MathF.Abs(LeftRatio - RightRatio);
+        _circle.Radius = (int)(_selectionRadius * ratio);
+        _circleImage.Opacity = ratio;
+
+        // 触发事件
+        _thumbnailsPositionChangedHandlers?.Invoke(this, EventArgs.Empty);
     }
 
     public void Update(GameTime gameTime)
@@ -278,6 +326,15 @@ public sealed class CustomHorizontalScrollViewer : Container
             VerticalAlignment = VerticalAlignment.Stretch
         };
         _thumbnailsPanel.Widgets.Add(_thumbnailContainer);
+
+        _circle = new Circle() { Radius = 160 / 2, Thickness = 3, Steps = 64 };
+        _circleImage = new Image()
+        {
+            Renderable = _circle,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        _thumbnailsPanel.Widgets.Add(_circleImage);
 
         var gridLayout = new GridLayout();
         gridLayout.RowsProportions.Add(Proportion.Fill);
