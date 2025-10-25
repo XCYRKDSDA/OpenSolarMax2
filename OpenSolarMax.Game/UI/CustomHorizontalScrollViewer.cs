@@ -75,23 +75,23 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     #endregion
 
-    private Panel Wrap(Widget widget)
+    private CustomScrollItem Wrap(Widget widget)
     {
-        var panel = new Panel
+        widget.HorizontalAlignment = HorizontalAlignment.Center;
+        widget.VerticalAlignment = VerticalAlignment.Center;
+        var item = new CustomScrollItem()
         {
             MinWidth = _interval,
             HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Content = widget
         };
-        widget.HorizontalAlignment = HorizontalAlignment.Center;
-        widget.VerticalAlignment = VerticalAlignment.Center;
-        panel.Widgets.Add(widget);
-        return panel;
+        return item;
     }
 
-    private static Widget Unwrap(Panel panel)
+    private static Widget? Unwrap(CustomScrollItem item)
     {
-        return panel.Widgets[0];
+        return item.Content;
     }
 
     private void WidgetsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
