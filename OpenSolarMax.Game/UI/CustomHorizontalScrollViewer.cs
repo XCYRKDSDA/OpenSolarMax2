@@ -45,6 +45,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     private int _targetIndex = 0;
     private int _nearestIndex = 0;
     private int _leftIndex = 0, _rightIndex = 0;
+    private float _leftRatio = 1, _rightRatio = 1;
 
     #region Properties
 
@@ -91,31 +92,11 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     public int LeftIndex => _leftIndex;
     public Widget LeftItem => _thumbnailContainer.Widgets[_leftIndex];
-
-    public float LeftRatio
-    {
-        get
-        {
-            if (_leftIndex == _rightIndex) return 1;
-            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
-            return (float)(x - _relativeCenters[_leftIndex]) /
-                   (_relativeCenters[_rightIndex] - _relativeCenters[_leftIndex]);
-        }
-    }
+    public float LeftRatio => _leftRatio;
 
     public int RightIndex => _rightIndex;
     public Widget RightItem => _thumbnailContainer.Widgets[_rightIndex];
-
-    public float RightRatio
-    {
-        get
-        {
-            if (_leftIndex == _rightIndex) return 1;
-            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
-            return (float)(_relativeCenters[_rightIndex] - x) /
-                   (_relativeCenters[_rightIndex] - _relativeCenters[_leftIndex]);
-        }
-    }
+    public float RightRatio => _rightRatio;
 
     public int TargetWidgetIndex
     {
@@ -274,12 +255,23 @@ public sealed class CustomHorizontalScrollViewer : Container
         (_leftIndex, _rightIndex, _nearestIndex) =
             BinarySearchNearest(GetRelativeCenters(), ActualBounds.Center.X - _thumbnailContainer.Left);
 
+        // 计算当前位置在左右控件之间的过渡比例
+        if (_leftIndex == _rightIndex)
+            _leftRatio = _rightRatio = 1;
+        else
+        {
+            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
+            _rightRatio = (float)(_relativeCenters[_rightIndex] - x) /
+                          (_relativeCenters[_rightIndex] - _relativeCenters[_leftIndex]);
+            _leftRatio = 1 - _rightRatio;
+        }
+
         // 设置渐变透明度
         for (int i = 0; i < _thumbnailContainer.Widgets.Count; i++)
             _thumbnailContainer.Widgets[i].Opacity = MathF.Max(1 - 0.2f * MathF.Abs(i - _nearestIndex), 0);
 
         // 设置选框尺寸和透明度
-        var ratio = _leftIndex == _rightIndex ? 1 : MathF.Abs(LeftRatio - RightRatio);
+        var ratio = _leftIndex == _rightIndex ? 1 : MathF.Abs(_leftRatio - _rightRatio);
         _circle.Radius = (int)(_selectionRadius * ratio);
         _circleImage.Opacity = ratio;
 
