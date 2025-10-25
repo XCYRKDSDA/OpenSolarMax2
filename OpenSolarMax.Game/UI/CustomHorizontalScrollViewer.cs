@@ -8,12 +8,13 @@ namespace OpenSolarMax.Game.UI;
 
 public sealed class CustomHorizontalScrollViewer : Container
 {
+    private readonly Panel _previewPanel;
+    private readonly Panel _thumbnailsPanel;
     private readonly ObservableCollection<Widget> _thumbnails;
     private readonly HorizontalStackPanel _thumbnailContainer;
-    private readonly Panel _previewPanel;
 
-    private int _thumbnailInterval = 240;
-    private int _thumbnailHeight = 160;
+    private int _thumbnailsInterval = 240;
+    private int _thumbnailsHeight = 160;
 
     private bool _widgetsDirty = true;
     private List<int> _relativeCenters;
@@ -31,23 +32,25 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     public Panel PreviewPanel => _previewPanel;
 
-    public int ThumbInterval
+    public Panel ThumbnailsPanel => _thumbnailsPanel;
+
+    public int ThumbnailsInterval
     {
-        get => _thumbnailInterval;
+        get => _thumbnailsInterval;
         set
         {
-            _thumbnailInterval = value;
+            _thumbnailsInterval = value;
             foreach (var panel in _thumbnailContainer.Widgets)
                 panel.Width = panel.MaxWidth = panel.MinWidth = value;
         }
     }
 
-    public int ThumbnailHeight
+    public int ThumbnailsHeight
     {
-        get => _thumbnailHeight;
+        get => _thumbnailsHeight;
         set
         {
-            _thumbnailHeight = value;
+            _thumbnailsHeight = value;
             ((GridLayout)ChildrenLayout).RowsProportions[1].Value = value;
         }
     }
@@ -96,7 +99,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         widget.VerticalAlignment = VerticalAlignment.Center;
         var item = new CustomScrollItem()
         {
-            MinWidth = _thumbnailInterval,
+            MinWidth = _thumbnailsInterval,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Stretch,
             Content = widget
@@ -143,8 +146,9 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (_widgetsDirty)
         {
             _relativeCenters = _thumbnailContainer.Widgets
-                                         .Select(w => _thumbnailContainer.ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
-                                         .ToList();
+                                                  .Select(w => _thumbnailContainer
+                                                               .ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
+                                                  .ToList();
         }
         return _relativeCenters;
     }
@@ -256,28 +260,28 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     public CustomHorizontalScrollViewer()
     {
-        _previewPanel = new Panel()
-        {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-        _thumbnailContainer = new HorizontalStackPanel()
-        {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
         _thumbnails = [];
         _relativeCenters = [];
 
+        _previewPanel = new Panel();
+        _thumbnailsPanel = new Panel();
+
+        _thumbnailContainer = new HorizontalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Stretch
+        };
+        _thumbnailsPanel.Widgets.Add(_thumbnailContainer);
+
         var gridLayout = new GridLayout();
         gridLayout.RowsProportions.Add(Proportion.Fill);
-        gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailHeight));
+        gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         ChildrenLayout = gridLayout;
 
-        Grid.SetColumn(_previewPanel, 0);
-        Grid.SetRow(_thumbnailContainer, 1);
+        Grid.SetRow(_previewPanel, 0);
+        Grid.SetRow(_thumbnailsPanel, 1);
         Children.Add(_previewPanel);
-        Children.Add(_thumbnailContainer);
+        Children.Add(_thumbnailsPanel);
 
         Widgets.CollectionChanged += WidgetsOnCollectionChanged;
     }
