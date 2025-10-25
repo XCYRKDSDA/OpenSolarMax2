@@ -8,9 +8,12 @@ namespace OpenSolarMax.Game.UI;
 
 public sealed class CustomHorizontalScrollViewer : Container
 {
-    private readonly ObservableCollection<Widget> _widgets;
-    private readonly HorizontalStackPanel _container;
-    private int _interval = 240;
+    private readonly ObservableCollection<Widget> _thumbnails;
+    private readonly HorizontalStackPanel _thumbnailContainer;
+    private readonly Panel _previewPanel;
+
+    private int _thumbnailInterval = 240;
+    private int _thumbnailHeight = 160;
 
     private bool _widgetsDirty = true;
     private List<int> _relativeCenters;
@@ -24,44 +27,56 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     #region Properties
 
-    public override ObservableCollection<Widget> Widgets => _widgets;
+    public override ObservableCollection<Widget> Widgets => _thumbnails;
 
-    public int Interval
+    public Panel PreviewPanel => _previewPanel;
+
+    public int ThumbInterval
     {
-        get => _interval;
+        get => _thumbnailInterval;
         set
         {
-            _interval = value;
-            foreach (var panel in _container.Widgets)
+            _thumbnailInterval = value;
+            foreach (var panel in _thumbnailContainer.Widgets)
                 panel.Width = panel.MaxWidth = panel.MinWidth = value;
         }
     }
 
-    public Widget NearestWidget => _widgets[_nearestIndex];
+    public int ThumbnailHeight
+    {
+        get => _thumbnailHeight;
+        set
+        {
+            _thumbnailHeight = value;
+            ((GridLayout)ChildrenLayout).RowsProportions[1].Value = value;
+        }
+    }
+
+    public Widget NearestWidget => _thumbnails[_nearestIndex];
 
     public int LeftIndex => _leftIndex;
-    public Widget LeftItem => _container.Widgets[_leftIndex];
+    public Widget LeftItem => _thumbnailContainer.Widgets[_leftIndex];
 
     public float LeftRatio
     {
         get
         {
             if (_leftIndex == _rightIndex) return 1;
-            var x = ActualBounds.Center.X - _container.Left;
+            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
             return (float)(x - _relativeCenters[_leftIndex]) /
                    (_relativeCenters[_rightIndex] - _relativeCenters[_leftIndex]);
         }
     }
 
     public int RightIndex => _rightIndex;
-    public Widget RightItem => _container.Widgets[_rightIndex];
+    public Widget RightItem => _thumbnailContainer.Widgets[_rightIndex];
 
     public float RightRatio
     {
         get
         {
             if (_leftIndex == _rightIndex) return 1;
-            var x = ActualBounds.Center.X - _container.Left;
+            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
             return (float)(_relativeCenters[_rightIndex] - x) /
                    (_relativeCenters[_rightIndex] - _relativeCenters[_leftIndex]);
         }
@@ -81,7 +96,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         widget.VerticalAlignment = VerticalAlignment.Center;
         var item = new CustomScrollItem()
         {
-            MinWidth = _interval,
+            MinWidth = _thumbnailInterval,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Stretch,
             Content = widget
@@ -102,21 +117,21 @@ public sealed class CustomHorizontalScrollViewer : Container
         switch (e.Action)
         {
             case NotifyCollectionChangedAction.Add:
-                _container.Widgets.Insert(e.NewStartingIndex, Wrap((Widget)e.NewItems?[0]!));
+                _thumbnailContainer.Widgets.Insert(e.NewStartingIndex, Wrap((Widget)e.NewItems?[0]!));
                 break;
             case NotifyCollectionChangedAction.Remove:
-                if (e.OldStartingIndex >= 0) _container.Widgets.RemoveAt(e.OldStartingIndex);
+                if (e.OldStartingIndex >= 0) _thumbnailContainer.Widgets.RemoveAt(e.OldStartingIndex);
                 break;
             case NotifyCollectionChangedAction.Replace:
-                _container.Widgets[e.NewStartingIndex] = Wrap((Widget)e.NewItems?[0]!);
+                _thumbnailContainer.Widgets[e.NewStartingIndex] = Wrap((Widget)e.NewItems?[0]!);
                 break;
             case NotifyCollectionChangedAction.Move:
-                _container.Widgets.Move(e.OldStartingIndex, e.NewStartingIndex);
+                _thumbnailContainer.Widgets.Move(e.OldStartingIndex, e.NewStartingIndex);
                 break;
             case NotifyCollectionChangedAction.Reset:
-                _container.Widgets.Clear();
+                _thumbnailContainer.Widgets.Clear();
                 foreach (var widget in Widgets)
-                    _container.Widgets.Add(Wrap(widget));
+                    _thumbnailContainer.Widgets.Add(Wrap(widget));
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(e));
@@ -127,8 +142,8 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         if (_widgetsDirty)
         {
-            _relativeCenters = _container.Widgets
-                                         .Select(w => _container.ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
+            _relativeCenters = _thumbnailContainer.Widgets
+                                         .Select(w => _thumbnailContainer.ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
                                          .ToList();
         }
         return _relativeCenters;
@@ -172,7 +187,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (delta > 0) _nearestIndex += 1;
         if (delta < 0) _nearestIndex -= 1;
         if (_nearestIndex < 0) _nearestIndex = 0;
-        if (_nearestIndex >= _widgets.Count) _nearestIndex = _widgets.Count - 1;
+        if (_nearestIndex >= _thumbnails.Count) _nearestIndex = _thumbnails.Count - 1;
     }
 
     private void DesktopTouchMoved(object? sender, EventArgs args)
@@ -187,7 +202,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         var delta = touchPosition.Value.X - _lastTouchPos.Value.X;
         _lastTouchPos = touchPosition.Value;
 
-        _container.Left += delta;
+        _thumbnailContainer.Left += delta;
 
         UpdateScrolling();
     }
@@ -199,7 +214,7 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         // 二分法查找最近点作为目标点
         (_, _, _targetIndex) =
-            BinarySearchNearest(GetRelativeCenters(), _container.ToLocal(_firstTouchPos.Value).X);
+            BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
 
         _firstTouchPos = _lastTouchPos = null;
     }
@@ -208,11 +223,11 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         // 二分法查找最近点和左右点
         (_leftIndex, _rightIndex, _nearestIndex) =
-            BinarySearchNearest(GetRelativeCenters(), ActualBounds.Center.X - _container.Left);
+            BinarySearchNearest(GetRelativeCenters(), ActualBounds.Center.X - _thumbnailContainer.Left);
 
         // 设置渐变透明度
-        for (int i = 0; i < _container.Widgets.Count; i++)
-            _container.Widgets[i].Opacity = MathF.Max(1 - 0.2f * MathF.Abs(i - _nearestIndex), 0);
+        for (int i = 0; i < _thumbnailContainer.Widgets.Count; i++)
+            _thumbnailContainer.Widgets[i].Opacity = MathF.Max(1 - 0.2f * MathF.Abs(i - _nearestIndex), 0);
     }
 
     public void Update(GameTime gameTime)
@@ -222,7 +237,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         // 以线性控制率将选中元素拉向中心
         const float kp = 10;
         var target = ActualBounds.Center.X - GetRelativeCenters()[_targetIndex];
-        var error = target - _container.Left;
+        var error = target - _thumbnailContainer.Left;
         var velocity = error * kp;
         var movementF = velocity * gameTime.ElapsedGameTime.TotalSeconds;
         var movement = movementF switch
@@ -232,22 +247,37 @@ public sealed class CustomHorizontalScrollViewer : Container
             _ => (int)movementF
         };
         if (MathF.Abs(movement) > MathF.Abs(error))
-            _container.Left = target;
+            _thumbnailContainer.Left = target;
         else
-            _container.Left += movement;
+            _thumbnailContainer.Left += movement;
 
         UpdateScrolling();
     }
 
     public CustomHorizontalScrollViewer()
     {
-        _container = new HorizontalStackPanel();
-        _widgets = [];
+        _previewPanel = new Panel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        _thumbnailContainer = new HorizontalStackPanel()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        _thumbnails = [];
         _relativeCenters = [];
 
-        ChildrenLayout = new SingleItemLayout<HorizontalStackPanel>(this) { Child = _container };
-        HorizontalAlignment = HorizontalAlignment.Stretch;
-        VerticalAlignment = VerticalAlignment.Stretch;
+        var gridLayout = new GridLayout();
+        gridLayout.RowsProportions.Add(Proportion.Fill);
+        gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailHeight));
+        ChildrenLayout = gridLayout;
+
+        Grid.SetColumn(_previewPanel, 0);
+        Grid.SetRow(_thumbnailContainer, 1);
+        Children.Add(_previewPanel);
+        Children.Add(_thumbnailContainer);
 
         Widgets.CollectionChanged += WidgetsOnCollectionChanged;
     }
