@@ -161,7 +161,8 @@ public sealed class CustomHorizontalScrollViewer : Container
         {
             int mid = (left + right) >> 1;
             if (list[mid] < x) left = mid + 1;
-            else right = mid - 1;
+            else if (list[mid] > x) right = mid - 1;
+            else return (mid, mid, mid);
         }
         if (left == 0) return (0, 0, 0);
         if (left == list.Count) return (list.Count - 1, list.Count - 1, list.Count - 1);
