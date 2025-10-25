@@ -217,9 +217,14 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (!_lastTouchPos.HasValue || Desktop is null)
             return;
 
-        // 二分法查找最近点作为目标点
-        (_, _, _targetIndex) =
-            BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
+        UpdateScrolling();
+        if (_firstTouchPos == _lastTouchPos)
+        {
+            (_, _, _targetIndex) =
+                BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
+        }
+        else
+            _targetIndex = _nearestIndex;
 
         _firstTouchPos = _lastTouchPos = null;
     }
