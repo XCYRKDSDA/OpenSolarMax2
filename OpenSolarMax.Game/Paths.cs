@@ -1,10 +1,34 @@
+using Zio;
+
 namespace OpenSolarMax.Game;
 
 internal static class Paths
 {
-    public const string Mods = "./Mods";
+    public static UPath Content => "Content";
 
-    public const string Levels = "./Levels";
+    public static UPath Mods => "Mods";
 
-    internal const string Content = "./Content";
+    public static UPath Behaviors => "Behaviors";
+
+    public static UPath Levels => "Levels";
+
+    public static UPath UserData
+        => Envs.UseDebugFileSystem
+               ? $"{Environment.CurrentDirectory}/UserData"
+               : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+    public static UPath UserConfig
+        => Envs.UseDebugFileSystem
+               ? $"{Environment.CurrentDirectory}/UserConfig"
+               : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+    public static UPath AppData
+        => Envs.UseDebugFileSystem
+               ? Environment.CurrentDirectory
+               : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+
+    public static UPath AppConfig
+        => Envs.UseDebugFileSystem
+               ? Environment.CurrentDirectory
+               : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 }
