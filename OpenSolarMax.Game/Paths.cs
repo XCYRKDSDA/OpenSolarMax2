@@ -22,12 +22,12 @@ internal static class Paths
                ? $"{Environment.CurrentDirectory}/UserConfig"
                : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-    public static UPath AppData
+    public static UPath CommonData
         => Envs.UseDebugFileSystem
                ? Environment.CurrentDirectory
                : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 
-    public static UPath AppConfig
+    public static UPath CommonConfig
         => Envs.UseDebugFileSystem
                ? Environment.CurrentDirectory
                : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);

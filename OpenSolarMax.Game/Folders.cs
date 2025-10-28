@@ -13,7 +13,7 @@ public static class Folders
     {
         _contentFs = new AggregateFileSystem();
         _contentFs.AddFileSystem(new ResourceFileSystem(Assembly.GetExecutingAssembly(), Paths.Content.FullName));
-        _contentFs.AddFileSystem(new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.AppData / Paths.Content));
+        _contentFs.AddFileSystem(new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.CommonData / Paths.Content));
         _contentFs.AddFileSystem(new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.UserData / Paths.Content));
     }
 
@@ -29,13 +29,13 @@ public static class Folders
         {
             _behaviorsFs = new AggregateFileSystem();
             _behaviorsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.AppData / Paths.Mods / Paths.Behaviors));
+                new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.CommonData / Paths.Mods / Paths.Behaviors));
             _behaviorsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.UserData / Paths.Mods / Paths.Behaviors));
 
             _levelsFs = new AggregateFileSystem();
             _levelsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.AppData / Paths.Mods / Paths.Levels));
+                new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.CommonData / Paths.Mods / Paths.Levels));
             _levelsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.UserData / Paths.Mods / Paths.Levels));
         }
