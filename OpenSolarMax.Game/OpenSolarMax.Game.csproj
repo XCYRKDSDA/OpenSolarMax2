@@ -6,6 +6,14 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <MGFXProfile>OpenGL</MGFXProfile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Effect Include="Content\Effects\*.fx"/>
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Arch" Version="2.1.0" />
         <PackageReference Include="Arch.System" Version="1.1.0" />
