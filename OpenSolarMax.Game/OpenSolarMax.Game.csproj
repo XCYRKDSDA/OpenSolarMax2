@@ -17,6 +17,7 @@
     <ItemGroup>
         <PackageReference Include="Arch" Version="2.1.0" />
         <PackageReference Include="Arch.System" Version="1.1.0" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
