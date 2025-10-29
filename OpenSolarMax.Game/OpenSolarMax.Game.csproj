@@ -48,4 +48,6 @@
         </None>
     </ItemGroup>
 
+    <Import Project="mgfx.targets"/>
+
 </Project>
