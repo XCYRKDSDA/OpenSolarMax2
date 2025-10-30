@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using Myra.Graphics2D;
 using Nine.Animations;
 
-namespace OpenSolarMax.Game.Screens;
+namespace OpenSolarMax.Game.UI;
 
 public class FadableWrapper(IImage image, ICurve<float>? map = null) : IFadableImage
 {

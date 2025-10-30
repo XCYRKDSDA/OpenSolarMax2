@@ -1,9 +1,9 @@
-using Microsoft.Xna.Framework;
 using System.ComponentModel;
+using Microsoft.Xna.Framework;
 using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 
-namespace OpenSolarMax.Game.Screens;
+namespace OpenSolarMax.Game.UI;
 
 public class FadableImage : Widget
 {

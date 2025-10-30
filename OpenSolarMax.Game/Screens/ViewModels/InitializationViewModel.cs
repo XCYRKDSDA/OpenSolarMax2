@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Screens;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.Views;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;

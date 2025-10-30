@@ -5,7 +5,7 @@ using Nine.Screens;
 using Nine.Screens.Transitions;
 using OpenSolarMax.Game.Graphics;
 
-namespace OpenSolarMax.Game.Screens;
+namespace OpenSolarMax.Game.Screens.Transitions;
 
 public class ExposureTransition(
     GraphicsDevice graphicsDevice, IAssetsManager assets,

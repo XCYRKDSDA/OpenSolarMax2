@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Myra.Graphics2D;
 
-namespace OpenSolarMax.Game.Screens;
+namespace OpenSolarMax.Game.UI;
 
 public interface IFadableImage : IImage
 {

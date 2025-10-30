@@ -10,6 +10,7 @@ using Myra.Graphics2D.TextureAtlases;
 using Nine.Animations;
 using Nine.Assets;
 using OneOf;
+using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
