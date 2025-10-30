@@ -3,6 +3,7 @@ using System.ComponentModel;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
+using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
 using Nine.Screens;
@@ -13,6 +14,8 @@ namespace OpenSolarMax.Game.Screens.Views;
 
 internal class MenuLikeScreen : ScreenBase
 {
+    private static readonly Color _gray = new(0, 0, 0, 0x55);
+
     private readonly IMenuLikeViewModel _viewModel;
     private readonly IAssetsManager _assets;
     private readonly Desktop _desktop;
@@ -34,6 +37,21 @@ internal class MenuLikeScreen : ScreenBase
         _assets = assets;
         _desktop = new Desktop();
 
+        var band1 = new Widget()
+        {
+            Background = new SolidBrush(_gray),
+            Height = 54,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+        var band2 = new Widget()
+        {
+            Background = new SolidBrush(_gray),
+            Height = 54,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Bottom,
+        };
+
         _scrollViewer = new CustomHorizontalScrollViewer();
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
 
@@ -52,7 +70,18 @@ internal class MenuLikeScreen : ScreenBase
         _scrollViewer.PreviewPanel.Widgets.Add(_leftPreview);
         _scrollViewer.PreviewPanel.Widgets.Add(_rightPreview);
 
-        _desktop.Root = _scrollViewer;
+        var grid = new Grid();
+        grid.RowsProportions.Add(Proportion.Auto);
+        grid.RowsProportions.Add(Proportion.Fill);
+        grid.RowsProportions.Add(Proportion.Auto);
+        Grid.SetRow(band1, 0);
+        Grid.SetRow(_scrollViewer, 1);
+        Grid.SetRow(band2, 2);
+        grid.Widgets.Add(band1);
+        grid.Widgets.Add(_scrollViewer);
+        grid.Widgets.Add(band2);
+
+        _desktop.Root = grid;
 
         // 初步注册内容
 

@@ -16,7 +16,8 @@ public class InitializationScreen : ScreenBase
 {
     private const int _textSize = 80;
     private const string _logoText = "O  P  E  N    S  O  L  A  R  M  A  X";
-    private static readonly Color _logoColor = Color.Gray;
+    private static readonly Color _gray = new(0, 0, 0, 0x55);
+    private static readonly Color _lightGray = new(0, 0, 0, 0x11);
 
     private readonly GraphicsDevice _graphicsDevice;
     private readonly Desktop _desktop;
@@ -39,7 +40,7 @@ public class InitializationScreen : ScreenBase
 
         _logoLabel = new Label()
         {
-            Text = _logoText, TextColor = _logoColor, Font = font,
+            Text = _logoText, TextColor = _gray, Font = font,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 0, 0, _textSize / 2),
         };
@@ -47,7 +48,21 @@ public class InitializationScreen : ScreenBase
         {
             Minimum = 0, Maximum = 1, Value = viewModel.Progress,
             HorizontalAlignment = HorizontalAlignment.Stretch, Height = _textSize / 8,
-            Background = new SolidBrush(Color.LightGray), Filler = new SolidBrush(Color.Gray),
+            Background = new SolidBrush(_lightGray), Filler = new SolidBrush(_gray),
+        };
+        var band1 = new Widget()
+        {
+            Background = new SolidBrush(_gray),
+            Height = 54,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+        var band2 = new Widget()
+        {
+            Background = new SolidBrush(_gray),
+            Height = 54,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Bottom,
         };
 
         var stack = new VerticalStackPanel()
@@ -60,6 +75,8 @@ public class InitializationScreen : ScreenBase
 
         var panel = new Panel();
         panel.Widgets.Add(stack);
+        panel.Widgets.Add(band1);
+        panel.Widgets.Add(band2);
 
         _desktop = new Desktop();
         _desktop.Root = panel;
