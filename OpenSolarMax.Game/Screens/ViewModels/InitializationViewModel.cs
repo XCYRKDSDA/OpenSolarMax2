@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Screens;
+using OpenSolarMax.Game.Screens.Views;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
@@ -36,7 +37,8 @@ public partial class InitializationViewModel(
     {
         if (!value) return;
 
-        var menuScreen = new TestScreen(assets, screenManager);
+        var menuViewModel = new MainMenuViewModel(assets);
+        var menuScreen = new MenuLikeScreen(menuViewModel, assets, screenManager);
         screenManager.ActiveScreen =
             new ExposureTransition(graphicsDevice, assets, screenManager, screenManager.ActiveScreen!, menuScreen)
             {
