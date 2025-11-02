@@ -8,7 +8,15 @@ namespace OpenSolarMax.Game.Modding;
 
 internal static partial class Modding
 {
-    public static List<(DirectoryEntry, ModManifest)> FindAllMods(DirectoryEntry dir)
+    public static string DefaultPreviewPattern => "preview.*";
+
+    public static string DefaultAssemblyFormat => "{}.dll";
+
+    public static string DefaultContentDir => "Content";
+
+    public static string DefaultLevelsDir => "Levels";
+
+    private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(DirectoryEntry dir)
     {
         var result = new List<(DirectoryEntry, ModManifest)>();
         var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IncludeFields = true };
@@ -24,6 +32,18 @@ internal static partial class Modding
         }
 
         return result;
+    }
+
+    public static List<IBehaviorMod> ListBehaviorMods()
+    {
+        return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"))
+               .Select(IBehaviorMod (pair) => new BehaviorMod(pair.Item1, pair.Item2)).ToList();
+    }
+
+    public static List<ILevelMod> ListLevelMods()
+    {
+        return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"))
+               .Select(ILevelMod (pair) => new LevelMod(pair.Item1, pair.Item2)).ToList();
     }
 
     /// <summary>
