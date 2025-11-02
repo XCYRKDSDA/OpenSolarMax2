@@ -108,7 +108,8 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             _previews.Add(
                 new FadableWrapper(
                     new TextureRegion(
-                        Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream))
+                        Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
+                                             DefaultColorProcessors.PremultiplyAlpha))
                 )
             );
             progress.Report(0.4f + 0.5f * i / _levelMods.Count);
