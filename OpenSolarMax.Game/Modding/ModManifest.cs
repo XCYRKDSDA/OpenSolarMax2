@@ -1,10 +1,19 @@
 namespace OpenSolarMax.Game.Modding;
 
+internal enum ModType
+{
+    Behavior,
+    Content,
+    Levels
+}
+
 /// <summary>
 /// 模组 manifest.json 的一比一数据类型
 /// </summary>
 internal class ModManifest
 {
+    public ModType Type { get; set; }
+
     /// <summary>
     /// 模组的全名。该名称将作为模组的标识 ID
     /// </summary>

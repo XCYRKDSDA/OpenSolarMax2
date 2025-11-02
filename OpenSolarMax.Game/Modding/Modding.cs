@@ -16,17 +16,19 @@ internal static partial class Modding
 
     public static string DefaultLevelsDir => "Levels";
 
-    private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(DirectoryEntry dir)
+    private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(DirectoryEntry dir, ModType type)
     {
         var result = new List<(DirectoryEntry, ModManifest)>();
         var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IncludeFields = true };
         options.Converters.Add(new JsonStringEnumConverter());
         foreach (var subDir in dir.EnumerateDirectories())
         {
-            var manifestFile = subDir.EnumerateFiles("manifest.json").First();
+            var manifestFile = subDir.EnumerateFiles("manifest.json").FirstOrDefault();
+            if (manifestFile is null) continue;
 
             using var stream = manifestFile.Open(FileMode.Open, FileAccess.Read);
             var manifest = JsonSerializer.Deserialize<ModManifest>(stream, options) ?? throw new JsonException();
+            if (manifest.Type != type) continue;
 
             result.Add((subDir, manifest));
         }
@@ -36,13 +38,13 @@ internal static partial class Modding
 
     public static List<IBehaviorMod> ListBehaviorMods()
     {
-        return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"))
+        return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"), ModType.Behavior)
                .Select(IBehaviorMod (pair) => new BehaviorMod(pair.Item1, pair.Item2)).ToList();
     }
 
     public static List<ILevelMod> ListLevelMods()
     {
-        return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"))
+        return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Levels)
                .Select(ILevelMod (pair) => new LevelMod(pair.Item1, pair.Item2)).ToList();
     }
 
