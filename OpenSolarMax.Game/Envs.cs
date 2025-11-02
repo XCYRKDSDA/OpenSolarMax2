@@ -12,4 +12,18 @@ public static class Envs
     }
 
     public static bool UseDebugFileSystem => Enabled(Environment.GetEnvironmentVariable("OSM_DEBUG_FS"));
+
+    private static string[] SplitPaths(string? str)
+    {
+        return str?.Split(':') ?? [];
+    }
+
+    public static string[] CustomBehaviorModPaths
+        => SplitPaths(Environment.GetEnvironmentVariable("OSM_BEHAVIOR_MOD_PATHS"));
+
+    public static string[] CustomLevelModPaths
+        => SplitPaths(Environment.GetEnvironmentVariable("OSM_LEVEL_MOD_PATHS"));
+
+    public static string[] CustomContentPaths
+        => SplitPaths(Environment.GetEnvironmentVariable("OSM_CONTENT_PATHS"));
 }

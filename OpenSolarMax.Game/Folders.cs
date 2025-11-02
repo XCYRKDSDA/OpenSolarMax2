@@ -32,12 +32,22 @@ public static class Folders
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.CommonData / Paths.Mods / Paths.Behaviors));
             _behaviorsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.UserData / Paths.Mods / Paths.Behaviors));
+            foreach (var path in Envs.CustomBehaviorModPaths)
+            {
+                _behaviorsFs.AddFileSystem(
+                    new PhysicalFileSystem().GetOrCreateSubFileSystem($"{Environment.CurrentDirectory}/{path}"));
+            }
 
             _levelsFs = new AggregateFileSystem();
             _levelsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.CommonData / Paths.Mods / Paths.Levels));
             _levelsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.UserData / Paths.Mods / Paths.Levels));
+            foreach (var path in Envs.CustomLevelModPaths)
+            {
+                _levelsFs.AddFileSystem(
+                    new PhysicalFileSystem().GetOrCreateSubFileSystem($"{Environment.CurrentDirectory}/{path}"));
+            }
         }
 
         public static IFileSystem Behaviors => _behaviorsFs;
