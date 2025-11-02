@@ -1,4 +1,6 @@
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -8,43 +10,56 @@ using OpenSolarMax.Game.Screens.Views;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-public partial class InitializationViewModel(
-    GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager
-) : ObservableObject, ILoaderViewModel, IViewModel
+public partial class InitializationViewModel : ObservableObject, ILoaderViewModel, IViewModel
 {
+    private readonly ScreenManager _screenManager;
+
     [ObservableProperty]
     private float _progress = 0;
 
     [ObservableProperty]
     private bool _loadCompleted = false;
 
-    private static readonly TimeSpan _minimalLoadTime = TimeSpan.FromSeconds(5f);
+    [ObservableProperty]
+    private ICommand _startLoadingCommand;
+
+    private readonly Task<IScreen> _menuLoadTask;
+
+    private static ExposureTransition LoadMenu(
+        GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager, IProgress<float> progress)
+    {
+        var vm = new MainMenuViewModel(assets, progress);
+        var v = new MenuLikeScreen(vm, assets, screenManager);
+        var tr = new ExposureTransition(graphicsDevice, assets, screenManager, screenManager.ActiveScreen!, v)
+        {
+            Duration = TimeSpan.FromSeconds(10),
+            Center = new Vector2(0, 1080)
+        };
+        return tr;
+    }
+
+    public InitializationViewModel(GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager)
+    {
+        _screenManager = screenManager;
+
+        _menuLoadTask = new Task<IScreen>( //
+            () => LoadMenu(graphicsDevice, assets, screenManager, new Progress<float>(v => Progress = v))
+        );
+
+        _startLoadingCommand = new RelayCommand(OnStartLoading);
+    }
+
+    private void OnStartLoading()
+    {
+        _menuLoadTask.Start();
+    }
 
     public void Update(GameTime gameTime)
     {
-        if (LoadCompleted) return;
-
-        var progress = Progress + (float)(gameTime.ElapsedGameTime / _minimalLoadTime);
-        if (progress < 1)
-            Progress = progress;
-        else
+        if (_menuLoadTask.IsCompleted)
         {
             LoadCompleted = true;
-            Progress = 1;
+            _screenManager.ActiveScreen = _menuLoadTask.Result;
         }
-    }
-
-    partial void OnLoadCompletedChanged(bool value)
-    {
-        if (!value) return;
-
-        var menuViewModel = new MainMenuViewModel(assets);
-        var menuScreen = new MenuLikeScreen(menuViewModel, assets, screenManager);
-        screenManager.ActiveScreen =
-            new ExposureTransition(graphicsDevice, assets, screenManager, screenManager.ActiveScreen!, menuScreen)
-            {
-                Duration = TimeSpan.FromSeconds(10),
-                Center = new Vector2(0, 1080)
-            };
     }
 }

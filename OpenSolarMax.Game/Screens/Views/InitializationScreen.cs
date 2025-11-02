@@ -93,6 +93,11 @@ public class InitializationScreen : ScreenBase
             _progressBar.Value = _viewModel.Progress;
     }
 
+    public override void OnActivated()
+    {
+        _viewModel.StartLoadingCommand.Execute(null);
+    }
+
     public override void Update(GameTime gameTime)
     {
         _viewModel.Update(gameTime);
