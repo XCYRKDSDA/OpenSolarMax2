@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nine.Animations;
 using Nine.Assets;
 using Nine.Screens;
 using OpenSolarMax.Game.Screens.Transitions;
@@ -25,6 +26,16 @@ public partial class InitializationViewModel : ObservableObject, ILoaderViewMode
 
     private readonly Task<IScreen> _menuLoadTask;
 
+    private class Smooth : ICurve<float>
+    {
+        public float Evaluate(float x) => x switch
+        {
+            < 0 => 0,
+            > 1 => 1,
+            _ => x * x,
+        };
+    }
+
     private static ExposureTransition LoadMenu(
         GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager, IProgress<float> progress)
     {
@@ -32,8 +43,9 @@ public partial class InitializationViewModel : ObservableObject, ILoaderViewMode
         var v = new MenuLikeScreen(vm, assets, screenManager);
         var tr = new ExposureTransition(graphicsDevice, assets, screenManager, screenManager.ActiveScreen!, v)
         {
-            Duration = TimeSpan.FromSeconds(10),
-            Center = new Vector2(0, 1080)
+            Duration = TimeSpan.FromSeconds(8),
+            Center = new Vector2(0, 1080),
+            Curve = new Smooth(),
         };
         return tr;
     }
