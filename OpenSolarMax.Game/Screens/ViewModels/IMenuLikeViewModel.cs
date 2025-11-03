@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Myra.Graphics2D;
 using OneOf;
 using OpenSolarMax.Game.UI;
 
@@ -12,6 +13,8 @@ internal interface IMenuLikeViewModel : IViewModel
     OneOf<int, (int, int)> CurrentIndex { get; set; }
 
     OneOf<IFadableImage, (IFadableImage, IFadableImage)> CurrentPreview { get; }
+
+    IImage Background { get; }
 
     ICommand SelectItemCommand { get; }
 }

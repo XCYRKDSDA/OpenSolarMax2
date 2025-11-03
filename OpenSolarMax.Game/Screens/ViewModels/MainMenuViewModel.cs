@@ -34,6 +34,9 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
+    [ObservableProperty]
+    private IImage _background;
+
     private readonly List<ILevelMod> _levelMods;
     private readonly List<IFadableImage> _previews;
 
@@ -63,6 +66,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         _items = [];
         _previews = [];
         _selectItemCommand = new RelayCommand(OnSelectItem);
+        _background = new TextureRegion(assets.Load<Texture2D>("Background.png"));
         progress.Report(0.1f);
 
         // 加载 默认、模组、编辑器 的预览。该步骤占 20%

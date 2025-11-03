@@ -101,6 +101,16 @@ public sealed class CustomHorizontalScrollViewer : Container
         set => _targetIndex = value;
     }
 
+    public float Percentage
+    {
+        get
+        {
+            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
+            var relativeCenters = GetRelativeCenters();
+            return (float)(x - relativeCenters[0]) / (relativeCenters[^1] - relativeCenters[0]);
+        }
+    }
+
     private event EventHandler? _thumbnailsPositionChangedHandlers;
 
     public event EventHandler ThumbnailsPositionChanged

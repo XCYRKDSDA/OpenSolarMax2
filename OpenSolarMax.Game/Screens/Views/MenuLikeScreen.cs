@@ -21,6 +21,9 @@ internal class MenuLikeScreen : ScreenBase
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private readonly FadableImage _leftPreview, _rightPreview;
+    private float _scrollPosition = 0;
+    private readonly ScrollViewer _backgroundScrollViewer;
+    private readonly Image _backgroundImage;
 
     private Label GenerateLabel(string name) => new()
     {
@@ -36,6 +39,19 @@ internal class MenuLikeScreen : ScreenBase
         _viewModel = viewModel;
         _assets = assets;
         _desktop = new Desktop();
+
+        _backgroundImage = new Image()
+        {
+            Renderable = viewModel.Background,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        _backgroundScrollViewer = new ScrollViewer()
+        {
+            ShowHorizontalScrollBar = false,
+            ShowVerticalScrollBar = false,
+            Content = _backgroundImage,
+        };
 
         var band1 = new Widget()
         {
@@ -74,9 +90,11 @@ internal class MenuLikeScreen : ScreenBase
         grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
         grid.RowsProportions.Add(Proportion.Auto);
+        Grid.SetRowSpan(_backgroundScrollViewer, 3);
         Grid.SetRow(band1, 0);
         Grid.SetRow(_scrollViewer, 1);
         Grid.SetRow(band2, 2);
+        grid.Widgets.Add(_backgroundScrollViewer);
         grid.Widgets.Add(band1);
         grid.Widgets.Add(_scrollViewer);
         grid.Widgets.Add(band2);
@@ -169,6 +187,16 @@ internal class MenuLikeScreen : ScreenBase
     {
         _viewModel.Update(gameTime);
         _scrollViewer.Update(gameTime);
+
+        // 计算背景偏移
+        var max = _backgroundImage.ActualBounds.Width - _backgroundScrollViewer.ActualBounds.Width;
+        if (float.IsNaN(_scrollViewer.Percentage)) return;
+        var target = MathHelper.Lerp(0, max, _scrollViewer.Percentage);
+        var error = target - _scrollPosition;
+        var velocity = error * 5;
+        var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        _scrollPosition += movement;
+        _backgroundScrollViewer.ScrollPosition = new Point((int)_scrollPosition, 0);
     }
 
     public override void Draw(GameTime gameTime)
