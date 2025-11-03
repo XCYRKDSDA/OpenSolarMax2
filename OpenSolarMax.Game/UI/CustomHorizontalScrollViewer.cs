@@ -36,9 +36,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     private int _thumbnailsHeight = 160;
     private int _selectionRadius = 80;
 
-    private bool _widgetsDirty = true;
-    private List<int> _relativeCenters;
-
     private Point? _firstTouchPos = null;
     private Point? _lastTouchPos = null;
 
@@ -135,8 +132,6 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     private void WidgetsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        _widgetsDirty = true;
-
         // 同步变更到 StackPanel
         switch (e.Action)
         {
@@ -164,14 +159,9 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     private List<int> GetRelativeCenters()
     {
-        if (_widgetsDirty)
-        {
-            _relativeCenters = _thumbnailContainer.Widgets
-                                                  .Select(w => _thumbnailContainer
-                                                               .ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
-                                                  .ToList();
-        }
-        return _relativeCenters;
+        return _thumbnailContainer.Widgets
+                                  .Select(w => _thumbnailContainer.ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
+                                  .ToList();
     }
 
     // l, r, n
@@ -261,8 +251,9 @@ public sealed class CustomHorizontalScrollViewer : Container
         else
         {
             var x = ActualBounds.Center.X - _thumbnailContainer.Left;
-            _rightRatio = (float)(_relativeCenters[_rightIndex] - x) /
-                          (_relativeCenters[_rightIndex] - _relativeCenters[_leftIndex]);
+            var relativeCenters = GetRelativeCenters();
+            _rightRatio = (float)(relativeCenters[_rightIndex] - x) /
+                          (relativeCenters[_rightIndex] - relativeCenters[_leftIndex]);
             _leftRatio = 1 - _rightRatio;
         }
 
@@ -309,7 +300,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     public CustomHorizontalScrollViewer()
     {
         _thumbnails = [];
-        _relativeCenters = [];
 
         _previewPanel = new Panel();
         _thumbnailsPanel = new Panel();
