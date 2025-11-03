@@ -23,6 +23,7 @@
         </PackageReference>
         <PackageReference Include="Myra" Version="1.5.9" />
         <PackageReference Include="OneOf" Version="3.0.271" />
+        <PackageReference Include="Svg" Version="3.4.7" />
         <PackageReference Include="ValueOf" Version="2.0.31" />
     </ItemGroup>
 

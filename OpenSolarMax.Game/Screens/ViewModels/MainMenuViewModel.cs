@@ -7,12 +7,14 @@ using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra;
+using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
 using Nine.Animations;
 using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.UI;
+using Svg;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
@@ -104,14 +106,18 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             // TODO: 若未指定预览文件则加载缺省图片
 
             // 加载图片
-            using var previewStream = _levelMods[i].Preview?.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-            _previews.Add(
-                new FadableWrapper(
-                    new TextureRegion(
-                        Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
-                                             DefaultColorProcessors.PremultiplyAlpha))
-                )
-            );
+            using var previewStream = _levelMods[i].Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            var fileExtension = _levelMods[i].Preview!.ExtensionWithDot;
+            IImage image = fileExtension switch
+            {
+                ".png" => new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
+                                                                 DefaultColorProcessors.PremultiplyAlpha)),
+                ".svg" => new SvgMyraImage(SvgDocument.Open<SvgDocument>(previewStream)),
+                _ => throw new ArgumentOutOfRangeException(nameof(fileExtension))
+            };
+
+            _previews.Add(new FadableWrapper(image));
             progress.Report(0.4f + 0.5f * i / _levelMods.Count);
         }
 
