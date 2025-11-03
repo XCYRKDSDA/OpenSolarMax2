@@ -117,7 +117,8 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             {
                 ".png" => new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
                                                                  DefaultColorProcessors.PremultiplyAlpha)),
-                ".svg" => new SvgMyraImage(SvgDocument.Open<SvgDocument>(previewStream)),
+                ".svg" => new SvgMyraImage(MyraEnvironment.GraphicsDevice,
+                                           SvgDocument.Open<SvgDocument>(previewStream)),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileExtension))
             };
 
