@@ -1,0 +1,10 @@
+{
+    "type": "levels",
+    "fullName": "OpenSolarMax.Levels.S3",
+    "shortName": "Orig\nS3",
+    "preview": "S3.svg",
+    "author": "XCY",
+    "version": "0.1.0",
+    "description": "对 SolarMax3 所有地图的复刻",
+    "link": "https://github.com/XCYRKDSDA/OpenSolarMax2"
+}

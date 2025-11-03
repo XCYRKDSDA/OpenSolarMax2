@@ -54,9 +54,6 @@
         <None Update="Content\UIs\S2.png">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="Content\UIs\S3.png">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
     <Import Project="mgfx.targets"/>
