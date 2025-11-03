@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nine.Animations;
 using Nine.Assets;
 using Nine.Screens;
 using Nine.Screens.Transitions;
@@ -20,6 +21,8 @@ public class ExposureTransition(
     private readonly ExposureRenderer _exposureRenderer = new(graphicsDevice, assets);
 
     public required TimeSpan Duration { get; set; }
+
+    public ICurve<float>? Curve { get; set; }
 
     public required Vector2 Center { get; set; }
 
@@ -49,7 +52,8 @@ public class ExposureTransition(
         // 添加曝光
         var halfLife = MathF.Sqrt(_renderTarget.Width * _renderTarget.Width
                                   + _renderTarget.Height * _renderTarget.Height);
-        var exposure = (float)(1 - _duration / Duration) * 2;
+        var ratio = (float)(1 - _duration / Duration);
+        var exposure = (Curve?.Evaluate(ratio) ?? ratio) * 2;
         _exposureRenderer.DrawExposure(_renderTarget, Center, halfLife, exposure);
     }
 }
