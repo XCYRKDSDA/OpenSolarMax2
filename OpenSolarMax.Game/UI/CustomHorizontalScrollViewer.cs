@@ -105,7 +105,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         get
         {
-            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
+            var x = ActualBounds.Width / 2 - _thumbnailContainer.Left;
             var relativeCenters = GetRelativeCenters();
             return (float)(x - relativeCenters[0]) / (relativeCenters[^1] - relativeCenters[0]);
         }
@@ -253,14 +253,14 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         // 二分法查找最近点和左右点
         (_leftIndex, _rightIndex, _nearestIndex) =
-            BinarySearchNearest(GetRelativeCenters(), ActualBounds.Center.X - _thumbnailContainer.Left);
+            BinarySearchNearest(GetRelativeCenters(), ActualBounds.Width / 2 - _thumbnailContainer.Left);
 
         // 计算当前位置在左右控件之间的过渡比例
         if (_leftIndex == _rightIndex)
             _leftRatio = _rightRatio = 1;
         else
         {
-            var x = ActualBounds.Center.X - _thumbnailContainer.Left;
+            var x = ActualBounds.Width / 2 - _thumbnailContainer.Left;
             var relativeCenters = GetRelativeCenters();
             _rightRatio = (float)(relativeCenters[_rightIndex] - x) /
                           (relativeCenters[_rightIndex] - relativeCenters[_leftIndex]);
@@ -285,7 +285,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (_lastTouchPos is not null) return;
 
         // 计算当前偏差
-        var target = ActualBounds.Center.X - GetRelativeCenters()[_targetIndex];
+        var target = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
         var error = target - _thumbnailContainer.Left;
         if (error == 0) return;
 
