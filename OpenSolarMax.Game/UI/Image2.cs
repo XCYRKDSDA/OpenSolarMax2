@@ -5,12 +5,12 @@ using Myra.Graphics2D.UI;
 
 namespace OpenSolarMax.Game.UI;
 
-public class FadableImage : Widget
+public class Image2 : Widget
 {
-    private IFadableImage? _image;
+    private IImage? _image;
 
     [Category("Appearance")]
-    public IFadableImage? Renderable
+    public IImage? Renderable
     {
         get => _image;
         set
@@ -28,8 +28,6 @@ public class FadableImage : Widget
     [Category("Behavior")]
     [DefaultValue(ImageStretch.Uniform)]
     public ImageStretch Stretch { get; set; } = ImageStretch.Uniform;
-
-    public float FadeIn { get; set; }
 
     protected override Point InternalMeasure(Point availableSize)
     {
@@ -60,18 +58,17 @@ public class FadableImage : Widget
             }
         }
 
-        Renderable.Draw(context, bounds, Color, FadeIn);
+        Renderable.Draw(context, bounds, Color);
     }
 
     protected override void CopyFrom(Widget w)
     {
         base.CopyFrom(w);
 
-        var image = (FadableImage)w;
+        var image = (Image2)w;
 
         Renderable = image.Renderable;
         Color = image.Color;
         Stretch = image.Stretch;
-        FadeIn = image.FadeIn;
     }
 }
