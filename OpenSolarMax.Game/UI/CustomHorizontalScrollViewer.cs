@@ -69,7 +69,8 @@ public sealed class CustomHorizontalScrollViewer : Container
         set
         {
             _thumbnailsHeight = value;
-            ((GridLayout)ChildrenLayout).RowsProportions[1].Value = value;
+            ((GridLayout)ChildrenLayout).RowsProportions[0].Value = value;
+            ((GridLayout)ChildrenLayout).RowsProportions[2].Value = value;
         }
     }
 
@@ -331,12 +332,13 @@ public sealed class CustomHorizontalScrollViewer : Container
         _thumbnailsPanel.Widgets.Add(_circleImage);
 
         var gridLayout = new GridLayout();
+        gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         gridLayout.RowsProportions.Add(Proportion.Fill);
         gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         ChildrenLayout = gridLayout;
 
-        Grid.SetRow(_previewPanel, 0);
-        Grid.SetRow(_thumbnailsPanel, 1);
+        Grid.SetRow(_previewPanel, 1);
+        Grid.SetRow(_thumbnailsPanel, 2);
         Children.Add(_previewPanel);
         Children.Add(_thumbnailsPanel);
 
