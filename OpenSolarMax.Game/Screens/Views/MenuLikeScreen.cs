@@ -68,7 +68,10 @@ internal class MenuLikeScreen : ScreenBase
             VerticalAlignment = VerticalAlignment.Bottom,
         };
 
-        _scrollViewer = new CustomHorizontalScrollViewer();
+        _scrollViewer = new CustomHorizontalScrollViewer()
+        {
+            Margin = new Thickness(40),
+        };
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
 
         var grid = new Grid();
