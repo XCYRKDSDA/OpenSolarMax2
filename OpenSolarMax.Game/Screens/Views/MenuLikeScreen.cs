@@ -16,6 +16,7 @@ namespace OpenSolarMax.Game.Screens.Views;
 internal class MenuLikeScreen : ScreenBase
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
+    private const float _mixAlpha = 0.72f;
 
     private readonly IMenuLikeViewModel _viewModel;
     private readonly IAssetsManager _assets;
@@ -24,6 +25,8 @@ internal class MenuLikeScreen : ScreenBase
     private float _scrollPosition = 0;
     private readonly ScrollViewer _backgroundScrollViewer;
     private readonly Image _backgroundImage;
+    private readonly Image2 _leftBackgroundImage;
+    private readonly Image2 _rightBackgroundImage;
 
     private Label GenerateLabel(string name) => new()
     {
@@ -53,6 +56,21 @@ internal class MenuLikeScreen : ScreenBase
             Content = _backgroundImage,
         };
 
+        _leftBackgroundImage = new Image2()
+        {
+            Renderable = viewModel.CurrentBackground.AsT0,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Stretch = ImageStretch.UniformToFill,
+        };
+        _rightBackgroundImage = new Image2()
+        {
+            Renderable = viewModel.CurrentBackground.AsT0,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Stretch = ImageStretch.UniformToFill,
+        };
+
         var band1 = new Widget()
         {
             Background = new SolidBrush(_gray),
@@ -79,10 +97,14 @@ internal class MenuLikeScreen : ScreenBase
         grid.RowsProportions.Add(Proportion.Fill);
         grid.RowsProportions.Add(Proportion.Auto);
         Grid.SetRowSpan(_backgroundScrollViewer, 3);
+        Grid.SetRowSpan(_leftBackgroundImage, 3);
+        Grid.SetRowSpan(_rightBackgroundImage, 3);
         Grid.SetRow(band1, 0);
         Grid.SetRow(_scrollViewer, 1);
         Grid.SetRow(band2, 2);
         grid.Widgets.Add(_backgroundScrollViewer);
+        grid.Widgets.Add(_leftBackgroundImage);
+        grid.Widgets.Add(_rightBackgroundImage);
         grid.Widgets.Add(band1);
         grid.Widgets.Add(_scrollViewer);
         grid.Widgets.Add(band2);
@@ -122,6 +144,16 @@ internal class MenuLikeScreen : ScreenBase
                 _scrollViewer.Widgets.Add(GenerateLabel(name));
             _viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         }
+        else if (e.PropertyName == nameof(IMenuLikeViewModel.CurrentBackground))
+        {
+            if (_viewModel.CurrentBackground.IsT0)
+            {
+                _leftBackgroundImage.Renderable = _viewModel.CurrentBackground.AsT0;
+                _rightBackgroundImage.Renderable = null;
+            }
+            else
+                (_leftBackgroundImage.Renderable, _rightBackgroundImage.Renderable) = _viewModel.CurrentBackground.AsT1;
+        }
     }
 
     private void ViewModelItemsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -155,10 +187,18 @@ internal class MenuLikeScreen : ScreenBase
         if (_scrollViewer.LeftIndex == _scrollViewer.RightIndex)
         {
             _viewModel.CurrentIndex = _scrollViewer.LeftIndex;
+            _leftBackgroundImage.Opacity = _mixAlpha;
+            _rightBackgroundImage.Opacity = 0;
         }
         else
         {
             _viewModel.CurrentIndex = (_scrollViewer.LeftIndex, _scrollViewer.RightIndex);
+            var t = _scrollViewer.LeftRatio;
+            var k = (1 - MathF.Cos(t * MathF.PI)) / 2;
+            var alphaRight = k * _mixAlpha;
+            var alphaLeft = (_mixAlpha - alphaRight) / (1 - alphaRight);
+            _leftBackgroundImage.Opacity = alphaLeft;
+            _rightBackgroundImage.Opacity = alphaRight;
         }
     }
 

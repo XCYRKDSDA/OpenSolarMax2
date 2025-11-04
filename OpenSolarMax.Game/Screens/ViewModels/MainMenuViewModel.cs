@@ -32,6 +32,9 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     private PreviewUnion _currentPreview;
 
     [ObservableProperty]
+    private PreviewUnion _currentBackground;
+
+    [ObservableProperty]
     private ICommand _selectItemCommand;
 
     [ObservableProperty]
@@ -39,6 +42,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
 
     private readonly List<ILevelMod> _levelMods;
     private readonly List<IFadableImage> _previews;
+    private readonly List<IFadableImage?> _backgrounds;
 
     private class Smooth : ICurve<float>
     {
@@ -50,6 +54,10 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         CurrentPreview = value.Match(
             idx => PreviewUnion.FromT0(_previews[idx]),
             pair => PreviewUnion.FromT1((_previews[pair.Item1], _previews[pair.Item2]))
+        );
+        CurrentBackground = value.Match(
+            idx => PreviewUnion.FromT0(_backgrounds[idx]),
+            pair => PreviewUnion.FromT1((_backgrounds[pair.Item1], _backgrounds[pair.Item2]))
         );
     }
 
@@ -65,6 +73,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
 
         _items = [];
         _previews = [];
+        _backgrounds = [];
         _selectItemCommand = new RelayCommand(OnSelectItem);
         _background = new TextureRegion(assets.Load<Texture2D>("Background.png"));
         progress.Report(0.1f);
@@ -77,6 +86,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             Text = "E  D  I  T  O  R",
             Font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
         }));
+        _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 1 / 3f);
 
         _items.Add("Mods");
@@ -85,6 +95,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             Text = "M  O  D  S",
             Font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
         }));
+        _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 2 / 3f);
 
         _items.Add("OS");
@@ -93,7 +104,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             Text = "O  P  E  N    S  O  L  A  R  M  A  X",
             Font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
         }, new Smooth()));
-
+        _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 3 / 3f);
 
         // 列出所有关卡模组信息。该步骤占 10%
@@ -109,26 +120,38 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
 
             // TODO: 若未指定预览文件则加载缺省图片
 
-            // 加载图片
+            // 加载预览
             using var previewStream = _levelMods[i].Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-
-            var fileExtension = _levelMods[i].Preview!.ExtensionWithDot;
-            IImage image = fileExtension switch
+            var previewExtension = _levelMods[i].Preview!.ExtensionWithDot;
+            IImage preview = previewExtension switch
             {
                 ".png" => new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
                                                                  DefaultColorProcessors.PremultiplyAlpha)),
                 ".svg" => new SvgMyraImage(MyraEnvironment.GraphicsDevice,
                                            SvgDocument.Open<SvgDocument>(previewStream)),
-                _ => throw new ArgumentOutOfRangeException(nameof(fileExtension))
+                _ => throw new ArgumentOutOfRangeException(nameof(previewExtension))
             };
+            _previews.Add(new FadableWrapper(preview));
 
-            _previews.Add(new FadableWrapper(image));
+            // 加载背景
+            if (_levelMods[i].Background is { } backgroundFile)
+            {
+                using var backgroundStream = backgroundFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+                var background = new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice,
+                                                                        backgroundStream,
+                                                                        DefaultColorProcessors.PremultiplyAlpha));
+                _backgrounds.Add(new FadableWrapper(background));
+            }
+            else
+                _backgrounds.Add(null);
+
             progress.Report(0.4f + 0.5f * i / _levelMods.Count);
         }
 
         // 移动到默认位置
         _currentIndex = 2;
         _currentPreview = PreviewUnion.FromT0(_previews[2]);
+        _currentBackground = PreviewUnion.FromT0(_backgrounds[2]);
 
         progress.Report(1);
     }

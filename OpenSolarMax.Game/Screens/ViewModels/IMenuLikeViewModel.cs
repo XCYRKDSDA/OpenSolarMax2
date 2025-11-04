@@ -14,6 +14,8 @@ internal interface IMenuLikeViewModel : IViewModel
 
     OneOf<IFadableImage, (IFadableImage, IFadableImage)> CurrentPreview { get; }
 
+    OneOf<IFadableImage, (IFadableImage, IFadableImage)> CurrentBackground { get; }
+
     IImage Background { get; }
 
     ICommand SelectItemCommand { get; }
