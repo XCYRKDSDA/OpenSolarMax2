@@ -25,16 +25,33 @@ public sealed class CustomHorizontalScrollViewer : Container
         public Point Size => new(Radius * 2);
     }
 
+    #region UI 框架
+
+    // 基础框架
+    private readonly Panel _headerPanel;
     private readonly Panel _previewPanel;
     private readonly Panel _thumbnailsPanel;
+
+    // 缩略图相关
     private readonly ObservableCollection<Widget> _thumbnails;
     private readonly HorizontalStackPanel _thumbnailContainer;
     private readonly Circle _circle;
     private readonly Image _circleImage;
 
+    // 预览图相关
+    private readonly FadableImage _leftPreview, _rightPreview;
+
+    #endregion
+
+    #region 属性配置
+
     private int _thumbnailsInterval = 240;
     private int _thumbnailsHeight = 160;
     private int _selectionRadius = 80;
+
+    #endregion
+
+    #region 除 UI 外的其他内部状态
 
     private Point? _firstTouchPos = null;
     private Point? _lastTouchPos = null;
@@ -44,9 +61,13 @@ public sealed class CustomHorizontalScrollViewer : Container
     private int _leftIndex = 0, _rightIndex = 0;
     private float _leftRatio = 1, _rightRatio = 1;
 
-    #region Properties
+    #endregion
+
+    #region 公开属性
 
     public override ObservableCollection<Widget> Widgets => _thumbnails;
+
+    public Panel HeaderPanel => _headerPanel;
 
     public Panel PreviewPanel => _previewPanel;
 
@@ -58,6 +79,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         set
         {
             _thumbnailsInterval = value;
+            // 通过设置每个缩略图组件的宽度来配置缩略图间隔
             foreach (var panel in _thumbnailContainer.Widgets)
                 panel.Width = panel.MaxWidth = panel.MinWidth = value;
         }
@@ -69,6 +91,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         set
         {
             _thumbnailsHeight = value;
+            // 通过设置 Grid 的第一行和第三行高度来配置缩略图高度
             ((GridLayout)ChildrenLayout).RowsProportions[0].Value = value;
             ((GridLayout)ChildrenLayout).RowsProportions[2].Value = value;
         }
@@ -86,22 +109,44 @@ public sealed class CustomHorizontalScrollViewer : Container
         set => _selectionRadius = value;
     }
 
-    public Widget NearestWidget => _thumbnails[_nearestIndex];
-
+    /// <summary>
+    /// 当前位置左侧的元素索引或者当前正指向的元素索引
+    /// </summary>
     public int LeftIndex => _leftIndex;
-    public Widget LeftItem => _thumbnailContainer.Widgets[_leftIndex];
+
     public float LeftRatio => _leftRatio;
 
+    public IFadableImage? LeftPreview
+    {
+        get => _leftPreview.Renderable;
+        set => _leftPreview.Renderable = value;
+    }
+
+    /// <summary>
+    /// 当前位置右侧的元素索引或者当前正指向的元素索引
+    /// </summary>
     public int RightIndex => _rightIndex;
-    public Widget RightItem => _thumbnailContainer.Widgets[_rightIndex];
+
     public float RightRatio => _rightRatio;
 
+    public IFadableImage? RightPreview
+    {
+        get => _rightPreview.Renderable;
+        set => _rightPreview.Renderable = value;
+    }
+
+    /// <summary>
+    /// 当前目标元素索引
+    /// </summary>
     public int TargetWidgetIndex
     {
         get => _targetIndex;
         set => _targetIndex = value;
     }
 
+    /// <summary>
+    /// 当前整体移动百分比
+    /// </summary>
     public float Percentage
     {
         get
@@ -112,13 +157,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         }
     }
 
-    private event EventHandler? _thumbnailsPositionChangedHandlers;
-
-    public event EventHandler ThumbnailsPositionChanged
-    {
-        add => _thumbnailsPositionChangedHandlers += value;
-        remove => _thumbnailsPositionChangedHandlers -= value;
-    }
+    public event EventHandler? ThumbnailsPositionChanged;
 
     #endregion
 
@@ -277,8 +316,22 @@ public sealed class CustomHorizontalScrollViewer : Container
         _circle.Radius = (int)(_selectionRadius * ratio);
         _circleImage.Opacity = ratio;
 
+        // 设置左右预览
+        if (_leftIndex == _rightIndex)
+        {
+            _leftPreview.FadeIn = 1;
+            _rightPreview.FadeIn = 0;
+            _rightPreview.Enabled = false;
+        }
+        else
+        {
+            _leftPreview.FadeIn = MathF.Max(1 - _leftRatio * 2, 0);
+            _rightPreview.FadeIn = MathF.Max(1 - _rightRatio * 2, 0);
+            _rightPreview.Enabled = true;
+        }
+
         // 触发事件
-        _thumbnailsPositionChangedHandlers?.Invoke(this, EventArgs.Empty);
+        ThumbnailsPositionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void Update(GameTime gameTime)
@@ -312,8 +365,15 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         _thumbnails = [];
 
+        // 构建 UI
+
+        // 构建框架
+
+        _headerPanel = new Panel();
         _previewPanel = new Panel();
         _thumbnailsPanel = new Panel();
+
+        // 构建缩略图元素
 
         _thumbnailContainer = new HorizontalStackPanel()
         {
@@ -331,15 +391,34 @@ public sealed class CustomHorizontalScrollViewer : Container
         };
         _thumbnailsPanel.Widgets.Add(_circleImage);
 
+        // 构建预览图元素
+
+        _leftPreview = new FadableImage()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            FadeIn = 1,
+        };
+        _rightPreview = new FadableImage()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            FadeIn = 0,
+        };
+        _previewPanel.Widgets.Add(_leftPreview);
+        _previewPanel.Widgets.Add(_rightPreview);
+
         var gridLayout = new GridLayout();
         gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         gridLayout.RowsProportions.Add(Proportion.Fill);
         gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         ChildrenLayout = gridLayout;
 
+        Grid.SetRow(_headerPanel, 0);
         Grid.SetRow(_previewPanel, 1);
         Grid.SetRow(_thumbnailsPanel, 2);
         Children.Add(_previewPanel);
+        Children.Add(_headerPanel);
         Children.Add(_thumbnailsPanel);
 
         Widgets.CollectionChanged += WidgetsOnCollectionChanged;
