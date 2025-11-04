@@ -30,6 +30,12 @@ internal class ModManifest
     /// </summary>
     public string? Preview { get; set; }
 
+    /// <summary>
+    /// 模组的背景路径。背景将在菜单界面显示<br/>
+    /// 若不指定，则会尝试查找当前路径下所有满足<see cref="Modding.DefaultBackgroundPattern"/>的文件
+    /// </summary>
+    public string? Background { get; set; }
+
     public string Author { get; set; }
 
     public string Version { get; set; }

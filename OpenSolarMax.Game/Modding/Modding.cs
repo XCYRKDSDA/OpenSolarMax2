@@ -10,6 +10,8 @@ internal static partial class Modding
 {
     public static string DefaultPreviewPattern => "preview.*";
 
+    public static string DefaultBackgroundPattern => "background.*";
+
     public static string DefaultAssemblyFormat => "{}.dll";
 
     public static string DefaultContentDir => "Content";

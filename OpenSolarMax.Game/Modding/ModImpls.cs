@@ -13,6 +13,9 @@ internal abstract class CommonMod(DirectoryEntry dir, ModManifest manifest) : IM
     public FileEntry? Preview { get; } =
         dir.EnumerateFiles(manifest.Preview ?? Modding.DefaultPreviewPattern).FirstOrDefault();
 
+    public FileEntry? Background { get; } =
+        dir.EnumerateFiles(manifest.Background ?? Modding.DefaultBackgroundPattern).FirstOrDefault();
+
     public string Author { get; } = manifest.Author;
 
     public string Version { get; } = manifest.Version;

@@ -25,6 +25,12 @@ internal interface IMod
     /// </summary>
     FileEntry? Preview { get; }
 
+    /// <summary>
+    /// 模组的背景文件。背景将在菜单界面显示。<br/>
+    /// 若为空，则不会显示背景图
+    /// </summary>
+    FileEntry? Background { get; }
+
     string Author { get; }
 
     string Version { get; }
