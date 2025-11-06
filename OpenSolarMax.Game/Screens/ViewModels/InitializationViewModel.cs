@@ -2,19 +2,12 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Nine.Animations;
 using Nine.Assets;
-using Nine.Screens;
-using OpenSolarMax.Game.Screens.Transitions;
-using OpenSolarMax.Game.Screens.Views;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-public partial class InitializationViewModel : ObservableObject, ILoaderViewModel, IViewModel
+internal partial class InitializationViewModel : ObservableObject, ILoaderViewModel, IViewModel
 {
-    private readonly ScreenManager _screenManager;
-
     [ObservableProperty]
     private float _progress = 0;
 
@@ -24,39 +17,14 @@ public partial class InitializationViewModel : ObservableObject, ILoaderViewMode
     [ObservableProperty]
     private ICommand _startLoadingCommand;
 
-    private readonly Task<IScreen> _menuLoadTask;
+    public event EventHandler<MainMenuViewModel>? OnMenuViewModelLoaded;
 
-    private class Smooth : ICurve<float>
+    private readonly Task<MainMenuViewModel> _menuLoadTask;
+
+    public InitializationViewModel(IAssetsManager assets)
     {
-        public float Evaluate(float x) => x switch
-        {
-            < 0 => 0,
-            > 1 => 1,
-            _ => x * x,
-        };
-    }
-
-    private static ExposureTransition LoadMenu(
-        GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager, IProgress<float> progress)
-    {
-        var vm = new MainMenuViewModel(assets, progress);
-        var v = new MenuLikeScreen(vm, assets, screenManager);
-        var tr = new ExposureTransition(graphicsDevice, assets, screenManager, screenManager.ActiveScreen!, v)
-        {
-            Duration = TimeSpan.FromSeconds(8),
-            Center = new Vector2(0, 1080),
-            Curve = new Smooth(),
-        };
-        return tr;
-    }
-
-    public InitializationViewModel(GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager)
-    {
-        _screenManager = screenManager;
-
-        _menuLoadTask = new Task<IScreen>( //
-            () => LoadMenu(graphicsDevice, assets, screenManager, new Progress<float>(v => Progress = v))
-        );
+        _menuLoadTask =
+            new Task<MainMenuViewModel>(() => new MainMenuViewModel(assets, new Progress<float>(v => Progress = v)));
 
         _startLoadingCommand = new RelayCommand(OnStartLoading);
     }
@@ -71,7 +39,7 @@ public partial class InitializationViewModel : ObservableObject, ILoaderViewMode
         if (_menuLoadTask.IsCompleted)
         {
             LoadCompleted = true;
-            _screenManager.ActiveScreen = _menuLoadTask.Result;
+            OnMenuViewModelLoaded?.Invoke(this, _menuLoadTask.Result);
         }
     }
 }

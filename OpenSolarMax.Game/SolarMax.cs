@@ -119,6 +119,8 @@ public class SolarMax : XNAGame
         _fmodFlag = FMOD.Studio.System.create(out _globalFmodSystem);
         _fmodFlag = _globalFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0);
 
+        // MyraEnvironment.DrawWidgetsFrames = true;
+
         // 当游戏启动时，游戏将构造一个全局资产管理器
         var globalFileSystem = Folders.Content;
         var globalAssets = new AssetsManager(globalFileSystem);
@@ -151,7 +153,7 @@ public class SolarMax : XNAGame
 
         var sm = new ScreenManager(this);
         Components.Add(sm);
-        var initializationViewModel = new InitializationViewModel(GraphicsDevice, globalAssets, sm);
+        var initializationViewModel = new InitializationViewModel(globalAssets);
         var initializationScreen = new InitializationScreen(initializationViewModel, GraphicsDevice, globalAssets, sm);
         sm.ActiveScreen = initializationScreen;
 
