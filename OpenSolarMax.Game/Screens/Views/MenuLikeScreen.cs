@@ -22,6 +22,7 @@ internal class MenuLikeScreen : ScreenBase
     private readonly IAssetsManager _assets;
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
+    private readonly FadableImage _leftPreview, _rightPreview;
     private float _scrollPosition = 0;
     private readonly ScrollViewer _backgroundScrollViewer;
     private readonly Image _backgroundImage;
@@ -92,6 +93,21 @@ internal class MenuLikeScreen : ScreenBase
         };
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
 
+        _leftPreview = new FadableImage()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            FadeIn = 1,
+        };
+        _rightPreview = new FadableImage()
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            FadeIn = 0, Visible = false,
+        };
+        _scrollViewer.PreviewPanel.Widgets.Add(_leftPreview);
+        _scrollViewer.PreviewPanel.Widgets.Add(_rightPreview);
+
         var grid = new Grid();
         grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
@@ -117,7 +133,7 @@ internal class MenuLikeScreen : ScreenBase
             _scrollViewer.Widgets.Add(GenerateLabel(name));
 
         _scrollViewer.TargetWidgetIndex = viewModel.CurrentIndex.AsT0;
-        _scrollViewer.LeftPreview = viewModel.CurrentPreview.AsT0;
+        _leftPreview.Renderable = viewModel.CurrentPreview.AsT0;
 
         // 绑定 view model
 
@@ -131,11 +147,14 @@ internal class MenuLikeScreen : ScreenBase
         {
             if (_viewModel.CurrentPreview.IsT0)
             {
-                _scrollViewer.LeftPreview = _viewModel.CurrentPreview.AsT0;
-                _scrollViewer.RightPreview = null;
+                _leftPreview.Renderable = _viewModel.CurrentPreview.AsT0;
+                _rightPreview.Opacity = 0;
             }
             else
-                (_scrollViewer.LeftPreview, _scrollViewer.RightPreview) = _viewModel.CurrentPreview.AsT1;
+            {
+                (_leftPreview.Renderable, _rightPreview.Renderable) = _viewModel.CurrentPreview.AsT1;
+                _rightPreview.Opacity = 1;
+            }
         }
         else if (e.PropertyName == nameof(IMenuLikeViewModel.Items))
         {
@@ -187,12 +206,22 @@ internal class MenuLikeScreen : ScreenBase
         if (_scrollViewer.LeftIndex == _scrollViewer.RightIndex)
         {
             _viewModel.CurrentIndex = _scrollViewer.LeftIndex;
+
+            _leftPreview.FadeIn = 1;
+            _rightPreview.FadeIn = 0;
+            _rightPreview.Visible = false;
+
             _leftBackgroundImage.Opacity = _mixAlpha;
             _rightBackgroundImage.Opacity = 0;
         }
         else
         {
             _viewModel.CurrentIndex = (_scrollViewer.LeftIndex, _scrollViewer.RightIndex);
+
+            _leftPreview.FadeIn = MathF.Max(1 - _scrollViewer.LeftRatio * 2, 0);
+            _rightPreview.FadeIn = MathF.Max(1 - _scrollViewer.RightRatio * 2, 0);
+            _rightPreview.Visible = true;
+
             var t = _scrollViewer.LeftRatio;
             var k = (1 - MathF.Cos(t * MathF.PI)) / 2;
             var alphaRight = k * _mixAlpha;

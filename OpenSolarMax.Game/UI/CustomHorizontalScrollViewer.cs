@@ -38,9 +38,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     private readonly Circle _circle;
     private readonly Image _circleImage;
 
-    // 预览图相关
-    private readonly FadableImage _leftPreview, _rightPreview;
-
     #endregion
 
     #region 属性配置
@@ -109,6 +106,8 @@ public sealed class CustomHorizontalScrollViewer : Container
         set => _selectionRadius = value;
     }
 
+    public Widget NearestWidget => _thumbnails[_nearestIndex];
+
     /// <summary>
     /// 当前位置左侧的元素索引或者当前正指向的元素索引
     /// </summary>
@@ -116,24 +115,12 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     public float LeftRatio => _leftRatio;
 
-    public IFadableImage? LeftPreview
-    {
-        get => _leftPreview.Renderable;
-        set => _leftPreview.Renderable = value;
-    }
-
     /// <summary>
     /// 当前位置右侧的元素索引或者当前正指向的元素索引
     /// </summary>
     public int RightIndex => _rightIndex;
 
     public float RightRatio => _rightRatio;
-
-    public IFadableImage? RightPreview
-    {
-        get => _rightPreview.Renderable;
-        set => _rightPreview.Renderable = value;
-    }
 
     /// <summary>
     /// 当前目标元素索引
@@ -316,20 +303,6 @@ public sealed class CustomHorizontalScrollViewer : Container
         _circle.Radius = (int)(_selectionRadius * ratio);
         _circleImage.Opacity = ratio;
 
-        // 设置左右预览
-        if (_leftIndex == _rightIndex)
-        {
-            _leftPreview.FadeIn = 1;
-            _rightPreview.FadeIn = 0;
-            _rightPreview.Enabled = false;
-        }
-        else
-        {
-            _leftPreview.FadeIn = MathF.Max(1 - _leftRatio * 2, 0);
-            _rightPreview.FadeIn = MathF.Max(1 - _rightRatio * 2, 0);
-            _rightPreview.Enabled = true;
-        }
-
         // 触发事件
         ThumbnailsPositionChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -390,23 +363,6 @@ public sealed class CustomHorizontalScrollViewer : Container
             VerticalAlignment = VerticalAlignment.Center,
         };
         _thumbnailsPanel.Widgets.Add(_circleImage);
-
-        // 构建预览图元素
-
-        _leftPreview = new FadableImage()
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            FadeIn = 1,
-        };
-        _rightPreview = new FadableImage()
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            FadeIn = 0,
-        };
-        _previewPanel.Widgets.Add(_leftPreview);
-        _previewPanel.Widgets.Add(_rightPreview);
 
         var gridLayout = new GridLayout();
         gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
