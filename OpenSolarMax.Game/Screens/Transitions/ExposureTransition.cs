@@ -32,8 +32,6 @@ public class ExposureTransition(
     {
         _duration += gameTime.ElapsedGameTime;
 
-        NextScreen!.Update(gameTime);
-
         if (_duration > Duration)
             ScreenManager.ActiveScreen = NextScreen!;
     }

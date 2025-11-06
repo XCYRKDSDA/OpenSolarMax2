@@ -234,7 +234,12 @@ internal class MenuLikeScreen : ScreenBase
     public override void Update(GameTime gameTime)
     {
         _viewModel.Update(gameTime);
+    }
+
+    public override void Draw(GameTime gameTime)
+    {
         _scrollViewer.Update(gameTime);
+        _desktop.Render();
 
         // 计算背景偏移
         var max = _backgroundImage.ActualBounds.Width - _backgroundScrollViewer.ActualBounds.Width;
@@ -245,10 +250,5 @@ internal class MenuLikeScreen : ScreenBase
         var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
         _scrollPosition += movement;
         _backgroundScrollViewer.ScrollPosition = new Point((int)_scrollPosition, 0);
-    }
-
-    public override void Draw(GameTime gameTime)
-    {
-        _desktop.Render();
     }
 }
