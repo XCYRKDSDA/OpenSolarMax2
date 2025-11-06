@@ -8,12 +8,13 @@ using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
 using Nine.Screens;
+using Nine.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen : ScreenBase
+internal class MenuLikeScreen : TransitionableScreenBase
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
     private const float _mixAlpha = 0.72f;
@@ -250,5 +251,28 @@ internal class MenuLikeScreen : ScreenBase
         var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
         _scrollPosition += movement;
         _backgroundScrollViewer.ScrollPosition = new Point((int)_scrollPosition, 0);
+    }
+
+    protected override void OnStartTransitOut()
+    {
+        base.OnStartTransitOut();
+
+        // 关闭背景显示和输入
+        _backgroundScrollViewer.Enabled = false;
+        _backgroundScrollViewer.Visible = false;
+
+        // 关闭 ScrollViewer 的输入
+        _scrollViewer.Enabled = false;
+    }
+
+    public override void OnTransitOut(float progress)
+    {
+        base.OnTransitOut(progress);
+
+        // 过渡 UI 的透明度
+        _desktop.Opacity = 1 - progress;
+
+        // 过渡预览图像的缩放。从 1 到 2
+        _rightPreview.Scale = _leftPreview.Scale = Vector2.One * (1 + progress);
     }
 }
