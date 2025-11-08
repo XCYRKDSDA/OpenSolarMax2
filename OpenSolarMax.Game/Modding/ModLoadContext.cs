@@ -1,13 +1,22 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Zio;
+using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
 internal class ModLoadContext(FileEntry file, IReadOnlyDictionary<string, Assembly> sharedAssemblies)
     : AssemblyLoadContext
 {
-    private readonly AssemblyDependencyResolver _resolver = new(file.FileSystem.ConvertPathToInternal(file.Path));
+    private static string GetPhysicalPath(FileEntry fileEntry)
+    {
+        var fileSystem = fileEntry.FileSystem;
+        while (fileSystem is AggregateFileSystem aggregateFileSystem)
+            fileSystem = aggregateFileSystem.FindFirstFileSystemEntry(fileEntry.Path)!.FileSystem;
+        return fileSystem.ConvertPathToInternal(fileEntry.Path);
+    }
+
+    private readonly AssemblyDependencyResolver _resolver = new(GetPhysicalPath(file));
 
     private readonly IReadOnlyDictionary<string, Assembly> _sharedAssemblies = sharedAssemblies;
 
