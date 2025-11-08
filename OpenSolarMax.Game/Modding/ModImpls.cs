@@ -33,6 +33,8 @@ internal class BehaviorMod(DirectoryEntry dir, ModManifest manifest) : CommonMod
 
     public DirectoryEntry? Content { get; } =
         dir.EnumerateDirectories(manifest.Content ?? Modding.DefaultContentDir).FirstOrDefault();
+
+    public string[] Dependencies { get; } = manifest.Dependencies?.Behaviors ?? [];
 }
 
 internal class ContentMod(DirectoryEntry dir, ModManifest manifest) : CommonMod(dir, manifest), IContentMod
@@ -45,4 +47,8 @@ internal class LevelMod(DirectoryEntry dir, ModManifest manifest) : CommonMod(di
 {
     public DirectoryEntry Levels { get; } =
         dir.EnumerateDirectories(manifest.Levels ?? Modding.DefaultLevelsDir).First();
+
+    public string[] BehaviorDeps { get; } = manifest.Dependencies?.Behaviors ?? [];
+
+    public string[] ContentDeps { get; } = manifest.Dependencies?.Content ?? [];
 }

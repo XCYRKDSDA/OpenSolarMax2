@@ -46,6 +46,11 @@ internal interface IModWithAssembly : IMod
     /// 模组中程序集文件
     /// </summary>
     FileEntry Assembly { get; }
+
+    /// <summary>
+    /// 该模组依赖的其他模组信息
+    /// </summary>
+    string[] Dependencies { get; }
 }
 
 internal interface IModWithContent : IMod
@@ -62,6 +67,16 @@ internal interface IModWithLevels : IMod
     /// 模组中关卡所在的目录
     /// </summary>
     DirectoryEntry Levels { get; }
+
+    /// <summary>
+    /// 该模组依赖的行为模组
+    /// </summary>
+    string[] BehaviorDeps { get; }
+
+    /// <summary>
+    /// 该模组依赖的资产模组
+    /// </summary>
+    string[] ContentDeps { get; }
 }
 
 /// <summary>

@@ -44,6 +44,12 @@ internal static partial class Modding
                .Select(IBehaviorMod (pair) => new BehaviorMod(pair.Item1, pair.Item2)).ToList();
     }
 
+    public static List<IContentMod> ListContentMods()
+    {
+        return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Content)
+               .Select(IContentMod (pair) => new ContentMod(pair.Item1, pair.Item2)).ToList();
+    }
+
     public static List<ILevelMod> ListLevelMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Levels)

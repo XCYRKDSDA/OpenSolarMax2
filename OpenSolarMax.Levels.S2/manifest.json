@@ -6,5 +6,10 @@
     "author": "XCY",
     "version": "0.1.0",
     "description": "对 SolarMax2 所有地图的复刻",
-    "link": "https://github.com/XCYRKDSDA/OpenSolarMax2"
+    "link": "https://github.com/XCYRKDSDA/OpenSolarMax2",
+    "dependencies": {
+        "behaviors": [
+            "OpenSolarMax.Mods.Core"
+        ]
+    }
 }

@@ -7,6 +7,13 @@ internal enum ModType
     Levels
 }
 
+internal class ModDependencies
+{
+    public string[]? Behaviors { get; set; }
+
+    public string[]? Content { get; set; }
+}
+
 /// <summary>
 /// 模组 manifest.json 的一比一数据类型
 /// </summary>
@@ -58,4 +65,9 @@ internal class ModManifest
     /// 模组的关卡目录
     /// </summary>
     public string? Levels { get; set; }
+
+    /// <summary>
+    /// 模组的所有依赖
+    /// </summary>
+    public ModDependencies? Dependencies { get; set; }
 }
