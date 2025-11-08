@@ -36,7 +36,7 @@ internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
     private ICommand _selectItemCommand;
 
     [ObservableProperty]
-    private IImage _background;
+    private Texture2D _background;
 
     public event EventHandler<IMenuLikeViewModel>? NavigateIn;
 

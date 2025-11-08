@@ -38,7 +38,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     private ICommand _selectItemCommand;
 
     [ObservableProperty]
-    private IImage _background;
+    private Texture2D _background;
 
     public event EventHandler<IMenuLikeViewModel>? NavigateIn;
 
@@ -90,7 +90,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         _previews = [];
         _backgrounds = [];
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
-        _background = new TextureRegion(assets.Load<Texture2D>("Background.png"));
+        _background = assets.Load<Texture2D>("Background.png");
 
         progress.Report(0.1f);
 

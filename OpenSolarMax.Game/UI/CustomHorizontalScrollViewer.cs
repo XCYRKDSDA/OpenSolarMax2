@@ -144,6 +144,11 @@ public sealed class CustomHorizontalScrollViewer : Container
         }
     }
 
+    /// <summary>
+    /// 当前缩略图的整体偏移像素
+    /// </summary>
+    public int ThumbnailsOffset => _thumbnailContainer.Left;
+
     public event EventHandler? ThumbnailsPositionChanged;
 
     public event EventHandler<int>? ItemTapped;
@@ -312,6 +317,11 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         // 触发事件
         ThumbnailsPositionChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ConvergeImmediately()
+    {
+        _thumbnailContainer.Left = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
     }
 
     public void Update(GameTime gameTime)

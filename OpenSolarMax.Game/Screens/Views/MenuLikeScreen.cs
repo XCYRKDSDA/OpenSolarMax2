@@ -3,6 +3,7 @@ using System.ComponentModel;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
+using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
@@ -22,14 +23,16 @@ internal class MenuLikeScreen : TransitionableScreenBase
     private readonly IMenuLikeViewModel _viewModel;
     private readonly IAssetsManager _assets;
     private readonly ScreenManager _screenManager;
+
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private readonly FadableImage _leftPreview, _rightPreview;
-    private float _scrollPosition = 0;
-    private readonly ScrollViewer _backgroundScrollViewer;
-    private readonly Image _backgroundImage;
     private readonly Image2 _leftBackgroundImage;
     private readonly Image2 _rightBackgroundImage;
+
+    private int? _lastThumbnailsOffset = null;
+    private float _targetBackgroundLeft = 0;
+    private readonly HorizontalScrollingBackground _background;
 
     private Label GenerateLabel(string name) => new()
     {
@@ -47,17 +50,10 @@ internal class MenuLikeScreen : TransitionableScreenBase
         _screenManager = screenManager;
         _desktop = new Desktop();
 
-        _backgroundImage = new Image()
+        _background = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
-            Renderable = viewModel.Background,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-        _backgroundScrollViewer = new ScrollViewer()
-        {
-            ShowHorizontalScrollBar = false,
-            ShowVerticalScrollBar = false,
-            Content = _backgroundImage,
+            Texture = viewModel.Background,
+            Left = 0,
         };
 
         _leftBackgroundImage = new Image2()
@@ -116,13 +112,11 @@ internal class MenuLikeScreen : TransitionableScreenBase
         grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
         grid.RowsProportions.Add(Proportion.Auto);
-        Grid.SetRowSpan(_backgroundScrollViewer, 3);
         Grid.SetRowSpan(_leftBackgroundImage, 3);
         Grid.SetRowSpan(_rightBackgroundImage, 3);
         Grid.SetRow(band1, 0);
         Grid.SetRow(_scrollViewer, 1);
         Grid.SetRow(band2, 2);
-        grid.Widgets.Add(_backgroundScrollViewer);
         grid.Widgets.Add(_leftBackgroundImage);
         grid.Widgets.Add(_rightBackgroundImage);
         grid.Widgets.Add(band1);
@@ -144,6 +138,9 @@ internal class MenuLikeScreen : TransitionableScreenBase
         viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         viewModel.PropertyChanged += ViewModelOnPropertyChanged;
         viewModel.NavigateIn += ViewModelOnNavigateIn;
+
+        _desktop.UpdateLayout();
+        _scrollViewer.ConvergeImmediately();
     }
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -256,17 +253,20 @@ internal class MenuLikeScreen : TransitionableScreenBase
     public override void Draw(GameTime gameTime)
     {
         _scrollViewer.Update(gameTime);
+        _background.Draw();
         _desktop.Render();
 
         // 计算背景偏移
-        var max = _backgroundImage.ActualBounds.Width - _backgroundScrollViewer.ActualBounds.Width;
-        if (float.IsNaN(_scrollViewer.Percentage)) return;
-        var target = MathHelper.Lerp(0, max, _scrollViewer.Percentage);
-        var error = target - _scrollPosition;
-        var velocity = error * 5;
-        var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-        _scrollPosition += movement;
-        _backgroundScrollViewer.ScrollPosition = new Point((int)_scrollPosition, 0);
+        if (_lastThumbnailsOffset is not null)
+        {
+            var delta = _scrollViewer.ThumbnailsOffset - _lastThumbnailsOffset.Value;
+            _targetBackgroundLeft += delta * 2;
+            var error = _targetBackgroundLeft - _background.Left;
+            var velocity = error * 5;
+            var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _background.Left += movement;
+        }
+        _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
     }
 
     protected override void OnStartTransitOut()
