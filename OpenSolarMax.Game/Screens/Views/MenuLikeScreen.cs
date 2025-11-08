@@ -21,6 +21,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
 
     private readonly IMenuLikeViewModel _viewModel;
     private readonly IAssetsManager _assets;
+    private readonly ScreenManager _screenManager;
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private readonly FadableImage _leftPreview, _rightPreview;
@@ -43,6 +44,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
     {
         _viewModel = viewModel;
         _assets = assets;
+        _screenManager = screenManager;
         _desktop = new Desktop();
 
         _backgroundImage = new Image()
@@ -93,6 +95,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
             Margin = new Thickness(40),
         };
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
+        _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
 
         _leftPreview = new FadableImage()
         {
@@ -140,6 +143,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
 
         viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         viewModel.PropertyChanged += ViewModelOnPropertyChanged;
+        viewModel.NavigateIn += ViewModelOnNavigateIn;
     }
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -174,6 +178,13 @@ internal class MenuLikeScreen : TransitionableScreenBase
             else
                 (_leftBackgroundImage.Renderable, _rightBackgroundImage.Renderable) = _viewModel.CurrentBackground.AsT1;
         }
+    }
+
+    private void ViewModelOnNavigateIn(object? sender, IMenuLikeViewModel e)
+    {
+        _screenManager.ActiveScreen =
+            new CustomTransition(_screenManager, this, new MenuLikeScreen(e, _assets, _screenManager),
+                                 TimeSpan.FromSeconds(5));
     }
 
     private void ViewModelItemsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -232,6 +243,11 @@ internal class MenuLikeScreen : TransitionableScreenBase
         }
     }
 
+    private void ScrollViewerOnItemTapped(object? sender, int idx)
+    {
+        _viewModel.SelectItemCommand.Execute(idx);
+    }
+
     public override void Update(GameTime gameTime)
     {
         _viewModel.Update(gameTime);
@@ -257,10 +273,6 @@ internal class MenuLikeScreen : TransitionableScreenBase
     {
         base.OnStartTransitOut();
 
-        // 关闭背景显示和输入
-        _backgroundScrollViewer.Enabled = false;
-        _backgroundScrollViewer.Visible = false;
-
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
     }
@@ -269,10 +281,15 @@ internal class MenuLikeScreen : TransitionableScreenBase
     {
         base.OnTransitOut(progress);
 
-        // 过渡 UI 的透明度
-        _desktop.Opacity = 1 - progress;
-
         // 过渡预览图像的缩放。从 1 到 2
         _rightPreview.Scale = _leftPreview.Scale = Vector2.One * (1 + progress);
+    }
+
+    public override void OnTransitIn(float progress)
+    {
+        base.OnTransitOut(progress);
+
+        // 渐入时画面逐渐出现
+        _desktop.Opacity = progress;
     }
 }
