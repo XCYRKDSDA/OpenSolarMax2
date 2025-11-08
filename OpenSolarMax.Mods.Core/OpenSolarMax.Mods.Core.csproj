@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
         <EnableDynamicLoading>true</EnableDynamicLoading>
-        <OutputPath>..\OpenSolarMax.Launcher\bin\$(PlatformName)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\$(RuntimeIdentifier)\Mods\OpenSolarMax.Mods.Core</OutputPath>
+        <OutputPath>..\OpenSolarMax.Launcher\bin\$(PlatformName)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\$(RuntimeIdentifier)\Mods\Behaviors\OpenSolarMax.Mods.Core</OutputPath>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>

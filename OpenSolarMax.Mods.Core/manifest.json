@@ -1,5 +1,7 @@
 {
-    "name": "OpenSolarMax.Mods.Core",
+    "type": "behavior",
+    "fullName": "OpenSolarMax.Mods.Core",
+    "shortName": "Core",
     "author": "XCY",
     "version": "0.0.1",
     "description": "",
