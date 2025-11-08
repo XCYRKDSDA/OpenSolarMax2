@@ -146,6 +146,8 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     public event EventHandler? ThumbnailsPositionChanged;
 
+    public event EventHandler<int>? ItemTapped;
+
     #endregion
 
     private CustomScrollItem Wrap(Widget widget)
@@ -267,8 +269,13 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         if (_firstTouchPos == _lastTouchPos)
         {
-            (_, _, _targetIndex) =
-                BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
+            if (_thumbnailContainer.Bounds.Contains(_thumbnailContainer.ToLocal(_firstTouchPos.Value)))
+            {
+                (_, _, _targetIndex) =
+                    BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
+            }
+            else
+                ItemTapped?.Invoke(this, _leftRatio > _rightRatio ? _leftIndex : _rightIndex);
         }
         else
             _targetIndex = _nearestIndex;
