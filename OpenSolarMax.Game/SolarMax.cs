@@ -153,7 +153,7 @@ public class SolarMax : XNAGame
 
         var sm = new ScreenManager(this);
         Components.Add(sm);
-        var initializationViewModel = new InitializationViewModel(globalAssets);
+        var initializationViewModel = new InitializationViewModel(globalAssets, GraphicsDevice);
         var initializationScreen = new InitializationScreen(initializationViewModel, GraphicsDevice, globalAssets, sm);
         sm.ActiveScreen = initializationScreen;
 

@@ -2,6 +2,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
@@ -21,10 +22,10 @@ internal partial class InitializationViewModel : ObservableObject, ILoaderViewMo
 
     private readonly Task<MainMenuViewModel> _menuLoadTask;
 
-    public InitializationViewModel(IAssetsManager assets)
+    public InitializationViewModel(IAssetsManager assets, GraphicsDevice graphicsDevice)
     {
-        _menuLoadTask =
-            new Task<MainMenuViewModel>(() => new MainMenuViewModel(assets, new Progress<float>(v => Progress = v)));
+        _menuLoadTask = new Task<MainMenuViewModel>( //
+            () => new MainMenuViewModel(assets, graphicsDevice, new Progress<float>(v => Progress = v)));
 
         _startLoadingCommand = new RelayCommand(OnStartLoading);
     }

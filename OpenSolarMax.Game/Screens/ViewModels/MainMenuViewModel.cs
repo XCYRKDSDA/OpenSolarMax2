@@ -40,9 +40,16 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     [ObservableProperty]
     private IImage _background;
 
+    public event EventHandler<IMenuLikeViewModel>? NavigateIn;
+
+    private readonly IAssetsManager _assets;
+    private readonly GraphicsDevice _graphicsDevice;
+
     private readonly List<ILevelMod> _levelMods;
     private readonly List<IFadableImage> _previews;
     private readonly List<IFadableImage?> _backgrounds;
+
+    private Task<ChaptersViewModel>? _chaptersViewModelLoadTask = null;
 
     private class Smooth : ICurve<float>
     {
@@ -61,21 +68,30 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         );
     }
 
-    private void OnSelectItem() { }
+    private void OnSelectItem(int idx)
+    {
+        if (idx < 3) return;
+        var chaptersViewModel = new ChaptersViewModel(_levelMods[idx - 3], _assets, _graphicsDevice, null);
+        NavigateIn?.Invoke(this, chaptersViewModel);
+    }
 
     public void Update(GameTime gameTime) { }
 
-    public MainMenuViewModel(IAssetsManager assets, IProgress<float> progress)
+    public MainMenuViewModel(IAssetsManager assets, GraphicsDevice graphicsDevice, IProgress<float> progress)
     {
         progress.Report(0);
 
         // 设置基础内容。该步骤占 10%
 
+        _assets = assets;
+        _graphicsDevice = graphicsDevice;
+
         _items = [];
         _previews = [];
         _backgrounds = [];
-        _selectItemCommand = new RelayCommand(OnSelectItem);
+        _selectItemCommand = new RelayCommand<int>(OnSelectItem);
         _background = new TextureRegion(assets.Load<Texture2D>("Background.png"));
+
         progress.Report(0.1f);
 
         // 加载 默认、模组、编辑器 的预览。该步骤占 20%
