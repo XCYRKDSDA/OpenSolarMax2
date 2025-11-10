@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
@@ -264,10 +265,6 @@ internal class MenuLikeScreen : TransitionableScreenBase
     public override void Draw(GameTime gameTime)
     {
         _scrollViewer.Update(gameTime);
-        _background.Draw();
-        _leftBackground.Draw();
-        _rightBackground.Draw();
-        _desktop.Render();
 
         // 计算背景偏移
         if (_lastThumbnailsOffset is not null)
@@ -303,6 +300,11 @@ internal class MenuLikeScreen : TransitionableScreenBase
             }
         }
         _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
+
+        _background.Draw();
+        _leftBackground.Draw();
+        _rightBackground.Draw();
+        _desktop.Render();
     }
 
     protected override void OnStartTransitOut()
