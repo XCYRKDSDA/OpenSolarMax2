@@ -211,17 +211,19 @@ public sealed class CustomHorizontalScrollViewer : Container
     // l, r, n
     private static (int, int, int) BinarySearchNearest(List<int> list, int x)
     {
+        if (list[0] >= x) return (0, 0, 0);
+        if (list[^1] <= x) return (list.Count - 1, list.Count - 1, list.Count - 1);
+
         int left = 0, right = list.Count - 1;
-        while (left <= right)
+        while (true)
         {
-            int mid = (left + right) >> 1;
-            if (list[mid] < x) left = mid + 1;
-            else if (list[mid] > x) right = mid - 1;
+            var mid = (left + right) / 2;
+            if (mid == left || mid == right)
+                return (left, right, Math.Abs(list[left] - x) < Math.Abs(list[right] - x) ? left : right);
+            if (list[mid] < x) left = mid;
+            else if (list[mid] > x) right = mid;
             else return (mid, mid, mid);
         }
-        if (left == 0) return (0, 0, 0);
-        if (left == list.Count) return (list.Count - 1, list.Count - 1, list.Count - 1);
-        return (left, right, Math.Abs(list[left] - x) < Math.Abs(list[left - 1] - x) ? left : left - 1);
     }
 
     public override void OnTouchDown()
