@@ -19,6 +19,7 @@ using Svg;
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
 using PreviewUnion = OneOf<IFadableImage, (IFadableImage, IFadableImage)>;
+using NullableBackgroundUnion = OneOf<Texture2D?, (Texture2D?, Texture2D?)>;
 
 internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
 {
@@ -32,7 +33,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     private PreviewUnion _currentPreview;
 
     [ObservableProperty]
-    private PreviewUnion _currentBackground;
+    private NullableBackgroundUnion _currentBackground;
 
     [ObservableProperty]
     private ICommand _selectItemCommand;
@@ -47,7 +48,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
 
     private readonly List<ILevelMod> _levelMods;
     private readonly List<IFadableImage> _previews;
-    private readonly List<IFadableImage?> _backgrounds;
+    private readonly List<Texture2D?> _backgrounds;
 
     private Task<ChaptersViewModel>? _chaptersViewModelLoadTask = null;
 
@@ -63,8 +64,8 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             pair => PreviewUnion.FromT1((_previews[pair.Item1], _previews[pair.Item2]))
         );
         CurrentBackground = value.Match(
-            idx => PreviewUnion.FromT0(_backgrounds[idx]),
-            pair => PreviewUnion.FromT1((_backgrounds[pair.Item1], _backgrounds[pair.Item2]))
+            idx => NullableBackgroundUnion.FromT0(_backgrounds[idx]),
+            pair => NullableBackgroundUnion.FromT1((_backgrounds[pair.Item1], _backgrounds[pair.Item2]))
         );
     }
 
@@ -153,10 +154,9 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
             if (_levelMods[i].Background is { } backgroundFile)
             {
                 using var backgroundStream = backgroundFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-                var background = new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice,
-                                                                        backgroundStream,
-                                                                        DefaultColorProcessors.PremultiplyAlpha));
-                _backgrounds.Add(new FadableWrapper(background));
+                _backgrounds.Add(Texture2D.FromStream(MyraEnvironment.GraphicsDevice,
+                                                      backgroundStream,
+                                                      DefaultColorProcessors.PremultiplyAlpha));
             }
             else
                 _backgrounds.Add(null);
@@ -167,7 +167,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         // 移动到默认位置
         _currentIndex = 2;
         _currentPreview = PreviewUnion.FromT0(_previews[2]);
-        _currentBackground = PreviewUnion.FromT0(_backgrounds[2]);
+        _currentBackground = NullableBackgroundUnion.FromT0(_backgrounds[2]);
 
         progress.Report(1);
     }

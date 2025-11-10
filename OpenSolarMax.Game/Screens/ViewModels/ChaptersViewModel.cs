@@ -6,7 +6,6 @@ using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Myra.Graphics2D;
 using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Data;
@@ -17,6 +16,7 @@ using Zio.FileSystems;
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
 using PreviewUnion = OneOf<IFadableImage, (IFadableImage, IFadableImage)>;
+using NullableBackgroundUnion = OneOf<Texture2D?, (Texture2D?, Texture2D?)>;
 
 internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
 {
@@ -30,7 +30,7 @@ internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
     private PreviewUnion _currentPreview;
 
     [ObservableProperty]
-    private PreviewUnion _currentBackground;
+    private NullableBackgroundUnion _currentBackground;
 
     [ObservableProperty]
     private ICommand _selectItemCommand;
@@ -148,7 +148,7 @@ internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
         // 移动到默认位置
         _currentIndex = 0;
         _currentPreview = PreviewUnion.FromT0(_previews[0]);
-        _currentBackground = PreviewUnion.FromT0(null);
+        _currentBackground = NullableBackgroundUnion.FromT0(null);
     }
 
     public void Update(GameTime gameTime)

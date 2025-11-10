@@ -11,6 +11,8 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
 
     public float Left { get; set; } = 0;
 
+    public float Alpha { get; set; } = 1;
+
     public void Draw()
     {
         if (Texture is null) return;
@@ -33,7 +35,7 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
 
         // 绘图
         _spriteBatch.Begin(samplerState: SamplerState.LinearWrap);
-        _spriteBatch.Draw(Texture, new Vector2(actualLeft, 0), sourceRegion, Color.White,
+        _spriteBatch.Draw(Texture, new Vector2(actualLeft, 0), sourceRegion, Color.White * Alpha,
                           rotation: 0f, origin: Vector2.Zero, scale: scale,
                           effects: SpriteEffects.None, layerDepth: 0);
         _spriteBatch.End();

@@ -18,7 +18,6 @@ namespace OpenSolarMax.Game.Screens.Views;
 internal class MenuLikeScreen : TransitionableScreenBase
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
-    private const float _mixAlpha = 0.72f;
 
     private readonly IMenuLikeViewModel _viewModel;
     private readonly IAssetsManager _assets;
@@ -27,12 +26,12 @@ internal class MenuLikeScreen : TransitionableScreenBase
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private readonly FadableImage _leftPreview, _rightPreview;
-    private readonly Image2 _leftBackgroundImage;
-    private readonly Image2 _rightBackgroundImage;
 
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
     private readonly HorizontalScrollingBackground _background;
+    private readonly HorizontalScrollingBackground _leftBackground;
+    private readonly HorizontalScrollingBackground _rightBackground;
 
     private Label GenerateLabel(string name) => new()
     {
@@ -56,19 +55,13 @@ internal class MenuLikeScreen : TransitionableScreenBase
             Left = 0,
         };
 
-        _leftBackgroundImage = new Image2()
+        _leftBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
-            Renderable = viewModel.CurrentBackground.AsT0,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-            Stretch = ImageStretch.UniformToFill,
+            Texture = viewModel.CurrentBackground.AsT0,
         };
-        _rightBackgroundImage = new Image2()
+        _rightBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
-            Renderable = viewModel.CurrentBackground.AsT0,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-            Stretch = ImageStretch.UniformToFill,
+            Texture = viewModel.CurrentBackground.AsT0,
         };
 
         var band1 = new Widget()
@@ -112,13 +105,9 @@ internal class MenuLikeScreen : TransitionableScreenBase
         grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
         grid.RowsProportions.Add(Proportion.Auto);
-        Grid.SetRowSpan(_leftBackgroundImage, 3);
-        Grid.SetRowSpan(_rightBackgroundImage, 3);
         Grid.SetRow(band1, 0);
         Grid.SetRow(_scrollViewer, 1);
         Grid.SetRow(band2, 2);
-        grid.Widgets.Add(_leftBackgroundImage);
-        grid.Widgets.Add(_rightBackgroundImage);
         grid.Widgets.Add(band1);
         grid.Widgets.Add(_scrollViewer);
         grid.Widgets.Add(band2);
@@ -169,11 +158,11 @@ internal class MenuLikeScreen : TransitionableScreenBase
         {
             if (_viewModel.CurrentBackground.IsT0)
             {
-                _leftBackgroundImage.Renderable = _viewModel.CurrentBackground.AsT0;
-                _rightBackgroundImage.Renderable = null;
+                _leftBackground.Texture = _viewModel.CurrentBackground.AsT0;
+                _rightBackground.Texture = null;
             }
             else
-                (_leftBackgroundImage.Renderable, _rightBackgroundImage.Renderable) = _viewModel.CurrentBackground.AsT1;
+                (_leftBackground.Texture, _rightBackground.Texture) = _viewModel.CurrentBackground.AsT1;
         }
     }
 
@@ -220,8 +209,8 @@ internal class MenuLikeScreen : TransitionableScreenBase
             _rightPreview.FadeIn = 0;
             _rightPreview.Visible = false;
 
-            _leftBackgroundImage.Opacity = _mixAlpha;
-            _rightBackgroundImage.Opacity = 0;
+            _leftBackground.Alpha = 1;
+            _rightBackground.Alpha = 0;
         }
         else
         {
@@ -231,12 +220,15 @@ internal class MenuLikeScreen : TransitionableScreenBase
             _rightPreview.FadeIn = MathF.Max(1 - _scrollViewer.RightRatio * 2, 0);
             _rightPreview.Visible = true;
 
-            var t = _scrollViewer.LeftRatio;
-            var k = (1 - MathF.Cos(t * MathF.PI)) / 2;
-            var alphaRight = k * _mixAlpha;
-            var alphaLeft = (_mixAlpha - alphaRight) / (1 - alphaRight);
-            _leftBackgroundImage.Opacity = alphaLeft;
-            _rightBackgroundImage.Opacity = alphaRight;
+            if (_rightBackground.Texture is null)
+            {
+                _leftBackground.Alpha = _scrollViewer.RightRatio;
+            }
+            else
+            {
+                _leftBackground.Alpha = 1;
+                _rightBackground.Alpha = _scrollViewer.LeftRatio;
+            }
         }
     }
 
@@ -254,6 +246,8 @@ internal class MenuLikeScreen : TransitionableScreenBase
     {
         _scrollViewer.Update(gameTime);
         _background.Draw();
+        _leftBackground.Draw();
+        _rightBackground.Draw();
         _desktop.Render();
 
         // 计算背景偏移
@@ -265,6 +259,8 @@ internal class MenuLikeScreen : TransitionableScreenBase
             var velocity = error * 5;
             var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
             _background.Left += movement;
+            _leftBackground.Left = _background.Left + _scrollViewer.LeftIndex * _scrollViewer.ThumbnailsInterval;
+            _rightBackground.Left = _background.Left + _scrollViewer.RightIndex * _scrollViewer.ThumbnailsInterval;
         }
         _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
     }

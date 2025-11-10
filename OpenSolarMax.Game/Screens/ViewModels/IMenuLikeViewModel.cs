@@ -15,7 +15,7 @@ internal interface IMenuLikeViewModel : IViewModel
 
     OneOf<IFadableImage, (IFadableImage, IFadableImage)> CurrentPreview { get; }
 
-    OneOf<IFadableImage, (IFadableImage, IFadableImage)> CurrentBackground { get; }
+    OneOf<Texture2D?, (Texture2D?, Texture2D?)> CurrentBackground { get; }
 
     Texture2D Background { get; }
 
