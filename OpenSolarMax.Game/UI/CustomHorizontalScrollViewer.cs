@@ -55,8 +55,7 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     private int _targetIndex = 0;
     private int _nearestIndex = 0;
-    private int _leftIndex = 0, _rightIndex = 0;
-    private float _leftRatio = 1, _rightRatio = 1;
+    private int _offset = 0;
 
     #endregion
 
@@ -106,21 +105,9 @@ public sealed class CustomHorizontalScrollViewer : Container
         set => _selectionRadius = value;
     }
 
-    public Widget NearestWidget => _thumbnails[_nearestIndex];
+    public int NearestIndex => _nearestIndex;
 
-    /// <summary>
-    /// 当前位置左侧的元素索引或者当前正指向的元素索引
-    /// </summary>
-    public int LeftIndex => _leftIndex;
-
-    public float LeftRatio => _leftRatio;
-
-    /// <summary>
-    /// 当前位置右侧的元素索引或者当前正指向的元素索引
-    /// </summary>
-    public int RightIndex => _rightIndex;
-
-    public float RightRatio => _rightRatio;
+    public int Offset => _offset;
 
     /// <summary>
     /// 当前目标元素索引
@@ -129,19 +116,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         get => _targetIndex;
         set => _targetIndex = value;
-    }
-
-    /// <summary>
-    /// 当前整体移动百分比
-    /// </summary>
-    public float Percentage
-    {
-        get
-        {
-            var x = ActualBounds.Width / 2 - _thumbnailContainer.Left;
-            var relativeCenters = GetRelativeCenters();
-            return (float)(x - relativeCenters[0]) / (relativeCenters[^1] - relativeCenters[0]);
-        }
     }
 
     /// <summary>
@@ -208,21 +182,20 @@ public sealed class CustomHorizontalScrollViewer : Container
                                   .ToList();
     }
 
-    // l, r, n
-    private static (int, int, int) BinarySearchNearest(List<int> list, int x)
+    private static int BinarySearchNearest(List<int> list, int x)
     {
-        if (list[0] >= x) return (0, 0, 0);
-        if (list[^1] <= x) return (list.Count - 1, list.Count - 1, list.Count - 1);
+        if (list[0] >= x) return 0;
+        if (list[^1] <= x) return list.Count - 1;
 
         int left = 0, right = list.Count - 1;
         while (true)
         {
             var mid = (left + right) / 2;
             if (mid == left || mid == right)
-                return (left, right, Math.Abs(list[left] - x) < Math.Abs(list[right] - x) ? left : right);
+                return Math.Abs(list[left] - x) < Math.Abs(list[right] - x) ? left : right;
             if (list[mid] < x) left = mid;
             else if (list[mid] > x) right = mid;
-            else return (mid, mid, mid);
+            else return mid;
         }
     }
 
@@ -278,11 +251,11 @@ public sealed class CustomHorizontalScrollViewer : Container
         {
             if (_thumbnailContainer.Bounds.Contains(_thumbnailContainer.ToLocal(_firstTouchPos.Value)))
             {
-                (_, _, _targetIndex) =
+                _targetIndex =
                     BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
             }
             else
-                ItemTapped?.Invoke(this, _leftRatio > _rightRatio ? _leftIndex : _rightIndex);
+                ItemTapped?.Invoke(this, _nearestIndex);
         }
         else
             _targetIndex = _nearestIndex;
@@ -292,30 +265,20 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     private void UpdateScrolling()
     {
-        // 二分法查找最近点和左右点
-        (_leftIndex, _rightIndex, _nearestIndex) =
-            BinarySearchNearest(GetRelativeCenters(), ActualBounds.Width / 2 - _thumbnailContainer.Left);
+        // 二分法查找最近点
+        _nearestIndex = BinarySearchNearest(GetRelativeCenters(), ActualBounds.Width / 2 - _thumbnailContainer.Left);
 
-        // 计算当前位置在左右控件之间的过渡比例
-        if (_leftIndex == _rightIndex)
-            _leftRatio = _rightRatio = 1;
-        else
-        {
-            var x = ActualBounds.Width / 2 - _thumbnailContainer.Left;
-            var relativeCenters = GetRelativeCenters();
-            _rightRatio = (float)(relativeCenters[_rightIndex] - x) /
-                          (relativeCenters[_rightIndex] - relativeCenters[_leftIndex]);
-            _leftRatio = 1 - _rightRatio;
-        }
+        // 计算距离最近元素的偏移
+        _offset = ActualBounds.Width / 2 - _thumbnailContainer.Left - GetRelativeCenters()[_nearestIndex];
 
         // 设置渐变透明度
         for (int i = 0; i < _thumbnailContainer.Widgets.Count; i++)
             _thumbnailContainer.Widgets[i].Opacity = MathF.Max(1 - 0.2f * MathF.Abs(i - _nearestIndex), 0);
 
         // 设置选框尺寸和透明度
-        var ratio = _leftIndex == _rightIndex ? 1 : MathF.Abs(_leftRatio - _rightRatio);
-        _circle.Radius = (int)(_selectionRadius * ratio);
-        _circleImage.Opacity = ratio;
+        var ratio = 1 - MathF.Abs(_offset) / (_thumbnailsInterval / 2f);
+        _circle.Radius = (int)MathF.Max(_selectionRadius * ratio, 0);
+        _circleImage.Opacity = MathF.Max(ratio, 0);
 
         // 触发事件
         ThumbnailsPositionChanged?.Invoke(this, EventArgs.Empty);

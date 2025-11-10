@@ -201,9 +201,11 @@ internal class MenuLikeScreen : TransitionableScreenBase
 
     private void ScrollViewerOnThumbnailsPositionChanged(object? sender, EventArgs e)
     {
-        if (_scrollViewer.LeftIndex == _scrollViewer.RightIndex)
+        if (_scrollViewer.Offset == 0
+            || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
+            || (_scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1 && _scrollViewer.Offset > 0))
         {
-            _viewModel.CurrentIndex = _scrollViewer.LeftIndex;
+            _viewModel.CurrentIndex = _scrollViewer.NearestIndex;
 
             _leftPreview.FadeIn = 1;
             _rightPreview.FadeIn = 0;
@@ -214,20 +216,37 @@ internal class MenuLikeScreen : TransitionableScreenBase
         }
         else
         {
-            _viewModel.CurrentIndex = (_scrollViewer.LeftIndex, _scrollViewer.RightIndex);
+            int leftIndex, rightIndex;
+            int leftOffset, rightOffset;
+            if (_scrollViewer.Offset > 0)
+            {
+                leftIndex = _scrollViewer.NearestIndex;
+                leftOffset = _scrollViewer.Offset;
+                rightIndex = _scrollViewer.NearestIndex + 1;
+                rightOffset = _scrollViewer.Offset - _scrollViewer.ThumbnailsInterval;
+            }
+            else
+            {
+                leftIndex = _scrollViewer.NearestIndex - 1;
+                leftOffset = _scrollViewer.Offset + _scrollViewer.ThumbnailsInterval;
+                rightIndex = _scrollViewer.NearestIndex;
+                rightOffset = _scrollViewer.Offset;
+            }
 
-            _leftPreview.FadeIn = MathF.Max(1 - _scrollViewer.LeftRatio * 2, 0);
-            _rightPreview.FadeIn = MathF.Max(1 - _scrollViewer.RightRatio * 2, 0);
+            _viewModel.CurrentIndex = (leftIndex, rightIndex);
+
+            _leftPreview.FadeIn = MathF.Max(1 - MathF.Abs(leftOffset) / (_scrollViewer.ThumbnailsInterval / 2f), 0);
+            _rightPreview.FadeIn = MathF.Max(1 - MathF.Abs(rightOffset) / (_scrollViewer.ThumbnailsInterval / 2f), 0);
             _rightPreview.Visible = true;
 
             if (_rightBackground.Texture is null)
             {
-                _leftBackground.Alpha = _scrollViewer.RightRatio;
+                _leftBackground.Alpha = 1 - MathF.Abs(leftOffset) / _scrollViewer.ThumbnailsInterval;
             }
             else
             {
                 _leftBackground.Alpha = 1;
-                _rightBackground.Alpha = _scrollViewer.LeftRatio;
+                _rightBackground.Alpha = 1 - MathF.Abs(rightOffset) / _scrollViewer.ThumbnailsInterval;
             }
         }
     }
@@ -259,8 +278,29 @@ internal class MenuLikeScreen : TransitionableScreenBase
             var velocity = error * 5;
             var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
             _background.Left += movement;
-            _leftBackground.Left = _background.Left + _scrollViewer.LeftIndex * _scrollViewer.ThumbnailsInterval;
-            _rightBackground.Left = _background.Left + _scrollViewer.RightIndex * _scrollViewer.ThumbnailsInterval;
+
+            if (_scrollViewer.Offset == 0
+                || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
+                || (_scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1 && _scrollViewer.Offset > 0))
+            {
+                _leftBackground.Left = _background.Left + _scrollViewer.NearestIndex * _scrollViewer.ThumbnailsInterval;
+            }
+            else
+            {
+                int leftIndex, rightIndex;
+                if (_scrollViewer.Offset > 0)
+                {
+                    leftIndex = _scrollViewer.NearestIndex;
+                    rightIndex = _scrollViewer.NearestIndex + 1;
+                }
+                else
+                {
+                    leftIndex = _scrollViewer.NearestIndex - 1;
+                    rightIndex = _scrollViewer.NearestIndex;
+                }
+                _leftBackground.Left = _background.Left + leftIndex * _scrollViewer.ThumbnailsInterval;
+                _rightBackground.Left = _background.Left + rightIndex * _scrollViewer.ThumbnailsInterval;
+            }
         }
         _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
     }
