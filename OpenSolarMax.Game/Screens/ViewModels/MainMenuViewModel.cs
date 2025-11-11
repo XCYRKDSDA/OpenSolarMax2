@@ -27,19 +27,28 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     private ObservableCollection<string> _items;
 
     [ObservableProperty]
-    private OneOf<int, (int, int)> _currentIndex;
+    private int _primaryItemIndex;
 
     [ObservableProperty]
-    private PreviewUnion _currentPreview;
+    private IFadableImage _primaryItemPreview;
 
     [ObservableProperty]
-    private NullableBackgroundUnion _currentBackground;
+    private Texture2D? _primaryItemBackground;
+
+    [ObservableProperty]
+    private int? _secondaryItemIndex;
+
+    [ObservableProperty]
+    private IFadableImage? _secondaryItemPreview;
+
+    [ObservableProperty]
+    private Texture2D? _secondaryItemBackground;
+
+    [ObservableProperty]
+    private Texture2D _pageBackground;
 
     [ObservableProperty]
     private ICommand _selectItemCommand;
-
-    [ObservableProperty]
-    private Texture2D _background;
 
     public event EventHandler<IMenuLikeViewModel>? NavigateIn;
 
@@ -57,16 +66,16 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
     }
 
-    partial void OnCurrentIndexChanged(OneOf<int, (int, int)> value)
+    partial void OnPrimaryItemIndexChanged(int value)
     {
-        CurrentPreview = value.Match(
-            idx => PreviewUnion.FromT0(_previews[idx]),
-            pair => PreviewUnion.FromT1((_previews[pair.Item1], _previews[pair.Item2]))
-        );
-        CurrentBackground = value.Match(
-            idx => NullableBackgroundUnion.FromT0(_backgrounds[idx]),
-            pair => NullableBackgroundUnion.FromT1((_backgrounds[pair.Item1], _backgrounds[pair.Item2]))
-        );
+        PrimaryItemPreview = _previews[value];
+        PrimaryItemBackground = _backgrounds[value];
+    }
+
+    partial void OnSecondaryItemIndexChanged(int? value)
+    {
+        SecondaryItemPreview = value is null ? null : _previews[value.Value];
+        SecondaryItemBackground = value is null ? null : _backgrounds[value.Value];
     }
 
     private void OnSelectItem(int idx)
@@ -91,7 +100,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         _previews = [];
         _backgrounds = [];
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
-        _background = assets.Load<Texture2D>("Background.png");
+        _pageBackground = assets.Load<Texture2D>("Background.png");
 
         progress.Report(0.1f);
 
@@ -165,9 +174,12 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         }
 
         // 移动到默认位置
-        _currentIndex = 2;
-        _currentPreview = PreviewUnion.FromT0(_previews[2]);
-        _currentBackground = NullableBackgroundUnion.FromT0(_backgrounds[2]);
+        _primaryItemIndex = 2;
+        _primaryItemPreview = _previews[2];
+        _primaryItemBackground = _backgrounds[2];
+        _secondaryItemIndex = null;
+        _secondaryItemPreview = null;
+        _secondaryItemBackground = null;
 
         progress.Report(1);
     }

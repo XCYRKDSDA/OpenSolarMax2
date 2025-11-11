@@ -26,13 +26,14 @@ internal class MenuLikeScreen : TransitionableScreenBase
 
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
-    private readonly FadableImage _leftPreview, _rightPreview;
+    private readonly FadableImage _primaryPreview, _secondaryPreview;
 
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
-    private readonly HorizontalScrollingBackground _background;
-    private readonly HorizontalScrollingBackground _leftBackground;
-    private readonly HorizontalScrollingBackground _rightBackground;
+    private float _actualBackgroundLeft = 0;
+    private readonly HorizontalScrollingBackground _pageBackground;
+    private readonly HorizontalScrollingBackground _primaryBackground, _secondaryBackground;
+    private float _commonBackgroundAlpha = 1;
 
     private Label GenerateLabel(string name) => new()
     {
@@ -50,19 +51,18 @@ internal class MenuLikeScreen : TransitionableScreenBase
         _screenManager = screenManager;
         _desktop = new Desktop();
 
-        _background = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
+        _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
-            Texture = viewModel.Background,
-            Left = 0,
+            Texture = viewModel.PageBackground,
+            Left = 0
         };
-
-        _leftBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
+        _primaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
-            Texture = viewModel.CurrentBackground.AsT0,
+            Texture = viewModel.PrimaryItemBackground,
         };
-        _rightBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
+        _secondaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
-            Texture = viewModel.CurrentBackground.AsT0,
+            Texture = viewModel.SecondaryItemBackground,
         };
 
         var band1 = new Widget()
@@ -87,20 +87,20 @@ internal class MenuLikeScreen : TransitionableScreenBase
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
         _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
 
-        _leftPreview = new FadableImage()
+        _primaryPreview = new FadableImage()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             FadeIn = 1,
         };
-        _rightPreview = new FadableImage()
+        _secondaryPreview = new FadableImage()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             FadeIn = 0, Visible = false,
         };
-        _scrollViewer.PreviewPanel.Widgets.Add(_leftPreview);
-        _scrollViewer.PreviewPanel.Widgets.Add(_rightPreview);
+        _scrollViewer.PreviewPanel.Widgets.Add(_primaryPreview);
+        _scrollViewer.PreviewPanel.Widgets.Add(_secondaryPreview);
 
         var grid = new Grid();
         grid.RowsProportions.Add(Proportion.Auto);
@@ -120,8 +120,8 @@ internal class MenuLikeScreen : TransitionableScreenBase
         foreach (var name in viewModel.Items)
             _scrollViewer.Widgets.Add(GenerateLabel(name));
 
-        _scrollViewer.TargetWidgetIndex = viewModel.CurrentIndex.AsT0;
-        _leftPreview.Renderable = viewModel.CurrentPreview.AsT0;
+        _scrollViewer.TargetWidgetIndex = viewModel.PrimaryItemIndex;
+        _primaryPreview.Renderable = viewModel.PrimaryItemPreview;
 
         // 绑定 view model
 
@@ -136,30 +136,26 @@ internal class MenuLikeScreen : TransitionableScreenBase
     public MenuLikeScreen(IMenuLikeViewModel viewModel, HorizontalScrollingBackground sharedBackground,
                           IAssetsManager assets, ScreenManager screenManager) : this(viewModel, assets, screenManager)
     {
-        _background = new HorizontalScrollingBackground(sharedBackground.Texture!.GraphicsDevice)
+        _pageBackground = new HorizontalScrollingBackground(sharedBackground.Texture!.GraphicsDevice)
         {
             Alpha = sharedBackground.Alpha,
             Left = sharedBackground.Left,
             Texture = sharedBackground.Texture,
         };
         _targetBackgroundLeft = sharedBackground.Left;
+        _actualBackgroundLeft = sharedBackground.Left;
     }
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(IMenuLikeViewModel.CurrentPreview))
-        {
-            if (_viewModel.CurrentPreview.IsT0)
-            {
-                _leftPreview.Renderable = _viewModel.CurrentPreview.AsT0;
-                _rightPreview.Opacity = 0;
-            }
-            else
-            {
-                (_leftPreview.Renderable, _rightPreview.Renderable) = _viewModel.CurrentPreview.AsT1;
-                _rightPreview.Opacity = 1;
-            }
-        }
+        if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemBackground))
+            _primaryBackground.Texture = _viewModel.PrimaryItemBackground;
+        else if (e.PropertyName == nameof(IMenuLikeViewModel.SecondaryItemBackground))
+            _secondaryBackground.Texture = _viewModel.SecondaryItemBackground;
+        else if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemPreview))
+            _primaryPreview.Renderable = _viewModel.PrimaryItemPreview;
+        else if (e.PropertyName == nameof(IMenuLikeViewModel.SecondaryItemPreview))
+            _secondaryPreview.Renderable = _viewModel.SecondaryItemPreview;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.Items))
         {
             _scrollViewer.Widgets.Clear();
@@ -167,22 +163,13 @@ internal class MenuLikeScreen : TransitionableScreenBase
                 _scrollViewer.Widgets.Add(GenerateLabel(name));
             _viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         }
-        else if (e.PropertyName == nameof(IMenuLikeViewModel.CurrentBackground))
-        {
-            if (_viewModel.CurrentBackground.IsT0)
-            {
-                _leftBackground.Texture = _viewModel.CurrentBackground.AsT0;
-                _rightBackground.Texture = null;
-            }
-            else
-                (_leftBackground.Texture, _rightBackground.Texture) = _viewModel.CurrentBackground.AsT1;
-        }
     }
 
     private void ViewModelOnNavigateIn(object? sender, IMenuLikeViewModel e)
     {
         _screenManager.ActiveScreen =
-            new CustomTransition(_screenManager, this, new MenuLikeScreen(e, _leftBackground, _assets, _screenManager),
+            new CustomTransition(_screenManager, this,
+                                 new MenuLikeScreen(e, _primaryBackground, _assets, _screenManager),
                                  TimeSpan.FromSeconds(0.5));
     }
 
@@ -214,53 +201,40 @@ internal class MenuLikeScreen : TransitionableScreenBase
 
     private void ScrollViewerOnThumbnailsPositionChanged(object? sender, EventArgs e)
     {
-        if (_scrollViewer.Offset == 0
+        var primaryOnly =
+            _scrollViewer.Offset == 0
             || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
-            || (_scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1 && _scrollViewer.Offset > 0))
+            || (_scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1 && _scrollViewer.Offset > 0);
+
+        _viewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
+        _viewModel.SecondaryItemIndex =
+            primaryOnly ? null : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
+
+        _primaryPreview.FadeIn = MathF.Max(
+            1 - int.Abs(_scrollViewer.Offset) / (_scrollViewer.ThumbnailsInterval / 2f),
+            0
+        );
+        _secondaryPreview.FadeIn = MathF.Max(
+            1 -
+            (_scrollViewer.ThumbnailsInterval - int.Abs(_scrollViewer.Offset)) /
+            (_scrollViewer.ThumbnailsInterval / 2f),
+            0
+        );
+        _secondaryPreview.Visible = !primaryOnly;
+
+        // 永远保持 secondary 背景在下
+        if (_primaryBackground.Texture is not null)
         {
-            _viewModel.CurrentIndex = _scrollViewer.NearestIndex;
-
-            _leftPreview.FadeIn = 1;
-            _rightPreview.FadeIn = 0;
-            _rightPreview.Visible = false;
-
-            _leftBackground.Alpha = 1;
-            _rightBackground.Alpha = 0;
+            _primaryBackground.Alpha =
+                MathF.Max(1 - float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0) *
+                _commonBackgroundAlpha;
+            _secondaryBackground.Alpha = 1 * _commonBackgroundAlpha;
         }
         else
         {
-            int leftIndex, rightIndex;
-            int leftOffset, rightOffset;
-            if (_scrollViewer.Offset > 0)
-            {
-                leftIndex = _scrollViewer.NearestIndex;
-                leftOffset = _scrollViewer.Offset;
-                rightIndex = _scrollViewer.NearestIndex + 1;
-                rightOffset = _scrollViewer.Offset - _scrollViewer.ThumbnailsInterval;
-            }
-            else
-            {
-                leftIndex = _scrollViewer.NearestIndex - 1;
-                leftOffset = _scrollViewer.Offset + _scrollViewer.ThumbnailsInterval;
-                rightIndex = _scrollViewer.NearestIndex;
-                rightOffset = _scrollViewer.Offset;
-            }
-
-            _viewModel.CurrentIndex = (leftIndex, rightIndex);
-
-            _leftPreview.FadeIn = MathF.Max(1 - MathF.Abs(leftOffset) / (_scrollViewer.ThumbnailsInterval / 2f), 0);
-            _rightPreview.FadeIn = MathF.Max(1 - MathF.Abs(rightOffset) / (_scrollViewer.ThumbnailsInterval / 2f), 0);
-            _rightPreview.Visible = true;
-
-            if (_rightBackground.Texture is null)
-            {
-                _leftBackground.Alpha = 1 - MathF.Abs(leftOffset) / _scrollViewer.ThumbnailsInterval;
-            }
-            else
-            {
-                _leftBackground.Alpha = 1;
-                _rightBackground.Alpha = 1 - MathF.Abs(rightOffset) / _scrollViewer.ThumbnailsInterval;
-            }
+            _secondaryBackground.Alpha =
+                MathF.Max(float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0) *
+                _commonBackgroundAlpha;
         }
     }
 
@@ -283,39 +257,25 @@ internal class MenuLikeScreen : TransitionableScreenBase
         {
             var delta = _scrollViewer.ThumbnailsOffset - _lastThumbnailsOffset.Value;
             _targetBackgroundLeft += delta * 2;
-            var error = _targetBackgroundLeft - _background.Left;
+            var error = _targetBackgroundLeft - _actualBackgroundLeft;
             var velocity = error * 5;
             var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _background.Left += movement;
+            _actualBackgroundLeft += movement;
 
-            if (_scrollViewer.Offset == 0
-                || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
-                || (_scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1 && _scrollViewer.Offset > 0))
+            _pageBackground.Left = _actualBackgroundLeft;
+            _primaryBackground.Left =
+                _actualBackgroundLeft + _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+            if (_viewModel.SecondaryItemIndex is { } secondaryItemIndex)
             {
-                _leftBackground.Left = _background.Left + _scrollViewer.NearestIndex * _scrollViewer.ThumbnailsInterval;
-            }
-            else
-            {
-                int leftIndex, rightIndex;
-                if (_scrollViewer.Offset > 0)
-                {
-                    leftIndex = _scrollViewer.NearestIndex;
-                    rightIndex = _scrollViewer.NearestIndex + 1;
-                }
-                else
-                {
-                    leftIndex = _scrollViewer.NearestIndex - 1;
-                    rightIndex = _scrollViewer.NearestIndex;
-                }
-                _leftBackground.Left = _background.Left + leftIndex * _scrollViewer.ThumbnailsInterval;
-                _rightBackground.Left = _background.Left + rightIndex * _scrollViewer.ThumbnailsInterval;
+                _secondaryBackground.Left =
+                    _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
             }
         }
         _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
 
-        _background.Draw();
-        _leftBackground.Draw();
-        _rightBackground.Draw();
+        _pageBackground.Draw();
+        _secondaryBackground.Draw();
+        _primaryBackground.Draw();
         _desktop.Render();
     }
 
@@ -332,7 +292,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
         base.OnTransitOut(progress);
 
         // 过渡预览图像的缩放。从 1 到 2
-        _rightPreview.Scale = _leftPreview.Scale = Vector2.One * (1 + progress * 0.5f);
+        _secondaryPreview.Scale = _primaryPreview.Scale = Vector2.One * (1 + progress * 0.5f);
     }
 
     public override void OnTransitIn(float progress)
@@ -340,9 +300,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
         base.OnTransitOut(progress);
 
         // 渐入时画面逐渐出现
-        _background.Alpha = progress;
-        _leftBackground.Alpha = progress;
-        _rightBackground.Alpha = progress;
+        _commonBackgroundAlpha = progress;
         _desktop.Opacity = progress;
     }
 }

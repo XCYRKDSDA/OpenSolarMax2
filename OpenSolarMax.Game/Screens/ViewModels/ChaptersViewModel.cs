@@ -24,19 +24,28 @@ internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
     private ObservableCollection<string> _items;
 
     [ObservableProperty]
-    private OneOf<int, (int, int)> _currentIndex;
+    private int _primaryItemIndex;
 
     [ObservableProperty]
-    private PreviewUnion _currentPreview;
+    private IFadableImage _primaryItemPreview;
 
     [ObservableProperty]
-    private NullableBackgroundUnion _currentBackground;
+    private Texture2D? _primaryItemBackground;
+
+    [ObservableProperty]
+    private int? _secondaryItemIndex;
+
+    [ObservableProperty]
+    private IFadableImage? _secondaryItemPreview;
+
+    [ObservableProperty]
+    private Texture2D? _secondaryItemBackground;
+
+    [ObservableProperty]
+    private Texture2D _pageBackground;
 
     [ObservableProperty]
     private ICommand _selectItemCommand;
-
-    [ObservableProperty]
-    private Texture2D _background;
 
     public event EventHandler<IMenuLikeViewModel>? NavigateIn;
 
@@ -146,9 +155,12 @@ internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
         }
 
         // 移动到默认位置
-        _currentIndex = 0;
-        _currentPreview = PreviewUnion.FromT0(_previews[0]);
-        _currentBackground = NullableBackgroundUnion.FromT0(null);
+        _primaryItemIndex = 0;
+        _primaryItemPreview = _previews[0];
+        _primaryItemBackground = null;
+        _secondaryItemIndex = null;
+        _secondaryItemPreview = null;
+        _secondaryItemBackground = null;
     }
 
     public void Update(GameTime gameTime)
