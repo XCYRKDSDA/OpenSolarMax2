@@ -133,6 +133,18 @@ internal class MenuLikeScreen : TransitionableScreenBase
         _scrollViewer.ConvergeImmediately();
     }
 
+    public MenuLikeScreen(IMenuLikeViewModel viewModel, HorizontalScrollingBackground sharedBackground,
+                          IAssetsManager assets, ScreenManager screenManager) : this(viewModel, assets, screenManager)
+    {
+        _background = new HorizontalScrollingBackground(sharedBackground.Texture!.GraphicsDevice)
+        {
+            Alpha = sharedBackground.Alpha,
+            Left = sharedBackground.Left,
+            Texture = sharedBackground.Texture,
+        };
+        _targetBackgroundLeft = sharedBackground.Left;
+    }
+
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IMenuLikeViewModel.CurrentPreview))
@@ -170,8 +182,8 @@ internal class MenuLikeScreen : TransitionableScreenBase
     private void ViewModelOnNavigateIn(object? sender, IMenuLikeViewModel e)
     {
         _screenManager.ActiveScreen =
-            new CustomTransition(_screenManager, this, new MenuLikeScreen(e, _assets, _screenManager),
-                                 TimeSpan.FromSeconds(5));
+            new CustomTransition(_screenManager, this, new MenuLikeScreen(e, _leftBackground, _assets, _screenManager),
+                                 TimeSpan.FromSeconds(0.5));
     }
 
     private void ViewModelItemsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -320,7 +332,7 @@ internal class MenuLikeScreen : TransitionableScreenBase
         base.OnTransitOut(progress);
 
         // 过渡预览图像的缩放。从 1 到 2
-        _rightPreview.Scale = _leftPreview.Scale = Vector2.One * (1 + progress);
+        _rightPreview.Scale = _leftPreview.Scale = Vector2.One * (1 + progress * 0.5f);
     }
 
     public override void OnTransitIn(float progress)
@@ -328,6 +340,9 @@ internal class MenuLikeScreen : TransitionableScreenBase
         base.OnTransitOut(progress);
 
         // 渐入时画面逐渐出现
+        _background.Alpha = progress;
+        _leftBackground.Alpha = progress;
+        _rightBackground.Alpha = progress;
         _desktop.Opacity = progress;
     }
 }
