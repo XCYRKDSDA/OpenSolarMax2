@@ -16,7 +16,7 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen : TransitionableScreenBase
+internal class MenuLikeScreen : ScreenBase
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
@@ -168,9 +168,9 @@ internal class MenuLikeScreen : TransitionableScreenBase
     private void ViewModelOnNavigateIn(object? sender, IMenuLikeViewModel e)
     {
         _screenManager.ActiveScreen =
-            new CustomTransition(_screenManager, this,
-                                 new MenuLikeScreen(e, _primaryBackground, _assets, _screenManager),
-                                 TimeSpan.FromSeconds(0.5));
+            new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, _screenManager, this,
+                                       new MenuLikeScreen(e, _primaryBackground, _assets, _screenManager),
+                                       TimeSpan.FromSeconds(0.5));
     }
 
     private void ViewModelItemsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -293,14 +293,5 @@ internal class MenuLikeScreen : TransitionableScreenBase
 
         // 过渡预览图像的缩放。从 1 到 2
         _secondaryPreview.Scale = _primaryPreview.Scale = Vector2.One * (1 + progress * 0.5f);
-    }
-
-    public override void OnTransitIn(float progress)
-    {
-        base.OnTransitOut(progress);
-
-        // 渐入时画面逐渐出现
-        _commonBackgroundAlpha = progress;
-        _desktop.Opacity = progress;
     }
 }
