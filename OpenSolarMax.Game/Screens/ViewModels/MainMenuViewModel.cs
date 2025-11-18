@@ -4,13 +4,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FontStashSharp;
 using FontStashSharp.RichText;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
 using Nine.Animations;
-using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.UI;
@@ -21,7 +19,7 @@ namespace OpenSolarMax.Game.Screens.ViewModels;
 using PreviewUnion = OneOf<IFadableImage, (IFadableImage, IFadableImage)>;
 using NullableBackgroundUnion = OneOf<Texture2D?, (Texture2D?, Texture2D?)>;
 
-internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
+internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
 {
     [ObservableProperty]
     private ObservableCollection<string> _items;
@@ -52,9 +50,6 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
 
     public event EventHandler<IMenuLikeViewModel>? NavigateIn;
 
-    private readonly IAssetsManager _assets;
-    private readonly GraphicsDevice _graphicsDevice;
-
     private readonly List<ILevelMod> _levelMods;
     private readonly List<IFadableImage> _previews;
     private readonly List<Texture2D?> _backgrounds;
@@ -81,26 +76,21 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
     private void OnSelectItem(int idx)
     {
         if (idx < 3) return;
-        var chaptersViewModel = new ChaptersViewModel(_levelMods[idx - 3], _assets, _graphicsDevice, null);
+        var chaptersViewModel = new ChaptersViewModel(_levelMods[idx - 3], Game, null);
         NavigateIn?.Invoke(this, chaptersViewModel);
     }
 
-    public void Update(GameTime gameTime) { }
-
-    public MainMenuViewModel(IAssetsManager assets, GraphicsDevice graphicsDevice, IProgress<float> progress)
+    public MainMenuViewModel(SolarMax game, IProgress<float> progress) : base(game)
     {
         progress.Report(0);
 
         // 设置基础内容。该步骤占 10%
 
-        _assets = assets;
-        _graphicsDevice = graphicsDevice;
-
         _items = [];
         _previews = [];
         _backgrounds = [];
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
-        _pageBackground = assets.Load<Texture2D>("Background.png");
+        _pageBackground = game.Assets.Load<Texture2D>("Background.png");
 
         progress.Report(0.1f);
 
@@ -110,7 +100,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         _previews.Add(new FadableRichText(new RichTextLayout()
         {
             Text = "E  D  I  T  O  R",
-            Font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+            Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
         }));
         _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 1 / 3f);
@@ -119,7 +109,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         _previews.Add(new FadableRichText(new RichTextLayout()
         {
             Text = "M  O  D  S",
-            Font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+            Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
         }));
         _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 2 / 3f);
@@ -128,7 +118,7 @@ internal partial class MainMenuViewModel : ObservableObject, IMenuLikeViewModel
         _previews.Add(new FadableRichText(new RichTextLayout()
         {
             Text = "O  P  E  N    S  O  L  A  R  M  A  X",
-            Font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+            Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
         }, new Smooth()));
         _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 3 / 3f);

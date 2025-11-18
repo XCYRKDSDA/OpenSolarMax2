@@ -8,17 +8,15 @@ using OpenSolarMax.Game.Graphics;
 
 namespace OpenSolarMax.Game.Screens.Transitions;
 
-public class ExposureTransition(
-    GraphicsDevice graphicsDevice, IAssetsManager assets,
-    ScreenManager screenManager, IScreen prevScreen, IScreen nextScreen
-) : TransitionBase(screenManager, prevScreen, nextScreen)
+public class ExposureTransition(IScreen prevScreen, IScreen nextScreen, SolarMax game)
+    : TransitionBase(prevScreen, nextScreen, game)
 {
     private readonly RenderTarget2D _renderTarget = new(
-        graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth,
-        graphicsDevice.PresentationParameters.BackBufferHeight
+        game.GraphicsDevice, game.GraphicsDevice.PresentationParameters.BackBufferWidth,
+        game.GraphicsDevice.PresentationParameters.BackBufferHeight
     );
 
-    private readonly ExposureRenderer _exposureRenderer = new(graphicsDevice, assets);
+    private readonly ExposureRenderer _exposureRenderer = new(game.GraphicsDevice, game.Assets);
 
     public required TimeSpan Duration { get; set; }
 
@@ -38,14 +36,14 @@ public class ExposureTransition(
 
     public override void Draw(GameTime gameTime)
     {
-        var renderTargetsCache = graphicsDevice.GetRenderTargets();
-        graphicsDevice.SetRenderTarget(_renderTarget);
+        var renderTargetsCache = Game.GraphicsDevice.GetRenderTargets();
+        Game.GraphicsDevice.SetRenderTarget(_renderTarget);
 
-        graphicsDevice.Clear(Color.Transparent);
+        Game.GraphicsDevice.Clear(Color.Transparent);
 
         NextScreen!.Draw(gameTime);
 
-        graphicsDevice.SetRenderTargets(renderTargetsCache);
+        Game.GraphicsDevice.SetRenderTargets(renderTargetsCache);
 
         // 添加曝光
         var halfLife = MathF.Sqrt(_renderTarget.Width * _renderTarget.Width

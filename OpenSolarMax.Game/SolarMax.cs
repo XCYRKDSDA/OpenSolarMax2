@@ -22,9 +22,11 @@ using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.Screens.Views;
+using OpenSolarMax.Game.Utils;
 using Zio;
 using Zio.FileSystems;
 using XNAGame = Microsoft.Xna.Framework.Game;
+using FmodStudioSystem = FMOD.Studio.System;
 
 namespace OpenSolarMax.Game;
 
@@ -35,6 +37,18 @@ public record class LevelUIContext(
 
 public class SolarMax : XNAGame
 {
+    private FmodStudioSystem _globalFmodSystem;
+
+    private AssetsManager _globalAssets;
+
+    private ScreenManager _globalScreenManager;
+
+    public FmodStudioSystem FmodSystem => _globalFmodSystem;
+
+    public AssetsManager Assets => _globalAssets;
+
+    public ScreenManager ScreenManager => _globalScreenManager;
+
     private readonly GraphicsDeviceManager _graphics;
 
     public SolarMax()
@@ -110,52 +124,37 @@ public class SolarMax : XNAGame
 
     #endregion
 
-    private FMOD.Studio.System _globalFmodSystem;
-    private FMOD.Studio.System _localFmodSystem;
-    private FMOD.RESULT _fmodFlag;
+    protected override void Initialize()
+    {
+        // 初始化全局 fmod 音频系统
+        FmodException.Check(FmodStudioSystem.create(out _globalFmodSystem));
+        FmodException.Check(_globalFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0));
+
+        // 初始化默认资产加载器
+        AssetsManager.RegisterDefaultLoader(new Texture2DLoader(GraphicsDevice));
+        AssetsManager.RegisterDefaultLoader(new TextureAtlasLoader());
+        AssetsManager.RegisterDefaultLoader(new TextureRegionLoader());
+        AssetsManager.RegisterDefaultLoader(new NinePatchRegionLoader());
+        AssetsManager.RegisterDefaultLoader(new FontSystemLoader());
+        AssetsManager.RegisterDefaultLoader(new ByteArrayLoader());
+        AssetsManager.RegisterDefaultLoader(new FmodBankLoader(_globalFmodSystem));
+        AssetsManager.RegisterDefaultLoader(new FmodEventLoader(_globalFmodSystem));
+
+        // 初始化全局资产
+        _globalAssets = new AssetsManager(Folders.Content);
+
+        // 初始化全局界面管理器
+        _globalScreenManager = new ScreenManager(this);
+        Components.Add(_globalScreenManager);
+
+        base.Initialize();
+    }
 
     protected override void LoadContent()
     {
-        _fmodFlag = FMOD.Studio.System.create(out _globalFmodSystem);
-        _fmodFlag = _globalFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0);
-
-        // MyraEnvironment.DrawWidgetsFrames = true;
-
-        // 当游戏启动时，游戏将构造一个全局资产管理器
-        var globalFileSystem = Folders.Content;
-        var globalAssets = new AssetsManager(globalFileSystem);
-        globalAssets.RegisterLoader(new Texture2DLoader(GraphicsDevice));
-        globalAssets.RegisterLoader(new TextureAtlasLoader());
-        globalAssets.RegisterLoader(new TextureRegionLoader());
-        globalAssets.RegisterLoader(new NinePatchRegionLoader());
-        globalAssets.RegisterLoader(new FontSystemLoader());
-        globalAssets.RegisterLoader(new ByteArrayLoader());
-        globalAssets.RegisterLoader(new FmodBankLoader(_globalFmodSystem));
-        globalAssets.RegisterLoader(new FmodEventLoader(_globalFmodSystem));
-        globalAssets.RegisterLoader(new ObjectAnimationClipLoader<Label>()
-        {
-            CurveLoaders =
-            {
-                [typeof(float)] = new SingleCubicKeyFrameCurveLoader(null),
-                [typeof(int)] = new IntegerCubicKeyFrameCurveLoader(null, null)
-            }
-        });
-        globalAssets.RegisterLoader(new ParametricObjectAnimationClipLoader<Label>()
-        {
-            CurveLoaders =
-            {
-                [typeof(float)] = new ParametricSingleCubicKeyFrameCurveLoader(new ParametricFloatJsonConverter()),
-                [typeof(int)] =
-                    new ParametricIntegerCubicKeyFrameCurveLoader(new ParametricIntJsonConverter(),
-                                                                  new ParametricFloatJsonConverter())
-            }
-        });
-
-        var sm = new ScreenManager(this);
-        Components.Add(sm);
-        var initializationViewModel = new InitializationViewModel(globalAssets, GraphicsDevice);
-        var initializationScreen = new InitializationScreen(initializationViewModel, GraphicsDevice, globalAssets, sm);
-        sm.ActiveScreen = initializationScreen;
+        var initializationViewModel = new InitializationViewModel(this);
+        var initializationScreen = new InitializationScreen(initializationViewModel, this);
+        _globalScreenManager.ActiveScreen = initializationScreen;
 
 //         #region 初始化UI
 //
@@ -557,7 +556,6 @@ public class SolarMax : XNAGame
         base.UnloadContent();
 
         _globalFmodSystem.release();
-        _localFmodSystem.release();
     }
 
     protected override void Update(GameTime gameTime)
@@ -568,7 +566,7 @@ public class SolarMax : XNAGame
         //
         // //_desktop.UpdateInput();
         //
-        // _globalFmodSystem.update();
+        _globalFmodSystem.update();
         // _localFmodSystem.update();
         //
         // _inputSystem.Update(gameTime);

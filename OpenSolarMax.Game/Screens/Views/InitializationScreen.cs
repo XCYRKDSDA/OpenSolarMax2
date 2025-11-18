@@ -8,7 +8,6 @@ using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Animations;
 using Nine.Assets;
-using Nine.Screens;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 
@@ -23,28 +22,19 @@ internal class InitializationScreen : ScreenBase
 
     private readonly InitializationViewModel _viewModel;
 
-    private readonly GraphicsDevice _graphicsDevice;
-    private readonly IAssetsManager _assets;
-    private readonly ScreenManager _screenManager;
-
     private readonly Desktop _desktop;
 
     private readonly Label _logoLabel;
     private readonly HorizontalProgressBar _progressBar;
 
 
-    public InitializationScreen(InitializationViewModel viewModel,
-                                GraphicsDevice graphicsDevice, IAssetsManager assets, ScreenManager screenManager)
-        : base(screenManager)
+    public InitializationScreen(InitializationViewModel viewModel, SolarMax game) : base(game)
     {
         _viewModel = viewModel;
-        _graphicsDevice = graphicsDevice;
-        _assets = assets;
-        _screenManager = screenManager;
 
         // 构建 UI
 
-        var font = assets.Load<FontSystem>(Content.Fonts.Default).GetFont(_textSize);
+        var font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(_textSize);
 
         _logoLabel = new Label()
         {
@@ -118,15 +108,15 @@ internal class InitializationScreen : ScreenBase
     private void ViewModelOnOnMenuViewModelLoaded(object? sender, MainMenuViewModel e)
     {
         Debug.Assert(ReferenceEquals(sender, _viewModel));
-        Debug.Assert(ReferenceEquals(_screenManager.ActiveScreen, this));
-        var v = new MenuLikeScreen(e, _assets, _screenManager);
-        var tr = new ExposureTransition(_graphicsDevice, _assets, _screenManager, this, v)
+        Debug.Assert(ReferenceEquals(Game.ScreenManager.ActiveScreen, this));
+        var v = new MenuLikeScreen(e, Game);
+        var tr = new ExposureTransition(this, v, Game)
         {
             Duration = TimeSpan.FromSeconds(8),
             Center = new Vector2(0, 1080),
             Curve = new Smooth(),
         };
-        _screenManager.ActiveScreen = tr;
+        Game.ScreenManager.ActiveScreen = tr;
     }
 
     public override void OnActivated()
@@ -141,7 +131,7 @@ internal class InitializationScreen : ScreenBase
 
     public override void Draw(GameTime gameTime)
     {
-        _graphicsDevice.Clear(Color.White);
+        Game.GraphicsDevice.Clear(Color.White);
         _desktop.Render();
     }
 }

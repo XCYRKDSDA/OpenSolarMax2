@@ -58,8 +58,7 @@ internal partial class ChaptersViewModel : ObservableObject, IMenuLikeViewModel
 
     private readonly List<IFadableImage> _previews;
 
-    public ChaptersViewModel(ILevelMod levelMod, IAssetsManager globalAssets, GraphicsDevice graphicsDevice,
-                             IProgress<float>? progress = null)
+    public ChaptersViewModel(ILevelMod levelMod, SolarMax game, IProgress<float>? progress = null) : base(game)
     {
         progress?.Report(0);
 

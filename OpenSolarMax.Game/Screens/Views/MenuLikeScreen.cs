@@ -9,7 +9,6 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
-using Nine.Screens;
 using Nine.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
@@ -21,8 +20,6 @@ internal class MenuLikeScreen : ScreenBase
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
     private readonly IMenuLikeViewModel _viewModel;
-    private readonly IAssetsManager _assets;
-    private readonly ScreenManager _screenManager;
 
     private readonly Desktop _desktop;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
@@ -40,15 +37,12 @@ internal class MenuLikeScreen : ScreenBase
         Text = name,
         TextAlign = TextHorizontalAlignment.Center,
         TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
-        Font = _assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40)
+        Font = Game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40)
     };
 
-    public MenuLikeScreen(IMenuLikeViewModel viewModel,
-                          IAssetsManager assets, ScreenManager screenManager) : base(screenManager)
+    public MenuLikeScreen(IMenuLikeViewModel viewModel, SolarMax game) : base(game)
     {
         _viewModel = viewModel;
-        _assets = assets;
-        _screenManager = screenManager;
         _desktop = new Desktop();
 
         _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
@@ -134,7 +128,7 @@ internal class MenuLikeScreen : ScreenBase
     }
 
     public MenuLikeScreen(IMenuLikeViewModel viewModel, HorizontalScrollingBackground sharedBackground,
-                          IAssetsManager assets, ScreenManager screenManager) : this(viewModel, assets, screenManager)
+                          SolarMax game) : this(viewModel, game)
     {
         _pageBackground = new HorizontalScrollingBackground(sharedBackground.Texture!.GraphicsDevice)
         {
@@ -167,9 +161,9 @@ internal class MenuLikeScreen : ScreenBase
 
     private void ViewModelOnNavigateIn(object? sender, IMenuLikeViewModel e)
     {
-        _screenManager.ActiveScreen =
-            new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, _screenManager, this,
-                                       new MenuLikeScreen(e, _primaryBackground, _assets, _screenManager),
+        Game.ScreenManager.ActiveScreen =
+            new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, Game.ScreenManager, this,
+                                       new MenuLikeScreen(e, _primaryBackground, Game),
                                        TimeSpan.FromSeconds(0.5));
     }
 
