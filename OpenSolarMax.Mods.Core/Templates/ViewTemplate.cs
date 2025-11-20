@@ -2,7 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
+using Microsoft.Xna.Framework.Graphics;
 using OneOf;
 using OpenSolarMax.Game;
 using OpenSolarMax.Game.Utils;
@@ -18,19 +18,6 @@ namespace OpenSolarMax.Mods.Core.Templates;
 /// </summary>
 public class ViewTemplate : ITemplate, ITransformableTemplate
 {
-    #region Options
-
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
-        Transform { get; set; } = new AbsoluteTransformOptions();
-
-    public Point Size { get; set; } = new(1920, 1080);
-
-    public (float Near, float Far) Depth { get; set; } = (-1001, 1001);
-
-    public required Entity Party { get; set; }
-
-    #endregion
-
     private static readonly Signature _signature = new(
         // 依赖关系
         typeof(Dependence.AsDependent),
@@ -42,6 +29,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         typeof(ManeuvaringShipsStatus),
         typeof(LevelUIContext),
         typeof(FMOD.Studio.System),
+        typeof(Viewport),
         //
         typeof(InParty.AsAffiliate)
     );
@@ -86,4 +74,17 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         // 设置阵营
         world.Make(commandBuffer, new InPartyTemplate { Party = Party, Affiliate = entity });
     }
+
+    #region Options
+
+    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
+        Transform { get; set; } = new AbsoluteTransformOptions();
+
+    public Point Size { get; set; } = new(1920, 1080);
+
+    public (float Near, float Far) Depth { get; set; } = (-1001, 1001);
+
+    public required Entity Party { get; set; }
+
+    #endregion
 }
