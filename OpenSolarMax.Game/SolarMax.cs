@@ -37,6 +37,9 @@ public record class LevelUIContext(
 
 public class SolarMax : XNAGame
 {
+    private RenderTarget2D _renderTarget;
+    private SpriteBatch _spriteBatch;
+
     private FmodStudioSystem _globalFmodSystem;
 
     private AssetsManager _globalAssets;
@@ -126,6 +129,15 @@ public class SolarMax : XNAGame
 
     protected override void Initialize()
     {
+        _renderTarget = new RenderTarget2D(
+            GraphicsDevice,
+            GraphicsDevice.PresentationParameters.BackBufferWidth,
+            GraphicsDevice.PresentationParameters.BackBufferHeight,
+            false, SurfaceFormat.Color, DepthFormat.None, 0,
+            RenderTargetUsage.PreserveContents // 保留
+        );
+        _spriteBatch = new SpriteBatch(GraphicsDevice, 1);
+
         // 初始化全局 fmod 音频系统
         FmodException.Check(FmodStudioSystem.create(out _globalFmodSystem));
         FmodException.Check(_globalFmodSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0));
@@ -578,6 +590,8 @@ public class SolarMax : XNAGame
 
     protected override void Draw(GameTime gameTime)
     {
+        GraphicsDevice.SetRenderTarget(_renderTarget);
+
         GraphicsDevice.Clear(Color.Black);
 
         // _renderSystem.Update(gameTime);
@@ -590,5 +604,10 @@ public class SolarMax : XNAGame
         // _desktop.Render();
 
         base.Draw(gameTime);
+
+        GraphicsDevice.SetRenderTarget(null);
+        _spriteBatch.Begin();
+        _spriteBatch.Draw(_renderTarget, Vector2.Zero, Color.White);
+        _spriteBatch.End();
     }
 }
