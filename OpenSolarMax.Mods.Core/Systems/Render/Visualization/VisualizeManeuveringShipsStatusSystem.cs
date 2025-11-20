@@ -27,21 +27,26 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
 {
     private const float _ringRadiusFactor = 1.6f;
     private const float _ringThickness = 3f;
-    private readonly Color _hoveredRingColor = Color.White * 0.5f;
-    private readonly Color _selectedRingColor = Color.White;
-    private readonly Color _blockedRingColor = Color.Red;
 
     private const float _boxThickness = 3f;
-    private readonly Color _boxColor = Color.White * 0.5f;
 
     private const float _lineThickness = 3f;
     private const float _lineRound = _lineThickness / 3;
-    private readonly Color _lineColor = Color.White;
     private readonly Color _blockedLineColor = Color.Red;
+    private readonly Color _blockedRingColor = Color.Red;
+    private readonly Color _boxColor = Color.White * 0.5f;
+    private readonly BoxRenderer _boxRenderer = new(graphicsDevice, assets);
 
     private readonly CircleRenderer _circleRenderer = new(graphicsDevice, assets);
-    private readonly BoxRenderer _boxRenderer = new(graphicsDevice, assets);
+    private readonly Color _hoveredRingColor = Color.White * 0.5f;
+    private readonly Color _lineColor = Color.White;
     private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice, assets);
+    private readonly Color _selectedRingColor = Color.White;
+
+    [Hook("CheckLocationReachability")]
+    public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }
+
+    public void Update() => DrawSelectionQuery(world);
 
     private void DrawSelected(in ReferenceSize refSize, in AbsoluteTransform pose, in Matrix worldToCanvas,
                               Color ringColor, float ringThickness)
@@ -137,9 +142,6 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         }
     }
 
-    [Hook("CheckLocationReachability")]
-    public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }
-
     private bool CheckReachability(Entity departure, Vector3 destination)
     {
         foreach (var @delegate in CheckReachabilityDelegate?.GetInvocationList() ?? [])
@@ -184,6 +186,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
+        var oldViewport = graphicsDevice.Viewport;
         graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图参数
@@ -266,7 +269,8 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                              targetColor, _ringThickness);
             }
         }
-    }
 
-    public void Update() => DrawSelectionQuery(world);
+        // 恢复 Viewport
+        graphicsDevice.Viewport = oldViewport;
+    }
 }

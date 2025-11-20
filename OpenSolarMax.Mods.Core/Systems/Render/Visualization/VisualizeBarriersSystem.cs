@@ -19,21 +19,22 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(DrawSpritesSystem))]
 public sealed partial class VisualizeBarriersSystem : ICalcSystem
 {
-    private readonly World _world;
-
     private const float _nodeSize = 16;
-    private static readonly Color _nodeColor = Color.White;
     private const float _edgeThickness = 8f;
-    private static readonly Color _edgeColor = Color.Pink;
     private const float _edgeDashLength = 12f;
     private const float _edgeGapLength = 3f;
+    private static readonly Color _nodeColor = Color.White;
+    private static readonly Color _edgeColor = Color.Pink;
+
+    private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<Barrier>();
+    private readonly NinePatchRegion _barrierTexture;
 
     private readonly GraphicsDevice _graphicsDevice;
-    private readonly SpriteBatch _spriteBatch;
     private readonly ILineRenderer _lineRenderer;
 
     private readonly TextureRegion _nodeTexture;
-    private readonly NinePatchRegion _barrierTexture;
+    private readonly SpriteBatch _spriteBatch;
+    private readonly World _world;
 
     public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     {
@@ -44,6 +45,13 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
 
         _nodeTexture = assets.Load<TextureRegion>("Textures/BarrierAtlas.json:Node");
         _barrierTexture = assets.Load<NinePatchRegion>("Textures/BarrierAtlas.json:Edge");
+    }
+
+    public void Update()
+    {
+        var barrierEntities = new List<Entity>();
+        _world.Query(in _barrierDesc, entity => barrierEntities.Add(entity));
+        RenderToCameraQuery(_world, barrierEntities);
     }
 
     [Query]
@@ -58,6 +66,7 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
+        var oldViewport = _graphicsDevice.Viewport;
         _graphicsDevice.Viewport = camera.Output;
 
         // 开始绘图
@@ -93,14 +102,8 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
 
         // 结束绘图
         _spriteBatch.End();
-    }
 
-    private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<Barrier>();
-
-    public void Update()
-    {
-        var barrierEntities = new List<Entity>();
-        _world.Query(in _barrierDesc, entity => barrierEntities.Add(entity));
-        RenderToCameraQuery(_world, barrierEntities);
+        // 恢复 Viewport
+        _graphicsDevice.Viewport = oldViewport;
     }
 }

@@ -20,10 +20,12 @@ public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice
 {
     private const int _textSize = 18;
     private static readonly Color _textColor = Color.Red;
+    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
+
+    public void Update() => RenderToCameraQuery(world);
 
     [Query]
     [All<AbsoluteTransform>]
@@ -53,6 +55,7 @@ public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
+        var oldViewport = graphicsDevice.Viewport;
         graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图参数
@@ -65,7 +68,8 @@ public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice
         _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNdc;
 
         VisualizeQuery(world, in worldToCanvas);
-    }
 
-    public void Update() => RenderToCameraQuery(world);
+        // 恢复 Viewport
+        graphicsDevice.Viewport = oldViewport;
+    }
 }

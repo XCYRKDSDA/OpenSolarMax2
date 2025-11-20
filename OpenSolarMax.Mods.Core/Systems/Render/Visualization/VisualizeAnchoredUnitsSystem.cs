@@ -30,9 +30,20 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
     private const float _ringThickness = 3;
     private const float _labelRadiusFactor = 1.25f;
 
+    private static readonly QueryDescription _planetDesc =
+        new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
+
+    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
+
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
+
+    public void Update()
+    {
+        var planetEntities = new List<Entity>();
+        world.Query(in _planetDesc, entity => planetEntities.Add(entity));
+        RenderToCameraQuery(world, planetEntities);
+    }
 
     /// <summary>
     /// 根据权重计算每段弧线的启停角度。
@@ -165,6 +176,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
+        var oldViewport = graphicsDevice.Viewport;
         graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图参数
@@ -182,15 +194,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             var refs = entity.Get<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
             VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in worldToCanvas);
         }
-    }
 
-    private static readonly QueryDescription _planetDesc =
-        new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
-
-    public void Update()
-    {
-        var planetEntities = new List<Entity>();
-        world.Query(in _planetDesc, entity => planetEntities.Add(entity));
-        RenderToCameraQuery(world, planetEntities);
+        // 恢复 Viewport
+        graphicsDevice.Viewport = oldViewport;
     }
 }

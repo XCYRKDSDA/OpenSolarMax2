@@ -21,7 +21,17 @@ public sealed partial class VisualizeColonizationSystem(
     private const float _ringThickness = 3;
     private const float _defaultAlpha = 0.2f;
 
+    private static readonly QueryDescription _planetDesc = new QueryDescription()
+        .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
+
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
+
+    public void Update()
+    {
+        var planetEntities = new List<Entity>();
+        world.Query(in _planetDesc, entity => planetEntities.Add(entity));
+        RenderToCameraQuery(world, planetEntities);
+    }
 
     private void VisualizeOnePlanet(in AnchoredShipsRegistry shipsRegistry,
                                     in Colonizable colonizable, in ColonizationState colonizationState,
@@ -75,6 +85,7 @@ public sealed partial class VisualizeColonizationSystem(
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
+        var oldViewport = graphicsDevice.Viewport;
         graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图参数
@@ -93,15 +104,8 @@ public sealed partial class VisualizeColonizationSystem(
                 .Get<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
             VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in refs.t3, in refs.t4, in worldToCanvas);
         }
-    }
 
-    private static readonly QueryDescription _planetDesc = new QueryDescription()
-        .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
-
-    public void Update()
-    {
-        var planetEntities = new List<Entity>();
-        world.Query(in _planetDesc, entity => planetEntities.Add(entity));
-        RenderToCameraQuery(world, planetEntities);
+        // 恢复 Viewport
+        graphicsDevice.Viewport = oldViewport;
     }
 }

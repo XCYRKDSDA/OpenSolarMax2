@@ -16,10 +16,23 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
     : ICalcSystem
 {
-    private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
 
+    private static readonly QueryDescription _drawableDesc
+        = new QueryDescription().WithAll<Sprite, AbsoluteTransform>();
+
     private readonly Effect _effect = new(graphicsDevice, assets.Load<byte[]>("Effects/Tint.mgfxo"));
+    private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
+
+    public void Update()
+    {
+        var drawableEntities = new List<Entity>();
+        world.Query(in _drawableDesc, entity => drawableEntities.Add(entity));
+        drawableEntities.Sort((l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
+                                                                        r.Get<AbsoluteTransform>().Translation.Z));
+
+        RenderToCameraQuery(world, drawableEntities);
+    }
 
     private void DrawEntity(in Sprite sprite, in AbsoluteTransform absoluteTransform)
     {
@@ -98,6 +111,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         _effect.Parameters["to_ndc"].SetValue(view * projection);
 
         // 设置绘图区域
+        var oldViewport = graphicsDevice.Viewport;
         graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图设备参数
@@ -112,18 +126,8 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
             var refs = entity.Get<Sprite, AbsoluteTransform>();
             DrawEntity(in refs.t0, in refs.t1);
         }
-    }
 
-    private static readonly QueryDescription _drawableDesc
-        = new QueryDescription().WithAll<Sprite, AbsoluteTransform>();
-
-    public void Update()
-    {
-        var drawableEntities = new List<Entity>();
-        world.Query(in _drawableDesc, entity => drawableEntities.Add(entity));
-        drawableEntities.Sort((l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
-                                                                        r.Get<AbsoluteTransform>().Translation.Z));
-
-        RenderToCameraQuery(world, drawableEntities);
+        // 恢复 Viewport
+        graphicsDevice.Viewport = oldViewport;
     }
 }
