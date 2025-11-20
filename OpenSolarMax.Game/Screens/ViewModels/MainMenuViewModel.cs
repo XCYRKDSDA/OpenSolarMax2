@@ -9,20 +9,29 @@ using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
 using Nine.Animations;
-using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.UI;
 using Svg;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-using PreviewUnion = OneOf<IFadableImage, (IFadableImage, IFadableImage)>;
-using NullableBackgroundUnion = OneOf<Texture2D?, (Texture2D?, Texture2D?)>;
-
 internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
 {
+    private readonly List<Texture2D?> _backgrounds;
+
+    private readonly List<ILevelMod> _levelMods;
+    private readonly List<IFadableImage> _previews;
+
+    private Task<LevelsViewModel>? _chaptersViewModelLoadTask = null;
+
     [ObservableProperty]
     private ObservableCollection<string> _items;
+
+    [ObservableProperty]
+    private Texture2D _pageBackground;
+
+    [ObservableProperty]
+    private Texture2D? _primaryItemBackground;
 
     [ObservableProperty]
     private int _primaryItemIndex;
@@ -31,7 +40,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
     private IFadableImage _primaryItemPreview;
 
     [ObservableProperty]
-    private Texture2D? _primaryItemBackground;
+    private Texture2D? _secondaryItemBackground;
 
     [ObservableProperty]
     private int? _secondaryItemIndex;
@@ -40,45 +49,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
     private IFadableImage? _secondaryItemPreview;
 
     [ObservableProperty]
-    private Texture2D? _secondaryItemBackground;
-
-    [ObservableProperty]
-    private Texture2D _pageBackground;
-
-    [ObservableProperty]
     private ICommand _selectItemCommand;
-
-    public event EventHandler<IMenuLikeViewModel>? NavigateIn;
-
-    private readonly List<ILevelMod> _levelMods;
-    private readonly List<IFadableImage> _previews;
-    private readonly List<Texture2D?> _backgrounds;
-
-    private Task<ChaptersViewModel>? _chaptersViewModelLoadTask = null;
-
-    private class Smooth : ICurve<float>
-    {
-        public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
-    }
-
-    partial void OnPrimaryItemIndexChanged(int value)
-    {
-        PrimaryItemPreview = _previews[value];
-        PrimaryItemBackground = _backgrounds[value];
-    }
-
-    partial void OnSecondaryItemIndexChanged(int? value)
-    {
-        SecondaryItemPreview = value is null ? null : _previews[value.Value];
-        SecondaryItemBackground = value is null ? null : _backgrounds[value.Value];
-    }
-
-    private void OnSelectItem(int idx)
-    {
-        if (idx < 3) return;
-        var chaptersViewModel = new ChaptersViewModel(_levelMods[idx - 3], Game, null);
-        NavigateIn?.Invoke(this, chaptersViewModel);
-    }
 
     public MainMenuViewModel(SolarMax game, IProgress<float> progress) : base(game)
     {
@@ -172,5 +143,31 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
         _secondaryItemBackground = null;
 
         progress.Report(1);
+    }
+
+    public event EventHandler<IMenuLikeViewModel>? NavigateIn;
+
+    partial void OnPrimaryItemIndexChanged(int value)
+    {
+        PrimaryItemPreview = _previews[value];
+        PrimaryItemBackground = _backgrounds[value];
+    }
+
+    partial void OnSecondaryItemIndexChanged(int? value)
+    {
+        SecondaryItemPreview = value is null ? null : _previews[value.Value];
+        SecondaryItemBackground = value is null ? null : _backgrounds[value.Value];
+    }
+
+    private void OnSelectItem(int idx)
+    {
+        if (idx < 3) return;
+        var chaptersViewModel = new LevelsViewModel(_levelMods[idx - 3], Game, null);
+        NavigateIn?.Invoke(this, chaptersViewModel);
+    }
+
+    private class Smooth : ICurve<float>
+    {
+        public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
     }
 }
