@@ -25,5 +25,5 @@ internal interface IMenuLikeViewModel : IViewModel
 
     ICommand SelectItemCommand { get; }
 
-    event EventHandler<IMenuLikeViewModel>? NavigateIn;
+    event EventHandler<IViewModel>? NavigateIn;
 }

@@ -1,6 +1,5 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
@@ -8,7 +7,6 @@ using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
-using Nine.Assets;
 using Nine.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
@@ -19,26 +17,18 @@ internal class MenuLikeScreen : ScreenBase
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
-    private readonly IMenuLikeViewModel _viewModel;
-
     private readonly Desktop _desktop;
-    private readonly CustomHorizontalScrollViewer _scrollViewer;
+    private readonly HorizontalScrollingBackground _pageBackground;
+    private readonly HorizontalScrollingBackground _primaryBackground, _secondaryBackground;
     private readonly FadableImage _primaryPreview, _secondaryPreview;
+    private readonly CustomHorizontalScrollViewer _scrollViewer;
+
+    private readonly IMenuLikeViewModel _viewModel;
+    private float _actualBackgroundLeft = 0;
+    private float _commonBackgroundAlpha = 1;
 
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
-    private float _actualBackgroundLeft = 0;
-    private readonly HorizontalScrollingBackground _pageBackground;
-    private readonly HorizontalScrollingBackground _primaryBackground, _secondaryBackground;
-    private float _commonBackgroundAlpha = 1;
-
-    private Label GenerateLabel(string name) => new()
-    {
-        Text = name,
-        TextAlign = TextHorizontalAlignment.Center,
-        TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
-        Font = Game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40)
-    };
 
     public MenuLikeScreen(IMenuLikeViewModel viewModel, SolarMax game) : base(game)
     {
@@ -140,6 +130,14 @@ internal class MenuLikeScreen : ScreenBase
         _actualBackgroundLeft = sharedBackground.Left;
     }
 
+    private Label GenerateLabel(string name) => new()
+    {
+        Text = name,
+        TextAlign = TextHorizontalAlignment.Center,
+        TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
+        Font = Game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40)
+    };
+
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemBackground))
@@ -159,12 +157,17 @@ internal class MenuLikeScreen : ScreenBase
         }
     }
 
-    private void ViewModelOnNavigateIn(object? sender, IMenuLikeViewModel e)
+    private void ViewModelOnNavigateIn(object? sender, IViewModel e)
     {
-        Game.ScreenManager.ActiveScreen =
-            new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, Game.ScreenManager, this,
-                                       new MenuLikeScreen(e, _primaryBackground, Game),
-                                       TimeSpan.FromSeconds(0.5));
+        if (e is LevelsViewModel vm)
+        {
+            Game.ScreenManager.ActiveScreen =
+                new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, Game.ScreenManager, this,
+                                           new MenuLikeScreen(vm, _primaryBackground, Game),
+                                           TimeSpan.FromSeconds(0.5));
+        }
+        else
+            throw new NotImplementedException();
     }
 
     private void ViewModelItemsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

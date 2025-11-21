@@ -145,7 +145,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
         progress.Report(1);
     }
 
-    public event EventHandler<IMenuLikeViewModel>? NavigateIn;
+    public event EventHandler<IViewModel>? NavigateIn;
 
     partial void OnPrimaryItemIndexChanged(int value)
     {

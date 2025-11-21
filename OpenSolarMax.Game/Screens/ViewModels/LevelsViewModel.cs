@@ -257,5 +257,5 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _secondaryItemBackground = null;
     }
 
-    public event EventHandler<IMenuLikeViewModel>? NavigateIn;
+    public event EventHandler<IViewModel>? NavigateIn;
 }
