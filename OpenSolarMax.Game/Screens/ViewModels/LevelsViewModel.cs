@@ -229,7 +229,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
             // 构造预览系统
             var previewSystem = new DualStageAggregateSystem(
-                world, systemTypes.RenderSystemTypes, // TODO: 改用真正的预览系统
+                world, systemTypes.PreviewSystemTypes,
                 new Dictionary<Type, object>
                 {
                     [typeof(GraphicsDevice)] = game.GraphicsDevice,

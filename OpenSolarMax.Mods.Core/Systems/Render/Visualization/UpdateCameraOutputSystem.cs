@@ -7,7 +7,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges]
+[PreviewSystem, RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Viewport)), Write(typeof(Camera))]
 public sealed partial class UpdateCameraOutputSystem(World world) : ICalcSystem
 {

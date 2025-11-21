@@ -27,3 +27,10 @@ public sealed class SimulateSystemAttribute() : Attribute
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class RenderSystemAttribute : Attribute
 { }
+
+/// <summary>
+/// 绘制世界预览图的系统
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class PreviewSystemAttribute : Attribute
+{ }

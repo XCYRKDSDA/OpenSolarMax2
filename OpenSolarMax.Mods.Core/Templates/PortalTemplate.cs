@@ -18,20 +18,14 @@ namespace OpenSolarMax.Mods.Core.Templates;
 /// <param name="assets"></param>
 public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTemplate
 {
-    #region Options
+    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
+    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
+    private const float _orbitMinRoll = 0;
+    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
 
-    /// <summary>
-    /// 星球的变换关系
-    /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
-        Transform { get; set; } = new AbsoluteTransformOptions();
-
-    /// <summary>
-    /// 星球所属的阵营
-    /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
-
-    #endregion
+    // 固定的尺寸
+    private const float _referenceRadius = 60;
+    private const float _volume = 150;
 
     private static readonly Signature _signature = new(
         // 依赖关系
@@ -43,6 +37,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(TreeRelationship<RelativeTransform>.AsParent),
         // 效果
         typeof(Sprite),
+        typeof(Shape),
         // 动画
         typeof(Animation),
         //
@@ -60,18 +55,11 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(PlanetAiTimers)
     );
 
+    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Shape");
+
+    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Portal");
+
     public Signature Signature => _signature;
-
-    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>("/Textures/Portal.json:Portal");
-
-    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
-    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
-    private const float _orbitMinRoll = 0;
-    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
-
-    // 固定的尺寸
-    private const float _referenceRadius = 60;
-    private const float _volume = 150;
 
     public void Apply(Entity entity)
     {
@@ -90,6 +78,14 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Alpha;
+
+        // 设置预览外形
+        ref var shape = ref entity.Get<Shape>();
+        shape.Texture = _portalShape;
+        shape.Size = sprite.Size;
+        shape.Position = sprite.Position;
+        shape.Rotation = sprite.Rotation;
+        shape.Scale = sprite.Scale;
 
         // 设置参考尺寸
         ref var refSize = ref entity.Get<ReferenceSize>();
@@ -143,6 +139,16 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
             Blend = SpriteBlend.Alpha
         });
 
+        // 设置预览外形
+        commandBuffer.Set(in entity, new Shape()
+        {
+            Texture = _portalShape,
+            Size = new Vector2(_referenceRadius * 2),
+            Position = Vector2.Zero,
+            Rotation = 0,
+            Scale = Vector2.One,
+        });
+
         // 设置参考尺寸
         commandBuffer.Set(in entity, new ReferenceSize
         {
@@ -155,7 +161,7 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         commandBuffer.Set(in entity, new PlanetGeostationaryOrbit
         {
             Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
-                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+                       Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
             Radius = _referenceRadius * 2,
             Period = _referenceRadius * 2 / 6
         });
@@ -182,4 +188,19 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         // 初始化传送任务
         commandBuffer.Set(in entity, new PortalChargingJobs());
     }
+
+    #region Options
+
+    /// <summary>
+    /// 星球的变换关系
+    /// </summary>
+    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
+        Transform { get; set; } = new AbsoluteTransformOptions();
+
+    /// <summary>
+    /// 星球所属的阵营
+    /// </summary>
+    public Entity Party { get; set; } = Entity.Null;
+
+    #endregion
 }

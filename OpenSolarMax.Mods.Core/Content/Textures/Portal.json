@@ -1,6 +1,0 @@
-{
-    "image": "Portal.png",
-    "regions": {
-        "Portal": { "x": 0, "y": 0, "w": 128, "h": 128, "anchor": [ 64, 64 ], "size": [ 96, 96 ] }
-    }
-}

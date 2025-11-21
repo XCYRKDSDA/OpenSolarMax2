@@ -18,40 +18,10 @@ namespace OpenSolarMax.Mods.Core.Templates;
 /// <param name="assets"></param>
 public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTemplate
 {
-    #region Options
-
-    /// <summary>
-    /// 星球的半径
-    /// </summary>
-    public required float ReferenceRadius { get; set; }
-
-    /// <summary>
-    /// 星球的变换关系
-    /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
-        Transform { get; set; } = new AbsoluteTransformOptions();
-
-    /// <summary>
-    /// 星球所属的阵营
-    /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
-
-    /// <summary>
-    /// 星球的体量
-    /// </summary>
-    public required int Volume { get; set; }
-
-    /// <summary>
-    /// 该星球可为其阵营提供的人口
-    /// </summary>
-    public required int Population { get; set; }
-
-    /// <summary>
-    /// 该星球生产单位的速度
-    /// </summary>
-    public required float ProduceSpeed { get; set; }
-
-    #endregion
+    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
+    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
+    private const float _orbitMinRoll = 0;
+    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
 
     private static readonly Signature _signature = new(
         // 依赖关系
@@ -63,6 +33,7 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(TreeRelationship<RelativeTransform>.AsParent),
         // 效果
         typeof(Sprite),
+        typeof(Shape),
         // 动画
         typeof(Animation),
         //
@@ -83,15 +54,10 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(PlanetAiTimers)
     );
 
-    public Signature Signature => _signature;
-
     private readonly TextureRegion[] _defaultPlanetTextures =
         Content.Textures.DefaultPlanetTextures.Select((k) => assets.Load<TextureRegion>(k)).ToArray();
 
-    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
-    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
-    private const float _orbitMinRoll = 0;
-    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
+    public Signature Signature => _signature;
 
     public void Apply(Entity entity)
     {
@@ -111,6 +77,14 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Alpha;
+
+        // 设置预览外形
+        ref var shape = ref entity.Get<Shape>();
+        shape.Texture = assets.Load<TextureRegion>(Content.Textures.DefaultPlanetShape);
+        shape.Size = sprite.Size;
+        shape.Position = sprite.Position;
+        shape.Rotation = sprite.Rotation;
+        shape.Scale = sprite.Scale;
 
         // 设置参考尺寸
         ref var refSize = ref entity.Get<ReferenceSize>();
@@ -167,6 +141,16 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
             Blend = SpriteBlend.Alpha
         });
 
+        // 设置预览外形
+        commandBuffer.Set(in entity, new Shape()
+        {
+            Texture = assets.Load<TextureRegion>(Content.Textures.DefaultPlanetShape),
+            Size = new Vector2(ReferenceRadius * 2),
+            Position = Vector2.Zero,
+            Rotation = 0,
+            Scale = Vector2.One,
+        });
+
         // 设置参考尺寸
         commandBuffer.Set(in entity, new ReferenceSize
         {
@@ -210,4 +194,39 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
             ProgressPerSecond = ProduceSpeed
         });
     }
+
+    #region Options
+
+    /// <summary>
+    /// 星球的半径
+    /// </summary>
+    public required float ReferenceRadius { get; set; }
+
+    /// <summary>
+    /// 星球的变换关系
+    /// </summary>
+    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
+        Transform { get; set; } = new AbsoluteTransformOptions();
+
+    /// <summary>
+    /// 星球所属的阵营
+    /// </summary>
+    public Entity Party { get; set; } = Entity.Null;
+
+    /// <summary>
+    /// 星球的体量
+    /// </summary>
+    public required int Volume { get; set; }
+
+    /// <summary>
+    /// 该星球可为其阵营提供的人口
+    /// </summary>
+    public required int Population { get; set; }
+
+    /// <summary>
+    /// 该星球生产单位的速度
+    /// </summary>
+    public required float ProduceSpeed { get; set; }
+
+    #endregion
 }

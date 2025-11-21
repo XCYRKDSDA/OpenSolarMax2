@@ -18,30 +18,14 @@ namespace OpenSolarMax.Mods.Core.Templates;
 /// <param name="assets"></param>
 public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTemplate
 {
-    #region Options
+    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
+    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
+    private const float _orbitMinRoll = 0;
+    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
 
-    /// <summary>
-    /// 星球的变换关系
-    /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
-        Transform { get; set; } = new AbsoluteTransformOptions();
-
-    /// <summary>
-    /// 星球所属的阵营
-    /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
-
-    /// <summary>
-    /// 攻击距离
-    /// </summary>
-    public float AttackRange { get; set; } = 500;
-
-    /// <summary>
-    /// 炮塔冷却时间
-    /// </summary>
-    public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.25);
-
-    #endregion
+    // 固定的尺寸
+    private const float _referenceRadius = 30;
+    private const float _volume = 100;
 
     private static readonly Signature _signature = new(
         // 依赖关系
@@ -53,6 +37,7 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(TreeRelationship<RelativeTransform>.AsParent),
         // 效果
         typeof(Sprite),
+        typeof(Shape),
         // 动画
         typeof(Animation),
         //
@@ -75,18 +60,9 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         typeof(PlanetAiTimers)
     );
 
-    public Signature Signature => _signature;
-
     private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>("/Textures/TurretAtlas.json:Turret");
 
-    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
-    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
-    private const float _orbitMinRoll = 0;
-    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
-
-    // 固定的尺寸
-    private const float _referenceRadius = 30;
-    private const float _volume = 100;
+    public Signature Signature => _signature;
 
     public void Apply(Entity entity)
     {
@@ -105,6 +81,14 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         sprite.Rotation = 0;
         sprite.Scale = Vector2.One;
         sprite.Blend = SpriteBlend.Alpha;
+
+        // 设置预览外形
+        ref var shape = ref entity.Get<Shape>();
+        shape.Texture = assets.Load<TextureRegion>("/Textures/TurretAtlas.json:Shape");
+        shape.Size = sprite.Size;
+        shape.Position = sprite.Position;
+        shape.Rotation = sprite.Rotation;
+        shape.Scale = sprite.Scale;
 
         // 设置参考尺寸
         ref var refSize = ref entity.Get<ReferenceSize>();
@@ -163,6 +147,16 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
             Blend = SpriteBlend.Alpha
         });
 
+        // 设置预览外形
+        commandBuffer.Set(in entity, new Shape()
+        {
+            Texture = assets.Load<TextureRegion>("Textures/TurretAtlas.json:Shape"),
+            Size = new Vector2(_referenceRadius * 2),
+            Position = Vector2.Zero,
+            Rotation = 0,
+            Scale = Vector2.One,
+        });
+
         // 设置参考尺寸
         commandBuffer.Set(in entity, new ReferenceSize
         {
@@ -175,7 +169,7 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         commandBuffer.Set(in entity, new PlanetGeostationaryOrbit
         {
             Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
-                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+                       Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
             Radius = _referenceRadius * 2,
             Period = _referenceRadius * 2 / 6
         });
@@ -202,6 +196,32 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         // 配置炮塔属性
         commandBuffer.Set(in entity, new AttackRange { Range = AttackRange });
         commandBuffer.Set(in entity, new AttackCooldown { Duration = CooldownTime });
-        commandBuffer.Set(in entity, new Turret { GlowTexture = assets.Load<TextureRegion>("Textures/TurretAtlas.json:TurretGlow") });
+        commandBuffer.Set(
+            in entity, new Turret { GlowTexture = assets.Load<TextureRegion>("Textures/TurretAtlas.json:TurretGlow") });
     }
+
+    #region Options
+
+    /// <summary>
+    /// 星球的变换关系
+    /// </summary>
+    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions>
+        Transform { get; set; } = new AbsoluteTransformOptions();
+
+    /// <summary>
+    /// 星球所属的阵营
+    /// </summary>
+    public Entity Party { get; set; } = Entity.Null;
+
+    /// <summary>
+    /// 攻击距离
+    /// </summary>
+    public float AttackRange { get; set; } = 500;
+
+    /// <summary>
+    /// 炮塔冷却时间
+    /// </summary>
+    public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.25);
+
+    #endregion
 }

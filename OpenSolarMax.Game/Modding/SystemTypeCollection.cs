@@ -10,11 +10,14 @@ internal class SystemTypeCollection
 
     public HashSet<Type> RenderSystemTypes { get; set; } = [];
 
+    public HashSet<Type> PreviewSystemTypes { get; set; } = [];
+
     public void UnionWith(SystemTypeCollection theOther)
     {
         InputSystemTypes.UnionWith(theOther.InputSystemTypes);
         AiSystemTypes.UnionWith(theOther.AiSystemTypes);
         SimulateSystemTypes.UnionWith(theOther.SimulateSystemTypes);
         RenderSystemTypes.UnionWith(theOther.RenderSystemTypes);
+        PreviewSystemTypes.UnionWith(theOther.PreviewSystemTypes);
     }
 }

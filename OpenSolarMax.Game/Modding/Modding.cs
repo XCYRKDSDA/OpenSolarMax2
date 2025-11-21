@@ -108,14 +108,17 @@ internal static partial class Modding
             if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
                 systemTypes.SimulateSystemTypes.Add(type);
 
-            else if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
+            if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
                 systemTypes.InputSystemTypes.Add(type);
 
-            else if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
+            if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
                 systemTypes.AiSystemTypes.Add(type);
 
-            else if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
+            if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
                 systemTypes.RenderSystemTypes.Add(type);
+
+            if (type.GetCustomAttribute<PreviewSystemAttribute>() is not null)
+                systemTypes.PreviewSystemTypes.Add(type);
         }
 
         return systemTypes;
