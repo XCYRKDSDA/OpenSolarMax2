@@ -258,4 +258,17 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     }
 
     public event EventHandler<IViewModel>? NavigateIn;
+
+    partial void OnPrimaryItemIndexChanged(int value)
+    {
+        PrimaryItemPreview = new WorldRenderer(_worlds[value], _previewSystems[value], Game.GraphicsDevice);
+    }
+
+    partial void OnSecondaryItemIndexChanged(int? value)
+    {
+        SecondaryItemPreview =
+            value is null
+                ? null
+                : new WorldRenderer(_worlds[value.Value], _previewSystems[value.Value], Game.GraphicsDevice);
+    }
 }
