@@ -9,6 +9,8 @@ namespace OpenSolarMax.Game.UI;
 internal class WorldRenderer(World world, DualStageAggregateSystem renderer, GraphicsDevice graphicsDevice)
     : IFadableImage
 {
+    private const float _alpha = 0.5f;
+
     // 按照全屏分辨率渲染以避免放大时模糊
     private readonly RenderTarget2D _renderTarget = new(
         graphicsDevice,
@@ -37,6 +39,6 @@ internal class WorldRenderer(World world, DualStageAggregateSystem renderer, Gra
         graphicsDevice.SetRenderTargets(renderTargetsCache);
 
         // 绘制到 UI
-        context.Draw(_renderTarget, dest, color);
+        context.Draw(_renderTarget, dest, color * _alpha * fadeIn);
     }
 }
