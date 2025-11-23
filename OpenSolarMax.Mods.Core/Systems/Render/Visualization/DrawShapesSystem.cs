@@ -52,7 +52,7 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
         // 完成最后的缩放
         anchorToWorld = Matrix.CreateScale(shape.Scale.X * shape.Size.X / shape.Texture.LogicalSize.X,
                                            shape.Scale.Y * shape.Size.Y / shape.Texture.LogicalSize.Y, 1)
-                        * Matrix.CreateScale(previewStatus.Scale)
+                        * Matrix.CreateScale(previewStatus.Scale, previewStatus.Scale, 1)
                         * anchorToWorld;
 
         var leftTop = new Vector3(-shape.Texture.LogicalOrigin.X, shape.Texture.LogicalOrigin.Y, 0);
