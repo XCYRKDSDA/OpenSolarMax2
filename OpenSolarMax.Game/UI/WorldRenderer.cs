@@ -26,7 +26,12 @@ internal class WorldRenderer(World world, DualStageAggregateSystem renderer, Gra
         graphicsDevice.SetRenderTarget(_renderTarget);
 
         graphicsDevice.Clear(Color.Transparent);
-        world.Query(new QueryDescription().WithAll<Viewport>(), (ref Viewport vp) => vp = graphicsDevice.Viewport);
+        world.Query(new QueryDescription().WithAll<Viewport, PreviewStatus>(),
+                    (ref Viewport viewport, ref PreviewStatus previewStatus) =>
+                    {
+                        viewport = graphicsDevice.Viewport;
+                        previewStatus.Scale = fadeIn;
+                    });
         renderer.Update(new GameTime()); // 绘图系统无所谓时间，此处就随便传一个好了
 
         graphicsDevice.SetRenderTargets(renderTargetsCache);

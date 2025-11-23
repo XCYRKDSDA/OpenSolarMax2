@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OneOf;
 using OpenSolarMax.Game;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Templates.Options;
@@ -30,6 +31,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         typeof(LevelUIContext),
         typeof(FMOD.Studio.System),
         typeof(Viewport),
+        typeof(PreviewStatus),
         //
         typeof(InParty.AsAffiliate)
     );

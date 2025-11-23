@@ -34,7 +34,7 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
         RenderToCameraQuery(world, drawableEntities);
     }
 
-    private void DrawEntity(in Shape shape, in AbsoluteTransform absoluteTransform)
+    private void DrawEntity(in Shape shape, in AbsoluteTransform absoluteTransform, in PreviewStatus previewStatus)
     {
         if (shape.Texture is null)
             return;
@@ -52,6 +52,7 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
         // 完成最后的缩放
         anchorToWorld = Matrix.CreateScale(shape.Scale.X * shape.Size.X / shape.Texture.LogicalSize.X,
                                            shape.Scale.Y * shape.Size.Y / shape.Texture.LogicalSize.Y, 1)
+                        * Matrix.CreateScale(previewStatus.Scale)
                         * anchorToWorld;
 
         var leftTop = new Vector3(-shape.Texture.LogicalOrigin.X, shape.Texture.LogicalOrigin.Y, 0);
@@ -92,8 +93,9 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
+    [All<Camera, AbsoluteTransform, PreviewStatus>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose,
+                                in PreviewStatus previewStatus)
     {
         // 计算相机参数
         var view = Matrix.Invert(pose.TransformToRoot);
@@ -114,7 +116,7 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
         foreach (var entity in entities)
         {
             var refs = entity.Get<Shape, AbsoluteTransform>();
-            DrawEntity(in refs.t0, in refs.t1);
+            DrawEntity(in refs.t0, in refs.t1, in previewStatus);
         }
 
         // 恢复 Viewport
