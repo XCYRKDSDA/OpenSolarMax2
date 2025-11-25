@@ -21,13 +21,9 @@ namespace OpenSolarMax.Game.Screens.ViewModels;
 
 internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 {
-    private readonly IBehaviorMod[] _behaviorMods;
-    private readonly IContentMod[] _contentMods;
+    private readonly LevelPlayContext _levelPlayContext;
 
     private readonly List<Level> _levels;
-    private readonly List<Assembly> _loadedAssemblies;
-    private readonly AssetsManager _localAssets;
-
     private readonly List<IFadableImage> _previews;
     private readonly List<DualStageAggregateSystem> _previewSystems;
     private readonly List<World> _worlds;
@@ -66,7 +62,6 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         // 设置基础内容。该步骤占 10%
 
         _items = [];
-        _loadedAssemblies = [];
         _levels = [];
         _worlds = [];
         _previewSystems = [];
@@ -79,21 +74,21 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         var allContentMods = Modding.Modding.ListContentMods().ToDictionary(m => m.FullName, m => m);
 
         // 查找依赖
-        _behaviorMods = levelMod.BehaviorDeps.Select(d => allBehaviorMods[d]).ToArray();
-        _contentMods = levelMod.ContentDeps.Select(d => allContentMods[d]).ToArray();
+        var behaviorMods = levelMod.BehaviorDeps.Select(d => allBehaviorMods[d]).ToArray();
+        var contentMods = levelMod.ContentDeps.Select(d => allContentMods[d]).ToArray();
 
         // 构造局部资产层叠文件系统
         var localFileSystem = new AggregateFileSystem();
         // 全局资产位于最底层
         localFileSystem.AddFileSystem(Folders.Content);
         // 逐个添加行为模组资产
-        foreach (var mod in _behaviorMods)
+        foreach (var mod in behaviorMods)
         {
             if (mod.Content is not null)
                 localFileSystem.AddFileSystem(new SubFileSystem(mod.Content.FileSystem, mod.Content.Path));
         }
         // 逐个添加内容模组资产
-        foreach (var mod in _contentMods)
+        foreach (var mod in contentMods)
         {
             if (mod.Content is not null)
                 localFileSystem.AddFileSystem(new SubFileSystem(mod.Content.FileSystem, mod.Content.Path));
@@ -101,7 +96,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         // 加载所有程序集
         var sharedAssemblies = AppDomain.CurrentDomain.GetAssemblies().ToDictionary(a => a.FullName!, a => a);
-        foreach (var mod in _behaviorMods)
+        var loadedAssemblies = new List<Assembly>();
+        foreach (var mod in behaviorMods)
         {
             var ctx = new ModLoadContext(mod.Assembly, sharedAssemblies);
             using var stream = mod.Assembly.Open(FileMode.Open, FileAccess.Read);
@@ -113,21 +109,21 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             var assembly = ctx.LoadFromStream(stream);
 #endif
             sharedAssemblies.Add(assembly.FullName!, assembly);
-            _loadedAssemblies.Add(assembly);
+            loadedAssemblies.Add(assembly);
         }
 
         // 构建局部资产管理器
-        _localAssets = new AssetsManager(localFileSystem);
-        _localAssets.RegisterLoader(new Texture2DLoader(Game.GraphicsDevice));
-        _localAssets.RegisterLoader(new TextureAtlasLoader());
-        _localAssets.RegisterLoader(new TextureRegionLoader());
-        _localAssets.RegisterLoader(new NinePatchRegionLoader());
-        _localAssets.RegisterLoader(new FontSystemLoader());
-        _localAssets.RegisterLoader(new ByteArrayLoader());
-        var componentTypes = _loadedAssemblies.SelectMany(t => t.ExportedTypes)
-                                              .Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
-                                              .ToList();
-        _localAssets.RegisterLoader(new EntityAnimationClipLoader()
+        var localAssets = new AssetsManager(localFileSystem);
+        localAssets.RegisterLoader(new Texture2DLoader(Game.GraphicsDevice));
+        localAssets.RegisterLoader(new TextureAtlasLoader());
+        localAssets.RegisterLoader(new TextureRegionLoader());
+        localAssets.RegisterLoader(new NinePatchRegionLoader());
+        localAssets.RegisterLoader(new FontSystemLoader());
+        localAssets.RegisterLoader(new ByteArrayLoader());
+        var componentTypes = loadedAssemblies.SelectMany(t => t.ExportedTypes)
+                                             .Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
+                                             .ToList();
+        localAssets.RegisterLoader(new EntityAnimationClipLoader()
         {
             ComponentTypes = componentTypes,
             CurveLoaders =
@@ -150,7 +146,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 }
             }
         });
-        _localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader()
+        localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader()
         {
             ComponentTypes = componentTypes,
             CurveLoaders =
@@ -174,11 +170,10 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 }
             }
         });
-        var worldLoader = new WorldLoader(_localAssets);
 
         // 查找配置类型并构造关卡加载器
         var configurations = new Dictionary<string, List<Type>>();
-        foreach (var assembly in _loadedAssemblies)
+        foreach (var assembly in loadedAssemblies)
         {
             var modConfigurationTypes = Modding.Modding.FindConfigurationTypes(assembly);
             foreach (var (key, type) in modConfigurationTypes)
@@ -189,33 +184,49 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                     configurations.Add(key, [type]);
             }
         }
+
+        // 在加载世界前，需要先构建所有系统，以防有些系统使用响应式策略。
+        // 首先寻找所有系统
+        var systemTypes = new SystemTypeCollection();
+        foreach (var assembly in loadedAssemblies)
+            systemTypes.UnionWith(Modding.Modding.FindSystemTypes(assembly));
+        // 寻找所有 Hook 实现
+        var hookImplInfos = loadedAssemblies.SelectMany(Modding.Modding.FindHookImplementations)
+                                            .SelectMany(x => x, (g, i) => (g.Key, i))
+                                            .ToLookup(p => p.Key, p => p.i);
+
+        // 记录关卡模组上下文
+        _levelPlayContext = new LevelPlayContext()
+        {
+            LevelMod = levelMod,
+            BehaviorMods = behaviorMods,
+            ContentMods = contentMods,
+            Assemblies = loadedAssemblies.ToArray(),
+            LocalAssets = localAssets,
+            ConfigurationTypes = configurations.ToDictionary(p => p.Key, p => p.Value.ToArray()),
+            SystemTypes = systemTypes,
+            HookImplMethods = hookImplInfos.ToDictionary(g => g.Key, g => g.ToArray()),
+        };
+
+        // 加载所有关卡
+
+        var worldLoader = new WorldLoader(localAssets);
         var levelLoader = new LevelLoader()
         {
             ConfigurationTypes = configurations.ToDictionary(p => p.Key, p => p.Value.ToArray()),
         };
 
-        // 在加载世界前，需要先构建所有系统，以防有些系统使用响应式策略。
-        // 首先寻找所有系统
-        var systemTypes = new SystemTypeCollection();
-        foreach (var assembly in _loadedAssemblies)
-            systemTypes.UnionWith(Modding.Modding.FindSystemTypes(assembly));
-        // 寻找所有 Hook 实现
-        var hookImplInfos = _loadedAssemblies.SelectMany(Modding.Modding.FindHookImplementations)
-                                             .SelectMany(x => x, (g, i) => (g.Key, i))
-                                             .ToLookup(p => p.Key, p => p.i);
-
-        // 加载所有关卡
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelMod.Levels.EnumerateFiles("*.json"))
         {
-            var level = levelLoader.Load(levelFile.FileSystem, _localAssets, levelFile.Path);
+            var level = levelLoader.Load(levelFile.FileSystem, localAssets, levelFile.Path);
             _levels.Add(level);
 
             // 加载关卡内容
             var world = World.Create();
             var simulateSystem = new DualStageAggregateSystem(
                 world, systemTypes.SimulateSystemTypes,
-                new Dictionary<Type, object> { [typeof(IAssetsManager)] = _localAssets },
+                new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets },
                 hookImplInfos
             );
             var commandBuffer = new CommandBuffer();
@@ -233,7 +244,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 new Dictionary<Type, object>
                 {
                     [typeof(GraphicsDevice)] = game.GraphicsDevice,
-                    [typeof(IAssetsManager)] = _localAssets,
+                    [typeof(IAssetsManager)] = localAssets,
                 },
                 hookImplInfos
             );
@@ -244,7 +255,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             _previews.Add(new FadableRichText(new RichTextLayout()
             {
                 Text = levelFile.Name,
-                Font = _localAssets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                Font = localAssets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
             }));
         }
 
