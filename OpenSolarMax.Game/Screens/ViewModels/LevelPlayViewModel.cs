@@ -14,6 +14,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
     private readonly DualStageAggregateSystem _aiSystem;
 
     private readonly DualStageAggregateSystem _inputSystem;
+    private readonly GameTime _playTime = new();
 
     private readonly DualStageAggregateSystem _renderSystem;
 
@@ -21,10 +22,10 @@ internal partial class LevelPlayViewModel : ViewModelBase
     private readonly World _world;
 
     [ObservableProperty]
-    private bool _paused;
+    private bool _paused = false;
 
     [ObservableProperty]
-    private float _simulateSpeed;
+    private float _simulateSpeed = 1;
 
     public LevelPlayViewModel(Level level, LevelPlayContext levelPlayContext, SolarMax game) : base(game)
     {
@@ -81,8 +82,14 @@ internal partial class LevelPlayViewModel : ViewModelBase
     {
         if (Paused) return;
 
-        _inputSystem.Update(gameTime);
-        _aiSystem.Update(gameTime);
-        _simulateSystem.Update(gameTime);
+        // 更新时间
+        _playTime.ElapsedGameTime = gameTime.ElapsedGameTime * SimulateSpeed;
+        _playTime.TotalGameTime += _playTime.ElapsedGameTime;
+        _playTime.IsRunningSlowly = gameTime.IsRunningSlowly;
+
+        // 更新世界
+        _inputSystem.Update(_playTime);
+        _aiSystem.Update(_playTime);
+        _simulateSystem.Update(_playTime);
     }
 }
