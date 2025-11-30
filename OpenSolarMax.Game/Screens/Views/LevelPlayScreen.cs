@@ -65,7 +65,7 @@ internal class LevelPlayScreen : ScreenBase
             VerticalAlignment = VerticalAlignment.Top,
         };
         Grid.SetColumnSpan(leftStack, 3);
-        var exitButton = new Button()
+        var exitButton = new Button(null)
         {
             Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
@@ -78,7 +78,7 @@ internal class LevelPlayScreen : ScreenBase
             },
         };
         //exitButton.Click += OnExitButtonClicked;
-        var pauseButton = new Button()
+        var pauseButton = new Button(null)
         {
             Content = new Image()
             {
@@ -101,7 +101,7 @@ internal class LevelPlayScreen : ScreenBase
             VerticalAlignment = VerticalAlignment.Top,
         };
         Grid.SetColumnSpan(rightStack, 3);
-        var slowButton = new ToggleButton()
+        var slowButton = new ToggleButton(null)
         {
             Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
@@ -114,7 +114,7 @@ internal class LevelPlayScreen : ScreenBase
             },
         };
         slowButton.Click += OnSpeedOptionChanged;
-        var normalButton = new ToggleButton()
+        var normalButton = new ToggleButton(null)
         {
             Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
@@ -128,7 +128,7 @@ internal class LevelPlayScreen : ScreenBase
             },
         };
         normalButton.Click += OnSpeedOptionChanged;
-        var fastButton = new ToggleButton()
+        var fastButton = new ToggleButton(null)
         {
             Content = new Image()
             {
