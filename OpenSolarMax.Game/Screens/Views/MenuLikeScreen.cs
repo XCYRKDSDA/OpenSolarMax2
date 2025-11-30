@@ -159,12 +159,17 @@ internal class MenuLikeScreen : ScreenBase
 
     private void ViewModelOnNavigateIn(object? sender, IViewModel e)
     {
-        if (e is LevelsViewModel vm)
+        if (e is LevelsViewModel levelsViewModel)
         {
             Game.ScreenManager.ActiveScreen =
                 new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, Game.ScreenManager, this,
-                                           new MenuLikeScreen(vm, _primaryBackground, Game),
+                                           new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
                                            TimeSpan.FromSeconds(0.5));
+        }
+        else if (e is LevelPlayViewModel levelPlayViewModel)
+        {
+            Game.ScreenManager.ActiveScreen =
+                new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game); // TODO: 修复选择共享的背景的逻辑
         }
         else
             throw new NotImplementedException();

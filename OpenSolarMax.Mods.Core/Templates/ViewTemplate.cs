@@ -4,7 +4,6 @@ using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OneOf;
-using OpenSolarMax.Game;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
@@ -28,7 +27,7 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         // 交互
         typeof(Camera),
         typeof(ManeuvaringShipsStatus),
-        typeof(LevelUIContext),
+        // typeof(LevelUIContext),
         typeof(FMOD.Studio.System),
         typeof(Viewport),
         typeof(PreviewStatus),

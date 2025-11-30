@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Arch.Buffer;
 using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
@@ -66,6 +67,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _worlds = [];
         _previewSystems = [];
         _previews = [];
+        _selectItemCommand = new RelayCommand<int>(OnSelectItem);
 
         // 加载所有章节信息。该步骤占 30%
 
@@ -281,5 +283,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             value is null
                 ? null
                 : new WorldRenderer(_worlds[value.Value], _previewSystems[value.Value], Game.GraphicsDevice);
+    }
+
+    private void OnSelectItem(int idx)
+    {
+        var levelPlayViewModel = new LevelPlayViewModel(_levels[idx], _levelPlayContext, Game);
+        NavigateIn?.Invoke(this, levelPlayViewModel);
     }
 }

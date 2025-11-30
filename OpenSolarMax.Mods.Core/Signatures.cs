@@ -1,5 +1,4 @@
 using Arch.Core;
-using OpenSolarMax.Game;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core;
@@ -75,7 +74,7 @@ public static class Signatures
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
             typeof(InParty.AsAffiliate),
-            typeof(LevelUIContext),
+            // typeof(LevelUIContext),
             typeof(FMOD.Studio.System)
         );
 

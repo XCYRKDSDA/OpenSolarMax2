@@ -14,9 +14,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), Write(typeof(FmodSystem))]
-[FineWith(typeof(UpdateFmod3DSettingsSystem))]
+// [FineWith(typeof(UpdateFmod3DSettingsSystem))]
 public sealed partial class UpdateListener3DAttributesSystem(World world) : ICalcSystem
 {
+    public void Update() => SetHearer3DAttributesQuery(world);
+
     [Query]
     [All<FmodSystem, AbsoluteTransform, Camera>]
     private static void SetHearer3DAttributes(ref FmodSystem fmodSystem, in AbsoluteTransform transform,
@@ -35,6 +37,4 @@ public sealed partial class UpdateListener3DAttributesSystem(World world) : ICal
             velocity = { x = 0, y = 0, z = 0 },
         });
     }
-
-    public void Update() => SetHearer3DAttributesQuery(world);
 }
