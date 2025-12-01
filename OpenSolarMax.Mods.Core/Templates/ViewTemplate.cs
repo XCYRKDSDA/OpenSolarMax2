@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Utils;
@@ -16,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Templates;
 /// 将实体配置为一个描述视图的对象。
 /// 默认该视图拥有位于世界系原点的宽1920、高1080、纵深±1000的相机
 /// </summary>
-public class ViewTemplate : ITemplate, ITransformableTemplate
+public class ViewTemplate(IAssetsManager assets) : ITemplate, ITransformableTemplate
 {
     private static readonly Signature _signature = new(
         // 依赖关系
@@ -27,12 +28,15 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         // 交互
         typeof(Camera),
         typeof(ManeuvaringShipsStatus),
-        // typeof(LevelUIContext),
         typeof(FMOD.Studio.System),
         typeof(Viewport),
         typeof(PreviewStatus),
         //
-        typeof(InParty.AsAffiliate)
+        typeof(InParty.AsAffiliate),
+        // UI 插件
+        typeof(TotalPopulationWidget),
+        // 视图标识
+        typeof(ViewTag)
     );
 
     public Signature Signature => _signature;
@@ -54,6 +58,9 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
         // 设置阵营
         var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity };
         _ = world.Make(inPartyTemplate);
+
+        // 初始化 UI
+        entity.Set(new TotalPopulationWidget(assets));
     }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
@@ -74,6 +81,9 @@ public class ViewTemplate : ITemplate, ITransformableTemplate
 
         // 设置阵营
         world.Make(commandBuffer, new InPartyTemplate { Party = Party, Affiliate = entity });
+
+        // 初始化 UI
+        commandBuffer.Set(in entity, new TotalPopulationWidget(assets));
     }
 
     #region Options

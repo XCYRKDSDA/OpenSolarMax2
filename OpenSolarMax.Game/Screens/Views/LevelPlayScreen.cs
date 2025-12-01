@@ -1,9 +1,12 @@
+using System.Reflection;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
 
@@ -215,6 +218,37 @@ internal class LevelPlayScreen : ScreenBase
         Grid.SetColumn(_worldView, 0);
         Grid.SetColumnSpan(_worldView, 3);
         grid.Widgets.Add(_worldView);
+
+        // 将 View 实体上携带的 UI 控件注册到界面
+        var allWidgets = new Dictionary<LevelWidgetPosition, List<(int, Widget)>>();
+        foreach (var componentType in viewModel.ViewEntity.GetComponentTypes())
+        {
+            if (!componentType.Type.IsSubclassOf(typeof(Widget)) ||
+                componentType.Type.GetCustomAttribute<LevelWidgetAttribute>() is not { } attribute)
+                continue;
+
+            var pair = (attribute.Order, (Widget)viewModel.ViewEntity.Get(componentType)!);
+            if (allWidgets.TryGetValue(attribute.Position, out var widgets))
+                widgets.Add(pair);
+            else
+                allWidgets.Add(attribute.Position, [pair]);
+        }
+        // 按照 Order 排序
+        foreach (var (_, widgets) in allWidgets) widgets.Sort();
+        // 按顺序注册到对应 panel 中
+        foreach (var (position, widgets) in allWidgets)
+        {
+            var widgetsContainer = position switch
+            {
+                LevelWidgetPosition.Top => topPanel.Widgets,
+                LevelWidgetPosition.Bottom => bottomPanel.Widgets,
+                LevelWidgetPosition.Left => leftPanel.Widgets,
+                LevelWidgetPosition.Right => rightPanel.Widgets,
+                _ => throw new ArgumentOutOfRangeException(nameof(position)),
+            };
+            foreach (var (_, widget) in widgets)
+                widgetsContainer.Add(widget);
+        }
 
         #endregion
     }

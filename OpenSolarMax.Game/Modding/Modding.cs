@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Myra.Graphics2D.UI;
 using OpenSolarMax.Game.Data;
 using Zio;
 
@@ -137,6 +138,20 @@ internal static partial class Modding
                        .SelectMany(t => t.GetMethods(implFlags))
                        .SelectMany(m => m.GetCustomAttributes<HookOnAttribute>(), (m, a) => (hook: a.Hook, method: m))
                        .ToLookup(p => p.hook, p => p.method);
+    }
+
+    /// <summary>
+    /// 从一个程序集中找到所有的关卡界面控件类型
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <returns></returns>
+    public static IEnumerable<KeyValuePair<LevelWidgetAttribute, Type>> FindLevelWidgetTypes(Assembly assembly)
+    {
+        return assembly.ExportedTypes
+                       .Where(t => t.GetCustomAttribute<LevelWidgetAttribute>() is not null &&
+                                   t.IsSubclassOf(typeof(Widget)))
+                       .Select(t => new KeyValuePair<LevelWidgetAttribute, Type>(
+                                   t.GetCustomAttribute<LevelWidgetAttribute>()!, t));
     }
 
     /// <summary>

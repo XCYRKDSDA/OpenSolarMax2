@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Arch.Buffer;
 using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,6 +13,7 @@ namespace OpenSolarMax.Game.Screens.ViewModels;
 internal partial class LevelPlayViewModel : ViewModelBase
 {
     private readonly World _world;
+    private readonly Entity _viewEntity;
     private readonly DualStageAggregateSystem _aiSystem;
     private readonly DualStageAggregateSystem _inputSystem;
     private readonly DualStageAggregateSystem _simulateSystem;
@@ -27,6 +29,8 @@ internal partial class LevelPlayViewModel : ViewModelBase
     public World World => _world;
 
     public DualStageAggregateSystem RenderSystem => _renderSystem;
+
+    public Entity ViewEntity => _viewEntity;
 
     public LevelPlayViewModel(Level level, LevelPlayContext levelPlayContext, SolarMax game) : base(game)
     {
@@ -69,6 +73,15 @@ internal partial class LevelPlayViewModel : ViewModelBase
             commandBuffer.Playback(_world);
             _simulateSystem.LateUpdate();
         }
+
+        // 查找相机
+        var viewDesc = new QueryDescription().WithAll<ViewTag>();
+        var viewCount = _world.CountEntities(in viewDesc);
+        if (viewCount > 1)
+            throw new Exception("there're more than one view entities in the world!");
+        if (viewCount <= 0)
+            throw new Exception("there's no view entity in the world!");
+        _world.GetEntities(in viewDesc, MemoryMarshal.CreateSpan(ref _viewEntity, 1));
 
         // 设置 fmod 系统
         _world.Query(new QueryDescription().WithAll<FMOD.Studio.System>(),

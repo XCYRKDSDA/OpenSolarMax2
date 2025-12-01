@@ -45,7 +45,7 @@ public class ViewConfiguration : IEntityConfiguration, ITransformableConfigurati
     public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
     {
         if (Party is null) throw new NullReferenceException();
-        var template = new ViewTemplate()
+        var template = new ViewTemplate(assets)
         {
             Party = ctx.OtherEntities[Party]
         };
