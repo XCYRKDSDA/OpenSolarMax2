@@ -281,18 +281,14 @@ internal class MenuLikeScreen : ScreenBase
         _desktop.Render();
     }
 
-    protected override void OnStartTransitOut()
+    protected override void OnStartTransitOut(object? context)
     {
-        base.OnStartTransitOut();
-
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
     }
 
-    public override void OnTransitOut(float progress)
+    public override void OnTransitOut(object? context, float progress)
     {
-        base.OnTransitOut(progress);
-
         // 过渡预览图像的缩放。从 1 到 2
         _secondaryPreview.Scale = _primaryPreview.Scale = Vector2.One * (1 + progress * 0.5f);
     }
