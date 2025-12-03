@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
@@ -18,10 +19,12 @@ internal class MenuLikeScreen : ScreenBase
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
     private readonly Desktop _desktop;
+    private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持预览悬浮动画
     private readonly HorizontalScrollingBackground _pageBackground;
     private readonly HorizontalScrollingBackground _primaryBackground, _secondaryBackground;
     private readonly FadableImage _primaryPreview, _secondaryPreview;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
+    private Image2? _floatingPreview;
 
     private readonly IMenuLikeViewModel _viewModel;
     private float _actualBackgroundLeft = 0;
@@ -34,6 +37,8 @@ internal class MenuLikeScreen : ScreenBase
     {
         _viewModel = viewModel;
         _desktop = new Desktop();
+        _rootPanel = new Panel();
+        _desktop.Root = _rootPanel;
 
         _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
@@ -97,7 +102,7 @@ internal class MenuLikeScreen : ScreenBase
         grid.Widgets.Add(_scrollViewer);
         grid.Widgets.Add(band2);
 
-        _desktop.Root = grid;
+        _rootPanel.Widgets.Add(grid);
 
         // 初步注册内容
 
@@ -169,7 +174,10 @@ internal class MenuLikeScreen : ScreenBase
         else if (e is LevelPlayViewModel levelPlayViewModel)
         {
             Game.ScreenManager.ActiveScreen =
-                new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game); // TODO: 修复选择共享的背景的逻辑
+                new CustomFadeInTransition(Game.GraphicsDevice, Game.ScreenManager, this,
+                                           // TODO: 修复选择共享的背景的逻辑
+                                           new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
+                                           TimeSpan.FromSeconds(1), new MenuNavigationContext());
         }
         else
             throw new NotImplementedException();
@@ -283,13 +291,62 @@ internal class MenuLikeScreen : ScreenBase
 
     protected override void OnStartTransitOut(object? context)
     {
+        if (context is not MenuNavigationContext ctx) return;
+
+        // 记录动画开始时的预览位置
+        ctx.OriginalPreviewLocation =
+            new Rectangle(_primaryPreview.ToGlobal(Point.Zero), _primaryPreview.ActualBounds.Size);
+
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
+
+        // 将预览内容交给悬浮预览控件
+        _floatingPreview = new Image2()
+        {
+            Left = ctx.OriginalPreviewLocation.Left,
+            Top = ctx.OriginalPreviewLocation.Top,
+            Width = ctx.OriginalPreviewLocation.Width,
+            Height = ctx.OriginalPreviewLocation.Height,
+            Renderable = _primaryPreview.Renderable,
+        };
+        _rootPanel.Widgets.Add(_floatingPreview);
+
+        // 关闭嵌入的自带控件的渲染
+        _primaryPreview.Visible = false;
+        _secondaryPreview.Visible = false;
     }
 
     public override void OnTransitOut(object? context, float progress)
     {
-        // 过渡预览图像的缩放。从 1 到 2
-        _secondaryPreview.Scale = _primaryPreview.Scale = Vector2.One * (1 + progress * 0.5f);
+        if (context is not MenuNavigationContext ctx) return;
+
+        // 计算当前位置
+        Debug.Assert(_floatingPreview is not null);
+        _floatingPreview.Left =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Left, ctx.TargetPreviewLocation.Left, progress);
+        _floatingPreview.Top =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Top, ctx.TargetPreviewLocation.Top, progress);
+        _floatingPreview.Width =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Width, ctx.TargetPreviewLocation.Width, progress);
+        _floatingPreview.Height =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Height, ctx.TargetPreviewLocation.Height, progress);
+    }
+
+    protected override void OnFinishTransitOut(object? context)
+    {
+        if (context is not MenuNavigationContext) return;
+
+        // 恢复默认状态
+
+        // 开启嵌入的自带控件的渲染
+        _secondaryPreview.Visible = true;
+        _primaryPreview.Visible = true;
+
+        // 移除悬浮预览控件
+        _rootPanel.Widgets.Remove(_floatingPreview);
+        _floatingPreview = null;
+
+        // 恢复 ScrollViewer 输入
+        _scrollViewer.Enabled = true;
     }
 }

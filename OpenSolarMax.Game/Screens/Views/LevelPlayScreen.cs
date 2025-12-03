@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -17,9 +18,11 @@ internal class LevelPlayScreen : ScreenBase
     private readonly HorizontalScrollingBackground _background;
 
     private readonly Desktop _desktop;
+    private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
     private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
     private readonly LevelPlayViewModel _viewModel;
-    private readonly Widget _worldView;
+    private readonly Widget _embeddingWorldView;
+    private Widget? _floatingWorldView;
 
     public LevelPlayScreen(LevelPlayViewModel viewModel, HorizontalScrollingBackground sharedBackground,
                            SolarMax game) : base(game)
@@ -37,6 +40,8 @@ internal class LevelPlayScreen : ScreenBase
         #region 初始化 UI
 
         _desktop = new Desktop();
+        _rootPanel = new Panel();
+        _desktop.Root = _rootPanel;
 
         // 整体的布局网格
         var grid = new Grid()
@@ -57,7 +62,7 @@ internal class LevelPlayScreen : ScreenBase
                 new Proportion { Type = ProportionType.Auto }
             },
         };
-        _desktop.Widgets.Add(grid);
+        _rootPanel.Widgets.Add(grid);
 
         // 添加关卡固定控件
 
@@ -209,15 +214,15 @@ internal class LevelPlayScreen : ScreenBase
         grid.Widgets.Add(rightPanel);
 
         // 世界代理组件。仅用于排版和输入
-        _worldView = new Widget()
+        _embeddingWorldView = new Widget()
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
-        Grid.SetRow(_worldView, 1);
-        Grid.SetColumn(_worldView, 0);
-        Grid.SetColumnSpan(_worldView, 3);
-        grid.Widgets.Add(_worldView);
+        Grid.SetRow(_embeddingWorldView, 1);
+        Grid.SetColumn(_embeddingWorldView, 0);
+        Grid.SetColumnSpan(_embeddingWorldView, 3);
+        grid.Widgets.Add(_embeddingWorldView);
 
         // 将 View 实体上携带的 UI 控件注册到界面
         var allWidgets = new Dictionary<LevelWidgetPosition, List<(int, Widget)>>();
@@ -249,6 +254,9 @@ internal class LevelPlayScreen : ScreenBase
             foreach (var (_, widget) in widgets)
                 widgetsContainer.Add(widget);
         }
+
+        // 初始化 UI 布局
+        _desktop.UpdateLayout();
 
         #endregion
     }
@@ -286,12 +294,66 @@ internal class LevelPlayScreen : ScreenBase
         _background.Draw();
 
         // 再画世界
-        var viewport = new Viewport(_worldView.ContainerBounds);
+        var worldView = _floatingWorldView ?? _embeddingWorldView; // 优先选用悬浮的世界视图控件以应用动画
+        var viewport = new Viewport(new Rectangle(worldView.ToGlobal(Point.Zero), worldView.ActualBounds.Size));
         _viewModel.World.Query(new QueryDescription().WithAll<Viewport>(),
                                (ref Viewport viewport2) => { viewport2 = viewport; });
         _viewModel.RenderSystem.Update(gameTime);
 
         // 再画 UI
         _desktop.Render();
+    }
+
+    protected override void OnStartTransitIn(object? context)
+    {
+        // 只在从菜单切换过来时播放世界过渡动画
+        if (context is not MenuNavigationContext ctx) return;
+
+        // 记录动画结束时的目标预览位置
+        ctx.TargetPreviewLocation =
+            new Rectangle(_embeddingWorldView.ToGlobal(Point.Zero), _embeddingWorldView.ActualBounds.Size);
+
+        // 创建悬浮世界视图控件
+        _floatingWorldView = new Widget();
+        _rootPanel.Widgets.Add(_floatingWorldView);
+
+        // 世界更新速度归零
+        _viewModel.SimulateSpeed = 0;
+    }
+
+    public override void OnTransitIn(object? context, float progress)
+    {
+        // 只在从菜单切换过来时播放世界过渡动画
+        if (context is not MenuNavigationContext ctx) return;
+
+        // 更新目标位置
+        ctx.TargetPreviewLocation =
+            new Rectangle(_embeddingWorldView.ToGlobal(Point.Zero), _embeddingWorldView.ActualBounds.Size);
+
+        // 计算当前位置
+        Debug.Assert(_floatingWorldView is not null);
+        _floatingWorldView.Left =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Left, ctx.TargetPreviewLocation.Left, progress);
+        _floatingWorldView.Top =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Top, ctx.TargetPreviewLocation.Top, progress);
+        _floatingWorldView.Width =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Width, ctx.TargetPreviewLocation.Width, progress);
+        _floatingWorldView.Height =
+            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Height, ctx.TargetPreviewLocation.Height, progress);
+
+        // 逐渐加速世界模拟
+        _viewModel.SimulateSpeed = progress;
+    }
+
+    protected override void OnFinishTransitIn(object? context)
+    {
+        if (context is not MenuNavigationContext) return;
+
+        // 正常化世界模拟速度
+        _viewModel.SimulateSpeed = 1;
+
+        // 移除悬浮控件，恢复默认状态
+        _rootPanel.Widgets.Remove(_floatingWorldView);
+        _floatingWorldView = null;
     }
 }
