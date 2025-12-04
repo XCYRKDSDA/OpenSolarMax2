@@ -1,15 +1,16 @@
 {
     "templates": {
-        "planet30": { "$base": "planet", "radius": 30, "volume": 100, "population": 30, "produceSpeed": 1 },
-        "planet60": { "$base": "planet", "radius": 60, "volume": 150, "population": 60, "produceSpeed": 1 },
-        "blue": { "$base": "party", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
+        "planet30": { "$base": "planet", "radius": 19.2, "volume": 300, "population": 30, "produceSpeed": 0.6 },
+        "planet40": { "$base": "planet", "radius": 25.6, "volume": 400, "population": 40, "produceSpeed": 0.8 },
+        "planet50": { "$base": "planet", "radius": 32.0, "volume": 500, "population": 50, "produceSpeed": 1.0 },
+        "blue": { "$base": "party", "color": "#5FB6FF", "workload": 1, "attack": 1, "health": 1 }
     },
 
     "entities": [
         { "$id": "blue", "$base": "blue" },
         { "$id": "red", "$base": "blue", "color": "#FF5D93" },
 
-        { "$base": "view", "size": [ 1024, 768 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "party": "blue" },
+        { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "party": "blue" },
 
         { "$base": "portal", "position": [ 512, 384 ] },
 
@@ -23,10 +24,10 @@
         { "$base": "planet30", "position": [ 392, 456 ] },
         { "$base": "planet30", "position": [ 632, 456 ] },
 
-        { "$id": "planet_b", "$base": "planet60", "party": "blue", "position": [ 192, 384 ] },
-        { "$id": "planet_r", "$base": "planet30", "party": "red", "position": [ 832, 384 ] },
+        { "$id": "planet_b", "$base": "planet50", "party": "blue", "position": [ 192, 384 ] },
+        { "$id": "planet_r", "$base": "planet50", "party": "red", "position": [ 832, 384 ] },
 
-        { "$base": "ship", "party": "blue", "planet": "planet_b", "$num": 60 },
-        { "$base": "ship", "party": "red", "planet": "planet_r", "$num": 60 }
+        { "$base": "ship", "party": "blue", "planet": "planet_b", "$num": 50 },
+        { "$base": "ship", "party": "red", "planet": "planet_r", "$num": 50 }
     ]
 }

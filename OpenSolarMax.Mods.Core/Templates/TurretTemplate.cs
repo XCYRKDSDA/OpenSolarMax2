@@ -24,8 +24,8 @@ public class TurretTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
     private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
 
     // 固定的尺寸
-    private const float _referenceRadius = 30;
-    private const float _volume = 100;
+    private const float _referenceRadius = 19.5f; // 78px / 2 / 2
+    private const float _volume = 600; // 1000 * 0.3 * 2
 
     private static readonly Signature _signature = new(
         // 依赖关系

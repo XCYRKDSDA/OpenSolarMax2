@@ -24,8 +24,8 @@ public class PortalTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
     private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
 
     // 固定的尺寸
-    private const float _referenceRadius = 60;
-    private const float _volume = 150;
+    private const float _referenceRadius = 24f; // 96px / 2 / 2
+    private const float _volume = 400;
 
     private static readonly Signature _signature = new(
         // 依赖关系
