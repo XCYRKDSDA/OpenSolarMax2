@@ -15,3 +15,8 @@ edge.thickness = 8
 edge.dash_length = 12
 edge.gap_length = 3
 edge.color = "#FFC0CB"
+
+[systems.visualization.colonization]
+ring.radius_multiplier = 1.8
+ring.thickness = 3
+ring.default_alpha = 0.2

@@ -2,6 +2,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -14,12 +15,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
+[ConfigurationSection("systems:visualization:colonization")]
 public sealed partial class VisualizeColonizationSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
 {
-    private const float _ringRadiusFactor = 1.8f;
-    private const float _ringThickness = 3;
-    private const float _defaultAlpha = 0.2f;
+    private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.GetValue<float>("ring:thickness");
+    private readonly float _defaultAlpha = configs.GetValue<float>("ring:default_alpha");
 
     private static readonly QueryDescription _planetDesc = new QueryDescription()
         .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
