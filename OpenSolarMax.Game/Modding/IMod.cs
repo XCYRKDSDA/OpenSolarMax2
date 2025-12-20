@@ -61,6 +61,14 @@ internal interface IModWithContent : IMod
     DirectoryEntry? Content { get; }
 }
 
+internal interface IModWithConfigs : IMod
+{
+    /// <summary>
+    /// 模组中配置文件的位置。若为空，则该模组没有随附的配置文件
+    /// </summary>
+    FileEntry? Configs { get; }
+}
+
 internal interface IModWithLevels : IMod
 {
     /// <summary>
@@ -82,7 +90,7 @@ internal interface IModWithLevels : IMod
 /// <summary>
 /// 行为模组需要满足的接口
 /// </summary>
-internal interface IBehaviorMod : IMod, IModWithAssembly, IModWithContent;
+internal interface IBehaviorMod : IMod, IModWithAssembly, IModWithContent, IModWithConfigs;
 
 /// <summary>
 /// 资产模组需要满足的接口

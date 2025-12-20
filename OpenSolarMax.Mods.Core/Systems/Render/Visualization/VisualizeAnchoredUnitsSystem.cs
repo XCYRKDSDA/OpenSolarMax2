@@ -3,6 +3,7 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FontStashSharp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -15,25 +16,27 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
+[ConfigurationSection("systems:visualization:anchored_units")]
 public sealed partial class VisualizeAnchoredUnitsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
 {
-    private const int _textSize = 36;
-    private const string _textFormat = "{0}";
-    private const float _shadowDistance = 2;
-    private const float _shadowDensity = 0.618f;
+    private readonly int _textSize = configs.GetValue<int>("text:size")!;
+    private readonly string _textFormat = configs.GetValue<string>("text:template")!;
+    private readonly float _shadowDistance = configs.GetValue<float>("shadow:distance")!;
+    private readonly float _shadowDensity = configs.GetValue<float>("shadow:density")!;
 
-    private const float _labelXOffsetFactor = 0.6f;
-    private const float _labelYOffsetFactor = 0.72f;
+    private readonly float _labelXOffsetFactor = configs.GetValue<float>("label:offset_multipliers:x")!;
+    private readonly float _labelYOffsetFactor = configs.GetValue<float>("label:offset_multipliers:y")!;
 
-    private const float _ringRadiusFactor = 1.8f;
-    private const float _ringThickness = 3;
-    private const float _labelRadiusFactor = 1.25f;
+    private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier")!;
+    private readonly float _ringThickness = configs.GetValue<float>("ring:thickness")!;
+    private readonly float _labelRadiusFactor = configs.GetValue<float>("ring:label:radius_multiplier")!;
 
     private static readonly QueryDescription _planetDesc =
         new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
 
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
+    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
+                                                  .GetFont(configs.GetValue<int>("text:size")!);
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);

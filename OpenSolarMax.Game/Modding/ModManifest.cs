@@ -62,6 +62,11 @@ internal class ModManifest
     public string? Content { get; set; }
 
     /// <summary>
+    /// 模组的配置文件目录
+    /// </summary>
+    public string? Configs { get; set; }
+
+    /// <summary>
     /// 模组的关卡目录
     /// </summary>
     public string? Levels { get; set; }

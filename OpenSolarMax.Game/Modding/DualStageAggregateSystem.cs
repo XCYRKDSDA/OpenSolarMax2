@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Game.Modding;
@@ -393,7 +394,17 @@ internal class DualStageAggregateSystem
         var parameters = new object[parameterInfos.Length];
         parameters[0] = world;
         for (var i = 1; i < parameterInfos.Length; i++)
-            parameters[i] = @params[parameterInfos[i].ParameterType];
+        {
+            if (type.GetCustomAttribute<ConfigurationSectionAttribute>() is { } sectionAttribute &&
+                parameterInfos[i].ParameterType == typeof(IConfiguration))
+            {
+                // 特别处理 ConfigurationSection 情况
+                var configuration = (IConfiguration)@params[parameterInfos[i].ParameterType];
+                parameters[i] = configuration.GetSection(sectionAttribute.Section);
+            }
+            else
+                parameters[i] = @params[parameterInfos[i].ParameterType];
+        }
 
         return constructor.Invoke(parameters);
     }

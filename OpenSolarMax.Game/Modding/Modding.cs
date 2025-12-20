@@ -17,6 +17,8 @@ internal static partial class Modding
 
     public static string DefaultContentDir => "Content";
 
+    public static string DefaultConfigsFile => "configs.toml";
+
     public static string DefaultLevelsDir => "Levels";
 
     private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(DirectoryEntry dir, ModType type)

@@ -34,6 +34,9 @@ internal class BehaviorMod(DirectoryEntry dir, ModManifest manifest) : CommonMod
     public DirectoryEntry? Content { get; } =
         dir.EnumerateDirectories(manifest.Content ?? Modding.DefaultContentDir).FirstOrDefault();
 
+    public FileEntry? Configs { get; } =
+        dir.EnumerateFiles(manifest.Configs ?? Modding.DefaultConfigsFile).FirstOrDefault();
+
     public string[] Dependencies { get; } = manifest.Dependencies?.Behaviors ?? [];
 }
 

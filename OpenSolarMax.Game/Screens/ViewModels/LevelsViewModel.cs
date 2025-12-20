@@ -5,8 +5,10 @@ using Arch.Buffer;
 using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CsToml.Extensions.Configuration;
 using FontStashSharp;
 using FontStashSharp.RichText;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -173,6 +175,18 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             }
         });
 
+        // 构建局部配置系统
+        var localConfigsBuilder = new ConfigurationBuilder();
+        localConfigsBuilder.AddEnvironmentVariables(); // 允许环境变量作为基础
+        // 将每个模组的配置文件都添加到配置系统中
+        foreach (var mod in behaviorMods)
+        {
+            if (mod.Configs is null) continue;
+            var tomlStream = mod.Configs.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            localConfigsBuilder.AddTomlStream(tomlStream);
+        }
+        var localConfigs = localConfigsBuilder.Build();
+
         // 查找配置类型并构造关卡加载器
         var configurations = new Dictionary<string, List<Type>>();
         foreach (var assembly in loadedAssemblies)
@@ -205,6 +219,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             ContentMods = contentMods,
             Assemblies = loadedAssemblies.ToArray(),
             LocalAssets = localAssets,
+            LocalConfigs = localConfigs,
             ConfigurationTypes = configurations.ToDictionary(p => p.Key, p => p.Value.ToArray()),
             SystemTypes = systemTypes,
             HookImplMethods = hookImplInfos.ToDictionary(g => g.Key, g => g.ToArray()),
@@ -228,7 +243,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             var world = World.Create();
             var simulateSystem = new DualStageAggregateSystem(
                 world, systemTypes.SimulateSystemTypes,
-                new Dictionary<Type, object> { [typeof(IAssetsManager)] = localAssets },
+                new Dictionary<Type, object>
+                {
+                    [typeof(IAssetsManager)] = localAssets,
+                    [typeof(IConfiguration)] = localConfigs,
+                },
                 hookImplInfos
             );
             var commandBuffer = new CommandBuffer();

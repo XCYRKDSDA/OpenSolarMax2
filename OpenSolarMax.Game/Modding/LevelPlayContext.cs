@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 
 namespace OpenSolarMax.Game.Modding;
@@ -14,6 +15,8 @@ internal class LevelPlayContext
     public required Assembly[] Assemblies { get; init; }
 
     public required IAssetsManager LocalAssets { get; init; }
+
+    public required IConfigurationRoot LocalConfigs { get; init; }
 
     public required Dictionary<string, Type[]> ConfigurationTypes { get; init; }
 

@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using Arch.Buffer;
 using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -41,17 +42,29 @@ internal partial class LevelPlayViewModel : ViewModelBase
                                               .ToLookup(x => x.Key, x => x.Value);
         _inputSystem = new DualStageAggregateSystem(
             _world, levelPlayContext.SystemTypes.InputSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelPlayContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelPlayContext.LocalAssets,
+                [typeof(IConfiguration)] = levelPlayContext.LocalConfigs,
+            },
             hookImplMethods
         );
         _aiSystem = new DualStageAggregateSystem(
             _world, levelPlayContext.SystemTypes.AiSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelPlayContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelPlayContext.LocalAssets,
+                [typeof(IConfiguration)] = levelPlayContext.LocalConfigs,
+            },
             hookImplMethods
         );
         _simulateSystem = new DualStageAggregateSystem(
             _world, levelPlayContext.SystemTypes.SimulateSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelPlayContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelPlayContext.LocalAssets,
+                [typeof(IConfiguration)] = levelPlayContext.LocalConfigs,
+            },
             hookImplMethods
         );
         _renderSystem = new DualStageAggregateSystem(
@@ -59,7 +72,8 @@ internal partial class LevelPlayViewModel : ViewModelBase
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
-                [typeof(IAssetsManager)] = levelPlayContext.LocalAssets
+                [typeof(IAssetsManager)] = levelPlayContext.LocalAssets,
+                [typeof(IConfiguration)] = levelPlayContext.LocalConfigs,
             },
             hookImplMethods
         );

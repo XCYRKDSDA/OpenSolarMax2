@@ -1,0 +1,9 @@
+[systems.visualization.anchored_units]
+text.size = 36
+text.template = "{0}"
+shadow.distance = 2
+shadow.density = 0.6
+label.offset_multipliers = { x = 0.6, y = 0.72 }
+ring.radius_multiplier = 1.8
+ring.thickness = 3
+ring.label.radius_multiplier = 2.25
