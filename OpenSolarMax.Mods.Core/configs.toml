@@ -10,11 +10,11 @@ ring.label.radius_multiplier = 2.25
 
 [systems.visualization.barriers]
 node.size = 16
-node.color = "#FFFFFF"
+node.color = "white"
 edge.thickness = 8
 edge.dash_length = 12
 edge.gap_length = 3
-edge.color = "#FFC0CB"
+edge.color = "pink"
 
 [systems.visualization.colonization]
 ring.radius_multiplier = 1.8

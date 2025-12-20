@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -39,6 +40,9 @@ public class SolarMax : XNAGame
         MyraEnvironment.Game = this;
         MyraEnvironment.SmoothText = true;
         MyraEnvironment.DrawWidgetsFrames = true;
+
+        // 注册全局类型转换
+        TypeDescriptor.AddAttributes(typeof(Color), new TypeConverterAttribute(typeof(ColorConverter)));
     }
 
     public FmodStudioSystem FmodSystem => _globalFmodSystem;

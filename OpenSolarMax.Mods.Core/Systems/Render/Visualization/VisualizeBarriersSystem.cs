@@ -1,4 +1,3 @@
-using System.Globalization;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -39,23 +38,6 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
     private readonly SpriteBatch _spriteBatch;
     private readonly World _world;
 
-    private static Color ColorFromStr(string str)
-    {
-        if (str[0] == '#')
-        {
-            var r = byte.Parse(str.Substring(1, 2), NumberStyles.HexNumber);
-            var g = byte.Parse(str.Substring(3, 2), NumberStyles.HexNumber);
-            var b = byte.Parse(str.Substring(5, 2), NumberStyles.HexNumber);
-            var a = str.Length > 7 ? byte.Parse(str.Substring(7, 2), NumberStyles.HexNumber) : (byte)255;
-            return new Color(r, g, b, a);
-        }
-        else
-        {
-            var sysColor = System.Drawing.Color.FromName(str);
-            return new Color(sysColor.R, sysColor.G, sysColor.B, sysColor.A);
-        }
-    }
-
     public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
                                    IConfiguration configs)
     {
@@ -69,11 +51,11 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
 
         // 行为配置
         _nodeSize = configs.GetValue<float>("node:size")!;
-        _nodeColor = ColorFromStr(configs.GetValue<string>("node:color")!);
+        _nodeColor = configs.GetValue<Color>("node:color")!;
         _edgeThickness = configs.GetValue<float>("edge:thickness")!;
         _edgeDashLength = configs.GetValue<float>("edge:dash_length")!;
         _edgeGapLength = configs.GetValue<float>("edge:gap_length")!;
-        _edgeColor = ColorFromStr(configs.GetValue<string>("edge:color")!);
+        _edgeColor = configs.GetValue<Color>("edge:color")!;
     }
 
     public void Update()
