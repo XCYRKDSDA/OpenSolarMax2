@@ -47,7 +47,7 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
         sprite.Color = Color.White;
         sprite.Alpha = 0.5f;
         sprite.Size = _trailTexture.Bounds.Size.ToVector2();
-        sprite.Scale = new(0.001f, 1);
+        sprite.Scale = new Vector2(0, 1);
         sprite.Blend = SpriteBlend.Additive;
 
         // 挂载到单位上
@@ -69,7 +69,7 @@ public class UnitTrailTemplate(IAssetsManager assets) : ITemplate
             Color = Color.White,
             Alpha = 0.5f,
             Size = _trailTexture.Bounds.Size.ToVector2(),
-            Scale = new(0.001f, 1),
+            Scale = new Vector2(0, 1),
             Blend = SpriteBlend.Additive
         });
 

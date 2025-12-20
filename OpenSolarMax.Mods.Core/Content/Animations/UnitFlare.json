@@ -7,7 +7,7 @@
             { "time": 0.3, "value": 0, "gradient": 0, "type": "smooth" }
         ],
         "Sprite::Scale": [
-            { "time": 0, "value": [ 0.001, 0.001 ], "type": "smooth" },
+            { "time": 0, "value": [ 0, 0 ], "type": "smooth" },
             { "time": 0.1, "value": [ 1, 1 ], "type": "smooth", "gradient": [ 0, 0 ] }
         ]
     }

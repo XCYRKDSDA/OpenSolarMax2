@@ -52,7 +52,7 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
         sprite.Color = Color;
         sprite.Alpha = 1;
         sprite.Size = _pulseTexture.Bounds.Size.ToVector2();
-        sprite.Scale = Vector2.One * 0.001f;
+        sprite.Scale = Vector2.Zero;
         sprite.Blend = SpriteBlend.Additive;
 
         // 设置动画
@@ -79,7 +79,7 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
             Color = Color,
             Alpha = 1,
             Size = _pulseTexture.Bounds.Size.ToVector2(),
-            Scale = Vector2.One * 0.001f,
+            Scale = Vector2.Zero,
             Blend = SpriteBlend.Additive
         });
 
