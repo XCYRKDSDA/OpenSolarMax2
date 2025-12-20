@@ -1,7 +1,9 @@
+using System.Globalization;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -17,14 +19,15 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Entities)]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
+[ConfigurationSection("systems:visualization:barriers")]
 public sealed partial class VisualizeBarriersSystem : ICalcSystem
 {
-    private const float _nodeSize = 16;
-    private const float _edgeThickness = 8f;
-    private const float _edgeDashLength = 12f;
-    private const float _edgeGapLength = 3f;
-    private static readonly Color _nodeColor = Color.White;
-    private static readonly Color _edgeColor = Color.Pink;
+    private readonly float _nodeSize;
+    private readonly float _edgeThickness;
+    private readonly float _edgeDashLength;
+    private readonly float _edgeGapLength;
+    private readonly Color _nodeColor;
+    private readonly Color _edgeColor;
 
     private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<Barrier>();
     private readonly NinePatchRegion _barrierTexture;
@@ -36,7 +39,25 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
     private readonly SpriteBatch _spriteBatch;
     private readonly World _world;
 
-    public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+    private static Color ColorFromStr(string str)
+    {
+        if (str[0] == '#')
+        {
+            var r = byte.Parse(str.Substring(1, 2), NumberStyles.HexNumber);
+            var g = byte.Parse(str.Substring(3, 2), NumberStyles.HexNumber);
+            var b = byte.Parse(str.Substring(5, 2), NumberStyles.HexNumber);
+            var a = str.Length > 7 ? byte.Parse(str.Substring(7, 2), NumberStyles.HexNumber) : (byte)255;
+            return new Color(r, g, b, a);
+        }
+        else
+        {
+            var sysColor = System.Drawing.Color.FromName(str);
+            return new Color(sysColor.R, sysColor.G, sysColor.B, sysColor.A);
+        }
+    }
+
+    public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
+                                   IConfiguration configs)
     {
         _world = world;
         _graphicsDevice = graphicsDevice;
@@ -45,6 +66,14 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
 
         _nodeTexture = assets.Load<TextureRegion>("Textures/BarrierAtlas.json:Node");
         _barrierTexture = assets.Load<NinePatchRegion>("Textures/BarrierAtlas.json:Edge");
+
+        // 行为配置
+        _nodeSize = configs.GetValue<float>("node:size")!;
+        _nodeColor = ColorFromStr(configs.GetValue<string>("node:color")!);
+        _edgeThickness = configs.GetValue<float>("edge:thickness")!;
+        _edgeDashLength = configs.GetValue<float>("edge:dash_length")!;
+        _edgeGapLength = configs.GetValue<float>("edge:gap_length")!;
+        _edgeColor = ColorFromStr(configs.GetValue<string>("edge:color")!);
     }
 
     public void Update()
