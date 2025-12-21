@@ -20,3 +20,20 @@ edge.color = "pink"
 ring.radius_multiplier = 1.8
 ring.thickness = 3
 ring.default_alpha = 0.2
+
+[systems.visualization.entity_ids]
+text.size = 18
+text.color = "red"
+
+[systems.visualization.maneuvering_ships_status]
+ring.radius_multiplier = 1.6
+ring.thickness = 3
+ring.hovered.color = "white * 0.5"
+ring.blocked.color = "red"
+ring.selected.color = "white"
+box.thickness = 3
+box.color = "white * 0.5"
+line.thickness = 3
+line.round = 1
+line.color = "white"
+line.blocked.color = "red"

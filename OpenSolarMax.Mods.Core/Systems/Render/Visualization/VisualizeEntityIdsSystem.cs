@@ -2,6 +2,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FontStashSharp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -15,12 +16,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Debug)]
-public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+[ConfigurationSection("systems:visualization:entity_ids")]
+public sealed partial class VisualizeEntityIdsSystem(
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs)
     : ICalcSystem
 {
-    private const int _textSize = 18;
-    private static readonly Color _textColor = Color.Red;
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
+    private readonly int _textSize = configs.GetValue<int>("text:size")!;
+    private readonly Color _textColor = configs.GetValue<Color>("text:color")!;
+
+    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
+                                                  .GetFont(configs.GetValue<int>("text:size")!);
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);

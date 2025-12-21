@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,26 +23,27 @@ public delegate bool? CheckLocationReachabilityCallback(World world,
 [Priority((int)GraphicsLayer.Interface)]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
+[ConfigurationSection("systems:visualization:maneuvering_ships_status")]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
 {
-    private const float _ringRadiusFactor = 1.6f;
-    private const float _ringThickness = 3f;
+    private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier")!;
+    private readonly float _ringThickness = configs.GetValue<float>("ring:thickness")!;
+    private readonly Color _hoveredRingColor = configs.GetValue<Color>("ring:hovered:color")!;
+    private readonly Color _blockedRingColor = configs.GetValue<Color>("ring:blocked:color")!;
+    private readonly Color _selectedRingColor = configs.GetValue<Color>("ring:selected:color")!;
 
-    private const float _boxThickness = 3f;
+    private readonly float _boxThickness = configs.GetValue<float>("box:thickness")!;
+    private readonly Color _boxColor = configs.GetValue<Color>("box:color")!;
 
-    private const float _lineThickness = 3f;
-    private const float _lineRound = _lineThickness / 3;
-    private readonly Color _blockedLineColor = Color.Red;
-    private readonly Color _blockedRingColor = Color.Red;
-    private readonly Color _boxColor = Color.White * 0.5f;
+    private readonly float _lineThickness = configs.GetValue<float>("line:thickness")!;
+    private readonly float _lineRound = configs.GetValue<float>("line:round")!;
+    private readonly Color _lineColor = configs.GetValue<Color>("line:color")!;
+    private readonly Color _blockedLineColor = configs.GetValue<Color>("line:blocked:color")!;
+
     private readonly BoxRenderer _boxRenderer = new(graphicsDevice, assets);
-
     private readonly CircleRenderer _circleRenderer = new(graphicsDevice, assets);
-    private readonly Color _hoveredRingColor = Color.White * 0.5f;
-    private readonly Color _lineColor = Color.White;
     private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice, assets);
-    private readonly Color _selectedRingColor = Color.White;
 
     [Hook("CheckLocationReachability")]
     public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }
