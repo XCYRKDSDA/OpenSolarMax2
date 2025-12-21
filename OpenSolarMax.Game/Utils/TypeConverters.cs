@@ -23,8 +23,12 @@ public class ColorConverter : TypeConverter
         }
         else
         {
-            var sysColor = System.Drawing.Color.FromName(str);
-            return new Color(sysColor.R, sysColor.G, sysColor.B, sysColor.A);
+            var parts = str.Split('*', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var sysColor = System.Drawing.Color.FromName(parts[0]);
+            var xnaColor = new Color(sysColor.R, sysColor.G, sysColor.B, sysColor.A);
+            if (parts.Length > 1)
+                xnaColor *= float.Parse(parts[1]);
+            return xnaColor;
         }
     }
 }
