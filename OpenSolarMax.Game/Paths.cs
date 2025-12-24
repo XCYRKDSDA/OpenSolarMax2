@@ -1,4 +1,5 @@
 using Zio;
+using Zio.FileSystems;
 
 namespace OpenSolarMax.Game;
 
@@ -13,22 +14,26 @@ internal static class Paths
     public static UPath Levels => "Levels";
 
     public static UPath UserData
-        => Envs.UseDebugFileSystem
-               ? $"{Environment.CurrentDirectory}/UserData"
-               : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        => new PhysicalFileSystem().ConvertPathFromInternal(
+            Envs.UseDebugFileSystem
+                ? $"{Environment.CurrentDirectory}/UserData"
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
 
     public static UPath UserConfig
-        => Envs.UseDebugFileSystem
-               ? $"{Environment.CurrentDirectory}/UserConfig"
-               : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        => new PhysicalFileSystem().ConvertPathFromInternal(
+            Envs.UseDebugFileSystem
+                ? $"{Environment.CurrentDirectory}/UserConfig"
+                : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
     public static UPath CommonData
-        => Envs.UseDebugFileSystem
-               ? Environment.CurrentDirectory
-               : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        => new PhysicalFileSystem().ConvertPathFromInternal(
+            Envs.UseDebugFileSystem
+                ? Environment.CurrentDirectory
+                : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 
     public static UPath CommonConfig
-        => Envs.UseDebugFileSystem
-               ? Environment.CurrentDirectory
-               : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        => new PhysicalFileSystem().ConvertPathFromInternal(
+            Envs.UseDebugFileSystem
+                ? Environment.CurrentDirectory
+                : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 }
