@@ -5,6 +5,33 @@ namespace OpenSolarMax.Game;
 
 internal static class Paths
 {
+    private static readonly PhysicalFileSystem _physicalFileSystem = new();
+
+    public static class BaseDirectories
+    {
+        public static UPath Binary { get; }
+            = _physicalFileSystem.ConvertPathFromInternal(AppContext.BaseDirectory);
+
+        public static UPath Current { get; }
+            = _physicalFileSystem.ConvertPathFromInternal(Environment.CurrentDirectory);
+
+        public static UPath UserData { get; } =
+            _physicalFileSystem.ConvertPathFromInternal(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+
+        public static UPath UserConfig { get; } =
+            _physicalFileSystem.ConvertPathFromInternal(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+
+        public static UPath CommonData { get; } =
+            _physicalFileSystem.ConvertPathFromInternal(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+
+        public static UPath CommonConfig { get; } =
+            _physicalFileSystem.ConvertPathFromInternal(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+    }
+
     public static UPath Content => "Content";
 
     public static UPath Mods => "Mods";
@@ -12,28 +39,4 @@ internal static class Paths
     public static UPath Behaviors => "Behaviors";
 
     public static UPath Levels => "Levels";
-
-    public static UPath UserData
-        => new PhysicalFileSystem().ConvertPathFromInternal(
-            Envs.UseDebugFileSystem
-                ? $"{Environment.CurrentDirectory}/UserData"
-                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-
-    public static UPath UserConfig
-        => new PhysicalFileSystem().ConvertPathFromInternal(
-            Envs.UseDebugFileSystem
-                ? $"{Environment.CurrentDirectory}/UserConfig"
-                : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-
-    public static UPath CommonData
-        => new PhysicalFileSystem().ConvertPathFromInternal(
-            Envs.UseDebugFileSystem
-                ? Environment.CurrentDirectory
-                : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
-
-    public static UPath CommonConfig
-        => new PhysicalFileSystem().ConvertPathFromInternal(
-            Envs.UseDebugFileSystem
-                ? Environment.CurrentDirectory
-                : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 }
