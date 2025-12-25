@@ -66,24 +66,44 @@ The art assets currently used in the project are obtained by unpacking existing 
 
 Recursively clone the repository:
 
-```bash
+```shell
 git clone --recursive https://github.com/XCYRKDSDA/OpenSolarMax2.git
 cd OpenSolarMax2
 ```
 
 ### Build
 
-The project utilizes "mgfxc" to compile shaders. You can follow the instruction at this [link](https://docs.monogame.net/articles/tools/mgfxc.html) to install it.
-
 The launcher "OpenSolarMax.Launcher" and the module "OpenSolarMax.Mods.Core" must be built separately. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
 
-```bash
+```shell
 dotnet build OpenSolarMax.Launcher
 dotnet build OpenSolarMax.Mods.Core
 ```
 
 ### Run
 
-```bash
-dotnet run --project OpenSolarMax.Launcher
-```
+1. Set an environment variable to configure where the game looks for level mods:
+
+    For POSIX-compliant shells:
+
+    ```bash
+    export OSM_LEVEL_MOD_PATHS="$(pwd)"
+    ```
+
+    For PowerShell:
+
+    ```powershell
+    $env:OSM_LEVEL_MOD_PATHS=(Get-Location).Path
+    ```
+
+    For CMD:
+
+    ```cmd
+    set OSM_LEVEL_MOD_PATHS=%CD%
+    ```
+
+2. Launch the game:
+
+    ```shell
+    dotnet run --project OpenSolarMax.Launcher
+    ```
