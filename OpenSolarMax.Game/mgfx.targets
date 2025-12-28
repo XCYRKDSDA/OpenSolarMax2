@@ -14,10 +14,8 @@
         <Exec Command="dotnet tool run mgfxc %(Effect.Identity) $(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo /Profile:$(MGFXProfile)"
               Outputs="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"/>
         <ItemGroup>
-            <Content Include="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo">
-                <Link>%(Effect.RelativeDir)%(Effect.Filename).mgfxo</Link>
-                <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            </Content>
+            <EmbeddedResource Include="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"
+                              LogicalName="$(ProjectName).$([System.String]::Copy('%(Effect.RelativeDir)').Replace('\','/').Replace('/', '.'))%(Effect.Filename).mgfxo"/>
         </ItemGroup>
     </Target>
 
