@@ -17,7 +17,7 @@ internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssets
     ];
 
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
-    private readonly TintEffect _effect = new TintEffect(graphicsDevice, assets);
+    private readonly TintEffect _effect = new TintEffect(graphicsDevice);
 
     public void DrawLine(Vector2 head, Vector2 tail, float thickness,
                          NinePatchRegion texture, Color color,

@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -10,12 +9,12 @@ namespace OpenSolarMax.Mods.Core.Graphics;
 /// </summary>
 /// <param name="graphicsDevice"></param>
 /// <param name="assets"></param>
-internal class SegmentRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+internal class SegmentRenderer(GraphicsDevice graphicsDevice)
 {
     private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
     private static readonly int[] _indices = [0, 1, 2, 3];
 
-    public SegmentEffect Effect { get; } = new(graphicsDevice, assets);
+    public SegmentEffect Effect { get; } = new(graphicsDevice);
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 

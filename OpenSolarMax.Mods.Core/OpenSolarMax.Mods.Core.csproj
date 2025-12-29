@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Effect Include="Content\Effects\*.fx"/>
+        <Effect Include="Graphics\*.fx"/>
     </ItemGroup>
 
     <Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">
