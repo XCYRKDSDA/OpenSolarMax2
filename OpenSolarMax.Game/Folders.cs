@@ -13,7 +13,7 @@ public static class Folders
     {
         _contentFs = new AggregateFileSystem();
         // 程序当前路径
-        _contentFs.AddFileSystem(new ResourceFileSystem(Assembly.GetExecutingAssembly(), Paths.Content.FullName));
+        _contentFs.AddFileSystem(new ResourceFileSystem(Assembly.GetExecutingAssembly()));
         _contentFs.AddFileSystem(
             new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.BaseDirectories.Binary / Paths.Content));
         // 标准路径
