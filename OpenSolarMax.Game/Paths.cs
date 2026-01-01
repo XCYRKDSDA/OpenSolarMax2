@@ -23,11 +23,11 @@ internal static class Paths
             _physicalFileSystem.ConvertPathFromInternal(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
-        public static UPath CommonData { get; } =
+        public static UPath SystemData { get; } =
             _physicalFileSystem.ConvertPathFromInternal(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 
-        public static UPath CommonConfig { get; } =
+        public static UPath SystemConfig { get; } =
             _physicalFileSystem.ConvertPathFromInternal(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
     }

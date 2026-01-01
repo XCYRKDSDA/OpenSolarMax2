@@ -17,8 +17,8 @@ public static class Folders
         _contentFs.AddFileSystem(
             new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.BaseDirectories.Binary / Paths.Content));
         // 标准路径
-        _contentFs.AddFileSystem(
-            new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.BaseDirectories.CommonData / Paths.Content));
+        // _contentFs.AddFileSystem(
+        //     new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.BaseDirectories.SystemData / Paths.Content));
         _contentFs.AddFileSystem(
             new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.BaseDirectories.UserData / Paths.Content));
     }
@@ -37,9 +37,9 @@ public static class Folders
             _behaviorsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(
                     Paths.BaseDirectories.Binary / Paths.Mods / Paths.Behaviors));
-            _behaviorsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.CommonData / Paths.Mods / Paths.Behaviors));
+            // _behaviorsFs.AddFileSystem(
+            //     new PhysicalFileSystem().GetOrCreateSubFileSystem(
+            //         Paths.BaseDirectories.SystemData / Paths.Mods / Paths.Behaviors));
             _behaviorsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(
                     Paths.BaseDirectories.UserData / Paths.Mods / Paths.Behaviors));
@@ -54,9 +54,9 @@ public static class Folders
             _levelsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(
                     Paths.BaseDirectories.Binary / Paths.Mods / Paths.Levels));
-            _levelsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.CommonData / Paths.Mods / Paths.Levels));
+            // _levelsFs.AddFileSystem(
+            //     new PhysicalFileSystem().GetOrCreateSubFileSystem(
+            //         Paths.BaseDirectories.SystemData / Paths.Mods / Paths.Levels));
             _levelsFs.AddFileSystem(
                 new PhysicalFileSystem().GetOrCreateSubFileSystem(
                     Paths.BaseDirectories.UserData / Paths.Mods / Paths.Levels));
