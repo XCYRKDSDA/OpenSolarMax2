@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -132,8 +131,7 @@ internal class RingEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public RingEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(graphicsDevice, assets.Load<byte[]>("Effects/Ring.mgfxo"))
+    public RingEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.RingEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _centerParam = Parameters["center"];

@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -115,8 +114,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public SegmentEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(graphicsDevice, assets.Load<byte[]>("Effects/Segment.mgfxo"))
+    public SegmentEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.SegmentEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _headParam = Parameters["head"];

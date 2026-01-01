@@ -4,7 +4,7 @@ using Nine.Assets;
 
 namespace OpenSolarMax.Game.Graphics;
 
-internal class ExposureRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+internal class ExposureRenderer(GraphicsDevice graphicsDevice)
 {
     private readonly VertexPositionTexture[] _vertices =
     [
@@ -16,7 +16,7 @@ internal class ExposureRenderer(GraphicsDevice graphicsDevice, IAssetsManager as
 
     private static readonly int[] _indices = [0, 1, 2, 3];
 
-    public ExposureEffect Effect { get; } = new(graphicsDevice, assets);
+    public ExposureEffect Effect { get; } = new(graphicsDevice);
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 

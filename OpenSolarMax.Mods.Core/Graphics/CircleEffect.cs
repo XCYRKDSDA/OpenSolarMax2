@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -105,8 +104,7 @@ internal class CircleEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public CircleEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(graphicsDevice, assets.Load<byte[]>("Effects/Circle.mgfxo"))
+    public CircleEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.CircleEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _centerParam = Parameters["center"];

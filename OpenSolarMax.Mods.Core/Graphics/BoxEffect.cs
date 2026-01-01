@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -113,8 +112,7 @@ internal class BoxEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public BoxEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(graphicsDevice, assets.Load<byte[]>("Effects/Box.mgfxo"))
+    public BoxEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.BoxEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _originParam = Parameters["origin"];

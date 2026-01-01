@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -31,7 +30,7 @@ public class TintEffect : Effect, IEffectMatrices
         All = -1
     }
 
-    private TintEffect.DirtyFlags _dirtyFlags = TintEffect.DirtyFlags.All;
+    private DirtyFlags _dirtyFlags = DirtyFlags.All;
 
     #endregion
 
@@ -79,8 +78,7 @@ public class TintEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public TintEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(graphicsDevice, assets.Load<byte[]>("Effects/Tint.mgfxo"))
+    public TintEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.TintEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _textureParam = Parameters["tex_sampler+tex"];

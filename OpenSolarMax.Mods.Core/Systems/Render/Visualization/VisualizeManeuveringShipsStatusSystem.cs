@@ -6,7 +6,6 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
@@ -23,7 +22,7 @@ public delegate bool? CheckLocationReachabilityCallback(World world,
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice) : ICalcSystem
 {
     private const float _ringRadiusFactor = 1.6f;
     private const float _ringThickness = 3f;
@@ -35,12 +34,12 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     private readonly Color _blockedLineColor = Color.Red;
     private readonly Color _blockedRingColor = Color.Red;
     private readonly Color _boxColor = Color.White * 0.5f;
-    private readonly BoxRenderer _boxRenderer = new(graphicsDevice, assets);
+    private readonly BoxRenderer _boxRenderer = new(graphicsDevice);
 
-    private readonly CircleRenderer _circleRenderer = new(graphicsDevice, assets);
+    private readonly CircleRenderer _circleRenderer = new(graphicsDevice);
     private readonly Color _hoveredRingColor = Color.White * 0.5f;
     private readonly Color _lineColor = Color.White;
-    private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice, assets);
+    private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice);
     private readonly Color _selectedRingColor = Color.White;
 
     [Hook("CheckLocationReachability")]

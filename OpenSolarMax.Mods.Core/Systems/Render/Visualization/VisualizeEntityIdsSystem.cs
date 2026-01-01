@@ -23,7 +23,7 @@ public sealed partial class VisualizeEntityIdsSystem(World world, GraphicsDevice
     private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
-    private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
+    private readonly RingRenderer _ringRenderer = new(graphicsDevice);
 
     public void Update() => RenderToCameraQuery(world);
 

@@ -16,7 +16,7 @@ public class ExposureTransition(IScreen prevScreen, IScreen nextScreen, SolarMax
         game.GraphicsDevice.PresentationParameters.BackBufferHeight
     );
 
-    private readonly ExposureRenderer _exposureRenderer = new(game.GraphicsDevice, game.Assets);
+    private readonly ExposureRenderer _exposureRenderer = new(game.GraphicsDevice);
 
     public required TimeSpan Duration { get; set; }
 

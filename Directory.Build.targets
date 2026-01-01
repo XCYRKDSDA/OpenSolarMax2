@@ -8,21 +8,14 @@
         <AvailableItemName Include="Effect"/>
     </ItemGroup>
 
-    <ItemDefinitionGroup>
-        <CompiledEffect>
-            <Name/>
-            <Source/>
-        </CompiledEffect>
-    </ItemDefinitionGroup>
-
     <Target Name="CompileEffects" BeforeTargets="PrepareForBuild"
             Inputs="@(Effect)" Outputs="@(Effect->'$(IntermediateOutputPath)%(RelativeDir)%(Filename).mgfxo')">
         <MakeDir Condition="!Exists('$(IntermediateOutputPath)%(Effect.RelativeDir)')" Directories="$(IntermediateOutputPath)%(Effect.RelativeDir)"/>
         <Exec Command="dotnet tool run mgfxc %(Effect.Identity) $(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo /Profile:$(MGFXProfile)"
               Outputs="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"/>
         <ItemGroup>
-            <CompiledEffect Include="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"
-                            Name="%(Effect.RelativeDir)%(Effect.Filename).mgfxo" Source="%(Effect.Identity)"/>
+            <EmbeddedResource Include="$(IntermediateOutputPath)%(Effect.RelativeDir)%(Effect.Filename).mgfxo"
+                              LogicalName="$(ProjectName).$([System.String]::Copy('%(Effect.RelativeDir)').Replace('\','/').Replace('/', '.'))%(Effect.Filename).mgfxo"/>
         </ItemGroup>
     </Target>
 
