@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using OneOf;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
@@ -34,17 +33,6 @@ public class SimpleSoundTemplate : ITemplate, ITransformableTemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        // 设置位姿
-        (this as ITransformableTemplate).Apply(entity);
-
-        // 创建音频实例
-        ref var effect = ref entity.Get<SoundEffect>();
-        SoundEffect.createInstance(out effect.EventInstance);
-        effect.EventInstance.start();
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

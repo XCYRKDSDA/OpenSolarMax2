@@ -26,11 +26,6 @@ public class EmptyCoordTemplate : ITemplate, ITransformableTemplate
 
     public Signature Signature => _signature;
 
-    public void Apply(Entity entity)
-    {
-        (this as ITransformableTemplate).Apply(entity);
-    }
-
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {
         (this as ITransformableTemplate).Apply(commandBuffer, entity);

@@ -1,7 +1,5 @@
 using Arch.Buffer;
-using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
@@ -34,19 +32,6 @@ public class RevolutionTemplate : ITemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        entity.Set(new TreeRelationship<RelativeTransform>(Parent, Child));
-
-        ref var orbit = ref entity.Get<RevolutionOrbit>();
-        orbit.Shape = Shape;
-        orbit.Period = Period;
-        orbit.Rotation = Rotation;
-
-        ref var state = ref entity.Get<RevolutionState>();
-        state.Phase = InitPhase;
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

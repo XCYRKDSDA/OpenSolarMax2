@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
@@ -41,33 +40,6 @@ public class UnitFlareTemplate(IAssetsManager assets) : ITemplate
 
     private FmodEventDescription _destroyedSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/UnitDestroyed");
-
-    public void Apply(Entity entity)
-    {
-        // 设置位置
-        ref var transform = ref entity.Get<AbsoluteTransform>();
-        transform.Translation = Position;
-
-        // 设置纹理
-        ref var sprite = ref entity.Get<Sprite>();
-        sprite.Texture = _flareTexture;
-        sprite.Color = Color;
-        sprite.Alpha = 1;
-        sprite.Size = _flareTexture.LogicalSize;
-        sprite.Scale = Vector2.One * 0.001f;
-        sprite.Blend = SpriteBlend.Additive;
-
-        // 设置动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _flareAnimation;
-        animation.TimeOffset = TimeSpan.Zero;
-        animation.TimeElapsed = TimeSpan.Zero;
-
-        // 设置音效
-        ref var soundEffect = ref entity.Get<SoundEffect>();
-        _destroyedSoundEvent.createInstance(out soundEffect.EventInstance);
-        soundEffect.EventInstance.start();
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

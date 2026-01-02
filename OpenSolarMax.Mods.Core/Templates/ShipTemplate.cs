@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
@@ -60,48 +59,6 @@ public class ShipTemplate(IAssetsManager assets) : ITemplate
 
     private readonly AnimationClip<Entity> _unitBlinkingAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitBlinking.json");
-
-    public void Apply(Entity entity)
-    {
-        var world = World.Worlds[entity.WorldId];
-
-        // 填充默认纹理
-        ref var sprite = ref entity.Get<Sprite>();
-        sprite.Texture = _defaultTexture;
-        sprite.Color = Color.White;
-        sprite.Alpha = 1;
-        sprite.Size = _defaultTexture.LogicalSize;
-        sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
-        sprite.Scale = Vector2.One;
-        sprite.Blend = SpriteBlend.Additive;
-
-        // 设置闪烁动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _unitBlinkingAnimationClip;
-        animation.TimeElapsed = TimeSpan.Zero;
-        animation.TimeOffset = TimeSpan.FromSeconds(new Random().NextDouble());
-
-        // 占用一个人口
-        ref var populationCost = ref entity.Get<PopulationCost>();
-        populationCost.Value = 1;
-
-        // 设置所属星球
-        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(entity, Planet);
-        RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, Planet);
-
-        // 设置所属阵营
-        var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity };
-        _ = world.Make(inPartyTemplate);
-
-        // 初始化飞行状态
-        ref var shippingStatus = ref entity.Get<ShippingStatus>();
-        shippingStatus.State = ShippingState.Idle;
-
-        // 初始化传送状态
-        ref var transportingStatus = ref entity.Get<TransportingStatus>();
-        transportingStatus.State = TransportingState.Idle;
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

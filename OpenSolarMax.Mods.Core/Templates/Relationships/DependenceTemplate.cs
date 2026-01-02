@@ -1,7 +1,5 @@
 using Arch.Buffer;
-using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -22,11 +20,6 @@ public class DependenceTemplate : ITemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        entity.Set(new Dependence(Dependent, Dependency));
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

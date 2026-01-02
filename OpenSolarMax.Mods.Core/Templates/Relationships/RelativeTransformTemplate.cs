@@ -1,7 +1,5 @@
 using Arch.Buffer;
-using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
@@ -28,12 +26,6 @@ public class RelativeTransformTemplate : ITemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        entity.Set(new TreeRelationship<RelativeTransform>(Parent, Child));
-        entity.Set(new RelativeTransform(Translation, Rotation));
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

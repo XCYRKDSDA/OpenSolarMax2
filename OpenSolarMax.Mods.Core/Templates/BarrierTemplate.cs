@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
 using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
@@ -18,13 +17,6 @@ public class BarrierTemplate : ITemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        ref var barrier = ref entity.Get<Barrier>();
-        barrier.Head = Head;
-        barrier.Tail = Tail;
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

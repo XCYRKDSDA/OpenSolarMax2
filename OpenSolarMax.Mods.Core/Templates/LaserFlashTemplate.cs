@@ -40,36 +40,6 @@ public class LaserFlashTemplate(IAssetsManager assets) : ITemplate
     private readonly AnimationClip<Entity> _glowAnimation =
         assets.Load<AnimationClip<Entity>>("Animations/LaserFlash.json");
 
-    public void Apply(Entity entity)
-    {
-        var world = World.Worlds[entity.WorldId];
-
-        // 摆放位置
-        world.Make(new RelativeTransformTemplate()
-        {
-            Parent = Turret,
-            Child = entity,
-            Translation = Vector3.UnitZ * 0.1f,
-            Rotation = Quaternion.Identity
-        });
-
-        // 设置纹理
-        ref readonly var turretSprite = ref Turret.Get<Sprite>();
-        ref var sprite = ref entity.Get<Sprite>();
-        sprite = turretSprite with
-        {
-            Texture = Texture,
-            Color = Color,
-            Blend = SpriteBlend.Additive,
-        };
-
-        // 设置动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _glowAnimation;
-        animation.TimeElapsed = TimeSpan.Zero;
-        animation.TimeOffset = TimeSpan.Zero;
-    }
-
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {
         var world = World.Worlds[entity.WorldId];

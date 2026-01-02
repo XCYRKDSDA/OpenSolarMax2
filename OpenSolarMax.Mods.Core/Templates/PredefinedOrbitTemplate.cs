@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OneOf;
 using OpenSolarMax.Game.Utils;
@@ -44,16 +43,6 @@ public class PredefinedOrbitTemplate : ITemplate, ITransformableTemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        (this as ITransformableTemplate).Apply(entity);
-
-        ref var orbit = ref entity.Get<PredefinedOrbit>();
-        orbit.Template.Shape = new(Shape.X, Shape.Y);
-        orbit.Template.Period = Period;
-        orbit.Template.Rotation = Rotation;
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

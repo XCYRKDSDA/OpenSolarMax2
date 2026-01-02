@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
@@ -58,32 +57,6 @@ public class PartyTemplate : ITemplate
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        ref var refColor = ref entity.Get<PartyReferenceColor>();
-        refColor.Value = Color;
-
-        ref var producible = ref entity.Get<Producible>();
-        producible.WorkloadPerShip = Workload;
-
-        ref var combatable = ref entity.Get<Combatable>();
-        combatable.AttackPerUnitPerSecond = Attack;
-        combatable.MaximumDamagePerUnit = Health;
-
-        ref var shippable = ref entity.Get<Shippable>();
-        shippable.Speed = 100;
-
-        ref var colonizationAbility = ref entity.Get<ColonizationAbility>();
-        colonizationAbility.ProgressPerSecond = 1;
-
-        ref var ai = ref entity.Get<Ai>();
-        ref var aiCooldown = ref entity.Get<AiCooldown>();
-        ref var aiTimer = ref entity.Get<AiTimer>();
-        ai.Enabled = true;
-        aiCooldown.Duration = TimeSpan.FromSeconds(3);
-        aiTimer.TimeLeft = TimeSpan.FromSeconds(2);
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

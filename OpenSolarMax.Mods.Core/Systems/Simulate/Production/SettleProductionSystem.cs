@@ -33,7 +33,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
         // 生产一个新部队
         for (int i = 0; i < state.UnitsProducedThisFrame; i++)
         {
-            var newShip = world.Make(new ShipTemplate(assets) { Party = party, Planet = planet });
+            var newShip = world.Make(commandBuffer, new ShipTemplate(assets) { Party = party, Planet = planet });
 
             // 添加出生后动画
             commandBuffer.Add(newShip, new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });

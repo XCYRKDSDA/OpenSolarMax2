@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
@@ -43,33 +42,6 @@ public class HaloExplosionTemplate(IAssetsManager assets) : ITemplate
 
     private FmodEventDescription _colonizedSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
-
-    public void Apply(Entity entity)
-    {
-        // 摆放位置
-        ref var transform = ref entity.Get<AbsoluteTransform>();
-        transform.Translation = Position with { Z = 1000 };
-
-        // 设置纹理
-        ref var sprite = ref entity.Get<Sprite>();
-        sprite.Texture = _haloTexture;
-        sprite.Color = Color;
-        sprite.Alpha = 1;
-        sprite.Size = new(PlanetRadius * 2);
-        sprite.Scale = Vector2.One;
-        sprite.Blend = SpriteBlend.Additive;
-
-        // 设置动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _explosionAnimation;
-        animation.TimeElapsed = TimeSpan.Zero;
-        animation.TimeOffset = TimeSpan.Zero;
-
-        // 设置音效
-        ref var soundEffect = ref entity.Get<SoundEffect>();
-        _colonizedSoundEvent.createInstance(out soundEffect.EventInstance);
-        soundEffect.EventInstance.start();
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

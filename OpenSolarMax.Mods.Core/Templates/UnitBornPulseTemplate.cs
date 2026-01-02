@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
@@ -41,32 +40,6 @@ public class UnitBornPulseTemplate(IAssetsManager assets) : ITemplate
 
     private readonly AnimationClip<Entity> _bornPulseAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitBornPulse.json");
-
-    public void Apply(Entity entity)
-    {
-        var world = World.Worlds[entity.WorldId];
-
-        // 设置颜色
-        ref var sprite = ref entity.Get<Sprite>();
-        sprite.Texture = _pulseTexture;
-        sprite.Color = Color;
-        sprite.Alpha = 1;
-        sprite.Size = _pulseTexture.Bounds.Size.ToVector2();
-        sprite.Scale = Vector2.One * 0.001f;
-        sprite.Blend = SpriteBlend.Additive;
-
-        // 设置动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.Clip = _bornPulseAnimationClip;
-        animation.TimeOffset = TimeSpan.Zero;
-        animation.TimeElapsed = TimeSpan.Zero;
-
-        // 设置相对位置
-        _ = world.Make(new RelativeTransformTemplate() { Parent = Unit, Child = entity });
-
-        // 设置依赖关系
-        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Unit });
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

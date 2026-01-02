@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Graphics;
@@ -58,67 +57,6 @@ public class PlanetTemplate(IAssetsManager assets) : ITemplate, ITransformableTe
         Content.Textures.DefaultPlanetTextures.Select((k) => assets.Load<TextureRegion>(k)).ToArray();
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        var world = World.Worlds[entity.WorldId];
-        var random = new Random();
-
-        // 设置位姿
-        (this as ITransformableTemplate).Apply(entity);
-
-        // 随机填充纹理
-        ref var sprite = ref entity.Get<Sprite>();
-        var randomIndex = new Random().Next(_defaultPlanetTextures.Length);
-        sprite.Texture = _defaultPlanetTextures[randomIndex];
-        sprite.Alpha = 1;
-        sprite.Size = new(ReferenceRadius * 2);
-        sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
-        sprite.Scale = Vector2.One;
-        sprite.Blend = SpriteBlend.Alpha;
-
-        // 设置预览外形
-        ref var shape = ref entity.Get<Shape>();
-        shape.Texture = assets.Load<TextureRegion>(Content.Textures.DefaultPlanetShape);
-        shape.Size = sprite.Size;
-        shape.Position = sprite.Position;
-        shape.Rotation = sprite.Rotation;
-        shape.Scale = sprite.Scale;
-
-        // 设置参考尺寸
-        ref var refSize = ref entity.Get<ReferenceSize>();
-        refSize.Radius = ReferenceRadius;
-
-        // 设置同步轨道
-        ref var geostationaryOrbit = ref entity.Get<PlanetGeostationaryOrbit>();
-        var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
-        var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
-        geostationaryOrbit.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
-                                      Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
-        geostationaryOrbit.Radius = ReferenceRadius * 2;
-        geostationaryOrbit.Period = geostationaryOrbit.Radius / 6;
-
-        // 设置殖民体量
-        ref var colonizable = ref entity.Get<Colonizable>();
-        colonizable.Volume = Volume;
-
-        // 设置阵营
-        if (Party != Entity.Null)
-        {
-            _ = world.Make(new InPartyTemplate() { Party = Party, Affiliate = entity });
-
-            ref var colonizationState = ref entity.Get<ColonizationState>();
-            colonizationState.Party = Party;
-            colonizationState.Progress = colonizable.Volume;
-            colonizationState.Event = ColonizationEvent.Idle;
-        }
-
-        // 设置生产能力
-        ref var productionAbility = ref entity.Get<ProductionAbility>();
-        productionAbility.Population = Population;
-        productionAbility.ProgressPerSecond = ProduceSpeed;
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

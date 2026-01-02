@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Nine.Animations.Parametric;
 using Nine.Assets;
@@ -43,33 +42,6 @@ internal class DestinationBackFlareTemplate(IAssetsManager assets) : ITemplate
 
     private readonly ParametricAnimationClip<Entity> _rawFlareCharging =
         assets.Load<ParametricAnimationClip<Entity>>("Animations/DestinationBackFlareCharging.json");
-
-    public void Apply(Entity entity)
-    {
-        var world = World.Worlds[entity.WorldId];
-
-        // 填充默认纹理
-        ref var sprite = ref entity.Get<Sprite>();
-        sprite.Texture = _flareTexture;
-        sprite.Color = Color;
-        sprite.Alpha = 1;
-        sprite.Size = new(Radius * 2);
-        sprite.Position = Vector2.Zero;
-        sprite.Rotation = 0;
-        sprite.Scale = Vector2.One;
-        sprite.Blend = SpriteBlend.Additive;
-        sprite.Billboard = false;
-
-        // 初始化动画
-        ref var animation = ref entity.Get<Animation>();
-        animation.TimeElapsed = TimeSpan.Zero;
-        animation.TimeOffset = TimeSpan.Zero;
-        animation.Clip = _rawFlareCharging.Bake();
-
-        // 设置到总特效实体的关系
-        _ = world.Make(new DependenceTemplate() { Dependent = entity, Dependency = Effect });
-        _ = world.Make(new RelativeTransformTemplate() { Parent = Effect, Child = entity });
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {

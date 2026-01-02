@@ -1,6 +1,5 @@
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -40,28 +39,6 @@ public class ViewTemplate(IAssetsManager assets) : ITemplate, ITransformableTemp
     );
 
     public Signature Signature => _signature;
-
-    public void Apply(Entity entity)
-    {
-        var world = World.Worlds[entity.WorldId];
-
-        // 设置位姿
-        (this as ITransformableTemplate).Apply(entity);
-
-        // 设置相机尺寸
-        ref var camera = ref entity.Get<Camera>();
-        camera.Width = Size.X;
-        camera.Height = Size.Y;
-        camera.ZNear = Depth.Near;
-        camera.ZFar = Depth.Far;
-
-        // 设置阵营
-        var inPartyTemplate = new InPartyTemplate() { Party = Party, Affiliate = entity };
-        _ = world.Make(inPartyTemplate);
-
-        // 初始化 UI
-        entity.Set(new TotalPopulationWidget(assets));
-    }
 
     public void Apply(CommandBuffer commandBuffer, Entity entity)
     {
