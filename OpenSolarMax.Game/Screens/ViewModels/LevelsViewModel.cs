@@ -56,7 +56,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
-    public LevelsViewModel(ILevelMod levelMod, SolarMax game, IProgress<float>? progress = null) : base(game)
+    public LevelsViewModel(ILevelModInfo levelModInfo, SolarMax game, IProgress<float>? progress = null) : base(game)
     {
         progress?.Report(0);
 
@@ -76,8 +76,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         var allContentMods = Modding.Modding.ListContentMods().ToDictionary(m => m.FullName, m => m);
 
         // 查找依赖
-        var behaviorMods = levelMod.BehaviorDeps.Select(d => allBehaviorMods[d]).ToArray();
-        var contentMods = levelMod.ContentDeps.Select(d => allContentMods[d]).ToArray();
+        var behaviorMods = levelModInfo.BehaviorDeps.Select(d => allBehaviorMods[d]).ToArray();
+        var contentMods = levelModInfo.ContentDeps.Select(d => allContentMods[d]).ToArray();
 
         // 构造局部资产层叠文件系统
         var localFileSystem = new AggregateFileSystem();
@@ -200,9 +200,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         // 记录关卡模组上下文
         _levelPlayContext = new LevelPlayContext()
         {
-            LevelMod = levelMod,
-            BehaviorMods = behaviorMods,
-            ContentMods = contentMods,
+            LevelModInfo = levelModInfo,
+            BehaviorModInfos = behaviorMods,
+            ContentModInfos = contentMods,
             Assemblies = loadedAssemblies.ToArray(),
             LocalAssets = localAssets,
             ConfigurationTypes = configurations.ToDictionary(p => p.Key, p => p.Value.ToArray()),
@@ -219,7 +219,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         };
 
         // 目前假设所有关卡平铺在 Levels 目录下
-        foreach (var levelFile in levelMod.Levels.EnumerateFiles("*.json"))
+        foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))
         {
             var level = levelLoader.Load(levelFile.FileSystem, localAssets, levelFile.Path);
             _levels.Add(level);

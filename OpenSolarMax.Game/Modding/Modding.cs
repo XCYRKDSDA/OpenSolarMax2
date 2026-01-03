@@ -39,22 +39,22 @@ internal static partial class Modding
         return result;
     }
 
-    public static List<IBehaviorMod> ListBehaviorMods()
+    public static List<IBehaviorModInfo> ListBehaviorMods()
     {
         return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"), ModType.Behavior)
-               .Select(IBehaviorMod (pair) => new BehaviorMod(pair.Item1, pair.Item2)).ToList();
+               .Select(IBehaviorModInfo (pair) => new BehaviorModInfo(pair.Item1, pair.Item2)).ToList();
     }
 
-    public static List<IContentMod> ListContentMods()
+    public static List<IContentModInfo> ListContentMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Content)
-               .Select(IContentMod (pair) => new ContentMod(pair.Item1, pair.Item2)).ToList();
+               .Select(IContentModInfo (pair) => new ContentModInfo(pair.Item1, pair.Item2)).ToList();
     }
 
-    public static List<ILevelMod> ListLevelMods()
+    public static List<ILevelModInfo> ListLevelMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Levels)
-               .Select(ILevelMod (pair) => new LevelMod(pair.Item1, pair.Item2)).ToList();
+               .Select(ILevelModInfo (pair) => new LevelModInfo(pair.Item1, pair.Item2)).ToList();
     }
 
     /// <summary>

@@ -19,7 +19,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
 {
     private readonly List<Texture2D?> _backgrounds;
 
-    private readonly List<ILevelMod> _levelMods;
+    private readonly List<ILevelModInfo> _levelModInfos;
     private readonly List<IFadableImage> _previews;
 
     private Task<LevelsViewModel>? _chaptersViewModelLoadTask = null;
@@ -96,20 +96,20 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
 
         // 列出所有关卡模组信息。该步骤占 10%
 
-        _levelMods = Modding.Modding.ListLevelMods();
+        _levelModInfos = Modding.Modding.ListLevelMods();
         progress.Report(0.4f);
 
         // 加载所有关卡的预览。该步骤总共占 50%
 
-        for (var i = 0; i < _levelMods.Count; ++i)
+        for (var i = 0; i < _levelModInfos.Count; ++i)
         {
-            _items.Add(_levelMods[i].ShortName);
+            _items.Add(_levelModInfos[i].ShortName);
 
             // TODO: 若未指定预览文件则加载缺省图片
 
             // 加载预览
-            using var previewStream = _levelMods[i].Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-            var previewExtension = _levelMods[i].Preview!.ExtensionWithDot;
+            using var previewStream = _levelModInfos[i].Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            var previewExtension = _levelModInfos[i].Preview!.ExtensionWithDot;
             IImage preview = previewExtension switch
             {
                 ".png" => new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
@@ -121,7 +121,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
             _previews.Add(new FadableWrapper(preview));
 
             // 加载背景
-            if (_levelMods[i].Background is { } backgroundFile)
+            if (_levelModInfos[i].Background is { } backgroundFile)
             {
                 using var backgroundStream = backgroundFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
                 _backgrounds.Add(Texture2D.FromStream(MyraEnvironment.GraphicsDevice,
@@ -131,7 +131,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
             else
                 _backgrounds.Add(null);
 
-            progress.Report(0.4f + 0.5f * i / _levelMods.Count);
+            progress.Report(0.4f + 0.5f * i / _levelModInfos.Count);
         }
 
         // 移动到默认位置
@@ -162,7 +162,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
     private void OnSelectItem(int idx)
     {
         if (idx < 3) return;
-        var chaptersViewModel = new LevelsViewModel(_levelMods[idx - 3], Game, null);
+        var chaptersViewModel = new LevelsViewModel(_levelModInfos[idx - 3], Game, null);
         NavigateIn?.Invoke(this, chaptersViewModel);
     }
 

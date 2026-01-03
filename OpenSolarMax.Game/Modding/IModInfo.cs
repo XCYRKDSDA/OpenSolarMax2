@@ -2,7 +2,7 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal interface IMod
+internal interface IModInfo
 {
     /// <summary>
     /// 模组所在的目录
@@ -40,7 +40,7 @@ internal interface IMod
     string Link { get; }
 }
 
-internal interface IModWithAssembly : IMod
+internal interface IModWithAssemblyInfo : IModInfo
 {
     /// <summary>
     /// 模组中程序集文件
@@ -53,7 +53,7 @@ internal interface IModWithAssembly : IMod
     string[] Dependencies { get; }
 }
 
-internal interface IModWithContent : IMod
+internal interface IModWithContentInfo : IModInfo
 {
     /// <summary>
     /// 模组中资产所在的目录。若为空，则该模组没有随附的资产
@@ -61,7 +61,7 @@ internal interface IModWithContent : IMod
     DirectoryEntry? Content { get; }
 }
 
-internal interface IModWithLevels : IMod
+internal interface IModWithLevelsInfo : IModInfo
 {
     /// <summary>
     /// 模组中关卡所在的目录
@@ -82,14 +82,14 @@ internal interface IModWithLevels : IMod
 /// <summary>
 /// 行为模组需要满足的接口
 /// </summary>
-internal interface IBehaviorMod : IMod, IModWithAssembly, IModWithContent;
+internal interface IBehaviorModInfo : IModInfo, IModWithAssemblyInfo, IModWithContentInfo;
 
 /// <summary>
 /// 资产模组需要满足的接口
 /// </summary>
-internal interface IContentMod : IMod, IModWithContent;
+internal interface IContentModInfo : IModInfo, IModWithContentInfo;
 
 /// <summary>
 /// 关卡模组需要满足的接口
 /// </summary>
-internal interface ILevelMod : IMod, IModWithLevels;
+internal interface ILevelModInfo : IModInfo, IModWithLevelsInfo;

@@ -2,7 +2,7 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal abstract class CommonMod(DirectoryEntry dir, ModManifest manifest) : IMod
+internal abstract class CommonModInfo(DirectoryEntry dir, ModManifest manifest) : IModInfo
 {
     public DirectoryEntry Directory { get; } = dir;
 
@@ -25,7 +25,8 @@ internal abstract class CommonMod(DirectoryEntry dir, ModManifest manifest) : IM
     public string Link { get; } = manifest.Link;
 }
 
-internal class BehaviorMod(DirectoryEntry dir, ModManifest manifest) : CommonMod(dir, manifest), IBehaviorMod
+internal class BehaviorModInfo(DirectoryEntry dir, ModManifest manifest)
+    : CommonModInfo(dir, manifest), IBehaviorModInfo
 {
     public FileEntry Assembly { get; } =
         dir.EnumerateFiles(manifest.Assembly ?? string.Format(Modding.DefaultAssemblyFormat, manifest.FullName))
@@ -37,13 +38,13 @@ internal class BehaviorMod(DirectoryEntry dir, ModManifest manifest) : CommonMod
     public string[] Dependencies { get; } = manifest.Dependencies?.Behaviors ?? [];
 }
 
-internal class ContentMod(DirectoryEntry dir, ModManifest manifest) : CommonMod(dir, manifest), IContentMod
+internal class ContentModInfo(DirectoryEntry dir, ModManifest manifest) : CommonModInfo(dir, manifest), IContentModInfo
 {
     public DirectoryEntry Content { get; } =
         dir.EnumerateDirectories(manifest.Content ?? Modding.DefaultContentDir).First();
 }
 
-internal class LevelMod(DirectoryEntry dir, ModManifest manifest) : CommonMod(dir, manifest), ILevelMod
+internal class LevelModInfo(DirectoryEntry dir, ModManifest manifest) : CommonModInfo(dir, manifest), ILevelModInfo
 {
     public DirectoryEntry Levels { get; } =
         dir.EnumerateDirectories(manifest.Levels ?? Modding.DefaultLevelsDir).First();
