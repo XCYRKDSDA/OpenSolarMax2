@@ -56,7 +56,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
-    public LevelsViewModel(ILevelModInfo levelModInfo, SolarMax game, IProgress<float>? progress = null) : base(game)
+    public LevelsViewModel(LevelModInfo levelModInfo, SolarMax game, IProgress<float>? progress = null) : base(game)
     {
         progress?.Report(0);
 

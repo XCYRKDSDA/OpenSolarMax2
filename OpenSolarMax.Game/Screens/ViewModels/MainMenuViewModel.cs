@@ -19,7 +19,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
 {
     private readonly List<Texture2D?> _backgrounds;
 
-    private readonly List<ILevelModInfo> _levelModInfos;
+    private readonly List<LevelModInfo> _levelModInfos;
     private readonly List<IFadableImage> _previews;
 
     private Task<LevelsViewModel>? _chaptersViewModelLoadTask = null;

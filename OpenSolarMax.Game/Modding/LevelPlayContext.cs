@@ -5,11 +5,11 @@ namespace OpenSolarMax.Game.Modding;
 
 internal class LevelPlayContext
 {
-    public required ILevelModInfo LevelModInfo { get; init; }
+    public required LevelModInfo LevelModInfo { get; init; }
 
-    public required IBehaviorModInfo[] BehaviorModInfos { get; init; }
+    public required BehaviorModInfo[] BehaviorModInfos { get; init; }
 
-    public required IContentModInfo[] ContentModInfos { get; init; }
+    public required ContentModInfo[] ContentModInfos { get; init; }
 
     public required Assembly[] Assemblies { get; init; }
 
