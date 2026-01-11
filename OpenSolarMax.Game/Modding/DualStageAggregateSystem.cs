@@ -410,7 +410,7 @@ internal class DualStageAggregateSystem
 
     public DualStageAggregateSystem(World world, IReadOnlyCollection<Type> systemTypes,
                                     IReadOnlyDictionary<Type, object> @params,
-                                    ILookup<string, MethodInfo> hookImplInfos)
+                                    IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
     {
         _world = world;
 

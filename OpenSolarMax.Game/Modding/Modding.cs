@@ -85,7 +85,7 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns>各种类型系统类型的集合</returns>
-    public static SystemTypeCollection FindSystemTypes(Assembly assembly)
+    public static ImmutableSystemTypeCollection FindSystemTypes(Assembly assembly)
     {
         var systemTypes = new SystemTypeCollection();
 
@@ -107,22 +107,22 @@ internal static partial class Modding
                 continue;
 
             if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
-                systemTypes.SimulateSystemTypes.Add(type);
+                systemTypes.Simulate.Add(type);
 
             if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
-                systemTypes.InputSystemTypes.Add(type);
+                systemTypes.Input.Add(type);
 
             if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
-                systemTypes.AiSystemTypes.Add(type);
+                systemTypes.Ai.Add(type);
 
             if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
-                systemTypes.RenderSystemTypes.Add(type);
+                systemTypes.Render.Add(type);
 
             if (type.GetCustomAttribute<PreviewSystemAttribute>() is not null)
-                systemTypes.PreviewSystemTypes.Add(type);
+                systemTypes.Preview.Add(type);
         }
 
-        return systemTypes;
+        return systemTypes.ToImmutableSystemTypeCollection();
     }
 
     /// <summary>
@@ -160,7 +160,8 @@ internal static partial class Modding
     /// <param name="systems"></param>
     /// <param name="hookImplInfos"></param>
     /// <returns></returns>
-    public static void RegisterHook(IEnumerable<object> systems, ILookup<string, MethodInfo> hookImplInfos)
+    public static void RegisterHook(IEnumerable<object> systems,
+                                    IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
     {
         // 收集所有的挂载点
         const BindingFlags hookFlags = BindingFlags.Public | BindingFlags.Instance;
@@ -172,13 +173,16 @@ internal static partial class Modding
         // 为每个挂载追加委托实现
         foreach (var (name, obj, prop) in hookPropertyInfos)
         {
-            prop.SetValue(
-                obj,
-                hookImplInfos[name].Aggregate(
-                    (Delegate)prop.GetValue(obj)!,
-                    (d, m) => Delegate.Combine(d, m.CreateDelegate(prop.PropertyType))
-                )
-            );
+            if (hookImplInfos.TryGetValue(name, out var implementations))
+            {
+                prop.SetValue(
+                    obj,
+                    implementations.Aggregate(
+                        (Delegate)prop.GetValue(obj)!,
+                        (d, m) => Delegate.Combine(d, m.CreateDelegate(prop.PropertyType))
+                    )
+                );
+            }
         }
     }
 }

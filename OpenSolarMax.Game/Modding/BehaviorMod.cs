@@ -1,0 +1,78 @@
+using System.Collections.Immutable;
+using System.Reflection;
+using Nine.Assets;
+using Zio;
+using Zio.FileSystems;
+
+namespace OpenSolarMax.Game.Modding;
+
+internal class BehaviorMod
+{
+    public BehaviorModInfo Metadata { get; }
+
+    /// <summary>
+    /// 模组中提供资产的所有文件系统
+    /// </summary>
+    public ImmutableArray<IFileSystem> ContentFileSystems { get; }
+
+    /// <summary>
+    /// 模组的入口程序集
+    /// </summary>
+    public Assembly Assembly { get; }
+
+    /// <summary>
+    /// 模组提供的所有组件类型
+    /// </summary>
+    public ImmutableArray<Type> ComponentTypes { get; }
+
+    /// <summary>
+    /// 模组提供的所有配置类型
+    /// </summary>
+    public ImmutableDictionary<string, Type> ConfigurationTypes { get; }
+
+    /// <summary>
+    /// 模组提供的所有系统类型
+    /// </summary>
+    public ImmutableSystemTypeCollection SystemTypes { get; }
+
+    /// <summary>
+    /// 模组提供的所有钩子函数实现
+    /// </summary>
+    public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; }
+
+    public BehaviorMod(BehaviorModInfo info, IReadOnlyDictionary<string, Assembly> sharedAssemblies)
+    {
+        Metadata = info;
+
+        // 加载程序集
+        var ctx = new ModLoadContext(info.Assembly, sharedAssemblies);
+        using var dllStream = info.Assembly.Open(FileMode.Open, FileAccess.Read);
+#if DEBUG
+        var pdb = info.Assembly.Directory.EnumerateFiles($"{info.Assembly.NameWithoutExtension}.pdb").FirstOrDefault();
+        using var pdbStream = pdb?.Open(FileMode.Open, FileAccess.Read);
+        Assembly = ctx.LoadFromStream(dllStream, pdbStream);
+#else
+        Assembly = ctx.LoadFromStream(dllStream);
+#endif
+
+        // 加载资产文件系统
+        List<IFileSystem> contentFileSystems = [new ResourceFileSystem(Assembly)];
+        if (info.Content is not null)
+            contentFileSystems.Add(new SubFileSystem(info.Content.FileSystem, info.Content.Path));
+        ContentFileSystems = contentFileSystems.ToImmutableArray();
+
+        // 查找组件类型
+        ComponentTypes = Assembly.ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
+                                 .ToImmutableArray();
+
+        // 查找配置类型
+        ConfigurationTypes = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
+
+        // 查找所有系统
+        SystemTypes = Modding.FindSystemTypes(Assembly);
+
+        // 查找所有 Hook 实现
+        HookImplMethods = Modding.FindHookImplementations(Assembly)
+                                 .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray());
+    }
+}
