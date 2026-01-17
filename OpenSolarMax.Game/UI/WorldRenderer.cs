@@ -6,7 +6,7 @@ using OpenSolarMax.Game.Modding;
 
 namespace OpenSolarMax.Game.UI;
 
-internal class WorldRenderer(World world, DualStageAggregateSystem renderer, GraphicsDevice graphicsDevice)
+internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevice graphicsDevice)
     : IFadableImage
 {
     private const float _alpha = 0.5f;

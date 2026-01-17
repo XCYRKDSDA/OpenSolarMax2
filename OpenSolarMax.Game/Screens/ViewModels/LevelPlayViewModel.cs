@@ -15,10 +15,10 @@ internal partial class LevelPlayViewModel : ViewModelBase
 {
     private readonly World _world;
     private readonly Entity _viewEntity;
-    private readonly DualStageAggregateSystem _aiSystem;
-    private readonly DualStageAggregateSystem _inputSystem;
-    private readonly DualStageAggregateSystem _simulateSystem;
-    private readonly DualStageAggregateSystem _renderSystem;
+    private readonly AggregateSystem _aiSystem;
+    private readonly AggregateSystem _inputSystem;
+    private readonly AggregateSystem _simulateSystem;
+    private readonly AggregateSystem _renderSystem;
     private readonly GameTime _playTime = new();
 
     [ObservableProperty]
@@ -29,7 +29,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public World World => _world;
 
-    public DualStageAggregateSystem RenderSystem => _renderSystem;
+    public AggregateSystem RenderSystem => _renderSystem;
 
     public Entity ViewEntity => _viewEntity;
 
@@ -37,23 +37,23 @@ internal partial class LevelPlayViewModel : ViewModelBase
     {
         // 构造世界和系统
         _world = World.Create();
-        _inputSystem = new DualStageAggregateSystem(
-            _world, levelModContext.SystemTypes.Input,
+        _inputSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Input.Sorted,
             new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
-        _aiSystem = new DualStageAggregateSystem(
-            _world, levelModContext.SystemTypes.Ai,
+        _aiSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Ai.Sorted,
             new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
-        _simulateSystem = new DualStageAggregateSystem(
-            _world, levelModContext.SystemTypes.Simulate,
+        _simulateSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Simulate.Sorted,
             new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
-        _renderSystem = new DualStageAggregateSystem(
-            _world, levelModContext.SystemTypes.Render,
+        _renderSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Render.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,

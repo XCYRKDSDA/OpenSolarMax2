@@ -21,7 +21,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private readonly List<Level> _levels;
     private readonly List<IFadableImage> _previews;
-    private readonly List<DualStageAggregateSystem> _previewSystems;
+    private readonly List<AggregateSystem> _previewSystems;
     private readonly List<World> _worlds;
 
     [ObservableProperty]
@@ -83,8 +83,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
             // 加载关卡内容
             var world = World.Create();
-            var simulateSystem = new DualStageAggregateSystem(
-                world, _levelModContext.SystemTypes.Simulate,
+            var simulateSystem = new AggregateSystem(
+                world, _levelModContext.SystemTypes.Simulate.Sorted,
                 new Dictionary<Type, object> { [typeof(IAssetsManager)] = _levelModContext.LocalAssets },
                 _levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
             );
@@ -98,8 +98,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             _worlds.Add(world);
 
             // 构造预览系统
-            var previewSystem = new DualStageAggregateSystem(
-                world, _levelModContext.SystemTypes.Preview,
+            var previewSystem = new AggregateSystem(
+                world, _levelModContext.SystemTypes.Preview.Sorted,
                 new Dictionary<Type, object>
                 {
                     [typeof(GraphicsDevice)] = game.GraphicsDevice,

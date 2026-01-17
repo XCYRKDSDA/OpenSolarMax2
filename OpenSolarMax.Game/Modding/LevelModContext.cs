@@ -23,9 +23,16 @@ internal class LevelModContext
 
     public ImmutableDictionary<string, ImmutableArray<Type>> ConfigurationTypes { get; }
 
-    public ImmutableSystemTypeCollection SystemTypes { get; }
+    public ImmutableSortedSystemTypeCollection SystemTypes { get; }
 
     public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; }
+
+    private static ImmutableSortedSystemTypes BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
+    {
+        var orders = SystemsTopology.ExtractExecutionOrders(systemTypes);
+        var sorted = SystemsTopology.TopologicalSortSystems(systemTypes, orders);
+        return new ImmutableSortedSystemTypes([..systemTypes], [..orders], [..sorted]);
+    }
 
     public LevelModContext(LevelModInfo info, SolarMax game)
     {
@@ -70,12 +77,12 @@ internal class LevelModContext
                         .ToImmutableDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToImmutableArray());
 
         // 合并系统类型
-        SystemTypes = new ImmutableSystemTypeCollection(
-            behaviorMods.SelectMany(m => m.SystemTypes.Input).ToImmutableHashSet(),
-            behaviorMods.SelectMany(m => m.SystemTypes.Ai).ToImmutableHashSet(),
-            behaviorMods.SelectMany(m => m.SystemTypes.Simulate).ToImmutableHashSet(),
-            behaviorMods.SelectMany(m => m.SystemTypes.Render).ToImmutableHashSet(),
-            behaviorMods.SelectMany(m => m.SystemTypes.Preview).ToImmutableHashSet()
+        SystemTypes = new ImmutableSortedSystemTypeCollection(
+            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Input).ToHashSet()),
+            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Ai).ToHashSet()),
+            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Simulate).ToHashSet()),
+            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Render).ToHashSet()),
+            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Preview).ToHashSet())
         );
 
         // 合并钩子函数
