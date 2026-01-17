@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
 internal record ImmutableSortedSystemTypeCollection(
     ImmutableSortedSystemTypes Input,

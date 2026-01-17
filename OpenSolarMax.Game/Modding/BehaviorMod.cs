@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.ECS;
 using Zio;
 using Zio.FileSystems;
 

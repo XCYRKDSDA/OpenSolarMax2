@@ -2,7 +2,8 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
-using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 
 namespace OpenSolarMax.Game.UI;
 

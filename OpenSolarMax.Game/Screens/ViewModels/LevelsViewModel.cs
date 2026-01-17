@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;

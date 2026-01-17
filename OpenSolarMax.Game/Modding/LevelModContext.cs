@@ -5,6 +5,7 @@ using Nine.Assets;
 using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
+using OpenSolarMax.Game.Modding.ECS;
 using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;

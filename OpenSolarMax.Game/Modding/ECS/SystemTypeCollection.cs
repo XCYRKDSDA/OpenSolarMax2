@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
 /// <summary>
 /// 系统类型集合

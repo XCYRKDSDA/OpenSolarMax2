@@ -3,6 +3,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Myra.Graphics2D.UI;
 using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using Zio;
 
 namespace OpenSolarMax.Game.Modding;
@@ -152,37 +154,5 @@ internal static partial class Modding
                                    t.IsSubclassOf(typeof(Widget)))
                        .Select(t => new KeyValuePair<LevelWidgetAttribute, Type>(
                                    t.GetCustomAttribute<LevelWidgetAttribute>()!, t));
-    }
-
-    /// <summary>
-    /// 将给定的 Hook 实现追加到目标对象的 Hook 委托属性上
-    /// </summary>
-    /// <param name="systems"></param>
-    /// <param name="hookImplInfos"></param>
-    /// <returns></returns>
-    public static void RegisterHook(IEnumerable<object> systems,
-                                    IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
-    {
-        // 收集所有的挂载点
-        const BindingFlags hookFlags = BindingFlags.Public | BindingFlags.Instance;
-        var hookPropertyInfos =
-            systems.SelectMany(s => s.GetType().GetProperties(hookFlags), (s, p) => (obj: s, prop: p))
-                   .SelectMany(p => p.prop.GetCustomAttributes<HookAttribute>(),
-                               (p, a) => (hook: a.Name, p.obj, p.prop));
-
-        // 为每个挂载追加委托实现
-        foreach (var (name, obj, prop) in hookPropertyInfos)
-        {
-            if (hookImplInfos.TryGetValue(name, out var implementations))
-            {
-                prop.SetValue(
-                    obj,
-                    implementations.Aggregate(
-                        (Delegate)prop.GetValue(obj)!,
-                        (d, m) => Delegate.Combine(d, m.CreateDelegate(prop.PropertyType))
-                    )
-                );
-            }
-        }
     }
 }

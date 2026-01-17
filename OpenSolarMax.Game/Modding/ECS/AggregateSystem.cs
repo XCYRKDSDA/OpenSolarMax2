@@ -4,7 +4,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
 internal class AggregateSystem
 {
@@ -29,6 +29,32 @@ internal class AggregateSystem
         return constructor.Invoke(parameters);
     }
 
+    private static void RegisterHook(IEnumerable<object> systems,
+                                     IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
+    {
+        // 收集所有的挂载点
+        const BindingFlags hookFlags = BindingFlags.Public | BindingFlags.Instance;
+        var hookPropertyInfos =
+            systems.SelectMany(s => s.GetType().GetProperties(hookFlags), (s, p) => (obj: s, prop: p))
+                   .SelectMany(p => p.prop.GetCustomAttributes<HookAttribute>(),
+                               (p, a) => (hook: a.Name, p.obj, p.prop));
+
+        // 为每个挂载追加委托实现
+        foreach (var (name, obj, prop) in hookPropertyInfos)
+        {
+            if (hookImplInfos.TryGetValue(name, out var implementations))
+            {
+                prop.SetValue(
+                    obj,
+                    implementations.Aggregate(
+                        (Delegate)prop.GetValue(obj)!,
+                        (d, m) => Delegate.Combine(d, m.CreateDelegate(prop.PropertyType))
+                    )
+                );
+            }
+        }
+    }
+
     private readonly World _world;
 
     private readonly List<object> _beforeStructuralChangesSystems = [];
@@ -44,9 +70,7 @@ internal class AggregateSystem
         _world = world;
 
         var systems = sortedSystemTypes.Select(t => CreateSystem(t, world, @params)).ToList();
-
-        // 注册 hook
-        Modding.RegisterHook(systems, hookImplInfos);
+        RegisterHook(systems, hookImplInfos);
 
         // 寻找响应式结构化变更的部分，根据其划分为三部分
         foreach (var (type, system) in sortedSystemTypes.Zip(systems))
