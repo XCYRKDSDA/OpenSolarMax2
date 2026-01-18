@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.UI;
 
 internal class WidgetTypeCollection
 {

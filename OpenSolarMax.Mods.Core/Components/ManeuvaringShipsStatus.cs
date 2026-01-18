@@ -1,7 +1,6 @@
-using System.Runtime.InteropServices;
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Mods.Core.Components;
 

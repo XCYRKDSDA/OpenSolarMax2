@@ -1,7 +1,7 @@
 using Arch.Buffer;
 using Microsoft.Xna.Framework;
 
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
 public interface ITickSystem
 {

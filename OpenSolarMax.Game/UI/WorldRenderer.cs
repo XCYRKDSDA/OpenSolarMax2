@@ -2,11 +2,12 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
-using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 
 namespace OpenSolarMax.Game.UI;
 
-internal class WorldRenderer(World world, DualStageAggregateSystem renderer, GraphicsDevice graphicsDevice)
+internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevice graphicsDevice)
     : IFadableImage
 {
     private const float _alpha = 0.5f;

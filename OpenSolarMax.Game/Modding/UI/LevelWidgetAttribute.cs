@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.UI;
 
 public enum LevelWidgetPosition
 {

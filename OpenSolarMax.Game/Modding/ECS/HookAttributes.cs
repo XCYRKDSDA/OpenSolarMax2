@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class HookAttribute(string name) : Attribute

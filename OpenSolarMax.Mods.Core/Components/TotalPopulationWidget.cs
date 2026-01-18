@@ -2,7 +2,7 @@ using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.UI;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
