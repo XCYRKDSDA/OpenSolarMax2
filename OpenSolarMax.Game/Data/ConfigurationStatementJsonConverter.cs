@@ -5,7 +5,7 @@ namespace OpenSolarMax.Game.Data;
 
 internal class ConfigurationStatementJsonConverter(
     IReadOnlyDictionary<string, string> templateKeysCache,
-    IReadOnlyDictionary<string, Type[]> configurationTypes
+    IReadOnlyDictionary<string, IReadOnlyList<Type>> configurationTypes
 ) : JsonConverter<ConfigurationStatement>
 {
     public override ConfigurationStatement? Read(ref Utf8JsonReader reader, Type typeToConvert,
@@ -24,9 +24,9 @@ internal class ConfigurationStatementJsonConverter(
         if (bases.Any(@base => templateKeysCache[@base] != configurationKey))
             throw new Exception("All base template should have the same configuration key");
 
-        var configs = configurationTypes[configurationKey].Select(
-            type => (IEntityConfiguration)element.Deserialize(type, options)!
-        ).ToArray();
+        var configs = configurationTypes[configurationKey]
+                      .Select(type => (IEntityConfiguration)element.Deserialize(type, options)!
+                      ).ToArray();
         return new(configurationKey, bases.Where(@base => @base != configurationKey).ToArray(), configs);
     }
 

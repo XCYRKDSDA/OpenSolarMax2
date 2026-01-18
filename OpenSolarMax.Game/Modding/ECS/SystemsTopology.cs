@@ -1,36 +1,11 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using Arch.Buffer;
-using Arch.Core;
-using Microsoft.Xna.Framework;
 
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
-internal class DualStageAggregateSystem
+internal static class SystemsTopology
 {
-    #region Helpers
-
-    private record OrderedTypePair(Type Before, Type After)
-    {
-        public override int GetHashCode() => HashCode.Combine(Before.GetHashCode(), After.GetHashCode());
-
-        public OrderedTypePair Reverse() => new(After, Before);
-
-        public UnorderedTypePair Unorder() => new(Before, After);
-    }
-
-    private record UnorderedTypePair(Type Sys1, Type Sys2)
-    {
-        public override int GetHashCode() => Sys1.GetHashCode() ^ Sys2.GetHashCode();
-
-        public virtual bool Equals(UnorderedTypePair? other)
-        {
-            if (other is null) return false;
-            return (Sys1 == other.Sys1 && Sys2 == other.Sys2) || (Sys1 == other.Sys2 && Sys2 == other.Sys1);
-        }
-    }
-
     private static void RecordReadWriteAttribute<T>(Type systemType, Dictionary<Type, HashSet<Type>> record,
                                                     HashSet<Type> alls)
         where T : Attribute, IReadWriteAttribute
@@ -51,7 +26,7 @@ internal class DualStageAggregateSystem
     /// </summary>
     /// <param name="systemTypes">所有系统类型</param>
     /// <returns>一个集合，记录了所有代码中声明了的执行顺序关系</returns>
-    private static HashSet<OrderedTypePair> ExtractExecutionOrders(IReadOnlyCollection<Type> systemTypes)
+    public static HashSet<OrderedTypePair> ExtractExecutionOrders(IReadOnlySet<Type> systemTypes)
     {
         #region 显式执行顺序关系提取、检查与合并
 
@@ -342,8 +317,8 @@ internal class DualStageAggregateSystem
     /// </summary>
     /// <param name="systemTypes">所有参与排序的系统类型</param>
     /// <param name="orders">一个集合，记录了所有代码中声明了的执行顺序关系</param>
-    private static List<Type> TopologicalSortSystems(IReadOnlyCollection<Type> systemTypes,
-                                                     HashSet<OrderedTypePair> orders)
+    public static List<Type> TopologicalSortSystems(IReadOnlySet<Type> systemTypes,
+                                                    IReadOnlySet<OrderedTypePair> orders)
     {
         // 要求 graph 反向。然后从反向开始排序，优先排普通系统，
         // 直到无法排入普通系统。此时剩下的所有系统就是最小的循环集合。
@@ -375,97 +350,5 @@ internal class DualStageAggregateSystem
         }
 
         return systems;
-    }
-
-    private static object CreateSystem(Type type, World world, IReadOnlyDictionary<Type, object> @params)
-    {
-        var constructorInfos = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-        if (constructorInfos.Length > 1)
-            throw new Exception($"{type} has more than one public constructors!");
-        if (constructorInfos.Length == 0)
-            throw new Exception($"{type} has no public constructor!");
-        var constructor = constructorInfos[0];
-
-        var parameterInfos = constructor.GetParameters();
-        if (parameterInfos[0].ParameterType != typeof(World))
-            throw new Exception($"{type}'s constructor doesn't take Arch.Core.World as its first parameter!");
-
-        var parameters = new object[parameterInfos.Length];
-        parameters[0] = world;
-        for (var i = 1; i < parameterInfos.Length; i++)
-            parameters[i] = @params[parameterInfos[i].ParameterType];
-
-        return constructor.Invoke(parameters);
-    }
-
-    #endregion
-
-    private readonly World _world;
-
-    private readonly List<object> _beforeStructuralChangesSystems = [];
-    private readonly List<ICalcSystemWithStructuralChanges> _reactToStructuralChangeSystems = [];
-    private readonly List<ICalcSystem> _afterStructuralChangesSystems = [];
-
-    private readonly CommandBuffer _commandBuffer = new();
-
-    public DualStageAggregateSystem(World world, IReadOnlyCollection<Type> systemTypes,
-                                    IReadOnlyDictionary<Type, object> @params,
-                                    ILookup<string, MethodInfo> hookImplInfos)
-    {
-        _world = world;
-
-        var systemOrders = ExtractExecutionOrders(systemTypes);
-        var sortedSystemTypes = TopologicalSortSystems(systemTypes, systemOrders);
-        var systems = sortedSystemTypes.Select(t => CreateSystem(t, world, @params)).ToList();
-
-        // 注册 hook
-        Modding.RegisterHook(systems, hookImplInfos);
-
-        // 寻找响应式结构化变更的部分，根据其划分为三部分
-        foreach (var (type, system) in sortedSystemTypes.Zip(systems))
-        {
-            if (type.GetCustomAttributes<BeforeStructuralChangesAttribute>().Any())
-                _beforeStructuralChangesSystems.Add(system);
-            else if (type.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any())
-                _reactToStructuralChangeSystems.Add((ICalcSystemWithStructuralChanges)system);
-            else if (type.GetCustomAttributes<AfterStructuralChangesAttribute>().Any())
-                _afterStructuralChangesSystems.Add((ICalcSystem)system);
-        }
-    }
-
-    private void LateUpdateImpl()
-    {
-        // 响应式结构化变更系统需要立刻执行
-        foreach (var system in _reactToStructuralChangeSystems)
-        {
-            system.Update(_commandBuffer);
-            _commandBuffer.Playback(_world);
-        }
-
-        foreach (var system in _afterStructuralChangesSystems)
-            system.Update();
-    }
-
-    public void Update(GameTime gameTime)
-    {
-        Debug.Assert(_commandBuffer.Size == 0);
-
-        foreach (var system in _beforeStructuralChangesSystems)
-        {
-            if (system is ITickSystem s1) s1.Update(gameTime);
-            else if (system is ITickSystemWithStructuralChanges s2) s2.Update(gameTime, _commandBuffer);
-            else if (system is ICalcSystem s3) s3.Update();
-            else if (system is ICalcSystemWithStructuralChanges s4) s4.Update(_commandBuffer);
-            else throw new Exception();
-        }
-        _commandBuffer.Playback(_world, dispose: true);
-
-        LateUpdateImpl();
-    }
-
-    public void LateUpdate()
-    {
-        Debug.Assert(_commandBuffer.Size == 0);
-        LateUpdateImpl();
     }
 }

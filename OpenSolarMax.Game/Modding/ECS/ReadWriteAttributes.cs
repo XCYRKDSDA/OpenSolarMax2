@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Game.Modding;
+namespace OpenSolarMax.Game.Modding.ECS;
 
 // Read: LateUpdate
 // Write: LateUpdate

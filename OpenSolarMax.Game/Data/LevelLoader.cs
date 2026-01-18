@@ -7,7 +7,7 @@ using Zio;
 
 namespace OpenSolarMax.Game.Data;
 
-internal class LevelLoader : IAssetLoader<Level>
+internal class LevelLoader(IReadOnlyDictionary<string, IReadOnlyList<Type>> configurationTypes) : IAssetLoader<Level>
 {
     private class JsonLevel
     {
@@ -17,8 +17,6 @@ internal class LevelLoader : IAssetLoader<Level>
 
         public JsonElement Player { get; set; }
     }
-
-    public Dictionary<string, Type[]> ConfigurationTypes { get; set; } = [];
 
     public Level Load(IFileSystem fs, IAssetsManager assets, in UPath path)
     {
@@ -47,10 +45,10 @@ internal class LevelLoader : IAssetLoader<Level>
         statementSerializerOptions.Converters.Add(new AssetReferenceJsonConverter<TextureRegion>(assets, directory));
 
         // 将缺省的配置语句的类型记录到缓存中
-        var templateConfigurationKeysCache = ConfigurationTypes.Keys.ToDictionary(key => key);
+        var templateConfigurationKeysCache = configurationTypes.Keys.ToDictionary(key => key);
         // 添加语句转换器
         statementSerializerOptions.Converters.Add(
-            new ConfigurationStatementJsonConverter(templateConfigurationKeysCache, ConfigurationTypes));
+            new ConfigurationStatementJsonConverter(templateConfigurationKeysCache, configurationTypes));
 
         var level = new Level();
 

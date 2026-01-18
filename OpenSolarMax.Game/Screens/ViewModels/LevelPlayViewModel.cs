@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Arch.Buffer;
 using Arch.Core;
@@ -7,6 +8,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
@@ -14,10 +17,10 @@ internal partial class LevelPlayViewModel : ViewModelBase
 {
     private readonly World _world;
     private readonly Entity _viewEntity;
-    private readonly DualStageAggregateSystem _aiSystem;
-    private readonly DualStageAggregateSystem _inputSystem;
-    private readonly DualStageAggregateSystem _simulateSystem;
-    private readonly DualStageAggregateSystem _renderSystem;
+    private readonly AggregateSystem _aiSystem;
+    private readonly AggregateSystem _inputSystem;
+    private readonly AggregateSystem _simulateSystem;
+    private readonly AggregateSystem _renderSystem;
     private readonly GameTime _playTime = new();
 
     [ObservableProperty]
@@ -28,44 +31,41 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public World World => _world;
 
-    public DualStageAggregateSystem RenderSystem => _renderSystem;
+    public AggregateSystem RenderSystem => _renderSystem;
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(Level level, LevelPlayContext levelPlayContext, SolarMax game) : base(game)
+    public LevelPlayViewModel(Level level, LevelModContext levelModContext, SolarMax game) : base(game)
     {
         // 构造世界和系统
         _world = World.Create();
-        var hookImplMethods = levelPlayContext.HookImplMethods
-                                              .SelectMany(p => p.Value.Select(v => (p.Key, Value: v)))
-                                              .ToLookup(x => x.Key, x => x.Value);
-        _inputSystem = new DualStageAggregateSystem(
-            _world, levelPlayContext.SystemTypes.InputSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelPlayContext.LocalAssets },
-            hookImplMethods
+        _inputSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Input.Sorted,
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
-        _aiSystem = new DualStageAggregateSystem(
-            _world, levelPlayContext.SystemTypes.AiSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelPlayContext.LocalAssets },
-            hookImplMethods
+        _aiSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Ai.Sorted,
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
-        _simulateSystem = new DualStageAggregateSystem(
-            _world, levelPlayContext.SystemTypes.SimulateSystemTypes,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelPlayContext.LocalAssets },
-            hookImplMethods
+        _simulateSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Simulate.Sorted,
+            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
-        _renderSystem = new DualStageAggregateSystem(
-            _world, levelPlayContext.SystemTypes.RenderSystemTypes,
+        _renderSystem = new AggregateSystem(
+            _world, levelModContext.SystemTypes.Render.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
-                [typeof(IAssetsManager)] = levelPlayContext.LocalAssets
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets
             },
-            hookImplMethods
+            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
 
         // 加载关卡内容
-        var worldLoader = new WorldLoader(levelPlayContext.LocalAssets);
+        var worldLoader = new WorldLoader(levelModContext.LocalAssets);
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
         while (enumerator.MoveNext())

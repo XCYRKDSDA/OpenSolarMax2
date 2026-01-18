@@ -3,6 +3,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Myra.Graphics2D.UI;
 using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using Zio;
 
 namespace OpenSolarMax.Game.Modding;
@@ -39,22 +41,22 @@ internal static partial class Modding
         return result;
     }
 
-    public static List<IBehaviorMod> ListBehaviorMods()
+    public static List<BehaviorModInfo> ListBehaviorMods()
     {
         return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"), ModType.Behavior)
-               .Select(IBehaviorMod (pair) => new BehaviorMod(pair.Item1, pair.Item2)).ToList();
+               .Select(pair => new BehaviorModInfo(pair.Item1, pair.Item2)).ToList();
     }
 
-    public static List<IContentMod> ListContentMods()
+    public static List<ContentModInfo> ListContentMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Content)
-               .Select(IContentMod (pair) => new ContentMod(pair.Item1, pair.Item2)).ToList();
+               .Select(pair => new ContentModInfo(pair.Item1, pair.Item2)).ToList();
     }
 
-    public static List<ILevelMod> ListLevelMods()
+    public static List<LevelModInfo> ListLevelMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Levels)
-               .Select(ILevelMod (pair) => new LevelMod(pair.Item1, pair.Item2)).ToList();
+               .Select(pair => new LevelModInfo(pair.Item1, pair.Item2)).ToList();
     }
 
     /// <summary>
@@ -85,7 +87,7 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns>各种类型系统类型的集合</returns>
-    public static SystemTypeCollection FindSystemTypes(Assembly assembly)
+    public static ImmutableSystemTypeCollection FindSystemTypes(Assembly assembly)
     {
         var systemTypes = new SystemTypeCollection();
 
@@ -107,22 +109,22 @@ internal static partial class Modding
                 continue;
 
             if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
-                systemTypes.SimulateSystemTypes.Add(type);
+                systemTypes.Simulate.Add(type);
 
             if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
-                systemTypes.InputSystemTypes.Add(type);
+                systemTypes.Input.Add(type);
 
             if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
-                systemTypes.AiSystemTypes.Add(type);
+                systemTypes.Ai.Add(type);
 
             if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
-                systemTypes.RenderSystemTypes.Add(type);
+                systemTypes.Render.Add(type);
 
             if (type.GetCustomAttribute<PreviewSystemAttribute>() is not null)
-                systemTypes.PreviewSystemTypes.Add(type);
+                systemTypes.Preview.Add(type);
         }
 
-        return systemTypes;
+        return systemTypes.ToImmutableSystemTypeCollection();
     }
 
     /// <summary>
@@ -152,33 +154,5 @@ internal static partial class Modding
                                    t.IsSubclassOf(typeof(Widget)))
                        .Select(t => new KeyValuePair<LevelWidgetAttribute, Type>(
                                    t.GetCustomAttribute<LevelWidgetAttribute>()!, t));
-    }
-
-    /// <summary>
-    /// 将给定的 Hook 实现追加到目标对象的 Hook 委托属性上
-    /// </summary>
-    /// <param name="systems"></param>
-    /// <param name="hookImplInfos"></param>
-    /// <returns></returns>
-    public static void RegisterHook(IEnumerable<object> systems, ILookup<string, MethodInfo> hookImplInfos)
-    {
-        // 收集所有的挂载点
-        const BindingFlags hookFlags = BindingFlags.Public | BindingFlags.Instance;
-        var hookPropertyInfos =
-            systems.SelectMany(s => s.GetType().GetProperties(hookFlags), (s, p) => (obj: s, prop: p))
-                   .SelectMany(p => p.prop.GetCustomAttributes<HookAttribute>(),
-                               (p, a) => (hook: a.Name, p.obj, p.prop));
-
-        // 为每个挂载追加委托实现
-        foreach (var (name, obj, prop) in hookPropertyInfos)
-        {
-            prop.SetValue(
-                obj,
-                hookImplInfos[name].Aggregate(
-                    (Delegate)prop.GetValue(obj)!,
-                    (d, m) => Delegate.Combine(d, m.CreateDelegate(prop.PropertyType))
-                )
-            );
-        }
     }
 }
