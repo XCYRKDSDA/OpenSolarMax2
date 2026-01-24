@@ -5,6 +5,7 @@ using Nine.Assets;
 using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio.FileSystems;
 
@@ -23,6 +24,8 @@ internal class LevelModContext
     public ImmutableArray<Type> ComponentTypes { get; }
 
     public ImmutableDictionary<string, ImmutableArray<Type>> ConfigurationTypes { get; }
+
+    public ImmutableDictionary<string, ConceptInfo> ConceptInfos { get; }
 
     public ImmutableSortedSystemTypeCollection SystemTypes { get; }
 
@@ -71,11 +74,36 @@ internal class LevelModContext
         // 合并组件类型。直接拼接列表即可
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
 
-        // 合并实体配置类型。同一个键的配置类型靠后的覆盖靠前的
+        // 合并实体配置类型
         ConfigurationTypes =
             behaviorMods.SelectMany(m => m.ConfigurationTypes)
                         .GroupBy(kvp => kvp.Key)
                         .ToImmutableDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToImmutableArray());
+
+        // 合并概念
+        var conceptInfos = new Dictionary<string, ConceptInfo>();
+        foreach (var mod in behaviorMods)
+        {
+            foreach (var (key, relatedTypes) in mod.ConceptTypes)
+            {
+                if (conceptInfos.TryGetValue(key, out var conceptInfo))
+                {
+                    if (relatedTypes.Description is not null)
+                        throw new Exception("Concept description cannot be extended!");
+                    var extendedConcept = conceptInfo.Extend(relatedTypes.Definition, relatedTypes.Applier);
+                    conceptInfos[key] = extendedConcept;
+                }
+                else
+                {
+                    if (relatedTypes.Definition is null)
+                        throw new Exception("A new concept must be provided a definition!");
+                    var newConcept = ConceptInfo.Define(key, relatedTypes.Definition, relatedTypes.Description,
+                                                        relatedTypes.Applier);
+                    conceptInfos.Add(key, newConcept);
+                }
+            }
+        }
+        ConceptInfos = conceptInfos.ToImmutableDictionary();
 
         // 合并系统类型
         SystemTypes = new ImmutableSortedSystemTypeCollection(

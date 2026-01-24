@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 
@@ -39,19 +40,36 @@ internal partial class LevelPlayViewModel : ViewModelBase
     {
         // 构造世界和系统
         _world = World.Create();
+        var factory = new ConceptFactory(levelModContext.ConceptInfos.Values, new Dictionary<Type, object>()
+        {
+            [typeof(GraphicsDevice)] = game.GraphicsDevice,
+            [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+        });
         _inputSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Input.Sorted,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = factory,
+            },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _aiSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Ai.Sorted,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = factory,
+            },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _simulateSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Simulate.Sorted,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = factory,
+            },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _renderSystem = new AggregateSystem(

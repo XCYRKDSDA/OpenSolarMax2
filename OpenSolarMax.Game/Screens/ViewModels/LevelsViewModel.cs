@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.UI;
 
@@ -75,6 +76,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         var levelLoader = new LevelLoader(
             _levelModContext.ConfigurationTypes.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<Type>)
         );
+        var factory = new ConceptFactory(_levelModContext.ConceptInfos.Values, new Dictionary<Type, object>()
+        {
+            [typeof(GraphicsDevice)] = game.GraphicsDevice,
+            [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
+        });
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))
@@ -86,7 +92,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             var world = World.Create();
             var simulateSystem = new AggregateSystem(
                 world, _levelModContext.SystemTypes.Simulate.Sorted,
-                new Dictionary<Type, object> { [typeof(IAssetsManager)] = _levelModContext.LocalAssets },
+                new Dictionary<Type, object>
+                {
+                    [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
+                    [typeof(IConceptFactory)] = factory,
+                },
                 _levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
             );
             var commandBuffer = new CommandBuffer();

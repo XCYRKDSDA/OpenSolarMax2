@@ -7,6 +7,8 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
+internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? Applier);
+
 internal class BehaviorMod
 {
     public BehaviorModInfo Metadata { get; }
@@ -30,6 +32,11 @@ internal class BehaviorMod
     /// 模组提供的所有配置类型
     /// </summary>
     public ImmutableDictionary<string, Type> ConfigurationTypes { get; }
+
+    /// <summary>
+    /// 模组提供的所有概念的定义、描述和应用器
+    /// </summary>
+    public ImmutableDictionary<string, ConceptRelatedTypes> ConceptTypes { get; }
 
     /// <summary>
     /// 模组提供的所有系统类型
@@ -68,6 +75,9 @@ internal class BehaviorMod
 
         // 查找配置类型
         ConfigurationTypes = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
+
+        // 查找概念类型
+        ConceptTypes = Modding.FindConceptRelatedTypes(Assembly).ToImmutableDictionary();
 
         // 查找所有系统
         SystemTypes = Modding.FindSystemTypes(Assembly);

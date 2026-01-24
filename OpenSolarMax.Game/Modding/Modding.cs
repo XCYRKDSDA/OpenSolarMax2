@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Myra.Graphics2D.UI;
 using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 using Zio;
@@ -80,6 +81,40 @@ internal static partial class Modding
         }
 
         return configurationTypes;
+    }
+
+    public static Dictionary<string, ConceptRelatedTypes> FindConceptRelatedTypes(Assembly assembly)
+    {
+        var definitionTypes = new Dictionary<string, Type>();
+        var descriptionTypes = new Dictionary<string, Type>();
+        var applierTypes = new Dictionary<string, Type>();
+        foreach (var type in assembly.GetExportedTypes())
+        {
+            if (type.GetInterfaces().Contains(typeof(IDefinition)))
+            {
+                var name = type.GetCustomAttribute<DefineAttribute>()!.Key;
+                definitionTypes.Add(name, type);
+            }
+            else if (type.GetInterfaces().Contains(typeof(IDescription)))
+            {
+                var name = type.GetCustomAttribute<DescribeAttribute>()!.Key;
+                descriptionTypes.Add(name, type);
+            }
+            else if (type.GetInterfaces().Contains(typeof(IApplier)) ||
+                     type.GetInterfaces().Any(i => i.IsGenericType &&
+                                                   i.GetGenericTypeDefinition() == typeof(IApplier<>)))
+            {
+                var name = type.GetCustomAttribute<ApplyAttribute>()!.Key;
+                applierTypes.Add(name, type);
+            }
+        }
+
+        var allConceptNames = definitionTypes.Keys.Concat(descriptionTypes.Keys).Concat(applierTypes.Keys).ToHashSet();
+        return allConceptNames.ToDictionary(
+            k => k,
+            k => new ConceptRelatedTypes(definitionTypes.GetValueOrDefault(k), descriptionTypes.GetValueOrDefault(k),
+                                         applierTypes.GetValueOrDefault(k))
+        );
     }
 
     /// <summary>
