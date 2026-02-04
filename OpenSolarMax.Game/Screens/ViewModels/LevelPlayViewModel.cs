@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
-using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
@@ -36,7 +36,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(Level level, LevelModContext levelModContext, SolarMax game) : base(game)
+    public LevelPlayViewModel(LevelFile level, LevelModContext levelModContext, SolarMax game) : base(game)
     {
         // 构造世界和系统
         _world = World.Create();
@@ -83,7 +83,10 @@ internal partial class LevelPlayViewModel : ViewModelBase
         );
 
         // 加载关卡内容
-        var worldLoader = new WorldLoader(levelModContext.LocalAssets);
+        var worldLoader = new WorldLoader(
+            levelModContext.LocalAssets, factory,
+            levelModContext.Configurations.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+        );
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
         while (enumerator.MoveNext())

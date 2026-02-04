@@ -1,30 +1,24 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("portal")]
-public class PortalConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.Portal), SchemaName("portal")]
+public class PortalConfiguration : IConfiguration<PortalDescription, PortalConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
     public OrbitConfiguration? Orbit { get; set; }
 
-    #endregion
-
     public string? Party { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public PortalConfiguration Aggregate(PortalConfiguration newCfg)
     {
-        if (@new is not PortalConfiguration newCfg) throw new InvalidDataException();
-
         return new PortalConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -36,15 +30,17 @@ public class PortalConfiguration : IEntityConfiguration, ITransformableConfigura
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public PortalDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
     {
-        var template = new PortalTemplate(assets);
+        var desc = new PortalDescription();
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        desc.Transform = tfDesc.Transform;
 
         if (Party is not null)
-            template.Party = ctx.OtherEntities[Party];
+            desc.Party = otherEntities[Party];
 
-        return template;
+        return desc;
     }
 }

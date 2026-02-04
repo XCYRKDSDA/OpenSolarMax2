@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio;
 using Zio.FileSystems;
@@ -29,9 +30,9 @@ internal class BehaviorMod
     public ImmutableArray<Type> ComponentTypes { get; }
 
     /// <summary>
-    /// 模组提供的所有配置类型
+    /// 模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引
     /// </summary>
-    public ImmutableDictionary<string, Type> ConfigurationTypes { get; }
+    public ImmutableDictionary<string, ConfigurationInfo> Configurations { get; }
 
     /// <summary>
     /// 模组提供的所有概念的定义、描述和应用器
@@ -74,7 +75,7 @@ internal class BehaviorMod
                                  .ToImmutableArray();
 
         // 查找配置类型
-        ConfigurationTypes = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
+        Configurations = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
 
         // 查找概念类型
         ConceptTypes = Modding.FindConceptRelatedTypes(Assembly).ToImmutableDictionary();

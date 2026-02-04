@@ -2,8 +2,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Myra.Graphics2D.UI;
-using OpenSolarMax.Game.Data;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 using Zio;
@@ -65,19 +65,23 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns>所有配置器的类型和其对应的键值</returns>
-    public static Dictionary<string, Type> FindConfigurationTypes(Assembly assembly)
+    public static Dictionary<string, ConfigurationInfo> FindConfigurationTypes(Assembly assembly)
     {
-        var configurationTypes = new Dictionary<string, Type>();
+        var configurationTypes = new Dictionary<string, ConfigurationInfo>();
 
         foreach (var type in assembly.GetExportedTypes())
         {
-            if (!type.GetInterfaces().Contains(typeof(IEntityConfiguration)))
+            if (!type.GetInterfaces().Contains(typeof(IConfiguration)))
                 continue;
 
-            var attr = type.GetCustomAttribute<ConfigurationKeyAttribute>()
-                       ?? throw new Exception($"Can't find attribute ConfiguratorKey in type {type.Name}");
+            var configureAttr = type.GetCustomAttribute<ConfigureAttribute>() ??
+                                throw new Exception($"Can't find attribute `Configure` in type {type.Name}");
 
-            configurationTypes.Add(attr.Key, type);
+            var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>()
+                                 ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
+
+            configurationTypes.Add(schemaNameAttr.Name,
+                                   new ConfigurationInfo(type, configureAttr.Target, schemaNameAttr.Name));
         }
 
         return configurationTypes;

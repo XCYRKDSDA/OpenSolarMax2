@@ -4,11 +4,10 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Nine.Assets;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
@@ -24,7 +23,7 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
 [ExecuteAfter(typeof(ProgressUnitsTransportationSystem)), ExecuteAfter(typeof(TransportUnitsSystem))]
-public sealed partial class StartTransportationSystem(World world, IAssetsManager assets)
+public sealed partial class StartTransportationSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     [Query]
@@ -77,7 +76,7 @@ public sealed partial class StartTransportationSystem(World world, IAssetsManage
         }
 
         // 创建传送门特效
-        world.Make(commandBuffer, new PortalChargingEffectTemplate(assets)
+        factory.Make(world, commandBuffer, new PortalChargingEffectDescription()
         {
             Portal = request.Departure,
             PortalRadius = request.Departure.Get<ReferenceSize>().Radius,

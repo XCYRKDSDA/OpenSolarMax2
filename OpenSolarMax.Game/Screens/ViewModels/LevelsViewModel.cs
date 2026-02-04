@@ -9,7 +9,7 @@ using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
-using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
@@ -21,7 +21,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 {
     private readonly LevelModContext _levelModContext;
 
-    private readonly List<Level> _levels;
+    private readonly List<LevelFile> _levels;
     private readonly List<IFadableImage> _previews;
     private readonly List<AggregateSystem> _previewSystems;
     private readonly List<World> _worlds;
@@ -72,15 +72,16 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         // 加载所有关卡
 
-        var worldLoader = new WorldLoader(_levelModContext.LocalAssets);
-        var levelLoader = new LevelLoader(
-            _levelModContext.ConfigurationTypes.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<Type>)
-        );
         var factory = new ConceptFactory(_levelModContext.ConceptInfos.Values, new Dictionary<Type, object>()
         {
             [typeof(GraphicsDevice)] = game.GraphicsDevice,
             [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
         });
+        var worldLoader = new WorldLoader(
+            _levelModContext.LocalAssets, factory,
+            _levelModContext.Configurations.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+        );
+        var levelLoader = new LevelLoader(_levelModContext.Configurations);
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))

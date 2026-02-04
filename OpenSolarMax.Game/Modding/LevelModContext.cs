@@ -6,6 +6,7 @@ using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio.FileSystems;
 
@@ -23,7 +24,7 @@ internal class LevelModContext
 
     public ImmutableArray<Type> ComponentTypes { get; }
 
-    public ImmutableDictionary<string, ImmutableArray<Type>> ConfigurationTypes { get; }
+    public ImmutableDictionary<string, ConfigurationInfo> Configurations { get; }
 
     public ImmutableDictionary<string, ConceptInfo> ConceptInfos { get; }
 
@@ -75,10 +76,7 @@ internal class LevelModContext
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
 
         // 合并实体配置类型
-        ConfigurationTypes =
-            behaviorMods.SelectMany(m => m.ConfigurationTypes)
-                        .GroupBy(kvp => kvp.Key)
-                        .ToImmutableDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToImmutableArray());
+        Configurations = behaviorMods.SelectMany(m => m.Configurations).ToImmutableDictionary();
 
         // 合并概念
         var conceptInfos = new Dictionary<string, ConceptInfo>();

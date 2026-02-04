@@ -5,9 +5,7 @@ using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
 using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -44,21 +42,21 @@ public abstract class ShipDefinition : IDefinition
 }
 
 [Describe(ConceptNames.Ship)]
-public sealed class ShipDescription : IDescription
+public class ShipDescription : IDescription
 {
     /// <summary>
     /// 单位创建时所在的星球。必须提供
     /// </summary>
-    public required Entity Planet { get; init; }
+    public required Entity Planet { get; set; }
 
     /// <summary>
     /// 单位创建时所属的阵营。必须提供
     /// </summary>
-    public required Entity Party { get; init; }
+    public required Entity Party { get; set; }
 }
 
 [Apply(ConceptNames.Ship)]
-public sealed class ShipApplier(IAssetsManager assets) : IApplier<ShipDescription>
+public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ShipDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(Content.Textures.DefaultShip);
 
@@ -98,7 +96,8 @@ public sealed class ShipApplier(IAssetsManager assets) : IApplier<ShipDescriptio
         RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, desc.Planet);
 
         // 设置所属阵营
-        world.Make(commandBuffer, new InPartyTemplate { Party = desc.Party, Affiliate = entity });
+        factory.Make(world, commandBuffer, ConceptNames.InParty,
+                     new InPartyDescription { Party = desc.Party, Affiliate = entity });
 
         // 初始化飞行状态
         commandBuffer.Set(in entity, new ShippingStatus { State = ShippingState.Idle });

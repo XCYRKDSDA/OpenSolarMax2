@@ -3,13 +3,10 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
-using OpenSolarMax.Mods.Core.Templates;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -20,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(ProductionState)), ReadPrev(typeof(InParty.AsAffiliate)), ReadPrev(typeof(PartyReferenceColor))]
 [ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class SettleProductionSystem(World world, IAssetsManager assets, IConceptFactory factory)
+public sealed partial class SettleProductionSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     [Query]
@@ -42,7 +39,7 @@ public sealed partial class SettleProductionSystem(World world, IAssetsManager a
             commandBuffer.Add(newShip, new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });
 
             // 生成出生动画
-            _ = world.Make(commandBuffer, new UnitBornPulseTemplate(assets)
+            factory.Make(world, commandBuffer, new UnitBornPulseDescription()
             {
                 Unit = newShip,
                 Color = party.Get<PartyReferenceColor>().Value

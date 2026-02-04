@@ -4,16 +4,16 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [AiSystem, BeforeStructuralChanges, ChangeStructure]
 // 不记录另一个域的组件读写
-public partial class SimpleEnemyAiSystem(World world) : ICalcSystemWithStructuralChanges
+public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory) : ICalcSystemWithStructuralChanges
 {
     public struct PlanetInfo
     {
@@ -152,12 +152,12 @@ public partial class SimpleEnemyAiSystem(World world) : ICalcSystemWithStructura
                 if (towerAttack > 0 && sender.ActualFriendUnits < towerAttack / 2) continue;
 
                 // 创建单位移动请求
-                world.Make(commandBuffer, new ShippingRequestTemplate()
+                factory.Make(world, commandBuffer, new ShippingRequestDescription()
                 {
                     Departure = sender.Entity,
                     Destination = target.Entity,
                     Party = party,
-                    ExpectedNum = unitsToSend
+                    ExpectedNum = unitsToSend,
                 });
                 sender.Entity.Get<PlanetAiTimers>().TimeLeft[party] = TimeSpan.FromSeconds(1); // TODO 随机化
 
@@ -232,12 +232,12 @@ public partial class SimpleEnemyAiSystem(World world) : ICalcSystemWithStructura
                 if (towerAttack > 0 && sender.ActualFriendUnits < towerAttack / 2) continue;
 
                 // 创建单位移动请求
-                world.Make(commandBuffer, new ShippingRequestTemplate()
+                factory.Make(world, commandBuffer, new ShippingRequestDescription()
                 {
                     Departure = sender.Entity,
                     Destination = target.Entity,
                     Party = party,
-                    ExpectedNum = unitsToSend
+                    ExpectedNum = unitsToSend,
                 });
                 sender.Entity.Get<PlanetAiTimers>().TimeLeft[party] = TimeSpan.FromSeconds(1);
                 return;
@@ -293,12 +293,12 @@ public partial class SimpleEnemyAiSystem(World world) : ICalcSystemWithStructura
                 if (towerAttack > 0 && sender.ActualFriendUnits < towerAttack / 2) continue;
 
                 // 创建单位移动请求
-                world.Make(commandBuffer, new ShippingRequestTemplate()
+                factory.Make(world, commandBuffer, new ShippingRequestDescription()
                 {
                     Departure = sender.Entity,
                     Destination = target.Entity,
                     Party = party,
-                    ExpectedNum = unitsToSend
+                    ExpectedNum = unitsToSend,
                 });
                 sender.Entity.Get<PlanetAiTimers>().TimeLeft[party] = TimeSpan.FromSeconds(1); // TODO 随机化
                 return;

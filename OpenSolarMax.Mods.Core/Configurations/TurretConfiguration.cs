@@ -1,30 +1,24 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("turret")]
-public class TurretConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.Turret), SchemaName("turret")]
+public class TurretConfiguration : IConfiguration<TurretDescription, TurretConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
     public OrbitConfiguration? Orbit { get; set; }
 
-    #endregion
-
     public string? Party { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public TurretConfiguration Aggregate(TurretConfiguration newCfg)
     {
-        if (@new is not TurretConfiguration newCfg) throw new InvalidDataException();
-
         return new TurretConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -36,15 +30,17 @@ public class TurretConfiguration : IEntityConfiguration, ITransformableConfigura
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public TurretDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
     {
-        var template = new TurretTemplate(assets);
+        var desc = new TurretDescription();
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        desc.Transform = tfDesc.Transform;
 
         if (Party is not null)
-            template.Party = ctx.OtherEntities[Party];
+            desc.Party = otherEntities[Party];
 
-        return template;
+        return desc;
     }
 }

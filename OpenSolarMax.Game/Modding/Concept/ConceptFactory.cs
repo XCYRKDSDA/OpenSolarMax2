@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
 using Arch.Buffer;
@@ -47,10 +48,15 @@ internal class ConceptFactory : IConceptFactory
 
     private readonly Dictionary<string, Concept> _concepts;
 
+    private readonly Lookup<Type, string> _conceptNamesByDescriptionType;
+
     public ConceptFactory(IEnumerable<ConceptInfo> conceptInfos, IReadOnlyDictionary<Type, object> @params)
     {
         var params2 = new Dictionary<Type, object>(@params) { { typeof(IConceptFactory), this } }; // 添加自己
         _concepts = conceptInfos.Select(i => BakeConcept(i, params2)).ToDictionary(c => c.Name);
+        _conceptNamesByDescriptionType = (Lookup<Type, string>)
+            _concepts.Where(p => p.Value.DescriptionType is not null)
+                     .ToLookup(p => p.Value.DescriptionType!, p => p.Value.Name);
     }
 
     public IReadOnlyDictionary<string, Concept> Concepts => _concepts;
@@ -66,6 +72,31 @@ internal class ConceptFactory : IConceptFactory
             applier.Switch(
                 a => a.Apply(commandBuffer, entity),
                 a => ((IApplier<T>)a).Apply(commandBuffer, entity, description)
+            );
+        }
+
+        return entity;
+    }
+
+    public Entity Make<T>(World world, CommandBuffer commandBuffer, T description) where T : IDescription
+    {
+        var matchedConceptNames = _conceptNamesByDescriptionType[typeof(T)].ToImmutableArray();
+        if (matchedConceptNames.Length is 0 or > 1)
+            throw new ArgumentOutOfRangeException(nameof(description));
+        return Make(world, commandBuffer, matchedConceptNames[0], description);
+    }
+
+    public Entity Make(World world, CommandBuffer commandBuffer, string key, IDescription description)
+    {
+        var conceptTemplate = _concepts[key];
+        Debug.Assert(description.GetType() == conceptTemplate.DescriptionType);
+
+        var entity = world.Construct(commandBuffer, conceptTemplate.Signature);
+        foreach (var applier in conceptTemplate.Appliers)
+        {
+            applier.Switch(
+                a => a.Apply(commandBuffer, entity),
+                a => a.Apply(commandBuffer, entity, description)
             );
         }
 

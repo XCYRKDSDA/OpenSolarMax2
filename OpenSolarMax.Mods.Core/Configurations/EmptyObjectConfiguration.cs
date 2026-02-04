@@ -1,28 +1,22 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("empty")]
-public class EmptyObjectConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.EmptyCoord), SchemaName("empty")]
+public class EmptyObjectConfiguration : IConfiguration<EmptyCoordDescription, EmptyObjectConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
     public OrbitConfiguration? Orbit { get; set; }
 
-    #endregion
-
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public EmptyObjectConfiguration Aggregate(EmptyObjectConfiguration newCfg)
     {
-        if (@new is not EmptyObjectConfiguration newCfg) throw new InvalidDataException();
-
         return new EmptyObjectConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -33,12 +27,14 @@ public class EmptyObjectConfiguration : IEntityConfiguration, ITransformableConf
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public EmptyCoordDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
     {
-        var template = new EmptyCoordTemplate();
+        var desc = new EmptyCoordDescription();
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        desc.Transform = tfDesc.Transform;
 
-        return template;
+        return desc;
     }
 }
