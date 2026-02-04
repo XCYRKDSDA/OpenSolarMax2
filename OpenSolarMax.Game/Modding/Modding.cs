@@ -65,9 +65,9 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns>所有配置器的类型和其对应的键值</returns>
-    public static Dictionary<string, ConfigurationInfo> FindConfigurationTypes(Assembly assembly)
+    public static Dictionary<string, ConfigurationSchemaInfo> FindConfigurationTypes(Assembly assembly)
     {
-        var configurationTypes = new Dictionary<string, ConfigurationInfo>();
+        var configurationTypes = new Dictionary<string, ConfigurationSchemaInfo>();
 
         foreach (var type in assembly.GetExportedTypes())
         {
@@ -81,7 +81,7 @@ internal static partial class Modding
                                  ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
 
             configurationTypes.Add(schemaNameAttr.Name,
-                                   new ConfigurationInfo(type, configureAttr.Target, schemaNameAttr.Name));
+                                   new ConfigurationSchemaInfo(type, configureAttr.Target, schemaNameAttr.Name));
         }
 
         return configurationTypes;

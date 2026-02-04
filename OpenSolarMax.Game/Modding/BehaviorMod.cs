@@ -32,7 +32,7 @@ internal class BehaviorMod
     /// <summary>
     /// 模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引
     /// </summary>
-    public ImmutableDictionary<string, ConfigurationInfo> Configurations { get; }
+    public ImmutableDictionary<string, ConfigurationSchemaInfo> ConfigurationSchemaInfos { get; }
 
     /// <summary>
     /// 模组提供的所有概念的定义、描述和应用器
@@ -75,7 +75,7 @@ internal class BehaviorMod
                                  .ToImmutableArray();
 
         // 查找配置类型
-        Configurations = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
+        ConfigurationSchemaInfos = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
 
         // 查找概念类型
         ConceptTypes = Modding.FindConceptRelatedTypes(Assembly).ToImmutableDictionary();

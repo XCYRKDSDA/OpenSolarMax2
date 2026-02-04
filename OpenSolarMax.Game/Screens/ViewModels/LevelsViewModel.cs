@@ -79,9 +79,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         });
         var worldLoader = new WorldLoader(
             _levelModContext.LocalAssets, factory,
-            _levelModContext.Configurations.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+            _levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
         );
-        var levelLoader = new LevelLoader(_levelModContext.Configurations);
+        var levelLoader = new LevelLoader(_levelModContext.ConfigurationSchemaInfos);
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))

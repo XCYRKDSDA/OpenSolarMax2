@@ -24,7 +24,7 @@ internal class LevelModContext
 
     public ImmutableArray<Type> ComponentTypes { get; }
 
-    public ImmutableDictionary<string, ConfigurationInfo> Configurations { get; }
+    public ImmutableDictionary<string, ConfigurationSchemaInfo> ConfigurationSchemaInfos { get; }
 
     public ImmutableDictionary<string, ConceptInfo> ConceptInfos { get; }
 
@@ -76,7 +76,7 @@ internal class LevelModContext
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
 
         // 合并实体配置类型
-        Configurations = behaviorMods.SelectMany(m => m.Configurations).ToImmutableDictionary();
+        ConfigurationSchemaInfos = behaviorMods.SelectMany(m => m.ConfigurationSchemaInfos).ToImmutableDictionary();
 
         // 合并概念
         var conceptInfos = new Dictionary<string, ConceptInfo>();

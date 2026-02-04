@@ -8,10 +8,10 @@ namespace OpenSolarMax.Game.Level;
 ///
 /// </summary>
 /// <param name="schemaNamesByConfigurationId">从配置索引到配置模式名称的映射</param>
-/// <param name="schemaInfosBySchemaName">从配置模式名称到配置模式类型的映射</param>
+/// <param name="configurationSchemaInfos">从配置模式名称到配置模式类型的映射</param>
 internal class ConfigurationStatementJsonConverter(
     IReadOnlyDictionary<string, string> schemaNamesByConfigurationId,
-    IReadOnlyDictionary<string, ConfigurationInfo> schemaInfosBySchemaName
+    IReadOnlyDictionary<string, ConfigurationSchemaInfo> configurationSchemaInfos
 ) : JsonConverter<ConfigurationStatement>
 {
     public override ConfigurationStatement? Read(ref Utf8JsonReader reader, Type typeToConvert,
@@ -30,7 +30,7 @@ internal class ConfigurationStatementJsonConverter(
         if (baseConfigurationIds.Any(b => schemaNamesByConfigurationId[b] != schemaName))
             throw new Exception("All base configuration should have the same configuration key");
 
-        var configuration = (IConfiguration)element.Deserialize(schemaInfosBySchemaName[schemaName].Type, options)!;
+        var configuration = (IConfiguration)element.Deserialize(configurationSchemaInfos[schemaName].Type, options)!;
 
         return new ConfigurationStatement(schemaName,
                                           [..baseConfigurationIds.Where(b => b != schemaName)],
