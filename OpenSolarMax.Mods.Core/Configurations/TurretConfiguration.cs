@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -30,12 +29,12 @@ public class TurretConfiguration : IConfiguration<TurretDescription, TurretConfi
         };
     }
 
-    public TurretDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public TurretDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         var desc = new TurretDescription();
 
         var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 
         if (Party is not null)

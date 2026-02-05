@@ -1,5 +1,4 @@
 using Arch.Core;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 
 namespace OpenSolarMax.Game.Modding.Configuration;
@@ -10,7 +9,7 @@ public interface IConfiguration
 
     IReadOnlyList<string> Requirements => [];
 
-    IDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets);
+    IDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities);
 }
 
 public interface IConfiguration<out TDesc, TConf> : IConfiguration
@@ -24,9 +23,8 @@ public interface IConfiguration<out TDesc, TConf> : IConfiguration
             ? throw new ArgumentException("The input configuration type does not match the current one!")
             : Aggregate((TConf)newCfg);
 
-    new TDesc ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets);
+    new TDesc ToDescription(IReadOnlyDictionary<string, Entity> otherEntities);
 
-    IDescription IConfiguration.ToDescription(
-        IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets) =>
-        ToDescription(otherEntities, assets);
+    IDescription IConfiguration.ToDescription(IReadOnlyDictionary<string, Entity> otherEntities) =>
+        ToDescription(otherEntities);
 }

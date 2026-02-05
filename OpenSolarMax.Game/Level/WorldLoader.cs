@@ -3,14 +3,13 @@ using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 
 namespace OpenSolarMax.Game.Level;
 
 internal sealed class WorldLoader(
-    IAssetsManager assets, IConceptFactory factory, IReadOnlyDictionary<string, string> schemaNamesToConceptNames)
+    IConceptFactory factory, IReadOnlyDictionary<string, string> schemaNamesToConceptNames)
 {
     public IEnumerator LoadStepByStep(LevelFile level, World world, CommandBuffer commandBuffer)
     {
@@ -47,7 +46,7 @@ internal sealed class WorldLoader(
             }
 
             // 生成描述对象
-            var description = configuration.ToDescription(namedEntities, assets);
+            var description = configuration.ToDescription(namedEntities);
 
             // 构造实体
             for (var i = 0; i < num; i++)

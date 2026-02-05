@@ -11,7 +11,6 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
@@ -107,11 +106,8 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 [Iterate(typeof(TransportingStatus)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(ProgressUnitsTransportationSystem))]
-public partial class TransportUnitsSystem(World world, IAssetsManager assets, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+public partial class TransportUnitsSystem(World world, IConceptFactory factory) : ICalcSystemWithStructuralChanges
 {
-    private FmodEventDescription _warpingSoundEffect = assets.Load<FmodEventDescription>("Sounds/Master.bank:/Warping");
-
     [Query]
     [All<TransportingStatus, AbsoluteTransform, Sprite, TreeRelationship<Anchorage>.AsChild,
         TreeRelationship<RelativeTransform>.AsChild, InParty.AsAffiliate>]
@@ -208,7 +204,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets, IC
             factory.Make(world, commandBuffer, new SimpleSoundDescription()
             {
                 Transform = new AbsoluteTransformOptions() { Translation = center, Rotation = Quaternion.Identity },
-                SoundEffect = _warpingSoundEffect,
+                SoundEffect = "Sounds/Master.bank:/Warping",
             });
         }
     }

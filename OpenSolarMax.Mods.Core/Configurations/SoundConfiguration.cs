@@ -1,9 +1,7 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
@@ -31,18 +29,17 @@ public class SoundConfiguration : IConfiguration<SimpleSoundDescription, SoundCo
         };
     }
 
-    public SimpleSoundDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities,
-                                                IAssetsManager assets)
+    public SimpleSoundDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (string.IsNullOrEmpty(Sound)) throw new NullReferenceException();
 
         var desc = new SimpleSoundDescription()
         {
-            SoundEffect = assets.Load<FmodEventDescription>(Sound),
+            SoundEffect = Sound,
         };
 
         var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 
         return desc;

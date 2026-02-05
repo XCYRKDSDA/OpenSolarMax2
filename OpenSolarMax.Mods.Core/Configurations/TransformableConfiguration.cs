@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -27,8 +26,7 @@ public class TransformableConfiguration : IConfiguration<TransformableDescriptio
         };
     }
 
-    public TransformableDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities,
-                                                  IAssetsManager assets)
+    public TransformableDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Parent is null)
         {

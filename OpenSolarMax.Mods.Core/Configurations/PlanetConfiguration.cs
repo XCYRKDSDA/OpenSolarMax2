@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -42,7 +41,7 @@ public class PlanetConfiguration : IConfiguration<PlanetDescription, PlanetConfi
         };
     }
 
-    public PlanetDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public PlanetDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Radius is null || Volume is null || Population is null || ProduceSpeed is null)
             throw new NullReferenceException();
@@ -56,7 +55,7 @@ public class PlanetConfiguration : IConfiguration<PlanetDescription, PlanetConfi
         };
 
         var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 
         if (Party is not null)

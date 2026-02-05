@@ -1,5 +1,6 @@
 using Arch.Buffer;
 using Arch.Core;
+using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
@@ -33,14 +34,14 @@ public abstract class SimpleSoundDefinition : IDefinition
 [Describe(ConceptNames.SimpleSound)]
 public class SimpleSoundDescription : IDescription
 {
-    public required FmodEventDescription SoundEffect { get; set; }
+    public required string SoundEffect { get; set; }
 
     public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
         new AbsoluteTransformOptions();
 }
 
 [Apply(ConceptNames.SimpleSound)]
-public class SimpleSoundApplier(IConceptFactory factory) : IApplier<SimpleSoundDescription>
+public class SimpleSoundApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<SimpleSoundDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
 
@@ -51,7 +52,8 @@ public class SimpleSoundApplier(IConceptFactory factory) : IApplier<SimpleSoundD
                                     new TransformableDescription() { Transform = desc.Transform });
 
         // 创建音频实例
-        desc.SoundEffect.createInstance(out var eventInstance);
+        var soundEffect = assets.Load<FmodEventDescription>(desc.SoundEffect);
+        soundEffect.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
     }

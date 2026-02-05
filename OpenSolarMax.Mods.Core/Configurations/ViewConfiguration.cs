@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -36,7 +35,7 @@ public class ViewConfiguration : IConfiguration<ViewDescription, ViewConfigurati
         };
     }
 
-    public ViewDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public ViewDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Party is null) throw new NullReferenceException();
 
@@ -46,7 +45,7 @@ public class ViewConfiguration : IConfiguration<ViewDescription, ViewConfigurati
         };
 
         var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 
         if (Size is not null)

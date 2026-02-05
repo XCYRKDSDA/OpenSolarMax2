@@ -1,5 +1,4 @@
 using Arch.Core;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -23,7 +22,7 @@ public record ShipConfiguration : IConfiguration<ShipDescription, ShipConfigurat
         };
     }
 
-    public ShipDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public ShipDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Planet is null || Party is null) throw new NullReferenceException();
 

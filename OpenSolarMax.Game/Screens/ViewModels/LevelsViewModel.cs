@@ -78,8 +78,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
         });
         var worldLoader = new WorldLoader(
-            _levelModContext.LocalAssets, factory,
-            _levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+            factory, _levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
         );
         var levelLoader = new LevelLoader(_levelModContext.ConfigurationSchemaInfos);
 

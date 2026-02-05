@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -22,7 +21,7 @@ public class BarrierConfiguration : IConfiguration<BarrierDescription, BarrierCo
         };
     }
 
-    public BarrierDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public BarrierDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Head is null || Tail is null) throw new NullReferenceException();
 

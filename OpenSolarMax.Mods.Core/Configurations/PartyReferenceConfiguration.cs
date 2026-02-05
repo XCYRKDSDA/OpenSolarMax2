@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -28,7 +27,7 @@ public class PartyConfiguration : IConfiguration<PartyDescription, PartyConfigur
         };
     }
 
-    public PartyDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public PartyDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Color is null || Workload is null || Attack is null || Health is null) throw new NullReferenceException();
 

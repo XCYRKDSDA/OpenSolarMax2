@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -27,12 +26,12 @@ public class EmptyObjectConfiguration : IConfiguration<EmptyCoordDescription, Em
         };
     }
 
-    public EmptyCoordDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities, IAssetsManager assets)
+    public EmptyCoordDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         var desc = new EmptyCoordDescription();
 
         var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities, assets);
+        var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 
         return desc;
