@@ -14,25 +14,24 @@ public static partial class ConceptNames
 [Define(ConceptNames.Party)]
 public abstract class PartyDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 阵营参考值
-        typeof(PartyReferenceColor),
-        // 阵营属性
-        typeof(Producible),
-        typeof(Combatable),
-        typeof(Shippable),
-        typeof(ColonizationAbility),
-        // 隶属关系
-        typeof(InParty.AsParty),
-        typeof(PartyPopulationRegistry),
-        // Ai
-        typeof(Ai),
-        typeof(AiTimer),
-        typeof(AiCooldown)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        new Signature(
+            // 阵营参考值
+            typeof(PartyReferenceColor),
+            // 阵营属性
+            typeof(Producible),
+            typeof(Combatable),
+            typeof(Shippable),
+            typeof(ColonizationAbility),
+            // 隶属关系
+            typeof(InParty.AsParty),
+            typeof(PartyPopulationRegistry),
+            // Ai
+            typeof(Ai),
+            typeof(AiTimer),
+            typeof(AiCooldown)
+        );
 }
 
 [Describe(ConceptNames.Party)]

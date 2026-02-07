@@ -18,27 +18,23 @@ public static partial class ConceptNames
 [Define(ConceptNames.Ship)]
 public abstract class ShipDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 效果
-        typeof(Sprite),
-        typeof(SoundEffect),
-        // 动画
-        typeof(Animation),
-        //
-        typeof(InParty.AsAffiliate),
-        typeof(TreeRelationship<Anchorage>.AsChild),
-        typeof(TrailOf.AsShip),
-        typeof(ShippingStatus),
-        typeof(PopulationCost),
-        typeof(TransportingStatus)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            // 效果
+            typeof(Sprite),
+            typeof(SoundEffect),
+            // 动画
+            typeof(Animation),
+            //
+            typeof(InParty.AsAffiliate),
+            typeof(TreeRelationship<Anchorage>.AsChild),
+            typeof(TrailOf.AsShip),
+            typeof(ShippingStatus),
+            typeof(PopulationCost),
+            typeof(TransportingStatus)
+        );
 }
 
 [Describe(ConceptNames.Ship)]

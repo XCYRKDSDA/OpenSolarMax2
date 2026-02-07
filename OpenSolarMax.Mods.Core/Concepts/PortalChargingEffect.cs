@@ -16,18 +16,14 @@ public static partial class ConceptNames
 [Define(ConceptNames.PortalChargingEffect)]
 public abstract class PortalChargingEffectDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        //
-        typeof(SoundEffect),
-        typeof(PortalChargingEffectAssignment)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            //
+            typeof(SoundEffect),
+            typeof(PortalChargingEffectAssignment)
+        );
 }
 
 [Describe(ConceptNames.PortalChargingEffect)]

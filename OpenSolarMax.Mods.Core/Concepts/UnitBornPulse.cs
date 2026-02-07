@@ -17,20 +17,16 @@ public static partial class ConceptNames
 [Define(ConceptNames.UnitBornPulse)]
 public abstract class UnitBornPulseDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        // 效果
-        typeof(Sprite),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 动画
-        typeof(Animation),
-        typeof(ExpireAfterAnimationCompleted)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            // 效果
+            typeof(Sprite),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationCompleted)
+        );
 }
 
 [Describe(ConceptNames.UnitBornPulse)]

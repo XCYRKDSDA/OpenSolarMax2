@@ -16,19 +16,15 @@ public static partial class ConceptNames
 [Define(ConceptNames.SimpleSound)]
 public abstract class SimpleSoundDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 音效
-        typeof(SoundEffect),
-        // 音效结束后死亡
-        typeof(ExpireAfterSoundEffectCompleted)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            // 音效
+            typeof(SoundEffect),
+            // 音效结束后死亡
+            typeof(ExpireAfterSoundEffectCompleted)
+        );
 }
 
 [Describe(ConceptNames.SimpleSound)]

@@ -19,17 +19,16 @@ public static partial class ConceptNames
 [Define(ConceptNames.LaserFlash)]
 public abstract class LaserFlashDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 位姿변환
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 效果
-        typeof(Sprite),
-        // 动画
-        typeof(Animation),
-        typeof(ExpireAfterAnimationCompleted)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            // 效果
+            typeof(Sprite),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationCompleted)
+        );
 }
 
 [Describe(ConceptNames.LaserFlash)]

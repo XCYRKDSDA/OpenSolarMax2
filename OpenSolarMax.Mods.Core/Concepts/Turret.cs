@@ -17,38 +17,34 @@ public static partial class ConceptNames
 [Define(ConceptNames.Turret)]
 public abstract class TurretDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 效果
-        typeof(Sprite),
-        typeof(Shape),
-        // 动画
-        typeof(Animation),
-        //
-        typeof(PlanetGeostationaryOrbit),
-        typeof(AnchoredShipsRegistry),
-        typeof(ShippingUnitsRegistry),
-        typeof(ReachabilityRegistry),
-        typeof(DefaultLaunchPad),
-        typeof(ReferenceSize),
-        typeof(Battlefield),
-        typeof(Colonizable),
-        typeof(ColonizationState),
-        typeof(InParty.AsAffiliate),
-        typeof(TreeRelationship<Anchorage>.AsParent),
-        typeof(AttackRange),
-        typeof(InAttackRangeShipsRegistry),
-        typeof(AttackTimer),
-        typeof(AttackCooldown),
-        typeof(Turret),
-        typeof(PlanetAiTimers)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            // 效果
+            typeof(Sprite),
+            typeof(Shape),
+            // 动画
+            typeof(Animation),
+            //
+            typeof(PlanetGeostationaryOrbit),
+            typeof(AnchoredShipsRegistry),
+            typeof(ShippingUnitsRegistry),
+            typeof(ReachabilityRegistry),
+            typeof(DefaultLaunchPad),
+            typeof(ReferenceSize),
+            typeof(Battlefield),
+            typeof(Colonizable),
+            typeof(ColonizationState),
+            typeof(InParty.AsAffiliate),
+            typeof(TreeRelationship<Anchorage>.AsParent),
+            typeof(AttackRange),
+            typeof(InAttackRangeShipsRegistry),
+            typeof(AttackTimer),
+            typeof(AttackCooldown),
+            typeof(Turret),
+            typeof(PlanetAiTimers)
+        );
 }
 
 [Describe(ConceptNames.Turret)]

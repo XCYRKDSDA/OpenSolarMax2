@@ -15,12 +15,11 @@ public static partial class ConceptNames
 [Define(ConceptNames.PredefinedOrbit)]
 public abstract class PredefinedOrbitDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        typeof(PredefinedOrbit)
-    );
+    public static Signature Signature { get; } =
+        TransformableDefinition.Signature +
+        new Signature(
+            typeof(PredefinedOrbit)
+        );
 }
 
 [Describe(ConceptNames.PredefinedOrbit)]

@@ -18,25 +18,24 @@ public static partial class ConceptNames
 [Define(ConceptNames.View)]
 public abstract class ViewDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        // 交互
-        typeof(Camera),
-        typeof(ManeuvaringShipsStatus),
-        typeof(FMOD.Studio.System),
-        typeof(Viewport),
-        typeof(PreviewStatus),
-        //
-        typeof(InParty.AsAffiliate),
-        // UI 插件
-        typeof(TotalPopulationWidget),
-        // 视图标识
-        typeof(ViewTag)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        new Signature(
+            // 位姿变换
+            typeof(AbsoluteTransform),
+            // 交互
+            typeof(Camera),
+            typeof(ManeuvaringShipsStatus),
+            typeof(FMOD.Studio.System),
+            typeof(Viewport),
+            typeof(PreviewStatus),
+            //
+            typeof(InParty.AsAffiliate),
+            // UI 插件
+            typeof(TotalPopulationWidget),
+            // 视图标识
+            typeof(ViewTag)
+        );
 }
 
 [Describe(ConceptNames.View)]

@@ -17,18 +17,17 @@ public static partial class ConceptNames
 [Define(ConceptNames.TransportationTrail)]
 public abstract class TransportationTrailDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        // 效果
-        typeof(Sprite),
-        // 动画
-        typeof(Animation),
-        typeof(ExpireAfterAnimationCompleted)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        new Signature(
+            // 位姿变换
+            typeof(AbsoluteTransform),
+            // 效果
+            typeof(Sprite),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationCompleted)
+        );
 }
 
 [Describe(ConceptNames.TransportationTrail)]

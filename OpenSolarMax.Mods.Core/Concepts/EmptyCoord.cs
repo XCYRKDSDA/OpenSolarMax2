@@ -2,7 +2,6 @@ using Arch.Buffer;
 using Arch.Core;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -14,13 +13,9 @@ public static partial class ConceptNames
 [Define(ConceptNames.EmptyCoord)]
 public abstract class EmptyCoordDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature;
 }
 
 // 1. 接口的需求来自使用方。接口希望选项平铺，

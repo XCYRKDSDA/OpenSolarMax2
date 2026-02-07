@@ -17,19 +17,15 @@ public static partial class ConceptNames
 [Define(ConceptNames.PortalChargingSurroundFlare)]
 public abstract class PortalChargingSurroundFlareDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 依赖关系
-        typeof(Dependence.AsDependent),
-        typeof(Dependence.AsDependency),
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 效果
-        typeof(Sprite),
-        // 动画
-        typeof(Animation)
-    );
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature +
+        TransformableDefinition.Signature +
+        new Signature(
+            // 效果
+            typeof(Sprite),
+            // 动画
+            typeof(Animation)
+        );
 }
 
 [Describe(ConceptNames.PortalChargingSurroundFlare)]

@@ -19,18 +19,16 @@ public static partial class ConceptNames
 [Define(ConceptNames.LaserBeam)]
 public abstract class LaserBeamDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent),
-        // 效果
-        typeof(Sprite),
-        typeof(SoundEffect),
-        // 动画
-        typeof(Animation),
-        typeof(ExpireAfterAnimationAndSoundEffectCompleted)
-    );
+    public static Signature Signature { get; } =
+        TransformableDefinition.Signature +
+        new Signature(
+            // 效果
+            typeof(Sprite),
+            typeof(SoundEffect),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
+        );
 }
 
 [Describe(ConceptNames.LaserBeam)]
