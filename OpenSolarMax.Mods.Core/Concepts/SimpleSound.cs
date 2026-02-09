@@ -30,7 +30,7 @@ public abstract class SimpleSoundDefinition : IDefinition
 [Describe(ConceptNames.SimpleSound)]
 public class SimpleSoundDescription : IDescription
 {
-    public required string SoundEffect { get; set; }
+    public required OneOf<string, FmodEventDescription> SoundEffect { get; set; }
 
     public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
         new AbsoluteTransformOptions();
@@ -48,7 +48,10 @@ public class SimpleSoundApplier(IAssetsManager assets, IConceptFactory factory) 
                                     new TransformableDescription() { Transform = desc.Transform });
 
         // 创建音频实例
-        var soundEffect = assets.Load<FmodEventDescription>(desc.SoundEffect);
+        var soundEffect = desc.SoundEffect.Match(
+            path => assets.Load<FmodEventDescription>(path),
+            fx => fx
+        );
         soundEffect.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
