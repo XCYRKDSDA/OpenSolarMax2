@@ -65,6 +65,10 @@ public class TurretApplier(IAssetsManager assets, IConceptFactory factory) : IAp
     private const float _referenceRadius = 19.5f; // 78px / 2 / 2
     private const int _volume = 600; // 1000 * 0.3 * 2
 
+    private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>("/Textures/TurretAtlas.json:Turret");
+
+    private readonly TextureRegion _turretShape = assets.Load<TextureRegion>("Textures/TurretAtlas.json:Shape");
+
     private readonly TextureRegion _turretGlow = assets.Load<TextureRegion>("Textures/TurretAtlas.json:TurretGlow");
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory);
@@ -74,8 +78,8 @@ public class TurretApplier(IAssetsManager assets, IConceptFactory factory) : IAp
         // 设置天体基本信息
         _celestialBodyApplier.Apply(commandBuffer, entity, new CelestialBodyDescription()
         {
-            ShapeAssetPath = "/Textures/TurretAtlas.json:Shape",
-            TextureAssetPath = "/Textures/TurretAtlas.json:Turret",
+            Shape = _turretShape,
+            Texture = _turretTexture,
             ReferenceRadius = _referenceRadius,
             Transform = desc.Transform,
             Party = desc.Party,

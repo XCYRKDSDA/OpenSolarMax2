@@ -52,12 +52,12 @@ public class CelestialBodyDescription : IDescription
     /// <summary>
     /// 天体外形贴图的资产路径
     /// </summary>
-    public required string ShapeAssetPath { get; set; }
+    public required OneOf<string, TextureRegion> Shape { get; set; }
 
     /// <summary>
     /// 天体纹理的资产路径
     /// </summary>
-    public required string TextureAssetPath { get; set; }
+    public required OneOf<string, TextureRegion> Texture { get; set; }
 
     /// <summary>
     /// 天体的半径
@@ -103,7 +103,7 @@ public class CelestialBodyApplier(IAssetsManager assets, IConceptFactory factory
         // 设置纹理和外形
         commandBuffer.Set(in entity, new Sprite()
         {
-            Texture = assets.Load<TextureRegion>(desc.TextureAssetPath),
+            Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
             Alpha = 1,
             Size = new Vector2(desc.ReferenceRadius * 2),
             Position = Vector2.Zero,
@@ -113,7 +113,7 @@ public class CelestialBodyApplier(IAssetsManager assets, IConceptFactory factory
         });
         commandBuffer.Set(in entity, new Shape()
         {
-            Texture = assets.Load<TextureRegion>(desc.ShapeAssetPath),
+            Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
             Size = new Vector2(desc.ReferenceRadius * 2),
             Position = Vector2.Zero,
             Rotation = 0,

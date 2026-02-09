@@ -1,6 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using Nine.Assets;
+using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
@@ -45,6 +46,10 @@ public class PortalApplier(IAssetsManager assets, IConceptFactory factory) : IAp
     private const float _referenceRadius = 24f; // 96px / 2 / 2
     private const int _volume = 400;
 
+    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Shape");
+
+    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Portal");
+
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PortalDescription desc)
@@ -52,8 +57,8 @@ public class PortalApplier(IAssetsManager assets, IConceptFactory factory) : IAp
         // 设置天体基本信息
         _celestialBodyApplier.Apply(commandBuffer, entity, new CelestialBodyDescription()
         {
-            ShapeAssetPath = "/Textures/PortalAtlas.json:Shape",
-            TextureAssetPath = "/Textures/PortalAtlas.json:Portal",
+            Shape = _portalShape,
+            Texture = _portalTexture,
             ReferenceRadius = _referenceRadius,
             Transform = desc.Transform,
             Party = desc.Party,
