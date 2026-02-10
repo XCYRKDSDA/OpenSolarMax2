@@ -1,23 +1,18 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("planet")]
-public class PlanetConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.Planet), SchemaName("planet")]
+public class PlanetConfiguration : IConfiguration<PlanetDescription, PlanetConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
     public OrbitConfiguration? Orbit { get; set; }
-
-    #endregion
 
     public float? Radius { get; set; }
 
@@ -29,10 +24,8 @@ public class PlanetConfiguration : IEntityConfiguration, ITransformableConfigura
 
     public float? ProduceSpeed { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public PlanetConfiguration Aggregate(PlanetConfiguration newCfg)
     {
-        if (@new is not PlanetConfiguration newCfg) throw new InvalidDataException();
-
         return new PlanetConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -48,26 +41,26 @@ public class PlanetConfiguration : IEntityConfiguration, ITransformableConfigura
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public PlanetDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Radius is null) throw new NullReferenceException();
-        if (Volume is null) throw new NullReferenceException();
-        if (Population is null) throw new NullReferenceException();
-        if (ProduceSpeed is null) throw new NullReferenceException();
+        if (Radius is null || Volume is null || Population is null || ProduceSpeed is null)
+            throw new NullReferenceException();
 
-        var template = new PlanetTemplate(assets)
+        var desc = new PlanetDescription()
         {
             ReferenceRadius = Radius.Value,
             Volume = Volume.Value,
             Population = Population.Value,
-            ProduceSpeed = ProduceSpeed.Value
+            ProduceSpeed = ProduceSpeed.Value,
         };
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities);
+        desc.Transform = tfDesc.Transform;
 
         if (Party is not null)
-            template.Party = ctx.OtherEntities[Party];
+            desc.Party = otherEntities[Party];
 
-        return template;
+        return desc;
     }
 }

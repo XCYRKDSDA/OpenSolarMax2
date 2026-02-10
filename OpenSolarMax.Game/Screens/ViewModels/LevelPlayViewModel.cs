@@ -6,8 +6,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
-using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 
@@ -35,23 +36,40 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(Level level, LevelModContext levelModContext, SolarMax game) : base(game)
+    public LevelPlayViewModel(LevelFile level, LevelModContext levelModContext, SolarMax game) : base(game)
     {
         // 构造世界和系统
         _world = World.Create();
+        var factory = new ConceptFactory(levelModContext.ConceptInfos.Values, new Dictionary<Type, object>()
+        {
+            [typeof(GraphicsDevice)] = game.GraphicsDevice,
+            [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+        });
         _inputSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Input.Sorted,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = factory,
+            },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _aiSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Ai.Sorted,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = factory,
+            },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _simulateSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Simulate.Sorted,
-            new Dictionary<Type, object> { [typeof(IAssetsManager)] = levelModContext.LocalAssets },
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = factory,
+            },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _renderSystem = new AggregateSystem(
@@ -65,7 +83,9 @@ internal partial class LevelPlayViewModel : ViewModelBase
         );
 
         // 加载关卡内容
-        var worldLoader = new WorldLoader(levelModContext.LocalAssets);
+        var worldLoader = new WorldLoader(
+            factory, levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+        );
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
         while (enumerator.MoveNext())

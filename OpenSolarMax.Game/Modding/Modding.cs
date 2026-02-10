@@ -2,7 +2,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Myra.Graphics2D.UI;
-using OpenSolarMax.Game.Data;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 using Zio;
@@ -64,22 +65,60 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns>所有配置器的类型和其对应的键值</returns>
-    public static Dictionary<string, Type> FindConfigurationTypes(Assembly assembly)
+    public static Dictionary<string, ConfigurationSchemaInfo> FindConfigurationTypes(Assembly assembly)
     {
-        var configurationTypes = new Dictionary<string, Type>();
+        var configurationTypes = new Dictionary<string, ConfigurationSchemaInfo>();
 
         foreach (var type in assembly.GetExportedTypes())
         {
-            if (!type.GetInterfaces().Contains(typeof(IEntityConfiguration)))
+            if (!type.GetInterfaces().Contains(typeof(IConfiguration)))
                 continue;
 
-            var attr = type.GetCustomAttribute<ConfigurationKeyAttribute>()
-                       ?? throw new Exception($"Can't find attribute ConfiguratorKey in type {type.Name}");
+            var configureAttr = type.GetCustomAttribute<ConfigureAttribute>() ??
+                                throw new Exception($"Can't find attribute `Configure` in type {type.Name}");
 
-            configurationTypes.Add(attr.Key, type);
+            var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>()
+                                 ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
+
+            configurationTypes.Add(schemaNameAttr.Name,
+                                   new ConfigurationSchemaInfo(type, configureAttr.Target, schemaNameAttr.Name));
         }
 
         return configurationTypes;
+    }
+
+    public static Dictionary<string, ConceptRelatedTypes> FindConceptRelatedTypes(Assembly assembly)
+    {
+        var definitionTypes = new Dictionary<string, Type>();
+        var descriptionTypes = new Dictionary<string, Type>();
+        var applierTypes = new Dictionary<string, Type>();
+        foreach (var type in assembly.GetExportedTypes())
+        {
+            if (type.GetInterfaces().Contains(typeof(IDefinition)))
+            {
+                var name = type.GetCustomAttribute<DefineAttribute>()!.Key;
+                definitionTypes.Add(name, type);
+            }
+            else if (type.GetInterfaces().Contains(typeof(IDescription)))
+            {
+                var name = type.GetCustomAttribute<DescribeAttribute>()!.Key;
+                descriptionTypes.Add(name, type);
+            }
+            else if (type.GetInterfaces().Contains(typeof(IApplier)) ||
+                     type.GetInterfaces().Any(i => i.IsGenericType &&
+                                                   i.GetGenericTypeDefinition() == typeof(IApplier<>)))
+            {
+                var name = type.GetCustomAttribute<ApplyAttribute>()!.Key;
+                applierTypes.Add(name, type);
+            }
+        }
+
+        var allConceptNames = definitionTypes.Keys.Concat(descriptionTypes.Keys).Concat(applierTypes.Keys).ToHashSet();
+        return allConceptNames.ToDictionary(
+            k => k,
+            k => new ConceptRelatedTypes(definitionTypes.GetValueOrDefault(k), descriptionTypes.GetValueOrDefault(k),
+                                         applierTypes.GetValueOrDefault(k))
+        );
     }
 
     /// <summary>

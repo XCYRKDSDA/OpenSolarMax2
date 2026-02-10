@@ -1,39 +1,35 @@
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using Arch.Core;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("ship")]
-public class ShipConfiguration : IEntityConfiguration
+[Configure(ConceptNames.Ship), SchemaName("ship")]
+public record ShipConfiguration : IConfiguration<ShipDescription, ShipConfiguration>
 {
     public string? Planet { get; set; }
 
     public string? Party { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
-    {
-        if (@new is not ShipConfiguration newCfg) throw new InvalidDataException();
+    public IReadOnlyList<string> Requirements => [Planet!];
 
+    public ShipConfiguration Aggregate(ShipConfiguration @new)
+    {
         return new ShipConfiguration()
         {
-            Planet = newCfg.Planet ?? Planet,
-            Party = newCfg.Party ?? Party
+            Planet = @new.Planet ?? Planet,
+            Party = @new.Party ?? Party
         };
     }
 
-    public string[] Requirements => [Planet!];
-
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public ShipDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Planet is null) throw new NullReferenceException();
-        if (Party is null) throw new NullReferenceException();
+        if (Planet is null || Party is null) throw new NullReferenceException();
 
-        return new ShipTemplate(assets)
+        return new ShipDescription()
         {
-            Planet = ctx.OtherEntities[Planet],
-            Party = ctx.OtherEntities[Party],
+            Planet = otherEntities[Planet],
+            Party = otherEntities[Party],
         };
     }
 }

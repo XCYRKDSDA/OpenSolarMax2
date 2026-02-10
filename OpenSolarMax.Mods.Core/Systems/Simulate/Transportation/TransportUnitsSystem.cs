@@ -6,11 +6,10 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
-using OpenSolarMax.Mods.Core.Templates.Options;
+using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
@@ -108,9 +107,11 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 [Iterate(typeof(TransportingStatus)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(ProgressUnitsTransportationSystem))]
-public partial class TransportUnitsSystem(World world, IAssetsManager assets) : ICalcSystemWithStructuralChanges
+public partial class TransportUnitsSystem(World world, IAssetsManager assets, IConceptFactory factory)
+    : ICalcSystemWithStructuralChanges
 {
-    private FmodEventDescription _warpingSoundEffect = assets.Load<FmodEventDescription>("Sounds/Master.bank:/Warping");
+    private readonly FmodEventDescription _warpingSoundEffect =
+        assets.Load<FmodEventDescription>("Sounds/Master.bank:/Warping");
 
     [Query]
     [All<TransportingStatus, AbsoluteTransform, Sprite, TreeRelationship<Anchorage>.AsChild,
@@ -128,7 +129,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets) : 
             var departure = asChild.Relationship!.Value.Copy.Parent;
             var destination = status.Task.DestinationPlanet;
 
-            world.Make(commandBuffer, new UnitAfterImageTemplate(assets)
+            factory.Make(world, commandBuffer, new UnitAfterImageDescription()
             {
                 Position = pose.Translation,
                 Rotation = pose.Rotation,
@@ -139,12 +140,12 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets) : 
             commandBuffer.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref);
             commandBuffer.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref);
             // 锚定单位到新星球
-            world.Make(commandBuffer, new AnchorageTemplate()
+            factory.Make(world, commandBuffer, new AnchorageDescription()
             {
                 Planet = status.Task.DestinationPlanet,
                 Ship = ship
             });
-            world.Make(commandBuffer, new RevolutionTemplate()
+            factory.Make(world, commandBuffer, new RevolutionDescription()
             {
                 Parent = status.Task.DestinationPlanet,
                 Child = ship,
@@ -154,7 +155,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets) : 
                 InitPhase = status.Task.ExpectedRevolutionState.Phase
             });
 
-            world.Make(commandBuffer, new TransportationTrailTemplate(assets)
+            factory.Make(world, commandBuffer, new TransportationTrailDescription()
             {
                 Head = ship.Get<AbsoluteTransform>().Translation,
                 Tail = (RevolutionUtils
@@ -189,7 +190,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets) : 
         // 对每个阵营每次抵达只创建一个抵达效果
         foreach (var (destination, party) in _arrivalsPerFrame)
         {
-            world.Make(commandBuffer, new DestinationEffectTemplate(assets)
+            factory.Make(world, commandBuffer, new DestinationEffectDescription()
             {
                 Portal = destination,
                 Color = party.Get<PartyReferenceColor>().Value,
@@ -205,7 +206,7 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets) : 
                           destination.Get<AbsoluteTransform>().Translation) / 2;
 
             // 创建音效
-            world.Make(commandBuffer, new SimpleSoundTemplate()
+            factory.Make(world, commandBuffer, new SimpleSoundDescription()
             {
                 Transform = new AbsoluteTransformOptions() { Translation = center, Rotation = Quaternion.Identity },
                 SoundEffect = _warpingSoundEffect,

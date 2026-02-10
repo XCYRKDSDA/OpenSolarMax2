@@ -5,10 +5,10 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -21,14 +21,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 先计算进度，再判断是否完成殖民
 [ExecuteAfter(typeof(ProgressColonizationSystem))]
-public sealed partial class SettleColonizationSystem(World world, IAssetsManager assets)
+public sealed partial class SettleColonizationSystem(World world, IAssetsManager assets, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private void CreateHaloExplosion(CommandBuffer commandBuffer, Entity planet, Color color)
     {
         ref var planetAbsoluteTransform = ref planet.Get<AbsoluteTransform>();
         ref readonly var refSize = ref planet.Get<ReferenceSize>();
-        _ = world.Make(commandBuffer, new HaloExplosionTemplate(assets)
+        factory.Make(world, commandBuffer, new HaloExplosionDescription()
         {
             Color = color,
             Position = planetAbsoluteTransform.Translation,
@@ -50,7 +50,10 @@ public sealed partial class SettleColonizationSystem(World world, IAssetsManager
 
             // 完成殖民
             if (planetParty is null)
-                world.Make(commandBuffer, new InPartyTemplate() { Party = state.Party, Affiliate = planet });
+            {
+                factory.Make(world, commandBuffer,
+                             new InPartyDescription() { Party = state.Party, Affiliate = planet });
+            }
         }
         else if (state.Event == ColonizationEvent.Destroyed)
         {

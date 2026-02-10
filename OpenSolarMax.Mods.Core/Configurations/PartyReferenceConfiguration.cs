@@ -1,13 +1,12 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("party")]
-public class PartyConfiguration : IEntityConfiguration
+[Configure(ConceptNames.Party), SchemaName("party")]
+public class PartyConfiguration : IConfiguration<PartyDescription, PartyConfiguration>
 {
     public Color? Color { get; set; }
 
@@ -17,10 +16,8 @@ public class PartyConfiguration : IEntityConfiguration
 
     public float? Health { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public PartyConfiguration Aggregate(PartyConfiguration newCfg)
     {
-        if (@new is not PartyConfiguration newCfg) throw new InvalidDataException();
-
         return new PartyConfiguration()
         {
             Color = newCfg.Color ?? Color,
@@ -30,21 +27,18 @@ public class PartyConfiguration : IEntityConfiguration
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public PartyDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Color is null) throw new NullReferenceException();
-        if (Workload is null) throw new NullReferenceException();
-        if (Attack is null) throw new NullReferenceException();
-        if (Health is null) throw new NullReferenceException();
+        if (Color is null || Workload is null || Attack is null || Health is null) throw new NullReferenceException();
 
-        var template = new PartyTemplate()
+        var desc = new PartyDescription()
         {
             Color = Color.Value,
             Workload = Workload.Value,
             Attack = Attack.Value,
-            Health = Health.Value
+            Health = Health.Value,
         };
 
-        return template;
+        return desc;
     }
 }
