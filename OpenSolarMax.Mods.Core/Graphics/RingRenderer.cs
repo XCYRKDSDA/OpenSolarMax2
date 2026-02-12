@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -10,13 +9,13 @@ namespace OpenSolarMax.Mods.Core.Graphics;
 /// </summary>
 /// <param name="graphicsDevice"></param>
 /// <param name="assets"></param>
-internal class RingRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+internal class RingRenderer(GraphicsDevice graphicsDevice)
 {
     private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
     private static readonly int[] _indices = [0, 1, 2, 3];
     private static readonly Vector3[] _square = [new(-1, 1, 0), new(1, 1, 0), new(-1, -1, 0), new(1, -1, 0)];
 
-    public RingEffect Effect { get; } = new(graphicsDevice, assets);
+    public RingEffect Effect { get; } = new(graphicsDevice);
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 

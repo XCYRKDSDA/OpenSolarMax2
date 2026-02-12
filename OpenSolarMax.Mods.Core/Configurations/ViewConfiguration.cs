@@ -1,23 +1,18 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("view")]
-public class ViewConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.View), SchemaName("view")]
+public class ViewConfiguration : IConfiguration<ViewDescription, ViewConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
     public OrbitConfiguration? Orbit { get; set; }
-
-    #endregion
 
     public int[]? Size { get; set; }
 
@@ -25,10 +20,8 @@ public class ViewConfiguration : IEntityConfiguration, ITransformableConfigurati
 
     public string? Party { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public ViewConfiguration Aggregate(ViewConfiguration newCfg)
     {
-        if (@new is not ViewConfiguration newCfg) throw new InvalidDataException();
-
         return new ViewConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -42,21 +35,24 @@ public class ViewConfiguration : IEntityConfiguration, ITransformableConfigurati
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public ViewDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (Party is null) throw new NullReferenceException();
-        var template = new ViewTemplate(assets)
+
+        var desc = new ViewDescription()
         {
-            Party = ctx.OtherEntities[Party]
+            Party = otherEntities[Party],
         };
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities);
+        desc.Transform = tfDesc.Transform;
 
         if (Size is not null)
-            template.Size = new(Size[0], Size[1]);
+            desc.Size = new Point(Size[0], Size[1]);
         if (Depth is not null)
-            template.Depth = (Depth[0], Depth[1]);
+            desc.Depth = (Depth[0], Depth[1]);
 
-        return template;
+        return desc;
     }
 }

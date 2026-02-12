@@ -7,10 +7,10 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Utils;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -18,7 +18,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InParty.AsAffiliate)),
  ReadCurr(typeof(ReachabilityRegistry))]
 [Iterate(typeof(ShippingStatus)), ChangeStructure]
-public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : ICalcSystemWithStructuralChanges
+public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IConceptFactory factory)
+    : ICalcSystemWithStructuralChanges
 {
     private const int _minimalSelectPixels = 10;
 
@@ -134,7 +135,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : 
                             departure, selection.SimpleSelecting.TappingDestination))
                         continue;
 
-                    world.Make(commandBuffer, new ShippingRequestTemplate()
+                    factory.Make(world, commandBuffer, new ShippingRequestDescription()
                     {
                         Departure = departure,
                         Destination = selection.SimpleSelecting.TappingDestination,
@@ -185,7 +186,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(World world) : 
                                 departure, selection.DraggingToDestination.CandidateDestination))
                             continue;
 
-                        world.Make(commandBuffer, new ShippingRequestTemplate()
+                        factory.Make(world, commandBuffer, new ShippingRequestDescription()
                         {
                             Departure = departure,
                             Destination = selection.DraggingToDestination.CandidateDestination,

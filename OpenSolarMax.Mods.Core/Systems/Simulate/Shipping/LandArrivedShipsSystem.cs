@@ -4,10 +4,10 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Utils;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
@@ -22,7 +22,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(UpdateShipsStateSystem))]
 // 以防一帧内抵达，要允许一帧内先从 Charging 到 Travelling，然后立刻降落
 [ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
-public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets)
+public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager assets, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private readonly List<Entity> _arrivedEntities = [];
@@ -49,14 +49,14 @@ public sealed partial class LandArrivedShipsSystem(World world, IAssetsManager a
         status.State = ShippingState.Idle;
 
         // 将单位挂载到目标星球
-        world.Make(commandBuffer, new AnchorageTemplate()
+        factory.Make(world, commandBuffer, new AnchorageDescription()
         {
             Planet = status.Task.DestinationPlanet,
             Ship = ship,
         });
 
         // 创建公转关系
-        world.Make(commandBuffer, new RevolutionTemplate()
+        factory.Make(world, commandBuffer, new RevolutionDescription()
         {
             Parent = status.Task.DestinationPlanet,
             Child = ship,

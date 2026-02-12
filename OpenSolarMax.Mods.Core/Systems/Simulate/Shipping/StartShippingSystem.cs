@@ -6,10 +6,10 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Utils;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
@@ -29,7 +29,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(UpdateShipsStateSystem)), ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
 // 这一帧刚抵达的单位不会立刻出发
 [ExecuteBefore(typeof(LandArrivedShipsSystem))]
-public sealed partial class StartShippingSystem(World world, IAssetsManager assets) : ICalcSystemWithStructuralChanges
+public sealed partial class StartShippingSystem(World world, IAssetsManager assets, IConceptFactory factory)
+    : ICalcSystemWithStructuralChanges
 {
     private FmodEventDescription _chargingSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
@@ -118,7 +119,7 @@ public sealed partial class StartShippingSystem(World world, IAssetsManager asse
             instance.start();
 
             // 创建单位的尾迹
-            _ = world.Make(commandBuffer, new UnitTrailTemplate(assets) { Unit = ship });
+            factory.Make(world, commandBuffer, new UnitTrailDescription() { Unit = ship });
         }
 
         // 移除任务

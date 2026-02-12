@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -83,8 +84,8 @@ internal class ExposureEffect : Effect
 
     #endregion
 
-    public ExposureEffect(GraphicsDevice graphicsDevice, IAssetsManager assets)
-        : base(graphicsDevice, assets.Load<byte[]>("Effects/Exposure.mgfxo"))
+    public ExposureEffect(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice, EffectResource.ExposureEffect.Bytecode)
     {
         _textureParam = Parameters["tex_sampler+tex"];
         _centerParam = Parameters["center"];

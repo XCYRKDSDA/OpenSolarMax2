@@ -11,20 +11,11 @@ public interface ITemplate
 {
     Signature Signature { get; }
 
-    void Apply(Entity entity);
-
     void Apply(CommandBuffer commandBuffer, Entity entity);
 }
 
 public static class TemplateExtensions
 {
-    public static Entity Make(this World world, ITemplate template)
-    {
-        var entity = world.Construct(template.Signature);
-        template.Apply(entity);
-        return entity;
-    }
-
     public static Entity Make(this World world, CommandBuffer commandBuffer, ITemplate template)
     {
         var entity = world.Construct(commandBuffer, template.Signature);

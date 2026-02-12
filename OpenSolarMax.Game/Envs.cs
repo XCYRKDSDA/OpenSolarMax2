@@ -15,7 +15,7 @@ public static class Envs
 
     private static string[] SplitPaths(string? str)
     {
-        return str?.Split(':') ?? [];
+        return str?.Split(Path.PathSeparator) ?? [];
     }
 
     public static string[] CustomBehaviorModPaths

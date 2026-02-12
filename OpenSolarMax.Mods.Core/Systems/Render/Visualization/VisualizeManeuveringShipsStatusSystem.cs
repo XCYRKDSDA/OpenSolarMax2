@@ -7,8 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using OpenSolarMax.Mods.Core.Utils;
@@ -25,7 +25,7 @@ public delegate bool? CheckLocationReachabilityCallback(World world,
 [ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
 [ConfigurationSection("systems:visualization:maneuvering_ships_status")]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IConfiguration configs) : ICalcSystem
 {
     private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier")!;
     private readonly float _ringThickness = configs.GetValue<float>("ring:thickness")!;
@@ -41,9 +41,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     private readonly Color _lineColor = configs.GetValue<Color>("line:color")!;
     private readonly Color _blockedLineColor = configs.GetValue<Color>("line:blocked:color")!;
 
-    private readonly BoxRenderer _boxRenderer = new(graphicsDevice, assets);
-    private readonly CircleRenderer _circleRenderer = new(graphicsDevice, assets);
-    private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice, assets);
+    private readonly BoxRenderer _boxRenderer = new(graphicsDevice);
+    private readonly CircleRenderer _circleRenderer = new(graphicsDevice);
+    private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice);
 
     [Hook("CheckLocationReachability")]
     public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }

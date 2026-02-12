@@ -1,22 +1,19 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("barrier")]
-public record BarrierConfiguration : IEntityConfiguration
+[Configure(ConceptNames.Barrier), SchemaName("barrier")]
+public class BarrierConfiguration : IConfiguration<BarrierDescription, BarrierConfiguration>
 {
     public Vector2? Head { get; set; }
 
     public Vector2? Tail { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public BarrierConfiguration Aggregate(BarrierConfiguration newCfg)
     {
-        if (@new is not BarrierConfiguration newCfg) throw new InvalidDataException();
-
         return new BarrierConfiguration()
         {
             Head = newCfg.Head ?? Head,
@@ -24,17 +21,16 @@ public record BarrierConfiguration : IEntityConfiguration
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public BarrierDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Head is null) throw new NullReferenceException();
-        if (Tail is null) throw new NullReferenceException();
+        if (Head is null || Tail is null) throw new NullReferenceException();
 
-        var template = new BarrierTemplate()
+        var desc = new BarrierDescription()
         {
-            Head = new(Head.Value, 0),
-            Tail = new(Tail.Value, 0)
+            Head = new Vector3(Head.Value, 0),
+            Tail = new Vector3(Tail.Value, 0)
         };
 
-        return template;
+        return desc;
     }
 }

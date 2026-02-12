@@ -5,8 +5,10 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -21,7 +23,7 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
     private static readonly QueryDescription _previewableDesc =
         new QueryDescription().WithAll<Shape, AbsoluteTransform>();
 
-    private readonly Effect _effect = new(graphicsDevice, assets.Load<byte[]>("Effects/Sprite.mgfxo"));
+    private readonly Effect _effect = new(graphicsDevice, EffectResource.SpriteEffect.Bytecode);
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
 
     public void Update()

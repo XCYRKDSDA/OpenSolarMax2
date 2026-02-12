@@ -1,21 +1,18 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("orbit")]
-public class PredefinedOrbitConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.PredefinedOrbit), SchemaName("orbit")]
+public class PredefinedOrbitConfiguration : IConfiguration<PredefinedOrbitDescription, PredefinedOrbitConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
-    public Vector2? Position { get; set; }
-    public OrbitConfiguration? Orbit { get; set; }
 
-    #endregion
+    public Vector2? Position { get; set; }
+
+    public OrbitConfiguration? Orbit { get; set; }
 
     public Vector2? Shape { get; set; }
 
@@ -23,11 +20,8 @@ public class PredefinedOrbitConfiguration : IEntityConfiguration, ITransformable
 
     public float? Period { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public PredefinedOrbitConfiguration Aggregate(PredefinedOrbitConfiguration newCfg)
     {
-        if (@new is not PredefinedOrbitConfiguration newCfg)
-            throw new InvalidDataException();
-
         return new PredefinedOrbitConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -41,22 +35,23 @@ public class PredefinedOrbitConfiguration : IEntityConfiguration, ITransformable
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public PredefinedOrbitDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Shape is null) throw new NullReferenceException();
-        if (Period is null) throw new NullReferenceException();
+        if (Shape is null || Period is null) throw new NullReferenceException();
 
-        var template = new PredefinedOrbitTemplate()
+        var desc = new PredefinedOrbitDescription()
         {
             Shape = Shape.Value,
             Period = Period.Value
         };
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities);
+        desc.Transform = tfDesc.Transform;
 
         if (Roll is not null)
-            template.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Roll.Value);
+            desc.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Roll.Value);
 
-        return template;
+        return desc;
     }
 }

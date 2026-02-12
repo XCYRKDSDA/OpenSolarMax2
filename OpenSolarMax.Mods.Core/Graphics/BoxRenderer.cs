@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
@@ -10,12 +9,12 @@ namespace OpenSolarMax.Mods.Core.Graphics;
 /// </summary>
 /// <param name="graphicsDevice"></param>
 /// <param name="assets"></param>
-internal class BoxRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+internal class BoxRenderer(GraphicsDevice graphicsDevice)
 {
     private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
     private static readonly int[] _indices = [0, 1, 2, 3];
 
-    public BoxEffect Effect { get; } = new(graphicsDevice, assets);
+    public BoxEffect Effect { get; } = new(graphicsDevice);
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 

@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
@@ -28,7 +29,7 @@ public sealed partial class VisualizeEntityIdsSystem(
                                                   .GetFont(configs.GetValue<int>("text:size")!);
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
-    private readonly RingRenderer _ringRenderer = new(graphicsDevice, assets);
+    private readonly RingRenderer _ringRenderer = new(graphicsDevice);
 
     public void Update() => RenderToCameraQuery(world);
 

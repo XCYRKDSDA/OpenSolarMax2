@@ -4,11 +4,10 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Utils;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Templates;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -18,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Iterate(typeof(AttackTimer)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
-public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager assets)
+public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myParty)
@@ -59,7 +58,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
         var turretColor = turretParty.Get<PartyReferenceColor>().Value;
-        world.Make(commandBuffer, new LaserBeamTemplate(assets)
+        factory.Make(world, commandBuffer, new LaserBeamDescription()
         {
             Planet = entity,
             TargetPosition = targetPosition,
@@ -68,7 +67,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
 
         if (turret.GlowTexture is not null)
         {
-            world.Make(commandBuffer, new LaserFlashTemplate(assets)
+            factory.Make(world, commandBuffer, new LaserFlashDescription()
             {
                 Turret = entity,
                 Color = Color.White,
@@ -80,10 +79,12 @@ public sealed partial class ShootShippingUnitsSystem(World world, IAssetsManager
         var targetColor = targetParty.Get<PartyReferenceColor>().Value;
 
         // 生成闪光
-        _ = world.Make(commandBuffer, new UnitFlareTemplate(assets) { Color = targetColor, Position = targetPosition });
+        factory.Make(world, commandBuffer,
+                     new UnitFlareDescription() { Color = targetColor, Position = targetPosition });
 
         // 生成冲击波
-        _ = world.Make(commandBuffer, new UnitPulseTemplate(assets) { Color = targetColor, Position = targetPosition });
+        factory.Make(world, commandBuffer,
+                     new UnitPulseDescription() { Color = targetColor, Position = targetPosition });
 
         commandBuffer.Destroy(target.Value);
     }

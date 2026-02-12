@@ -1,31 +1,23 @@
+using Arch.Core;
 using Microsoft.Xna.Framework;
-using Nine.Assets;
-using OpenSolarMax.Game.Data;
-using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Core.Templates;
-using FmodEventDescription = FMOD.Studio.EventDescription;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Configurations;
 
-[ConfigurationKey("sound")]
-public class SoundConfiguration : IEntityConfiguration, ITransformableConfiguration
+[Configure(ConceptNames.SimpleSound), SchemaName("sound")]
+public class SoundConfiguration : IConfiguration<SimpleSoundDescription, SoundConfiguration>
 {
-    #region Transformable
-
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
     public OrbitConfiguration? Orbit { get; set; }
 
-    #endregion
-
     public string? Sound { get; set; }
 
-    public IEntityConfiguration Aggregate(IEntityConfiguration @new)
+    public SoundConfiguration Aggregate(SoundConfiguration newCfg)
     {
-        if (@new is not SoundConfiguration newCfg) throw new InvalidDataException();
-
         return new SoundConfiguration()
         {
             Parent = newCfg.Parent ?? Parent,
@@ -33,17 +25,23 @@ public class SoundConfiguration : IEntityConfiguration, ITransformableConfigurat
             Orbit = Orbit is not null && newCfg.Orbit is not null
                         ? Orbit.Aggregate(newCfg.Orbit)
                         : newCfg.Orbit ?? Orbit,
+            Sound = newCfg.Sound ?? Sound,
         };
     }
 
-    public ITemplate ToTemplate(WorldLoadingContext ctx, IAssetsManager assets)
+    public SimpleSoundDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
         if (string.IsNullOrEmpty(Sound)) throw new NullReferenceException();
 
-        var template = new SimpleSoundTemplate() { SoundEffect = assets.Load<FmodEventDescription>(Sound) };
+        var desc = new SimpleSoundDescription()
+        {
+            SoundEffect = Sound,
+        };
 
-        template.Transform = (this as ITransformableConfiguration).ParseOptions(ctx);
+        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfDesc = tfCfg.ToDescription(otherEntities);
+        desc.Transform = tfDesc.Transform;
 
-        return template;
+        return desc;
     }
 }
