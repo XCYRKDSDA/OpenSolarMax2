@@ -9,6 +9,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
@@ -51,12 +52,12 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
         _barrierTexture = assets.Load<NinePatchRegion>("Textures/BarrierAtlas.json:Edge");
 
         // 行为配置
-        _nodeSize = configs.GetValue<float>("node:size")!;
-        _nodeColor = configs.GetValue<Color>("node:color")!;
-        _edgeThickness = configs.GetValue<float>("edge:thickness")!;
-        _edgeDashLength = configs.GetValue<float>("edge:dash_length")!;
-        _edgeGapLength = configs.GetValue<float>("edge:gap_length")!;
-        _edgeColor = configs.GetValue<Color>("edge:color")!;
+        _nodeSize = configs.RequireValue<float>("node:size");
+        _nodeColor = configs.RequireValue<Color>("node:color");
+        _edgeThickness = configs.RequireValue<float>("edge:thickness");
+        _edgeDashLength = configs.RequireValue<float>("edge:dash_length");
+        _edgeGapLength = configs.RequireValue<float>("edge:gap_length");
+        _edgeColor = configs.RequireValue<Color>("edge:color");
     }
 
     public void Update()

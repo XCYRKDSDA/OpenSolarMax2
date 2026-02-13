@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using OpenSolarMax.Mods.Core.Utils;
@@ -27,19 +28,19 @@ public delegate bool? CheckLocationReachabilityCallback(World world,
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world, GraphicsDevice graphicsDevice, IConfiguration configs) : ICalcSystem
 {
-    private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier")!;
-    private readonly float _ringThickness = configs.GetValue<float>("ring:thickness")!;
-    private readonly Color _hoveredRingColor = configs.GetValue<Color>("ring:hovered:color")!;
-    private readonly Color _blockedRingColor = configs.GetValue<Color>("ring:blocked:color")!;
-    private readonly Color _selectedRingColor = configs.GetValue<Color>("ring:selected:color")!;
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
+    private readonly Color _hoveredRingColor = configs.RequireValue<Color>("ring:hovered:color");
+    private readonly Color _blockedRingColor = configs.RequireValue<Color>("ring:blocked:color");
+    private readonly Color _selectedRingColor = configs.RequireValue<Color>("ring:selected:color");
 
-    private readonly float _boxThickness = configs.GetValue<float>("box:thickness")!;
-    private readonly Color _boxColor = configs.GetValue<Color>("box:color")!;
+    private readonly float _boxThickness = configs.RequireValue<float>("box:thickness");
+    private readonly Color _boxColor = configs.RequireValue<Color>("box:color");
 
-    private readonly float _lineThickness = configs.GetValue<float>("line:thickness")!;
-    private readonly float _lineRound = configs.GetValue<float>("line:round")!;
-    private readonly Color _lineColor = configs.GetValue<Color>("line:color")!;
-    private readonly Color _blockedLineColor = configs.GetValue<Color>("line:blocked:color")!;
+    private readonly float _lineThickness = configs.RequireValue<float>("line:thickness");
+    private readonly float _lineRound = configs.RequireValue<float>("line:round");
+    private readonly Color _lineColor = configs.RequireValue<Color>("line:color");
+    private readonly Color _blockedLineColor = configs.RequireValue<Color>("line:blocked:color");
 
     private readonly BoxRenderer _boxRenderer = new(graphicsDevice);
     private readonly CircleRenderer _circleRenderer = new(graphicsDevice);

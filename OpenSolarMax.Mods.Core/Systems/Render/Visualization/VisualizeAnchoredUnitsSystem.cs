@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
@@ -21,23 +22,23 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class VisualizeAnchoredUnitsSystem(
     World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
 {
-    private readonly int _textSize = configs.GetValue<int>("text:size")!;
-    private readonly string _textFormat = configs.GetValue<string>("text:template")!;
-    private readonly float _shadowDistance = configs.GetValue<float>("shadow:distance")!;
-    private readonly float _shadowDensity = configs.GetValue<float>("shadow:density")!;
+    private readonly int _textSize = configs.RequireValue<int>("text:size");
+    private readonly string _textFormat = configs.RequireValue<string>("text:template");
+    private readonly float _shadowDistance = configs.RequireValue<float>("shadow:distance");
+    private readonly float _shadowDensity = configs.RequireValue<float>("shadow:density");
 
-    private readonly float _labelXOffsetFactor = configs.GetValue<float>("label:offset_multipliers:x")!;
-    private readonly float _labelYOffsetFactor = configs.GetValue<float>("label:offset_multipliers:y")!;
+    private readonly float _labelXOffsetFactor = configs.RequireValue<float>("label:offset_multipliers:x");
+    private readonly float _labelYOffsetFactor = configs.RequireValue<float>("label:offset_multipliers:y");
 
-    private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier")!;
-    private readonly float _ringThickness = configs.GetValue<float>("ring:thickness")!;
-    private readonly float _labelRadiusFactor = configs.GetValue<float>("ring:label:radius_multiplier")!;
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
+    private readonly float _labelRadiusFactor = configs.RequireValue<float>("ring:label:radius_multiplier");
 
     private static readonly QueryDescription _planetDesc =
         new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
 
     private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
-                                                  .GetFont(configs.GetValue<int>("text:size")!);
+                                                  .GetFont(configs.RequireValue<int>("text:size"));
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice);

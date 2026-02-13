@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
@@ -19,14 +20,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Priority((int)GraphicsLayer.Debug)]
 [ConfigurationSection("systems:visualization:entity_ids")]
 public sealed partial class VisualizeEntityIdsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs)
-    : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
 {
-    private readonly int _textSize = configs.GetValue<int>("text:size")!;
-    private readonly Color _textColor = configs.GetValue<Color>("text:color")!;
+    private readonly int _textSize = configs.RequireValue<int>("text:size");
+    private readonly Color _textColor = configs.RequireValue<Color>("text:color");
 
     private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
-                                                  .GetFont(configs.GetValue<int>("text:size")!);
+                                                  .GetFont(configs.RequireValue<int>("text:size"));
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice);

@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
@@ -19,9 +20,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class VisualizeColonizationSystem(
     World world, GraphicsDevice graphicsDevice, IConfiguration configs) : ICalcSystem
 {
-    private readonly float _ringRadiusFactor = configs.GetValue<float>("ring:radius_multiplier");
-    private readonly float _ringThickness = configs.GetValue<float>("ring:thickness");
-    private readonly float _defaultAlpha = configs.GetValue<float>("ring:default_alpha");
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
+    private readonly float _defaultAlpha = configs.RequireValue<float>("ring:default_alpha");
 
     private static readonly QueryDescription _planetDesc = new QueryDescription()
         .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
