@@ -1,20 +1,20 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.Barrier), SchemaName("barrier")]
-public class BarrierConfiguration : IConfiguration<BarrierDescription, BarrierConfiguration>
+[Declare(ConceptNames.Barrier), SchemaName("barrier")]
+public class BarrierDeclaration : IDeclaration<BarrierDescription, BarrierDeclaration>
 {
     public Vector2? Head { get; set; }
 
     public Vector2? Tail { get; set; }
 
-    public BarrierConfiguration Aggregate(BarrierConfiguration newCfg)
+    public BarrierDeclaration Aggregate(BarrierDeclaration newCfg)
     {
-        return new BarrierConfiguration()
+        return new BarrierDeclaration()
         {
             Head = newCfg.Head ?? Head,
             Tail = newCfg.Tail ?? Tail

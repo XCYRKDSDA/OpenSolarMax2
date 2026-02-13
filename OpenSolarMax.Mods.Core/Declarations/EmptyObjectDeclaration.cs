@@ -1,22 +1,22 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.EmptyCoord), SchemaName("empty")]
-public class EmptyObjectConfiguration : IConfiguration<EmptyCoordDescription, EmptyObjectConfiguration>
+[Declare(ConceptNames.EmptyCoord), SchemaName("empty")]
+public class EmptyObjectDeclaration : IDeclaration<EmptyCoordDescription, EmptyObjectDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
-    public EmptyObjectConfiguration Aggregate(EmptyObjectConfiguration newCfg)
+    public EmptyObjectDeclaration Aggregate(EmptyObjectDeclaration newCfg)
     {
-        return new EmptyObjectConfiguration()
+        return new EmptyObjectDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -30,7 +30,7 @@ public class EmptyObjectConfiguration : IConfiguration<EmptyCoordDescription, Em
     {
         var desc = new EmptyCoordDescription();
 
-        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 

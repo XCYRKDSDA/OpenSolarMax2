@@ -1,11 +1,11 @@
 using Arch.Core;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.Ship), SchemaName("ship")]
-public record ShipConfiguration : IConfiguration<ShipDescription, ShipConfiguration>
+[Declare(ConceptNames.Ship), SchemaName("ship")]
+public record ShipDeclaration : IDeclaration<ShipDescription, ShipDeclaration>
 {
     public string? Planet { get; set; }
 
@@ -13,9 +13,9 @@ public record ShipConfiguration : IConfiguration<ShipDescription, ShipConfigurat
 
     public IReadOnlyList<string> Requirements => [Planet!];
 
-    public ShipConfiguration Aggregate(ShipConfiguration @new)
+    public ShipDeclaration Aggregate(ShipDeclaration @new)
     {
-        return new ShipConfiguration()
+        return new ShipDeclaration()
         {
             Planet = @new.Planet ?? Planet,
             Party = @new.Party ?? Party

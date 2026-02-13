@@ -1,8 +1,8 @@
 using Microsoft.Xna.Framework;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-public class OrbitConfiguration
+public class OrbitDeclaration
 {
     public Vector2? Shape { get; set; }
 
@@ -10,7 +10,7 @@ public class OrbitConfiguration
 
     public float? Phase { get; set; }
 
-    public OrbitConfiguration Aggregate(OrbitConfiguration newCfg) => new()
+    public OrbitDeclaration Aggregate(OrbitDeclaration newCfg) => new()
     {
         Shape = newCfg.Shape ?? Shape,
         Period = newCfg.Period ?? Period,

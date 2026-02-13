@@ -1,18 +1,18 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.Planet), SchemaName("planet")]
-public class PlanetConfiguration : IConfiguration<PlanetDescription, PlanetConfiguration>
+[Declare(ConceptNames.Planet), SchemaName("planet")]
+public class PlanetDeclaration : IDeclaration<PlanetDescription, PlanetDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
     public float? Radius { get; set; }
 
@@ -24,9 +24,9 @@ public class PlanetConfiguration : IConfiguration<PlanetDescription, PlanetConfi
 
     public float? ProduceSpeed { get; set; }
 
-    public PlanetConfiguration Aggregate(PlanetConfiguration newCfg)
+    public PlanetDeclaration Aggregate(PlanetDeclaration newCfg)
     {
-        return new PlanetConfiguration()
+        return new PlanetDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -54,7 +54,7 @@ public class PlanetConfiguration : IConfiguration<PlanetDescription, PlanetConfi
             ProduceSpeed = ProduceSpeed.Value,
         };
 
-        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 

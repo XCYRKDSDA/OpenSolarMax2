@@ -1,7 +1,7 @@
-namespace OpenSolarMax.Game.Modding.Configuration;
+namespace OpenSolarMax.Game.Modding.Declaration;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-public class ConfigureAttribute(string target) : Attribute
+public class DeclareAttribute(string target) : Attribute
 {
     public string Target => target;
 }

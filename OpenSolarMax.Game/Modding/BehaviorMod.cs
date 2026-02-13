@@ -3,7 +3,7 @@ using System.Reflection;
 using CsToml.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio;
 using Zio.FileSystems;
@@ -39,7 +39,7 @@ internal class BehaviorMod
     /// <summary>
     /// 模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引
     /// </summary>
-    public ImmutableDictionary<string, ConfigurationSchemaInfo> ConfigurationSchemaInfos { get; }
+    public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; }
 
     /// <summary>
     /// 模组提供的所有概念的定义、描述和应用器
@@ -93,7 +93,7 @@ internal class BehaviorMod
                                  .ToImmutableArray();
 
         // 查找配置类型
-        ConfigurationSchemaInfos = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
+        DeclarationSchemaInfos = Modding.FindDeclarationTypes(Assembly).ToImmutableDictionary();
 
         // 查找概念类型
         ConceptTypes = Modding.FindConceptRelatedTypes(Assembly).ToImmutableDictionary();

@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 using Nine.Assets;
 using Nine.Assets.Serialization;
 using Nine.Graphics;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using Zio;
 
 namespace OpenSolarMax.Game.Level;
 
-internal class LevelLoader(IReadOnlyDictionary<string, ConfigurationSchemaInfo> configurationSchemaInfos)
+internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> declarationSchemaInfos)
     : IAssetLoader<LevelFile>
 {
     private class JsonLevel
@@ -47,29 +47,29 @@ internal class LevelLoader(IReadOnlyDictionary<string, ConfigurationSchemaInfo> 
         statementSerializerOptions.Converters.Add(new AssetReferenceJsonConverter<TextureRegion>(assets, directory));
 
         // 初始化从配置模式索引到配置模式名称的映射
-        var schemaNamesByConfigurationId = configurationSchemaInfos.Keys.ToDictionary(key => key);
+        var schemaNamesByDeclarationId = declarationSchemaInfos.Keys.ToDictionary(key => key);
         // 添加语句转换器
         statementSerializerOptions.Converters.Add(
-            new ConfigurationStatementJsonConverter(schemaNamesByConfigurationId, configurationSchemaInfos));
+            new DeclarationStatementJsonConverter(schemaNamesByDeclarationId, declarationSchemaInfos));
 
         var level = new LevelFile();
 
         // 解析模板语句
         foreach (var (templateKey, templateJsonElement) in jsonLevel.Templates)
         {
-            var statement = templateJsonElement.Deserialize<ConfigurationStatement>(statementSerializerOptions)!;
+            var statement = templateJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions)!;
 
             // 构造并添加新的模板语句
             level.Templates.Add(templateKey, statement);
 
             // 将该模板语句的配置类型加入到缓存中
-            schemaNamesByConfigurationId.Add(templateKey, statement.SchemaName);
+            schemaNamesByDeclarationId.Add(templateKey, statement.SchemaName);
         }
 
         // 解析实体语句
         foreach (var entityJsonElement in jsonLevel.Entities)
         {
-            var statement = entityJsonElement.Deserialize<ConfigurationStatement>(statementSerializerOptions)!;
+            var statement = entityJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions)!;
 
             // 获取id, 如果有的话
             var id = entityJsonElement.TryGetProperty("$id", out var idProp) ? idProp.GetString() : null;

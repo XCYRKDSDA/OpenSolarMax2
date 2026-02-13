@@ -1,22 +1,22 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.Transformable), SchemaName("transformable")]
-public class TransformableConfiguration : IConfiguration<TransformableDescription, TransformableConfiguration>
+[Declare(ConceptNames.Transformable), SchemaName("transformable")]
+public class TransformableDeclaration : IDeclaration<TransformableDescription, TransformableDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
-    public TransformableConfiguration Aggregate(TransformableConfiguration @new)
+    public TransformableDeclaration Aggregate(TransformableDeclaration @new)
     {
-        return new TransformableConfiguration()
+        return new TransformableDeclaration()
         {
             Parent = @new.Parent ?? Parent,
             Position = @new.Position ?? Position,

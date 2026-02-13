@@ -4,7 +4,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 
 namespace OpenSolarMax.Game.Level;
 
@@ -18,22 +18,22 @@ internal sealed class WorldLoader(
         // 所有有名实体
         var namedEntities = new Dictionary<string, Entity>();
         // 所有有名配置
-        var namedConfigurations = new Dictionary<string, IConfiguration>();
+        var namedDeclarations = new Dictionary<string, IDeclaration>();
 
         // 首先解析所有模板
         foreach (var (id, templateStatement) in level.Templates)
         {
-            var configuration = templateStatement.BaseConfigurationIds.Select(k => namedConfigurations[k])
-                                                 .Append(templateStatement.Configuration)
+            var configuration = templateStatement.BaseDecalarationIds.Select(k => namedDeclarations[k])
+                                                 .Append(templateStatement.Declaration)
                                                  .Aggregate((c1, c2) => c1.Aggregate(c2));
-            namedConfigurations.Add(id, configuration);
+            namedDeclarations.Add(id, configuration);
         }
 
         // 解析所有实体
         foreach (var (optionalId, entityStatement, num) in level.Entities)
         {
-            var configuration = entityStatement.BaseConfigurationIds.Select(k => namedConfigurations[k])
-                                               .Append(entityStatement.Configuration)
+            var configuration = entityStatement.BaseDecalarationIds.Select(k => namedDeclarations[k])
+                                               .Append(entityStatement.Declaration)
                                                .Aggregate((c1, c2) => c1.Aggregate(c2));
 
             // 检查是否所有依赖均已满足

@@ -1,24 +1,24 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.SimpleSound), SchemaName("sound")]
-public class SoundConfiguration : IConfiguration<SimpleSoundDescription, SoundConfiguration>
+[Declare(ConceptNames.SimpleSound), SchemaName("sound")]
+public class SoundDeclaration : IDeclaration<SimpleSoundDescription, SoundDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
     public string? Sound { get; set; }
 
-    public SoundConfiguration Aggregate(SoundConfiguration newCfg)
+    public SoundDeclaration Aggregate(SoundDeclaration newCfg)
     {
-        return new SoundConfiguration()
+        return new SoundDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -38,7 +38,7 @@ public class SoundConfiguration : IConfiguration<SimpleSoundDescription, SoundCo
             SoundEffect = Sound,
         };
 
-        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 

@@ -89,7 +89,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
         // 加载关卡内容
         var worldLoader = new WorldLoader(
-            factory, levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+            factory, levelModContext.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
         );
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
