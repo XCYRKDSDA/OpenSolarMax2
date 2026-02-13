@@ -4,6 +4,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding.Configuration;
 
 namespace OpenSolarMax.Game.Modding.ECS;
 
