@@ -20,7 +20,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Entities)]
 [ExecuteAfter(typeof(DrawSpritesSystem))]
-[ConfigurationSection("systems:visualization:barriers")]
 public sealed partial class VisualizeBarriersSystem : ICalcSystem
 {
     private readonly float _nodeSize;
@@ -41,7 +40,7 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
     private readonly World _world;
 
     public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
-                                   IConfiguration configs)
+                                   [Section("systems:visualization:barriers")] IConfiguration configs)
     {
         _world = world;
         _graphicsDevice = graphicsDevice;

@@ -27,12 +27,18 @@ internal class AggregateSystem
         parameters[0] = world;
         for (var i = 1; i < parameterInfos.Length; i++)
         {
-            if (type.GetCustomAttribute<ConfigurationSectionAttribute>() is { } sectionAttribute &&
-                parameterInfos[i].ParameterType == typeof(IConfiguration))
+            // 特判 IConfigurationRoot 和 IConfiguration 情况
+            if (parameterInfos[i].ParameterType == typeof(IConfigurationRoot))
             {
-                // 特别处理 ConfigurationSection 情况
-                var configuration = (IConfiguration)@params[parameterInfos[i].ParameterType];
-                parameters[i] = configuration.GetSection(sectionAttribute.Section);
+                var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
+                parameters[i] = configurationRoot;
+            }
+            else if (parameterInfos[i].ParameterType == typeof(IConfiguration))
+            {
+                if (parameterInfos[i].GetCustomAttribute<SectionAttribute>() is not { } sectionAttribute)
+                    throw new Exception("IConfiguration parameter must be declared with a Section attribute");
+                var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
+                parameters[i] = configurationRoot.GetSection(sectionAttribute.Section);
             }
             else
                 parameters[i] = @params[parameterInfos[i].ParameterType];

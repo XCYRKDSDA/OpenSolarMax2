@@ -18,9 +18,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
-[ConfigurationSection("systems:visualization:anchored_units")]
 public sealed partial class VisualizeAnchoredUnitsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
+    [Section("systems:visualization:anchored_units")] IConfiguration configs) : ICalcSystem
 {
     private readonly int _textSize = configs.RequireValue<int>("text:size");
     private readonly string _textFormat = configs.RequireValue<string>("text:template");

@@ -52,7 +52,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
-                [typeof(IConfiguration)] = levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
@@ -62,7 +62,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
-                [typeof(IConfiguration)] = levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
@@ -72,7 +72,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
-                [typeof(IConfiguration)] = levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
@@ -82,7 +82,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
-                [typeof(IConfiguration)] = levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );

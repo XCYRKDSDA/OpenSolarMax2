@@ -385,6 +385,7 @@ resharper_wrap_primary_constructor_parameters_style = wrap_if_long
 
 # Misc
 resharper_empty_block_style = together
+resharper_max_attribute_length_for_same_line = 120
 
 #>------------------------------------------------------------------------------
 # CUSTOM EXTENDED RULES

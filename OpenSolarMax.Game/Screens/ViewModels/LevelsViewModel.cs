@@ -97,7 +97,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 {
                     [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                     [typeof(IConceptFactory)] = factory,
-                    [typeof(IConfiguration)] = _levelModContext.LocalConfigs,
+                    [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
                 },
                 _levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
             );

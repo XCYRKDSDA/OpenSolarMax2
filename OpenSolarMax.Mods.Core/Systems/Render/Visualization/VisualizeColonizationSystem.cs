@@ -16,9 +16,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
-[ConfigurationSection("systems:visualization:colonization")]
 public sealed partial class VisualizeColonizationSystem(
-    World world, GraphicsDevice graphicsDevice, IConfiguration configs) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice,
+    [Section("systems:visualization:colonization")] IConfiguration configs) : ICalcSystem
 {
     private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");

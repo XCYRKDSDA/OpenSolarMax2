@@ -24,9 +24,9 @@ public delegate bool? CheckLocationReachabilityCallback(World world,
 [Priority((int)GraphicsLayer.Interface)]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
-[ConfigurationSection("systems:visualization:maneuvering_ships_status")]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice, IConfiguration configs) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice,
+    [Section("systems:visualization:maneuvering_ships_status")] IConfiguration configs) : ICalcSystem
 {
     private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");

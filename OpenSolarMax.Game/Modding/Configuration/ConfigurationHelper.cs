@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace OpenSolarMax.Game.Utils;
+namespace OpenSolarMax.Game.Modding.Configuration;
 
 public static class ConfigurationHelper
 {

@@ -18,9 +18,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Debug)]
-[ConfigurationSection("systems:visualization:entity_ids")]
 public sealed partial class VisualizeEntityIdsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets, IConfiguration configs) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
+    [Section("systems:visualization:entity_ids")] IConfiguration configs) : ICalcSystem
 {
     private readonly int _textSize = configs.RequireValue<int>("text:size");
     private readonly Color _textColor = configs.RequireValue<Color>("text:color");
