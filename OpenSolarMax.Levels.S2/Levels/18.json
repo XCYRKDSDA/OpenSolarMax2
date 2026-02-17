@@ -3,7 +3,7 @@
         "planet30": { "$base": "planet", "radius": 19.2, "volume": 300, "population": 30, "produceSpeed": 0.6 },
         "planet40": { "$base": "planet", "radius": 25.6, "volume": 400, "population": 40, "produceSpeed": 0.8 },
         "planet50": { "$base": "planet", "radius": 32.0, "volume": 500, "population": 50, "produceSpeed": 1.0 },
-        "blue": { "$base": "party", "color": "#5FB6FF", "workload": 1, "attack": 1, "health": 1 }
+        "blue": { "$base": "party", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
     },
 
     "entities": [
