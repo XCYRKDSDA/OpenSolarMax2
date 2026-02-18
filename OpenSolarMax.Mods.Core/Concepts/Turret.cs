@@ -19,11 +19,8 @@ public abstract class TurretDefinition : IDefinition
     public static Signature Signature { get; } =
         CelestialBodyDefinition.Signature +
         new Signature(
-            // 效果
-            typeof(Sprite),
-            typeof(Shape),
-            // 动画
-            typeof(Animation),
+            // 运输相关
+            typeof(DefaultLaunchPad),
             // 攻击相关
             typeof(AttackRange),
             typeof(InAttackRangeShipsRegistry),
