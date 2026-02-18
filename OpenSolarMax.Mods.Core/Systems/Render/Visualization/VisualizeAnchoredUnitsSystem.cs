@@ -87,7 +87,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         if (registry.Ships.Count == 0)
             return;
 
-        var parties = registry.Ships.Select((g) => g.Key).ToArray();
+        var parties = registry.Ships.Select(g => g.Key).Order().ToArray();
 
         if (parties.Length == 1)
         {
@@ -127,7 +127,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             var ringCenter = new Vector2(planetInCanvas.X, planetInCanvas.Y);
 
             // 获得各阵营的单位数目、颜色和标签
-            var weights = registry.Ships.Select((g) => g.Count()).ToArray();
+            var shipsRegistry = registry.Ships;
+            var weights = parties.Select(p => shipsRegistry[p].Count()).ToArray();
             var colors = parties.Select((p) => p.Get<PartyReferenceColor>().Value).ToArray();
             var labels = weights.Select((w) => string.Format(_textFormat, w)).ToArray();
 
