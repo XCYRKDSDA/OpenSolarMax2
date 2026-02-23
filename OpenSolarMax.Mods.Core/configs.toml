@@ -7,6 +7,7 @@ label.offset_multipliers = { x = 0.6, y = 0.72 }
 ring.radius_multiplier = 1.8
 ring.thickness = 3
 ring.label.radius_multiplier = 2.25
+ring.gap.deg = 3
 
 [systems.visualization.barriers]
 node.size = 16

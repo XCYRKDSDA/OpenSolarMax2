@@ -33,6 +33,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
     private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
     private readonly float _labelRadiusFactor = configs.RequireValue<float>("ring:label:radius_multiplier");
+    private readonly float _arcGapAngle = configs.RequireValue<Angle>("ring:gap");
 
     private static readonly QueryDescription _planetDesc =
         new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
@@ -54,15 +55,16 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
     /// 根据权重计算每段弧线的启停角度。
     /// 由于所有弧线逐一相连，故直接返回各个交界处的角度序列
     /// </summary>
-    private static float[] CalculateArcs(int[] weights)
+    private float[] CalculateArcs(int[] weights)
     {
         // 计算总权重
         float weightsSum = weights.Sum();
 
+        // 除去 gap
+        var total = 2 * MathF.PI - _arcGapAngle * weights.Length;
+
         // 计算每个实例应当占有的弧度
-        var alphas = new float[weights.Length];
-        for (int i = 0; i < weights.Length; i++)
-            alphas[i] = (2 * MathF.PI * weights[i] / weightsSum);
+        var alphas = weights.Select(w => w / weightsSum * total + _arcGapAngle).ToArray();
 
         // 计算每个实例在无偏移情况下的中心线极角
         var thetas = new float[weights.Length];
@@ -92,7 +94,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         if (registry.Ships.Count == 0)
             return;
 
-        var parties = registry.Ships.Select((g) => g.Key).ToArray();
+        var parties = registry.Ships.Select(g => g.Key).Order().ToArray();
 
         if (parties.Length == 1)
         {
@@ -132,7 +134,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             var ringCenter = new Vector2(planetInCanvas.X, planetInCanvas.Y);
 
             // 获得各阵营的单位数目、颜色和标签
-            var weights = registry.Ships.Select((g) => g.Count()).ToArray();
+            var shipsRegistry = registry.Ships;
+            var weights = parties.Select(p => shipsRegistry[p].Count()).ToArray();
             var colors = parties.Select((p) => p.Get<PartyReferenceColor>().Value).ToArray();
             var labels = weights.Select((w) => string.Format(_textFormat, w)).ToArray();
 
@@ -142,9 +145,10 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             // 绘制各个阵营对应的弧
             for (int i = 0; i < parties.Length; i++)
             {
-                var radians = arcs[i + 1] - arcs[i];
+                var radians = arcs[i + 1] - arcs[i] - _arcGapAngle;
 
-                _ringRenderer.DrawArc(ringCenter, ringRadius, arcs[i], radians, colors[i], _ringThickness);
+                _ringRenderer.DrawArc(ringCenter, ringRadius, arcs[i] + _arcGapAngle / 2, radians,
+                                      colors[i], _ringThickness);
             }
 
             // 绘制各个阵营的单位数目文字
