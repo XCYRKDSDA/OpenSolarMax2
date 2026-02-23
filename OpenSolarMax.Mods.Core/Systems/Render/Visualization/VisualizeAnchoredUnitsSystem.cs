@@ -128,6 +128,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
 
             // 计算战斗环的尺寸
             var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
+            var labelRadius = refSize.Radius * _labelRadiusFactor * scale;
 
             // 获得战斗环的圆心
             var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
@@ -157,10 +158,9 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
                 var textSize = _font.MeasureString(labels[i]);
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
-                var textPosition =
-                    ringCenter
-                    + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius * _labelRadiusFactor
-                    - textSize / 2;
+                var textPosition = ringCenter
+                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * labelRadius
+                                   - textSize / 2;
                 var shadowPosition = textPosition with { Y = textPosition.Y + _shadowDistance };
 
                 var shadowColor = Color.Lerp(colors[i], Color.Black, _shadowDensity)
