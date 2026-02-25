@@ -45,6 +45,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
         {
             [typeof(GraphicsDevice)] = game.GraphicsDevice,
             [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+            [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
         });
         _inputSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Input.Sorted,
