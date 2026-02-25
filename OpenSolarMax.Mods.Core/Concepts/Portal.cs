@@ -1,9 +1,11 @@
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -40,17 +42,20 @@ public class PortalDescription : IDescription
 }
 
 [Apply(ConceptNames.Portal)]
-public class PortalApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<PortalDescription>
+public class PortalApplier(
+    IAssetsManager assets, IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:portal")] IConfiguration configs)
+    : IApplier<PortalDescription>
 {
     // 固定的尺寸
-    private const float _referenceRadius = 24f; // 96px / 2 / 2
-    private const int _volume = 400;
+    private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
+    private readonly int _volume = configs.RequireValue<int>("volume");
 
     private readonly TextureRegion _portalShape = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Shape");
 
     private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Portal");
 
-    private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory);
+    private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PortalDescription desc)
     {

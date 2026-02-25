@@ -1,10 +1,13 @@
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -82,12 +85,15 @@ public class CelestialBodyDescription : IDescription
 }
 
 [Apply(ConceptNames.CelestialBody)]
-public class CelestialBodyApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<CelestialBodyDescription>
+public class CelestialBodyApplier(
+    IAssetsManager assets, IConceptFactory factory,
+    [Section("applier:celestial_body")] IConfiguration configs)
+    : IApplier<CelestialBodyDescription>
 {
-    private const float _orbitMinPitch = -MathF.PI * 11 / 24;
-    private const float _orbitMaxPitch = _orbitMinPitch + MathF.PI / 12;
-    private const float _orbitMinRoll = 0;
-    private const float _orbitMaxRoll = _orbitMinRoll + MathF.PI / 24;
+    private readonly float _orbitMinPitch = configs.RequireValue<Angle>("orbit:pitch:min");
+    private readonly float _orbitMaxPitch = configs.RequireValue<Angle>("orbit:pitch:max");
+    private readonly float _orbitMinRoll = configs.RequireValue<Angle>("orbit:roll:min");
+    private readonly float _orbitMaxRoll = configs.RequireValue<Angle>("orbit:roll:max");
 
     private readonly TransformableApplier _transformableApplier = new(factory);
 

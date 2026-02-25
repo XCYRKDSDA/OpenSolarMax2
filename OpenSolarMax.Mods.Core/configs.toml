@@ -38,3 +38,17 @@ line.thickness = 3
 line.round = 1
 line.color = "white"
 line.blocked.color = "red"
+
+[applier.celestial_body]
+orbit.pitch.min.deg = -82.5
+orbit.pitch.max.deg = -67.5
+orbit.roll.min.deg = 0
+orbit.roll.max.deg = 7.5
+
+[applier.portal]
+reference_radius = 24
+volume = 400
+
+[applier.turret]
+reference_radius = 19.5
+volume = 600
