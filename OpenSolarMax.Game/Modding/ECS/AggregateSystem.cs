@@ -38,7 +38,10 @@ internal class AggregateSystem
                 if (parameterInfos[i].GetCustomAttribute<SectionAttribute>() is not { } sectionAttribute)
                     throw new Exception("IConfiguration parameter must be declared with a Section attribute");
                 var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
-                parameters[i] = configurationRoot.GetSection(sectionAttribute.Section);
+                var configurationAggregator = new ConfigurationBuilder();
+                foreach (var section in sectionAttribute.Section)
+                    configurationAggregator.AddConfiguration(configurationRoot.GetSection(section));
+                parameters[i] = configurationAggregator.Build();
             }
             else
                 parameters[i] = @params[parameterInfos[i].ParameterType];

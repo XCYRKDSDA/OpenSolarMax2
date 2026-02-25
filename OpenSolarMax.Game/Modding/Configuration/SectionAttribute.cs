@@ -1,7 +1,7 @@
 namespace OpenSolarMax.Game.Modding.Configuration;
 
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
-public class SectionAttribute(string section) : Attribute
+public class SectionAttribute(params string[] section) : Attribute
 {
-    public string Section => section;
+    public string[] Section => section;
 }
