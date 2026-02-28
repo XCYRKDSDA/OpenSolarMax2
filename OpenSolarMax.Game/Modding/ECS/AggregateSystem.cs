@@ -2,54 +2,12 @@ using System.Diagnostics;
 using System.Reflection;
 using Arch.Buffer;
 using Arch.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
 
 namespace OpenSolarMax.Game.Modding.ECS;
 
 internal class AggregateSystem
 {
-    private static object CreateSystem(Type type, World world, IReadOnlyDictionary<Type, object> @params)
-    {
-        var constructorInfos = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-        if (constructorInfos.Length > 1)
-            throw new Exception($"{type} has more than one public constructors!");
-        if (constructorInfos.Length == 0)
-            throw new Exception($"{type} has no public constructor!");
-        var constructor = constructorInfos[0];
-
-        var parameterInfos = constructor.GetParameters();
-        if (parameterInfos[0].ParameterType != typeof(World))
-            throw new Exception($"{type}'s constructor doesn't take Arch.Core.World as its first parameter!");
-
-        var parameters = new object[parameterInfos.Length];
-        parameters[0] = world;
-        for (var i = 1; i < parameterInfos.Length; i++)
-        {
-            // 特判 IConfigurationRoot 和 IConfiguration 情况
-            if (parameterInfos[i].ParameterType == typeof(IConfigurationRoot))
-            {
-                var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
-                parameters[i] = configurationRoot;
-            }
-            else if (parameterInfos[i].ParameterType == typeof(IConfiguration))
-            {
-                if (parameterInfos[i].GetCustomAttribute<SectionAttribute>() is not { } sectionAttribute)
-                    throw new Exception("IConfiguration parameter must be declared with a Section attribute");
-                var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
-                var configurationAggregator = new ConfigurationBuilder();
-                foreach (var section in sectionAttribute.Section)
-                    configurationAggregator.AddConfiguration(configurationRoot.GetSection(section));
-                parameters[i] = configurationAggregator.Build();
-            }
-            else
-                parameters[i] = @params[parameterInfos[i].ParameterType];
-        }
-
-        return constructor.Invoke(parameters);
-    }
-
     private static void RegisterHook(IEnumerable<object> systems,
                                      IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
     {
@@ -90,7 +48,8 @@ internal class AggregateSystem
     {
         _world = world;
 
-        var systems = sortedSystemTypes.Select(t => CreateSystem(t, world, @params)).ToList();
+        var systems = sortedSystemTypes.Select(t => PluginFactory.Instantiate(t, [(typeof(World), world)], @params))
+                                       .ToList();
         RegisterHook(systems, hookImplInfos);
 
         // 寻找响应式结构化变更的部分，根据其划分为三部分

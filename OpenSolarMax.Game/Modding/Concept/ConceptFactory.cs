@@ -3,9 +3,7 @@ using System.Diagnostics;
 using System.Reflection;
 using Arch.Buffer;
 using Arch.Core;
-using Microsoft.Extensions.Configuration;
 using OneOf;
-using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Utils;
 
 namespace OpenSolarMax.Game.Modding.Concept;
@@ -18,54 +16,21 @@ internal class ConceptFactory : IConceptFactory
         return (Signature)definitionType.GetProperty("Signature", bindingFlags)!.GetValue(null)!;
     }
 
-    private static OneOf<IApplier, IDescriptionApplier> CreateApplier(Type applierType, Type? descriptionType,
-                                                                      IReadOnlyDictionary<Type, object> @params)
-    {
-        var constructorInfos = applierType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-        if (constructorInfos.Length > 1)
-            throw new Exception($"{applierType} has more than one public constructors!");
-        if (constructorInfos.Length == 0)
-            throw new Exception($"{applierType} has no public constructor!");
-        var constructor = constructorInfos[0];
-
-        var parameterInfos = constructor.GetParameters();
-        var parameters = new object[parameterInfos.Length];
-        for (var i = 0; i < parameterInfos.Length; i++)
-        {
-            // 特判 IConfigurationRoot 和 IConfiguration 情况
-            if (parameterInfos[i].ParameterType == typeof(IConfigurationRoot))
-            {
-                var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
-                parameters[i] = configurationRoot;
-            }
-            else if (parameterInfos[i].ParameterType == typeof(IConfiguration))
-            {
-                if (parameterInfos[i].GetCustomAttribute<SectionAttribute>() is not { } sectionAttribute)
-                    throw new Exception("IConfiguration parameter must be declared with a Section attribute");
-                var configurationRoot = (IConfigurationRoot)@params[typeof(IConfigurationRoot)];
-                var configurationAggregator = new ConfigurationBuilder();
-                foreach (var section in sectionAttribute.Section)
-                    configurationAggregator.AddConfiguration(configurationRoot.GetSection(section));
-                parameters[i] = configurationAggregator.Build();
-            }
-            else
-                parameters[i] = @params[parameterInfos[i].ParameterType];
-        }
-
-        var applier = constructor.Invoke(parameters);
-
-        return descriptionType is null
-                   ? OneOf<IApplier, IDescriptionApplier>.FromT0((IApplier)applier)
-                   : OneOf<IApplier, IDescriptionApplier>.FromT1((IDescriptionApplier)applier);
-    }
-
     private static Concept BakeConcept(ConceptInfo info, IReadOnlyDictionary<Type, object> @params)
     {
         return new Concept(
             info.Name,
             info.DefinitionTypes.Select(GetSignature).Aggregate((s1, s2) => s1 + s2),
             info.DescriptionType,
-            [..info.ApplierTypes.Select(t => CreateApplier(t, info.DescriptionType, @params))]
+            [
+                ..info.ApplierTypes.Select(applierType =>
+                {
+                    var applier = PluginFactory.Instantiate(applierType, [], @params);
+                    return info.DescriptionType is null
+                               ? OneOf<IApplier, IDescriptionApplier>.FromT0((IApplier)applier)
+                               : OneOf<IApplier, IDescriptionApplier>.FromT1((IDescriptionApplier)applier);
+                })
+            ]
         );
     }
 
