@@ -4,9 +4,11 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
@@ -29,14 +31,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(UpdateShipsStateSystem)), ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
 // 这一帧刚抵达的单位不会立刻出发
 [ExecuteBefore(typeof(LandArrivedShipsSystem))]
-public sealed partial class StartShippingSystem(World world, IAssetsManager assets, IConceptFactory factory)
+public sealed partial class StartShippingSystem(
+    World world, IAssetsManager assets, IConceptFactory factory,
+    [Section("systems:simulate:shipping")] IConfiguration configs)
     : ICalcSystemWithStructuralChanges
 {
     private FmodEventDescription _chargingSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipCharging");
 
-    private const float _offsetTime = 0.5f;
-    private const float _maxOffsetRatio = 0.1f;
+    private readonly float _offsetTime = configs.RequireValue<float>("arrival_time_offset");
+    private readonly float _maxOffsetRatio = configs.RequireValue<float>("arrival_time_max_offset_ratio");
 
     [Query]
     [All<StartShippingRequest>]

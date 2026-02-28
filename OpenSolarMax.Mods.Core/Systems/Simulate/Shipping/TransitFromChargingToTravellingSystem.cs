@@ -1,7 +1,9 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using FmodEventDescription = FMOD.Studio.EventDescription;
@@ -16,9 +18,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 状态先量变才能质变
 [ExecuteAfter(typeof(UpdateShipsStateSystem))]
-public sealed partial class TransitFromChargingToTravellingSystem(World world, IAssetsManager assets) : ICalcSystem
+public sealed partial class TransitFromChargingToTravellingSystem(
+    World world, IAssetsManager assets,
+    [Section("systems:simulate:shipping")] IConfiguration configs)
+    : ICalcSystem
 {
-    private const float _chargingTime = 0.5f;
+    private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
 
     private FmodEventDescription _travelBegunSoundEvent =
         assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipBegun");
@@ -30,7 +35,7 @@ public sealed partial class TransitFromChargingToTravellingSystem(World world, I
         // 只考察Charging状态
         if (status.State != ShippingState.Charging) return;
 
-        if (status.Charging.ElapsedTime > _chargingTime)
+        if (status.Charging.ElapsedTime > _chargingDuration)
         {
             status.State = ShippingState.Travelling;
             status.Travelling = new ShippingStatus_Travelling()

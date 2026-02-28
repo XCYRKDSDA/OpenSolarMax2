@@ -3,8 +3,10 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Nine.Animations;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -18,12 +20,15 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyPartyColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))] // 如果一个单位刚出生就移动，则用移动动画覆盖其出生动画
-public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManager assets) : ICalcSystem
+public sealed partial class UpdateShippingEffectSystem(
+    World world, IAssetsManager assets,
+    [Section("systems:simulate:shipping")] IConfiguration configs
+) : ICalcSystem
 {
-    private const float _landDuration = 0.5f;
+    private readonly float _landingDuration = configs.RequireValue<float>("landing_duration");
 
-    private const float _unitShippingFadeInDuration = 0.1f;
-    private const float _unitShippingFadeOutDuration = _landDuration / 2;
+    private readonly float _unitShippingFadeInDuration = configs.RequireValue<float>("fading_in_duration");
+    private readonly float _unitShippingFadeOutDuration = configs.RequireValue<float>("fading_out_duration");
 
     private readonly AnimationClip<Entity> _unitShippingAnimationClip =
         assets.Load<AnimationClip<Entity>>("Animations/UnitShipping.json");
@@ -99,7 +104,7 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
         if (status.State == ShippingState.Travelling)
         {
             if (status.Travelling.ElapsedTime + status.Travelling.DelayedTime
-                < status.Task.ExpectedTravelDuration - _landDuration)
+                < status.Task.ExpectedTravelDuration - _landingDuration)
             {
                 var stretchingAnimationTime = status.Travelling.ElapsedTime;
                 AnimationEvaluator<Entity>.EvaluateAndSet(ref trail, _trailStretchingAnimation,
@@ -109,8 +114,8 @@ public sealed partial class UpdateShippingEffectSystem(World world, IAssetsManag
             {
                 var stretchingAnimationTime = status.Travelling.ElapsedTime;
                 var crossTime = status.Travelling.ElapsedTime + status.Travelling.DelayedTime -
-                                (status.Task.ExpectedTravelDuration - _landDuration);
-                var crossRatio = crossTime / _landDuration;
+                                (status.Task.ExpectedTravelDuration - _landingDuration);
+                var crossRatio = crossTime / _landingDuration;
 
                 // 此处不是淡出，而只是单纯地用多个动画的交融构造效果
                 AnimationEvaluator<Entity>.TweenAndSet(ref trail,

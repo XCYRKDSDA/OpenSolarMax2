@@ -1,3 +1,20 @@
+# 仿真系统相关
+
+[systems.simulate.shipping]
+charging_duration = 0.5
+landing_duration = 0.5
+fading_in_duration = 0.1
+fading_out_duration = 0.25
+arrival_time_offset = 0.5 # 抵达时间的绝对偏差（半边）
+arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间的最大比例
+
+# 输入系统相关
+
+[systems.input.maneuvering]
+minimal_select_pixels = 10
+
+# 可视化系统相关
+
 [systems.visualization.anchored_units]
 text.size = 36
 text.template = "{0}"
@@ -38,6 +55,8 @@ line.thickness = 3
 line.round = 1
 line.color = "white"
 line.blocked.color = "red"
+
+# 概念构造相关
 
 [applier.celestial_body]
 orbit.pitch.min.deg = -82.5

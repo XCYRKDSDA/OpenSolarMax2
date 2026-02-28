@@ -4,10 +4,12 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
@@ -18,16 +20,18 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InParty.AsAffiliate)),
  ReadCurr(typeof(ReachabilityRegistry))]
 [Iterate(typeof(ShippingStatus)), ChangeStructure]
-public sealed partial class HandleInputsOnManeuveringShipsSystem(World world, IConceptFactory factory)
+public sealed partial class HandleInputsOnManeuveringShipsSystem(
+    World world, IConceptFactory factory,
+    [Section("systems:input:maneuvering")] IConfiguration configs)
     : ICalcSystemWithStructuralChanges
 {
-    private const int _minimalSelectPixels = 10;
+    private readonly int _minimalSelectPixels = configs.RequireValue<int>("minimal_select_pixels");
 
     [Query]
     [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
-    private static void CheckPointedPlanet(Entity planet, in AbsoluteTransform pose,
-                                           [Data] in Point mouseInViewport, [Data] in Matrix worldToViewport,
-                                           [Data] ref Entity pointedPlanet, [Data] ref float pointedPlanetZ)
+    private void CheckPointedPlanet(Entity planet, in AbsoluteTransform pose,
+                                    [Data] in Point mouseInViewport, [Data] in Matrix worldToViewport,
+                                    [Data] ref Entity pointedPlanet, [Data] ref float pointedPlanetZ)
     {
         float radiusInViewport = _minimalSelectPixels;
         if (planet.Has<ReferenceSize>()) // 若对象没有参考尺寸，则按照最小选择像素数判定范围；否则按照参考尺寸判定，但不得小于最小值
