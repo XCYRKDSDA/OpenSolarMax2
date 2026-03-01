@@ -2,9 +2,12 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
@@ -13,11 +16,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
-public sealed partial class VisualizeColonizationSystem(World world, GraphicsDevice graphicsDevice) : ICalcSystem
+public sealed partial class VisualizeColonizationSystem(
+    World world, GraphicsDevice graphicsDevice,
+    [Section("systems:visualization:colonization")] IConfiguration configs) : ICalcSystem
 {
-    private const float _ringRadiusFactor = 1.8f;
-    private const float _ringThickness = 3;
-    private const float _defaultAlpha = 0.2f;
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
+    private readonly float _defaultAlpha = configs.RequireValue<float>("ring:default_alpha");
 
     private static readonly QueryDescription _planetDesc = new QueryDescription()
         .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();

@@ -1,12 +1,13 @@
 using System.Collections.Immutable;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio.FileSystems;
 
@@ -22,9 +23,11 @@ internal class LevelModContext
 
     public IAssetsManager LocalAssets { get; }
 
+    public IConfigurationRoot LocalConfigs { get; }
+
     public ImmutableArray<Type> ComponentTypes { get; }
 
-    public ImmutableDictionary<string, ConfigurationSchemaInfo> ConfigurationSchemaInfos { get; }
+    public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; }
 
     public ImmutableDictionary<string, ConceptInfo> ConceptInfos { get; }
 
@@ -76,7 +79,7 @@ internal class LevelModContext
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
 
         // 合并实体配置类型
-        ConfigurationSchemaInfos = behaviorMods.SelectMany(m => m.ConfigurationSchemaInfos).ToImmutableDictionary();
+        DeclarationSchemaInfos = behaviorMods.SelectMany(m => m.DeclarationSchemaInfos).ToImmutableDictionary();
 
         // 合并概念
         var conceptInfos = new Dictionary<string, ConceptInfo>();
@@ -188,6 +191,17 @@ internal class LevelModContext
         });
 
         LocalAssets = localAssets;
+
+        #endregion
+
+        #region 构建局部配置系统
+
+        var localConfigsBuilder = new ConfigurationBuilder();
+        localConfigsBuilder.AddEnvironmentVariables(); // 使用环境变量作为基础
+        // 将每个模组的配置文件都添加到配置系统中
+        foreach (var mod in behaviorMods.Where(m => m.Configs is not null))
+            localConfigsBuilder.AddConfiguration(mod.Configs!);
+        LocalConfigs = localConfigsBuilder.Build();
 
         #endregion
     }

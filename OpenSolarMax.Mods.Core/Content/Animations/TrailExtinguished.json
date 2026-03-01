@@ -2,7 +2,7 @@
     "duration": 1,
     "curves": {
         "Sprite::Scale.X": [
-            { "time": 0, "value": 0.001, "type": "step" }
+            { "time": 0, "value": 0, "type": "step" }
         ]
     }
 }

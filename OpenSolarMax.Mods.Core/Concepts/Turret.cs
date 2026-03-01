@@ -1,9 +1,11 @@
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -56,11 +58,14 @@ public class TurretDescription : IDescription
 }
 
 [Apply(ConceptNames.Turret)]
-public class TurretApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<TurretDescription>
+public class TurretApplier(
+    IAssetsManager assets, IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:turret")] IConfiguration configs)
+    : IApplier<TurretDescription>
 {
     // 固定的尺寸
-    private const float _referenceRadius = 19.5f; // 78px / 2 / 2
-    private const int _volume = 600; // 1000 * 0.3 * 2
+    private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
+    private readonly int _volume = configs.RequireValue<int>("volume");
 
     private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>("/Textures/TurretAtlas.json:Turret");
 
@@ -68,7 +73,7 @@ public class TurretApplier(IAssetsManager assets, IConceptFactory factory) : IAp
 
     private readonly TextureRegion _turretGlow = assets.Load<TextureRegion>("Textures/TurretAtlas.json:TurretGlow");
 
-    private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory);
+    private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, TurretDescription desc)
     {

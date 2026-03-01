@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
 using System.Reflection;
+using CsToml.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio;
 using Zio.FileSystems;
@@ -20,6 +22,11 @@ internal class BehaviorMod
     public ImmutableArray<IFileSystem> ContentFileSystems { get; }
 
     /// <summary>
+    /// 模组中提供的参数配置文件
+    /// </summary>
+    public IConfigurationRoot? Configs { get; }
+
+    /// <summary>
     /// 模组的入口程序集
     /// </summary>
     public Assembly Assembly { get; }
@@ -32,7 +39,7 @@ internal class BehaviorMod
     /// <summary>
     /// 模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引
     /// </summary>
-    public ImmutableDictionary<string, ConfigurationSchemaInfo> ConfigurationSchemaInfos { get; }
+    public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; }
 
     /// <summary>
     /// 模组提供的所有概念的定义、描述和应用器
@@ -70,12 +77,23 @@ internal class BehaviorMod
             contentFileSystems.Add(new SubFileSystem(info.Content.FileSystem, info.Content.Path));
         ContentFileSystems = contentFileSystems.ToImmutableArray();
 
+        // 加载配置文件
+        if (info.Configs is not null)
+        {
+            var configsBuilder = new ConfigurationBuilder();
+            using var tomlStream = info.Configs.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            configsBuilder.AddTomlStream(tomlStream);
+            Configs = configsBuilder.Build();
+        }
+        else
+            Configs = null;
+
         // 查找组件类型
         ComponentTypes = Assembly.ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
                                  .ToImmutableArray();
 
         // 查找配置类型
-        ConfigurationSchemaInfos = Modding.FindConfigurationTypes(Assembly).ToImmutableDictionary();
+        DeclarationSchemaInfos = Modding.FindDeclarationTypes(Assembly).ToImmutableDictionary();
 
         // 查找概念类型
         ConceptTypes = Modding.FindConceptRelatedTypes(Assembly).ToImmutableDictionary();

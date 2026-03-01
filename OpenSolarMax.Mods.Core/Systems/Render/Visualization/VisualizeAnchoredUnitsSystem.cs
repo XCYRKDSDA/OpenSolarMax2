@@ -3,10 +3,13 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FontStashSharp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 
@@ -16,25 +19,27 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredUnitsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
+    [Section("systems:visualization:anchored_units")] IConfiguration configs) : ICalcSystem
 {
-    private const int _textSize = 36;
-    private const string _textFormat = "{0}";
-    private const float _shadowDistance = 2;
-    private const float _shadowDensity = 0.618f;
+    private readonly int _textSize = configs.RequireValue<int>("text:size");
+    private readonly string _textFormat = configs.RequireValue<string>("text:template");
+    private readonly float _shadowDistance = configs.RequireValue<float>("shadow:distance");
+    private readonly float _shadowDensity = configs.RequireValue<float>("shadow:density");
 
-    private const float _labelXOffsetFactor = 0.6f;
-    private const float _labelYOffsetFactor = 0.72f;
+    private readonly float _labelXOffsetFactor = configs.RequireValue<float>("label:offset_multipliers:x");
+    private readonly float _labelYOffsetFactor = configs.RequireValue<float>("label:offset_multipliers:y");
 
-    private const float _ringRadiusFactor = 1.8f;
-    private const float _ringThickness = 3;
-    private const float _labelRadiusFactor = 1.25f;
-    private const float _arcGapAngle = 3 * MathF.PI / 180;
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
+    private readonly float _labelRadiusFactor = configs.RequireValue<float>("ring:label:radius_multiplier");
+    private readonly float _arcGapAngle = configs.RequireValue<Angle>("ring:gap");
 
     private static readonly QueryDescription _planetDesc =
         new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
 
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
+    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
+                                                  .GetFont(configs.RequireValue<int>("text:size"));
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice);
@@ -50,7 +55,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
     /// 根据权重计算每段弧线的启停角度。
     /// 由于所有弧线逐一相连，故直接返回各个交界处的角度序列
     /// </summary>
-    private static float[] CalculateArcs(int[] weights)
+    private float[] CalculateArcs(int[] weights)
     {
         // 计算总权重
         float weightsSum = weights.Sum();
@@ -123,6 +128,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
 
             // 计算战斗环的尺寸
             var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
+            var labelRadius = refSize.Radius * _labelRadiusFactor * scale;
 
             // 获得战斗环的圆心
             var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
@@ -152,10 +158,9 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
                 var textSize = _font.MeasureString(labels[i]);
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
-                var textPosition =
-                    ringCenter
-                    + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * ringRadius * _labelRadiusFactor
-                    - textSize / 2;
+                var textPosition = ringCenter
+                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * labelRadius
+                                   - textSize / 2;
                 var shadowPosition = textPosition with { Y = textPosition.Y + _shadowDistance };
 
                 var shadowColor = Color.Lerp(colors[i], Color.Black, _shadowDensity)

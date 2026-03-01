@@ -1,24 +1,24 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.Portal), SchemaName("portal")]
-public class PortalConfiguration : IConfiguration<PortalDescription, PortalConfiguration>
+[Declare(ConceptNames.Turret), SchemaName("turret")]
+public class TurretDeclaration : IDeclaration<TurretDescription, TurretDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
     public string? Party { get; set; }
 
-    public PortalConfiguration Aggregate(PortalConfiguration newCfg)
+    public TurretDeclaration Aggregate(TurretDeclaration newCfg)
     {
-        return new PortalConfiguration()
+        return new TurretDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -29,11 +29,11 @@ public class PortalConfiguration : IConfiguration<PortalDescription, PortalConfi
         };
     }
 
-    public PortalDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+    public TurretDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        var desc = new PortalDescription();
+        var desc = new TurretDescription();
 
-        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 

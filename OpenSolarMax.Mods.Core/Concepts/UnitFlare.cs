@@ -64,7 +64,7 @@ public class UnitFlareApplier(IAssetsManager assets) : IApplier<UnitFlareDescrip
             Color = desc.Color,
             Alpha = 1,
             Size = _flareTexture.LogicalSize,
-            Scale = Vector2.One * 0.001f,
+            Scale = Vector2.Zero,
             Blend = SpriteBlend.Additive
         });
 

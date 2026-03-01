@@ -1,18 +1,18 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.PredefinedOrbit), SchemaName("orbit")]
-public class PredefinedOrbitConfiguration : IConfiguration<PredefinedOrbitDescription, PredefinedOrbitConfiguration>
+[Declare(ConceptNames.PredefinedOrbit), SchemaName("orbit")]
+public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDescription, PredefinedOrbitDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
     public Vector2? Shape { get; set; }
 
@@ -20,9 +20,9 @@ public class PredefinedOrbitConfiguration : IConfiguration<PredefinedOrbitDescri
 
     public float? Period { get; set; }
 
-    public PredefinedOrbitConfiguration Aggregate(PredefinedOrbitConfiguration newCfg)
+    public PredefinedOrbitDeclaration Aggregate(PredefinedOrbitDeclaration newCfg)
     {
-        return new PredefinedOrbitConfiguration()
+        return new PredefinedOrbitDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -45,7 +45,7 @@ public class PredefinedOrbitConfiguration : IConfiguration<PredefinedOrbitDescri
             Period = Period.Value
         };
 
-        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 

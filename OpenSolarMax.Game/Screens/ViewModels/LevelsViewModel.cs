@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FontStashSharp;
 using FontStashSharp.RichText;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Level;
@@ -76,11 +77,12 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         {
             [typeof(GraphicsDevice)] = game.GraphicsDevice,
             [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
+            [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
         });
         var worldLoader = new WorldLoader(
-            factory, _levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+            factory, _levelModContext.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
         );
-        var levelLoader = new LevelLoader(_levelModContext.ConfigurationSchemaInfos);
+        var levelLoader = new LevelLoader(_levelModContext.DeclarationSchemaInfos);
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))
@@ -96,6 +98,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 {
                     [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                     [typeof(IConceptFactory)] = factory,
+                    [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
                 },
                 _levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
             );

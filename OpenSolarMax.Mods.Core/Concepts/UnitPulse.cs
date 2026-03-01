@@ -59,7 +59,7 @@ public class UnitPulseApplier(IAssetsManager assets) : IApplier<UnitPulseDescrip
             Color = desc.Color,
             Alpha = 1,
             Size = _pulseTexture.LogicalSize,
-            Scale = Vector2.One * 0.001f,
+            Scale = Vector2.Zero,
             Blend = SpriteBlend.Additive
         });
 

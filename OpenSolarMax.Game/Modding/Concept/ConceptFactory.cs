@@ -16,33 +16,21 @@ internal class ConceptFactory : IConceptFactory
         return (Signature)definitionType.GetProperty("Signature", bindingFlags)!.GetValue(null)!;
     }
 
-    private static OneOf<IApplier, IDescriptionApplier> CreateApplier(Type applierType, Type? descriptionType,
-                                                                      IReadOnlyDictionary<Type, object> @params)
-    {
-        var constructorInfos = applierType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-        if (constructorInfos.Length > 1)
-            throw new Exception($"{applierType} has more than one public constructors!");
-        if (constructorInfos.Length == 0)
-            throw new Exception($"{applierType} has no public constructor!");
-        var constructor = constructorInfos[0];
-
-        var parameterInfos = constructor.GetParameters();
-        var parameters = parameterInfos.Select(i => @params[i.ParameterType]).ToArray();
-
-        var applier = constructor.Invoke(parameters);
-
-        return descriptionType is null
-                   ? OneOf<IApplier, IDescriptionApplier>.FromT0((IApplier)applier)
-                   : OneOf<IApplier, IDescriptionApplier>.FromT1((IDescriptionApplier)applier);
-    }
-
     private static Concept BakeConcept(ConceptInfo info, IReadOnlyDictionary<Type, object> @params)
     {
         return new Concept(
             info.Name,
             info.DefinitionTypes.Select(GetSignature).Aggregate((s1, s2) => s1 + s2),
             info.DescriptionType,
-            [..info.ApplierTypes.Select(t => CreateApplier(t, info.DescriptionType, @params))]
+            [
+                ..info.ApplierTypes.Select(applierType =>
+                {
+                    var applier = PluginFactory.Instantiate(applierType, [], @params);
+                    return info.DescriptionType is null
+                               ? OneOf<IApplier, IDescriptionApplier>.FromT0((IApplier)applier)
+                               : OneOf<IApplier, IDescriptionApplier>.FromT1((IDescriptionApplier)applier);
+                })
+            ]
         );
     }
 

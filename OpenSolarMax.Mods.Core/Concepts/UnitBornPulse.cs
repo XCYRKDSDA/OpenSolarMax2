@@ -56,7 +56,7 @@ public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             Color = desc.Color,
             Alpha = 1,
             Size = _pulseTexture.Bounds.Size.ToVector2(),
-            Scale = Vector2.One * 0.001f,
+            Scale = Vector2.Zero,
             Blend = SpriteBlend.Additive
         });
 

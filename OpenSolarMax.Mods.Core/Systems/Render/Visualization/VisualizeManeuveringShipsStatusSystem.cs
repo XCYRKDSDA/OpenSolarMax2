@@ -3,10 +3,13 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using OpenSolarMax.Mods.Core.Utils;
@@ -22,25 +25,26 @@ public delegate bool? CheckLocationReachabilityCallback(World world,
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice) : ICalcSystem
+    World world, GraphicsDevice graphicsDevice,
+    [Section("systems:visualization:maneuvering_ships_status")] IConfiguration configs) : ICalcSystem
 {
-    private const float _ringRadiusFactor = 1.6f;
-    private const float _ringThickness = 3f;
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
+    private readonly Color _hoveredRingColor = configs.RequireValue<Color>("ring:hovered:color");
+    private readonly Color _blockedRingColor = configs.RequireValue<Color>("ring:blocked:color");
+    private readonly Color _selectedRingColor = configs.RequireValue<Color>("ring:selected:color");
 
-    private const float _boxThickness = 3f;
+    private readonly float _boxThickness = configs.RequireValue<float>("box:thickness");
+    private readonly Color _boxColor = configs.RequireValue<Color>("box:color");
 
-    private const float _lineThickness = 3f;
-    private const float _lineRound = _lineThickness / 3;
-    private readonly Color _blockedLineColor = Color.Red;
-    private readonly Color _blockedRingColor = Color.Red;
-    private readonly Color _boxColor = Color.White * 0.5f;
+    private readonly float _lineThickness = configs.RequireValue<float>("line:thickness");
+    private readonly float _lineRound = configs.RequireValue<float>("line:round");
+    private readonly Color _lineColor = configs.RequireValue<Color>("line:color");
+    private readonly Color _blockedLineColor = configs.RequireValue<Color>("line:blocked:color");
+
     private readonly BoxRenderer _boxRenderer = new(graphicsDevice);
-
     private readonly CircleRenderer _circleRenderer = new(graphicsDevice);
-    private readonly Color _hoveredRingColor = Color.White * 0.5f;
-    private readonly Color _lineColor = Color.White;
     private readonly SegmentRenderer _segmentRenderer = new(graphicsDevice);
-    private readonly Color _selectedRingColor = Color.White;
 
     [Hook("CheckLocationReachability")]
     public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }

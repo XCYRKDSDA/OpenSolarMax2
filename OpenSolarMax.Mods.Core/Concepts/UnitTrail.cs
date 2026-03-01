@@ -51,7 +51,7 @@ public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory) : 
             Color = Color.White,
             Alpha = 0.5f,
             Size = _trailTexture.Bounds.Size.ToVector2(),
-            Scale = new(0.001f, 1),
+            Scale = new Vector2(0, 1),
             Blend = SpriteBlend.Additive
         });
 

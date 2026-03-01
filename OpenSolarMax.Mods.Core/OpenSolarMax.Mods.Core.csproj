@@ -70,4 +70,10 @@
         </None>
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="configs.toml">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

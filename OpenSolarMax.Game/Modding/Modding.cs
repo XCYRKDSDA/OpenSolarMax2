@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Myra.Graphics2D.UI;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 using Zio;
@@ -19,6 +19,8 @@ internal static partial class Modding
     public static string DefaultAssemblyFormat => "{}.dll";
 
     public static string DefaultContentDir => "Content";
+
+    public static string DefaultConfigsFile => "configs.toml";
 
     public static string DefaultLevelsDir => "Levels";
 
@@ -65,23 +67,23 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns>所有配置器的类型和其对应的键值</returns>
-    public static Dictionary<string, ConfigurationSchemaInfo> FindConfigurationTypes(Assembly assembly)
+    public static Dictionary<string, DeclarationSchemaInfo> FindDeclarationTypes(Assembly assembly)
     {
-        var configurationTypes = new Dictionary<string, ConfigurationSchemaInfo>();
+        var configurationTypes = new Dictionary<string, DeclarationSchemaInfo>();
 
         foreach (var type in assembly.GetExportedTypes())
         {
-            if (!type.GetInterfaces().Contains(typeof(IConfiguration)))
+            if (!type.GetInterfaces().Contains(typeof(IDeclaration)))
                 continue;
 
-            var configureAttr = type.GetCustomAttribute<ConfigureAttribute>() ??
+            var configureAttr = type.GetCustomAttribute<DeclareAttribute>() ??
                                 throw new Exception($"Can't find attribute `Configure` in type {type.Name}");
 
             var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>()
                                  ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
 
             configurationTypes.Add(schemaNameAttr.Name,
-                                   new ConfigurationSchemaInfo(type, configureAttr.Target, schemaNameAttr.Name));
+                                   new DeclarationSchemaInfo(type, configureAttr.Target, schemaNameAttr.Name));
         }
 
         return configurationTypes;

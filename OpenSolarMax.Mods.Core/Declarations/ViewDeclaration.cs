@@ -1,18 +1,18 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.View), SchemaName("view")]
-public class ViewConfiguration : IConfiguration<ViewDescription, ViewConfiguration>
+[Declare(ConceptNames.View), SchemaName("view")]
+public class ViewDeclaration : IDeclaration<ViewDescription, ViewDeclaration>
 {
     public string? Parent { get; set; }
 
     public Vector2? Position { get; set; }
 
-    public OrbitConfiguration? Orbit { get; set; }
+    public OrbitDeclaration? Orbit { get; set; }
 
     public int[]? Size { get; set; }
 
@@ -20,9 +20,9 @@ public class ViewConfiguration : IConfiguration<ViewDescription, ViewConfigurati
 
     public string? Party { get; set; }
 
-    public ViewConfiguration Aggregate(ViewConfiguration newCfg)
+    public ViewDeclaration Aggregate(ViewDeclaration newCfg)
     {
-        return new ViewConfiguration()
+        return new ViewDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -44,7 +44,7 @@ public class ViewConfiguration : IConfiguration<ViewDescription, ViewConfigurati
             Party = otherEntities[Party],
         };
 
-        var tfCfg = new TransformableConfiguration() { Parent = Parent, Position = Position, Orbit = Orbit };
+        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 

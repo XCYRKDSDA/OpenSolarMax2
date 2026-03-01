@@ -2,11 +2,14 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Graphics;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
@@ -19,12 +22,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(DrawSpritesSystem))]
 public sealed partial class VisualizeBarriersSystem : ICalcSystem
 {
-    private const float _nodeSize = 16;
-    private const float _edgeThickness = 8f;
-    private const float _edgeDashLength = 12f;
-    private const float _edgeGapLength = 3f;
-    private static readonly Color _nodeColor = Color.White;
-    private static readonly Color _edgeColor = Color.Pink;
+    private readonly float _nodeSize;
+    private readonly float _edgeThickness;
+    private readonly float _edgeDashLength;
+    private readonly float _edgeGapLength;
+    private readonly Color _nodeColor;
+    private readonly Color _edgeColor;
 
     private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<Barrier>();
     private readonly NinePatchRegion _barrierTexture;
@@ -36,7 +39,8 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
     private readonly SpriteBatch _spriteBatch;
     private readonly World _world;
 
-    public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
+    public VisualizeBarriersSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
+                                   [Section("systems:visualization:barriers")] IConfiguration configs)
     {
         _world = world;
         _graphicsDevice = graphicsDevice;
@@ -45,6 +49,14 @@ public sealed partial class VisualizeBarriersSystem : ICalcSystem
 
         _nodeTexture = assets.Load<TextureRegion>("Textures/BarrierAtlas.json:Node");
         _barrierTexture = assets.Load<NinePatchRegion>("Textures/BarrierAtlas.json:Edge");
+
+        // 行为配置
+        _nodeSize = configs.RequireValue<float>("node:size");
+        _nodeColor = configs.RequireValue<Color>("node:color");
+        _edgeThickness = configs.RequireValue<float>("edge:thickness");
+        _edgeDashLength = configs.RequireValue<float>("edge:dash_length");
+        _edgeGapLength = configs.RequireValue<float>("edge:gap_length");
+        _edgeColor = configs.RequireValue<Color>("edge:color");
     }
 
     public void Update()

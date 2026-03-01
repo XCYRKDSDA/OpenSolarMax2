@@ -1,0 +1,73 @@
+# 仿真系统相关
+
+[systems.simulate.shipping]
+charging_duration = 0.5
+landing_duration = 0.5
+fading_in_duration = 0.1
+fading_out_duration = 0.25
+arrival_time_offset = 0.5 # 抵达时间的绝对偏差（半边）
+arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间的最大比例
+
+# 输入系统相关
+
+[systems.input.maneuvering]
+minimal_select_pixels = 10
+
+# 可视化系统相关
+
+[systems.visualization.anchored_units]
+text.size = 36
+text.template = "{0}"
+shadow.distance = 2
+shadow.density = 0.6
+label.offset_multipliers = { x = 0.6, y = 0.72 }
+ring.radius_multiplier = 1.8
+ring.thickness = 3
+ring.label.radius_multiplier = 2.25
+ring.gap.deg = 3
+
+[systems.visualization.barriers]
+node.size = 16
+node.color = "white"
+edge.thickness = 8
+edge.dash_length = 12
+edge.gap_length = 3
+edge.color = "pink"
+
+[systems.visualization.colonization]
+ring.radius_multiplier = 1.8
+ring.thickness = 3
+ring.default_alpha = 0.2
+
+[systems.visualization.entity_ids]
+text.size = 18
+text.color = "red"
+
+[systems.visualization.maneuvering_ships_status]
+ring.radius_multiplier = 1.6
+ring.thickness = 3
+ring.hovered.color = "white * 0.5"
+ring.blocked.color = "red"
+ring.selected.color = "white"
+box.thickness = 3
+box.color = "white * 0.5"
+line.thickness = 3
+line.round = 1
+line.color = "white"
+line.blocked.color = "red"
+
+# 概念构造相关
+
+[applier.celestial_body]
+orbit.pitch.min.deg = -82.5
+orbit.pitch.max.deg = -67.5
+orbit.roll.min.deg = 0
+orbit.roll.max.deg = 7.5
+
+[applier.portal]
+reference_radius = 24
+volume = 400
+
+[applier.turret]
+reference_radius = 19.5
+volume = 600

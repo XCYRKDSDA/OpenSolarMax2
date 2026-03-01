@@ -1,12 +1,12 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Configurations;
+namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Configure(ConceptNames.Party), SchemaName("party")]
-public class PartyConfiguration : IConfiguration<PartyDescription, PartyConfiguration>
+[Declare(ConceptNames.Party), SchemaName("party")]
+public class PartyDeclaration : IDeclaration<PartyDescription, PartyDeclaration>
 {
     public Color? Color { get; set; }
 
@@ -16,9 +16,9 @@ public class PartyConfiguration : IConfiguration<PartyDescription, PartyConfigur
 
     public float? Health { get; set; }
 
-    public PartyConfiguration Aggregate(PartyConfiguration newCfg)
+    public PartyDeclaration Aggregate(PartyDeclaration newCfg)
     {
-        return new PartyConfiguration()
+        return new PartyDeclaration()
         {
             Color = newCfg.Color ?? Color,
             Workload = newCfg.Workload ?? Workload,

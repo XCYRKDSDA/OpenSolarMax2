@@ -1,9 +1,11 @@
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -64,7 +66,10 @@ public class PlanetDescription : IDescription
 }
 
 [Apply(ConceptNames.Planet)]
-public class PlanetApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<PlanetDescription>
+public class PlanetApplier(
+    IAssetsManager assets, IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:planet")] IConfiguration configs)
+    : IApplier<PlanetDescription>
 {
     private readonly TextureRegion _defaultPlanetShape =
         assets.Load<TextureRegion>(Content.Textures.DefaultPlanetShape);
@@ -72,7 +77,7 @@ public class PlanetApplier(IAssetsManager assets, IConceptFactory factory) : IAp
     private readonly TextureRegion[] _defaultPlanetTextures =
         Content.Textures.DefaultPlanetTextures.Select(k => assets.Load<TextureRegion>(k)).ToArray();
 
-    private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory);
+    private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PlanetDescription desc)
     {

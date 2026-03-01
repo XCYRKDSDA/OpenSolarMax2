@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Arch.Buffer;
 using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -44,6 +45,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
         {
             [typeof(GraphicsDevice)] = game.GraphicsDevice,
             [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+            [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
         });
         _inputSystem = new AggregateSystem(
             _world, levelModContext.SystemTypes.Input.Sorted,
@@ -51,6 +53,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
@@ -60,6 +63,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
@@ -69,6 +73,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
@@ -77,14 +82,15 @@ internal partial class LevelPlayViewModel : ViewModelBase
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
-                [typeof(IAssetsManager)] = levelModContext.LocalAssets
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
 
         // 加载关卡内容
         var worldLoader = new WorldLoader(
-            factory, levelModContext.ConfigurationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+            factory, levelModContext.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
         );
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
