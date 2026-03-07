@@ -39,7 +39,14 @@ public class BarrierApplier(
     : IApplier<BarrierDescription>
 {
     private readonly Vector2 _barrierNodeTextureSize =
-        new(configs.RequireValue<float>("size:x"), configs.RequireValue<float>("size:y"));
+        new(configs.RequireValue<float>("node:size:x"), configs.RequireValue<float>("node:size:y"));
+
+    private readonly float _barrierEdgeSpace = configs.RequireValue<float>("edge:space");
+
+    private readonly Color _barrierEdgeColor = configs.RequireValue<Color>("edge:color");
+
+    private readonly Vector2 _barrierEdgeTextureSize =
+        new(configs.RequireValue<float>("edge:size:x"), configs.RequireValue<float>("edge:size:y"));
 
     private readonly TextureRegion
         _barrierNodeTexture = assets.Load<TextureRegion>("/Textures/BarrierAtlas2.json:Node");
@@ -65,19 +72,30 @@ public class BarrierApplier(
         });
 
         // 创建边实体
-        var center = (desc.Head + desc.Tail) / 2;
-        var dir = desc.Tail - desc.Head;
-        var edge = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
+        var vector = desc.Tail - desc.Head;
+        var dir = Vector3.Normalize(vector);
+        var edgeRot = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.Atan2(vector.Y, vector.X));
+        var dist = (vector with { Z = 0 }).Length();
+        var edgeParts = new List<Entity>();
+        for (var d = _barrierEdgeSpace; d < dist; d += _barrierEdgeSpace)
         {
-            Transform = new AbsoluteTransformOptions()
+            var edgePart = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
             {
-                Translation = center with { Z = 10 },
-                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.Atan2(dir.Y, dir.X)),
-            },
-            Texture = _barrierEdgeTexture,
-            Size = _barrierEdgeTexture.LogicalSize,
-        });
+                Transform = new AbsoluteTransformOptions()
+                {
+                    Translation = desc.Head + d * dir,
+                    Rotation = edgeRot,
+                },
+                Texture = _barrierEdgeTexture,
+                Color = _barrierEdgeColor,
+                Size = _barrierEdgeTextureSize,
+                Blend = SpriteBlend.Additive,
+            });
+            edgeParts.Add(edgePart);
+        }
 
-        commandBuffer.Set(in entity, new BarrierMembers(node1, node2, edge));
+        // TODO: 处理 2D 和 3D 之间的映射
+
+        commandBuffer.Set(in entity, new BarrierMembers(node1, node2, edgeParts.ToArray()));
     }
 }
