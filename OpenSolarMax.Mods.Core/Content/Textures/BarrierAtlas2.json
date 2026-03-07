@@ -1,0 +1,7 @@
+{
+    "image": "BarrierAtlas2.png",
+    "regions": {
+        "Node": { "x": 0, "y": 0, "w": 256, "h": 256, "anchor": [ 128, 128 ], "size": [ 54, 54 ] },
+        "Shape": { "x": 256, "y": 0, "w": 256, "h": 256, "anchor": [ 128, 128 ], "size": [ 54, 54 ] }
+    }
+}

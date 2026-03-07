@@ -71,3 +71,9 @@ volume = 400
 [applier.turret]
 reference_radius = 19.5
 volume = 600
+
+[applier.barrier]
+node.size = { x = 27, y = 27 }
+edge.space = 8
+edge.color = "#ff4444"
+edge.size = { x = 13.5, y = 27 }
