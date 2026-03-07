@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Core.Components;
 using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -19,7 +20,8 @@ public static partial class ConceptNames
 public abstract class BarrierDefinition : IDefinition
 {
     public static Signature Signature { get; } = new(
-        typeof(Barrier)
+        typeof(Barrier),
+        typeof(BarrierMembers)
     );
 }
 
@@ -42,22 +44,40 @@ public class BarrierApplier(
     private readonly TextureRegion
         _barrierNodeTexture = assets.Load<TextureRegion>("/Textures/BarrierAtlas2.json:Node");
 
+    private readonly TextureRegion _barrierEdgeTexture = assets.Load<TextureRegion>("/Textures/BarrierLine.json:Line");
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, BarrierDescription desc)
     {
         commandBuffer.Set(in entity, new Barrier() { Head = desc.Head, Tail = desc.Tail });
 
         // 创建两头的节点实体
-        factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
+        var node1 = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
         {
             Transform = new AbsoluteTransformOptions() { Translation = desc.Head with { Z = 10 } },
             Texture = _barrierNodeTexture,
             Size = _barrierNodeTextureSize,
         });
-        factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
+        var node2 = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
         {
             Transform = new AbsoluteTransformOptions() { Translation = desc.Tail with { Z = 10 } },
             Texture = _barrierNodeTexture,
             Size = _barrierNodeTextureSize,
         });
+
+        // 创建边实体
+        var center = (desc.Head + desc.Tail) / 2;
+        var dir = desc.Tail - desc.Head;
+        var edge = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
+        {
+            Transform = new AbsoluteTransformOptions()
+            {
+                Translation = center with { Z = 10 },
+                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.Atan2(dir.Y, dir.X)),
+            },
+            Texture = _barrierEdgeTexture,
+            Size = _barrierEdgeTexture.LogicalSize,
+        });
+
+        commandBuffer.Set(in entity, new BarrierMembers(node1, node2, edge));
     }
 }
