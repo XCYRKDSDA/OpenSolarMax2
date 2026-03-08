@@ -29,8 +29,8 @@ public sealed partial class UpdateListener3DAttributesSystem(World world) : ICal
             forward = { x = 0, y = 0, z = 1 },
             position =
             {
-                x = transform.TransformToRoot.Translation.X,
-                y = transform.TransformToRoot.Translation.Y,
+                x = transform.Translation.X,
+                y = transform.Translation.Y,
                 z = camera.Width / 2 / 1.7320508f,
             },
             up = { x = 0, y = 1, z = 0 },
