@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -59,13 +60,13 @@ public class InfiniteZBarrierApplier(
         // 创建两头的节点实体
         var node1 = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
         {
-            Transform = new AbsoluteTransformOptions() { Translation = new Vector3(desc.Head, 0) },
+            Transform = new AbsoluteTransformOptions() { Translation = TransformProjection.To3D(desc.Head) },
             Texture = _barrierNodeTexture,
             Size = _barrierNodeTextureSize,
         });
         var node2 = factory.Make(World.Worlds[entity.WorldId], commandBuffer, new DrawableDescription()
         {
-            Transform = new AbsoluteTransformOptions() { Translation = new Vector3(desc.Tail, 0) },
+            Transform = new AbsoluteTransformOptions() { Translation = TransformProjection.To3D(desc.Tail) },
             Texture = _barrierNodeTexture,
             Size = _barrierNodeTextureSize,
         });
@@ -73,7 +74,7 @@ public class InfiniteZBarrierApplier(
         // 创建边实体
         var vector = desc.Tail - desc.Head;
         var dir = Vector2.Normalize(vector);
-        var edgeRot = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.Atan2(vector.Y, vector.X));
+        var edgeRot = TransformProjection.To3D(MathF.Atan2(vector.Y, vector.X));
         var dist = vector.Length();
         var edgeParts = new List<Entity>();
         for (var d = _barrierEdgeSpace; d < dist; d += _barrierEdgeSpace)
@@ -82,7 +83,7 @@ public class InfiniteZBarrierApplier(
             {
                 Transform = new AbsoluteTransformOptions()
                 {
-                    Translation = new Vector3(desc.Head + d * dir, 0),
+                    Translation = TransformProjection.To3D(desc.Head + d * dir),
                     Rotation = edgeRot,
                 },
                 Texture = _barrierEdgeTexture,
@@ -92,8 +93,6 @@ public class InfiniteZBarrierApplier(
             });
             edgeParts.Add(edgePart);
         }
-
-        // TODO: 处理 2D 和 3D 之间的映射
 
         commandBuffer.Set(in entity, new BarrierMembers(node1, node2, edgeParts.ToArray()));
     }

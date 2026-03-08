@@ -7,7 +7,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
-using Vector3 = System.Numerics.Vector3;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 

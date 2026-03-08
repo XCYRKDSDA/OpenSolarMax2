@@ -12,6 +12,7 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -107,8 +108,8 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
 
             // 计算文字位置
             var textSize = _font.MeasureString(text);
-            var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
-            var position = new Vector2(planetInCanvas.X, planetInCanvas.Y)
+            var planetInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
+            var position = planetInCanvas
                            + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius * scale
                            - textSize / 2;
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
@@ -131,8 +132,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             var labelRadius = refSize.Radius * _labelRadiusFactor * scale;
 
             // 获得战斗环的圆心
-            var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
-            var ringCenter = new Vector2(planetInCanvas.X, planetInCanvas.Y);
+            var ringCenter = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
 
             // 获得各阵营的单位数目、颜色和标签
             var shipsRegistry = registry.Ships;

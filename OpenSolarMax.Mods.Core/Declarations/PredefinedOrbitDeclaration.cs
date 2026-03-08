@@ -2,6 +2,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
@@ -50,7 +51,7 @@ public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDescriptio
         desc.Transform = tfDesc.Transform;
 
         if (Roll is not null)
-            desc.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Roll.Value);
+            desc.Rotation = TransformProjection.To3D(Roll.Value);
 
         return desc;
     }

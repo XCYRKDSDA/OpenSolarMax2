@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -68,14 +69,10 @@ public class TransportationTrailApplier(IAssetsManager assets) : IApplier<Transp
         });
 
         // 放置位置
-        var unitX = Vector3.Normalize(vector);
-        var unitY = Vector3.Normalize(new(-vector.Y, vector.X, 0));
-        var unitZ = Vector3.Cross(unitX, unitY);
-        var rotation = new Matrix { Right = unitX, Up = unitY, Backward = unitZ };
         commandBuffer.Set(in entity, new AbsoluteTransform
         {
             Translation = desc.Tail,
-            Rotation = Quaternion.CreateFromRotationMatrix(rotation)
+            Rotation = TransformProjection.UprightAim(vector)
         });
 
         // 播放动画

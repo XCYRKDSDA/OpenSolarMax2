@@ -67,12 +67,7 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
                                                            .TransformToParent;
             var tail = (expectedPoseInDestination * destinationPlanetPose).Translation;
 
-            var vector = tail - head;
-            var unitX = Vector3.Normalize(vector);
-            var unitY = Vector3.Normalize(new(-vector.Y, vector.X, 0));
-            var unitZ = Vector3.Cross(unitX, unitY);
-            var rotation = new Matrix { Right = unitX, Up = unitY, Backward = unitZ };
-            pose.Rotation = Quaternion.CreateFromRotationMatrix(rotation);
+            pose.Rotation = TransformProjection.UprightAim(tail - head);
 
             // 播放动画
             var animationTime = (float)status.PreTransportation.ElapsedTime.TotalSeconds;

@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -87,7 +88,7 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
                 Transform = new RelativeTransformOptions
                 {
                     Parent = desc.Effect,
-                    Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, desc.Angle)
+                    Rotation = TransformProjection.To3D(desc.Angle)
                 }
             });
         var transform = factory.Make(

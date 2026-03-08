@@ -9,6 +9,7 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -47,8 +48,8 @@ public sealed partial class DrawShapesSystem(World world, GraphicsDevice graphic
                             * absoluteTransform.TransformToRoot;
 
         // 将变换投影到二维平面
-        var rotatedUnitX = Vector3.Transform(Vector3.UnitX, absoluteTransform.Rotation);
-        anchorToWorld = Matrix.CreateRotationZ(MathF.Atan2(rotatedUnitX.Y, rotatedUnitX.X))
+        var projectedRotation = TransformProjection.To2D(Quaternion.CreateFromRotationMatrix(anchorToWorld));
+        anchorToWorld = Matrix.CreateRotationZ(projectedRotation)
                         * Matrix.CreateTranslation(anchorToWorld.Translation);
 
         // 完成最后的缩放
