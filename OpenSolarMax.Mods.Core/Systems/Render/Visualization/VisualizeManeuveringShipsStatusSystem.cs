@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using OpenSolarMax.Mods.Core.Utils;
@@ -60,8 +59,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
 
         // 计算选择环的位置
-        var poseInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
-        var ringInCanvas = new Vector2(poseInCanvas.X, poseInCanvas.Y);
+        var ringInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
 
         // 绘制选择环
         _circleRenderer.DrawCircle(ringInCanvas, ringRadius, ringColor, ringThickness);
@@ -93,8 +91,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var targetCompos = target.Get<ReferenceSize, AbsoluteTransform>();
         ref readonly var targetRefSize = ref targetCompos.t0;
         ref readonly var targetPose = ref targetCompos.t1;
-        var targetInCanvas3D = Vector3.Transform(targetPose.Translation, worldToViewport);
-        var targetInCanvas = new Vector2(targetInCanvas3D.X, targetInCanvas3D.Y);
+        var targetInCanvas = TransformProjection.To2D(Vector3.Transform(targetPose.Translation, worldToViewport));
         var targetRingRadius = targetRefSize.Radius * _ringRadiusFactor * scale;
 
         foreach (var (source, color) in Enumerable.Zip(sources, colors))
@@ -104,8 +101,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             ref readonly var pose = ref compos.t1;
 
             // 计算起点位置和半径
-            var sourceInCanvas3D = Vector3.Transform(pose.Translation, worldToViewport);
-            var sourceInCanvas = new Vector2(sourceInCanvas3D.X, sourceInCanvas3D.Y);
+            var sourceInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToViewport));
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
@@ -132,8 +128,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             ref readonly var pose = ref compos.t1;
 
             // 计算起点位置和半径
-            var sourceInCanvas3D = Vector3.Transform(pose.Translation, worldToViewport);
-            var sourceInCanvas = new Vector2(sourceInCanvas3D.X, sourceInCanvas3D.Y);
+            var sourceInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToViewport));
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点

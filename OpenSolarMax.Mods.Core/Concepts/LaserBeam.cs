@@ -7,6 +7,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Utils;
 using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
@@ -59,17 +60,13 @@ public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory) : 
         // 摆放位置
         ref readonly var turretPose = ref desc.Planet.Get<AbsoluteTransform>();
         var vector = desc.TargetPosition - turretPose.Translation;
-        var unitX = Vector3.Normalize(vector);
-        var unitY = Vector3.Normalize(new(-vector.Y, vector.X, 0));
-        var unitZ = Vector3.Cross(unitX, unitY);
-        var rotation = new Matrix { Right = unitX, Up = unitY, Backward = unitZ };
         factory.Make(world, commandBuffer, ConceptNames.RelativeTransform,
                      new RelativeTransformDescription
                      {
                          Parent = desc.Planet,
                          Child = entity,
                          Translation = Vector3.Zero,
-                         Rotation = Quaternion.CreateFromRotationMatrix(rotation)
+                         Rotation = TransformProjection.UprightAim(vector)
                      });
 
         // 设置纹理

@@ -8,9 +8,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -42,8 +42,8 @@ public sealed partial class VisualizeEntityIdsSystem(
 
         // 计算文字位置
         var textSize = _font.MeasureString(text);
-        var entityInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
-        var position = new Vector2(entityInCanvas.X, entityInCanvas.Y) - textSize / 2;
+        var entityInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
+        var position = entityInCanvas - textSize / 2;
 
         // 绘制文字
         _font.DrawText(_fontRenderer, text, position, _textColor, effect: FontSystemEffect.Stroked, effectAmount: 1);

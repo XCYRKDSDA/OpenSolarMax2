@@ -7,9 +7,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -60,8 +60,7 @@ public sealed partial class VisualizeColonizationSystem(
         var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
 
         // 获得殖民环的圆心
-        var planetInCanvas = Vector3.Transform(pose.Translation, worldToCanvas);
-        var ringCenter = new Vector2(planetInCanvas.X, planetInCanvas.Y);
+        var ringCenter = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
 
         // 计算首尾角度
         var angle = MathF.PI * 2 * colonizationState.Progress / colonizable.Volume;

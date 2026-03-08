@@ -2,6 +2,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
+using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
@@ -32,14 +33,14 @@ public class TransformableDeclaration : IDeclaration<TransformableDescription, T
         {
             var transform = new AbsoluteTransformOptions();
             if (Position is { } position)
-                transform.Translation = new Vector3(position.X, position.Y, 0);
+                transform.Translation = TransformProjection.To3D(position);
             return new TransformableDescription() { Transform = transform };
         }
         else if (Orbit is null)
         {
             var transform = new RelativeTransformOptions() { Parent = otherEntities[Parent] };
             if (Position is { } position)
-                transform.Translation = new Vector3(position.X, position.Y, 0);
+                transform.Translation = TransformProjection.To3D(position);
             return new TransformableDescription() { Transform = transform };
         }
         else

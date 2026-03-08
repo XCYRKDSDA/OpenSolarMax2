@@ -77,7 +77,7 @@ public class PartyApplier : IApplier<PartyDescription>
 
         commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 1 });
 
-        commandBuffer.Set(in entity, new Ai { Enabled = true });
+        commandBuffer.Set(in entity, new Ai { Enabled = false });
         commandBuffer.Set(in entity, new AiCooldown { Duration = TimeSpan.FromSeconds(3) });
         commandBuffer.Set(in entity, new AiTimer { TimeLeft = TimeSpan.FromSeconds(2) });
     }
