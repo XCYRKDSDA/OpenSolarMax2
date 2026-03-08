@@ -2,10 +2,10 @@ using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public struct Barrier
+public struct InfiniteZBarrier
 {
     /// <summary>
     /// 障碍线段的起点和终点
     /// </summary>
-    public Vector3 Head, Tail;
+    public Vector2 Head, Tail;
 }

@@ -3,7 +3,6 @@ using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
-using Barrier = OpenSolarMax.Mods.Core.Components.Barrier;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -12,7 +11,7 @@ public delegate bool? CheckPlanetReachabilityCallback(World world,
                                                       Entity destination, in AbsoluteTransform destinationPose);
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(Barrier)), Write(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InfiniteZBarrier)), Write(typeof(ReachabilityRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public class CountReachabilitySystem(World world) : ICalcSystem
 {
