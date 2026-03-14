@@ -73,16 +73,18 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         // 加载所有关卡
 
-        var factory = new ConceptFactory(_levelModContext.ConceptInfos.Values, new Dictionary<Type, object>()
-        {
-            [typeof(GraphicsDevice)] = game.GraphicsDevice,
-            [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
-            [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
-        });
+        var factory = new ConceptFactory(_levelModContext.PreviewBehaviors.ConceptInfos.Values,
+                                         new Dictionary<Type, object>()
+                                         {
+                                             [typeof(GraphicsDevice)] = game.GraphicsDevice,
+                                             [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
+                                             [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+                                         });
         var worldLoader = new WorldLoader(
-            factory, _levelModContext.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
+            factory,
+            _levelModContext.PreviewBehaviors.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
         );
-        var levelLoader = new LevelLoader(_levelModContext.DeclarationSchemaInfos);
+        var levelLoader = new LevelLoader(_levelModContext.PreviewBehaviors.DeclarationSchemaInfos);
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))
@@ -93,14 +95,15 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             // 加载关卡内容
             var world = World.Create();
             var simulateSystem = new AggregateSystem(
-                world, _levelModContext.SystemTypes.Simulate.Sorted,
+                world, _levelModContext.PreviewBehaviors.SystemTypes.Simulate.Sorted,
                 new Dictionary<Type, object>
                 {
                     [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                     [typeof(IConceptFactory)] = factory,
                     [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
                 },
-                _levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                _levelModContext.PreviewBehaviors.HookImplMethods.ToDictionary(
+                    kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
             );
             var commandBuffer = new CommandBuffer();
             var enumerator = worldLoader.LoadStepByStep(level, world, commandBuffer);
@@ -113,13 +116,14 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
             // 构造预览系统
             var previewSystem = new AggregateSystem(
-                world, _levelModContext.SystemTypes.Preview.Sorted,
+                world, _levelModContext.PreviewBehaviors.SystemTypes.Render.Sorted,
                 new Dictionary<Type, object>
                 {
                     [typeof(GraphicsDevice)] = game.GraphicsDevice,
                     [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 },
-                _levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                _levelModContext.PreviewBehaviors.HookImplMethods.ToDictionary(
+                    kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
             );
             _previewSystems.Add(previewSystem);
 

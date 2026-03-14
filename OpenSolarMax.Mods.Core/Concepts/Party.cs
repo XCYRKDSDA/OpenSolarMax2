@@ -1,6 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,7 +12,7 @@ public static partial class ConceptNames
     public const string Party = "Party";
 }
 
-[Define(ConceptNames.Party)]
+[Define(ConceptNames.Party), BothForGameplayAndPreview]
 public abstract class PartyDefinition : IDefinition
 {
     public static Signature Signature { get; } =
@@ -34,7 +35,7 @@ public abstract class PartyDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.Party)]
+[Describe(ConceptNames.Party), BothForGameplayAndPreview]
 public class PartyDescription : IDescription
 {
     /// <summary>
@@ -58,7 +59,7 @@ public class PartyDescription : IDescription
     public required float Health { get; set; }
 }
 
-[Apply(ConceptNames.Party)]
+[Apply(ConceptNames.Party), BothForGameplayAndPreview]
 public class PartyApplier : IApplier<PartyDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, PartyDescription desc)

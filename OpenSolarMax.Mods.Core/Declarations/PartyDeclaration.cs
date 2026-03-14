@@ -1,11 +1,12 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.Party), SchemaName("party")]
+[Declare(ConceptNames.Party), SchemaName("party"), BothForGameplayAndPreview]
 public class PartyDeclaration : IDeclaration<PartyDescription, PartyDeclaration>
 {
     public Color? Color { get; set; }

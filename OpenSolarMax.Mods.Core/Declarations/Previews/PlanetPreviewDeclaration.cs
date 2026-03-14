@@ -4,10 +4,10 @@ using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Declarations;
+namespace OpenSolarMax.Mods.Core.Declarations.Previews;
 
-[Declare(ConceptNames.View), SchemaName("view"), BothForGameplayAndPreview]
-public class ViewDeclaration : IDeclaration<ViewDescription, ViewDeclaration>
+[Declare(ConceptNames.PlanetPreview), SchemaName("planet"), OnlyForPreview]
+public class PlanetPreviewDeclaration : IDeclaration<PlanetPreviewDescription, PlanetPreviewDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -15,44 +15,40 @@ public class ViewDeclaration : IDeclaration<ViewDescription, ViewDeclaration>
 
     public OrbitDeclaration? Orbit { get; set; }
 
-    public int[]? Size { get; set; }
-
-    public float[]? Depth { get; set; }
+    public float? Radius { get; set; }
 
     public string? Party { get; set; }
 
-    public ViewDeclaration Aggregate(ViewDeclaration newCfg)
+    public PlanetPreviewDeclaration Aggregate(PlanetPreviewDeclaration newCfg)
     {
-        return new ViewDeclaration()
+        return new PlanetPreviewDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
             Orbit = Orbit is not null && newCfg.Orbit is not null
                         ? Orbit.Aggregate(newCfg.Orbit)
                         : newCfg.Orbit ?? Orbit,
-            Size = newCfg.Size ?? Size,
-            Depth = newCfg.Depth ?? Depth,
-            Party = newCfg.Party ?? Party
+            Radius = newCfg.Radius ?? Radius,
+            Party = newCfg.Party ?? Party,
         };
     }
 
-    public ViewDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+    public PlanetPreviewDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Party is null) throw new NullReferenceException();
+        if (Radius is null)
+            throw new NullReferenceException();
 
-        var desc = new ViewDescription()
+        var desc = new PlanetPreviewDescription()
         {
-            Party = otherEntities[Party],
+            ReferenceRadius = Radius.Value,
         };
 
         var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
         var tfDesc = tfCfg.ToDescription(otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (Size is not null)
-            desc.Size = new Point(Size[0], Size[1]);
-        if (Depth is not null)
-            desc.Depth = (Depth[0], Depth[1]);
+        if (Party is not null)
+            desc.Party = otherEntities[Party];
 
         return desc;
     }

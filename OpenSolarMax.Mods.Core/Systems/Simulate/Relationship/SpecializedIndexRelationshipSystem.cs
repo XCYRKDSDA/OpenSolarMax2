@@ -1,4 +1,5 @@
 using Arch.Core;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,7 +12,7 @@ public sealed class IndexDependenceSystem(World world)
     : IndexRelationshipSystemBase<Dependence>(world)
 { }
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(InParty)), Write(typeof(InParty.AsParty)), Write(typeof(InParty.AsAffiliate))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexPartyAffiliationSystem(World world)
@@ -26,7 +27,7 @@ public sealed class IndexAnchorageSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<Anchorage>>(world)
 { }
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>)), Write(typeof(TreeRelationship<RelativeTransform>.AsParent)),
  Write(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]

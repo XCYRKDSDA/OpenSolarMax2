@@ -2,6 +2,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -10,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相对变换<see cref="RelativeTransform"/>及其树型关系计算每个实体的绝对变换
 /// </summary>
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsParent)),
  ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ReadCurr(typeof(RelativeTransform)), Write(typeof(AbsoluteTransform))]

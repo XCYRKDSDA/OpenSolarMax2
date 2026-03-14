@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OneOf;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
@@ -15,7 +16,7 @@ public static partial class ConceptNames
     public const string View = "View";
 }
 
-[Define(ConceptNames.View)]
+[Define(ConceptNames.View), BothForGameplayAndPreview]
 public abstract class ViewDefinition : IDefinition
 {
     public static Signature Signature { get; } =
@@ -38,7 +39,7 @@ public abstract class ViewDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.View)]
+[Describe(ConceptNames.View), BothForGameplayAndPreview]
 public class ViewDescription : IDescription
 {
     public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
@@ -51,7 +52,7 @@ public class ViewDescription : IDescription
     public required Entity Party { get; set; }
 }
 
-[Apply(ConceptNames.View)]
+[Apply(ConceptNames.View), BothForGameplayAndPreview]
 public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ViewDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);

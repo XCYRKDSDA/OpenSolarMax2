@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -7,7 +6,6 @@ using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio.FileSystems;
 
@@ -27,19 +25,63 @@ internal class LevelModContext
 
     public ImmutableArray<Type> ComponentTypes { get; }
 
-    public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; }
+    public BakedBehaviorsInfo GameplayBehaviors { get; }
 
-    public ImmutableDictionary<string, ConceptInfo> ConceptInfos { get; }
-
-    public ImmutableSortedSystemTypeCollection SystemTypes { get; }
-
-    public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; }
+    public BakedBehaviorsInfo PreviewBehaviors { get; }
 
     private static ImmutableSortedSystemTypes BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
     {
         var orders = SystemsTopology.ExtractExecutionOrders(systemTypes);
         var sorted = SystemsTopology.TopologicalSortSystems(systemTypes, orders);
         return new ImmutableSortedSystemTypes([..systemTypes], [..orders], [..sorted]);
+    }
+
+    private static BakedBehaviorsInfo MergeBehaviorsInfo(params BehaviorsInfo[] layers)
+    {
+        // 合并实体配置类型。直接取并集即可
+        var mergedDeclarationSchemaInfos = layers.SelectMany(l => l.DeclarationSchemaInfos).ToImmutableDictionary();
+
+        // 合并概念
+        var conceptInfos = new Dictionary<string, ConceptInfo>();
+        foreach (var layer in layers)
+        {
+            foreach (var (key, relatedTypes) in layer.ConceptTypes)
+            {
+                if (conceptInfos.TryGetValue(key, out var conceptInfo))
+                {
+                    if (relatedTypes.Description is not null)
+                        throw new Exception("Concept description cannot be extended!");
+                    var extendedConcept = conceptInfo.Extend(relatedTypes.Definition, relatedTypes.Applier);
+                    conceptInfos[key] = extendedConcept;
+                }
+                else
+                {
+                    if (relatedTypes.Definition is null)
+                        throw new Exception("A new concept must be provided a definition!");
+                    var newConcept = ConceptInfo.Define(key, relatedTypes.Definition, relatedTypes.Description,
+                                                        relatedTypes.Applier);
+                    conceptInfos.Add(key, newConcept);
+                }
+            }
+        }
+        var mergedConceptInfos = conceptInfos.ToImmutableDictionary();
+
+        // 合并系统类型。合并后完成拓扑排序
+        var mergedSystemTypes = new ImmutableSortedSystemTypeCollection(
+            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Input).ToHashSet()),
+            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Ai).ToHashSet()),
+            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Simulate).ToHashSet()),
+            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Render).ToHashSet())
+        );
+
+        // 合并钩子函数
+        var mergedImplMethods = layers.SelectMany(l => l.HookImplMethods)
+                                      .SelectMany(kv => kv.Value, (kv, i) => (kv.Key, Info: i))
+                                      .GroupBy(p => p.Key)
+                                      .ToImmutableDictionary(g => g.Key, g => g.Select(p => p.Info).ToImmutableArray());
+
+        return new BakedBehaviorsInfo(mergedDeclarationSchemaInfos, mergedConceptInfos, mergedSystemTypes,
+                                      mergedImplMethods);
     }
 
     public LevelModContext(LevelModInfo info, SolarMax game)
@@ -78,48 +120,8 @@ internal class LevelModContext
         // 合并组件类型。直接拼接列表即可
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
 
-        // 合并实体配置类型
-        DeclarationSchemaInfos = behaviorMods.SelectMany(m => m.DeclarationSchemaInfos).ToImmutableDictionary();
-
-        // 合并概念
-        var conceptInfos = new Dictionary<string, ConceptInfo>();
-        foreach (var mod in behaviorMods)
-        {
-            foreach (var (key, relatedTypes) in mod.ConceptTypes)
-            {
-                if (conceptInfos.TryGetValue(key, out var conceptInfo))
-                {
-                    if (relatedTypes.Description is not null)
-                        throw new Exception("Concept description cannot be extended!");
-                    var extendedConcept = conceptInfo.Extend(relatedTypes.Definition, relatedTypes.Applier);
-                    conceptInfos[key] = extendedConcept;
-                }
-                else
-                {
-                    if (relatedTypes.Definition is null)
-                        throw new Exception("A new concept must be provided a definition!");
-                    var newConcept = ConceptInfo.Define(key, relatedTypes.Definition, relatedTypes.Description,
-                                                        relatedTypes.Applier);
-                    conceptInfos.Add(key, newConcept);
-                }
-            }
-        }
-        ConceptInfos = conceptInfos.ToImmutableDictionary();
-
-        // 合并系统类型
-        SystemTypes = new ImmutableSortedSystemTypeCollection(
-            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Input).ToHashSet()),
-            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Ai).ToHashSet()),
-            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Simulate).ToHashSet()),
-            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Render).ToHashSet()),
-            BakeSortedSystemTypes(behaviorMods.SelectMany(m => m.SystemTypes.Preview).ToHashSet())
-        );
-
-        // 合并钩子函数
-        HookImplMethods = behaviorMods.SelectMany(m => m.HookImplMethods)
-                                      .SelectMany(kv => kv.Value, (kv, i) => (kv.Key, Info: i))
-                                      .GroupBy(p => p.Key)
-                                      .ToImmutableDictionary(g => g.Key, g => g.Select(p => p.Info).ToImmutableArray());
+        GameplayBehaviors = MergeBehaviorsInfo(behaviorMods.Select(m => m.GameplayBehaviorsInfo).ToArray());
+        PreviewBehaviors = MergeBehaviorsInfo(behaviorMods.Select(m => m.PreviewBehaviorsInfo).ToArray());
 
         #endregion
 
