@@ -5,8 +5,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.SimpleSound), SchemaName("sound")]
-public class SoundDeclaration : IDeclaration<SimpleSoundDescription, SoundDeclaration>
+[SchemaName("sound")]
+public class SoundDeclaration : IDeclaration<SoundDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -28,18 +28,26 @@ public class SoundDeclaration : IDeclaration<SimpleSoundDescription, SoundDeclar
             Sound = newCfg.Sound ?? Sound,
         };
     }
+}
 
-    public SimpleSoundDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("sound", ConceptNames.SimpleSound)]
+public class SoundDeclarationTranslator : ITranslator<SoundDeclaration, SimpleSoundDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public SimpleSoundDescription ToDescription(SoundDeclaration declaration,
+                                                IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (string.IsNullOrEmpty(Sound)) throw new NullReferenceException();
+        if (string.IsNullOrEmpty(declaration.Sound)) throw new NullReferenceException();
 
         var desc = new SimpleSoundDescription()
         {
-            SoundEffect = Sound,
+            SoundEffect = declaration.Sound,
         };
 
-        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities);
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
         return desc;

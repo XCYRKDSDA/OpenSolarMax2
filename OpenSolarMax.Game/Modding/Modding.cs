@@ -81,10 +81,8 @@ internal static partial class Modding
     /// 从一个程序集中找到所有的配置器类型
     /// </summary>
     /// <param name="assembly"></param>
-    /// <param name="scene"></param>
     /// <returns>所有配置器的类型和其对应的键值</returns>
-    public static Dictionary<string, DeclarationSchemaInfo> FindDeclarationTypes(
-        Assembly assembly, GameplayOrPreview scene)
+    public static Dictionary<string, DeclarationSchemaInfo> FindDeclarationTypes(Assembly assembly)
     {
         var configurationTypes = new Dictionary<string, DeclarationSchemaInfo>();
 
@@ -93,21 +91,36 @@ internal static partial class Modding
             if (!type.GetInterfaces().Contains(typeof(IDeclaration)))
                 continue;
 
-            // 筛选符合场景要求的声明类型
-            if ((GetBehaviorTypeScene(type) & scene) == 0)
-                continue;
-
-            var configureAttr = type.GetCustomAttribute<DeclareAttribute>() ??
-                                throw new Exception($"Can't find attribute `Configure` in type {type.Name}");
-
             var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>()
                                  ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
 
             configurationTypes.Add(schemaNameAttr.Name,
-                                   new DeclarationSchemaInfo(type, configureAttr.Target, schemaNameAttr.Name));
+                                   new DeclarationSchemaInfo(type, schemaNameAttr.Name));
         }
 
         return configurationTypes;
+    }
+
+    public static Dictionary<string, DeclarationTranslatorInfo> FindTranslatorTypes(
+        Assembly assembly, GameplayOrPreview scene)
+    {
+        var translators = new Dictionary<string, DeclarationTranslatorInfo>();
+
+        foreach (var type in assembly.GetExportedTypes())
+        {
+            if (!type.GetInterfaces().Contains(typeof(ITranslator)))
+                continue;
+
+            if ((GetBehaviorTypeScene(type) & scene) == 0)
+                continue;
+
+            var translateAttr = type.GetCustomAttribute<TranslateAttribute>() ??
+                                throw new Exception($"Can't find attribute `Translate` in type {type.Name}");
+            translators.Add(translateAttr.SchemaName,
+                            new DeclarationTranslatorInfo(type, translateAttr.SchemaName, translateAttr.ConceptName));
+        }
+
+        return translators;
     }
 
     public static Dictionary<string, ConceptRelatedTypes> FindConceptRelatedTypes(

@@ -13,6 +13,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.UI;
 
@@ -80,11 +81,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                                              [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                                              [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
                                          });
-        var worldLoader = new WorldLoader(
-            factory,
-            _levelModContext.PreviewBehaviors.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
-        );
-        var levelLoader = new LevelLoader(_levelModContext.PreviewBehaviors.DeclarationSchemaInfos);
+        var translators = new TranslatorsRegistry(_levelModContext.PreviewBehaviors.TranslatorTypes);
+        var worldLoader = new WorldLoader(factory, translators);
+        var levelLoader = new LevelLoader(_levelModContext.DeclarationSchemaInfos);
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))

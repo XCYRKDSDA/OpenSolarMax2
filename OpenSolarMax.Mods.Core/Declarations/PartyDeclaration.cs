@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.Party), SchemaName("party"), BothForGameplayAndPreview]
-public class PartyDeclaration : IDeclaration<PartyDescription, PartyDeclaration>
+[SchemaName("party")]
+public class PartyDeclaration : IDeclaration<PartyDeclaration>
 {
     public Color? Color { get; set; }
 
@@ -27,17 +27,24 @@ public class PartyDeclaration : IDeclaration<PartyDescription, PartyDeclaration>
             Health = newCfg.Health ?? Health
         };
     }
+}
 
-    public PartyDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("party", ConceptNames.Party), BothForGameplayAndPreview]
+public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDescription>
+{
+    public PartyDescription ToDescription(PartyDeclaration declaration,
+                                          IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Color is null || Workload is null || Attack is null || Health is null) throw new NullReferenceException();
+        if (declaration.Color is null || declaration.Workload is null ||
+            declaration.Attack is null || declaration.Health is null)
+            throw new NullReferenceException();
 
         var desc = new PartyDescription()
         {
-            Color = Color.Value,
-            Workload = Workload.Value,
-            Attack = Attack.Value,
-            Health = Health.Value,
+            Color = declaration.Color.Value,
+            Workload = declaration.Workload.Value,
+            Attack = declaration.Attack.Value,
+            Health = declaration.Health.Value,
         };
 
         return desc;

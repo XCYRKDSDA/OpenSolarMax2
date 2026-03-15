@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.Transformable), SchemaName("transformable")]
-public class TransformableDeclaration : IDeclaration<TransformableDescription, TransformableDeclaration>
+[SchemaName("transformable")]
+public class TransformableDeclaration : IDeclaration<TransformableDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -26,36 +26,42 @@ public class TransformableDeclaration : IDeclaration<TransformableDescription, T
                         : @new.Orbit ?? Orbit,
         };
     }
+}
 
-    public TransformableDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("transformable", ConceptNames.Transformable)]
+public class TransformableDeclarationTranslator : ITranslator<TransformableDeclaration, TransformableDescription>
+{
+    public TransformableDescription ToDescription(TransformableDeclaration declaration,
+                                                  IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Parent is null)
+        if (declaration.Parent is null)
         {
             var transform = new AbsoluteTransformOptions();
-            if (Position is { } position)
+            if (declaration.Position is { } position)
                 transform.Translation = TransformProjection.To3D(position);
             return new TransformableDescription() { Transform = transform };
         }
-        else if (Orbit is null)
+        else if (declaration.Orbit is null)
         {
-            var transform = new RelativeTransformOptions() { Parent = otherEntities[Parent] };
-            if (Position is { } position)
+            var transform = new RelativeTransformOptions() { Parent = otherEntities[declaration.Parent] };
+            if (declaration.Position is { } position)
                 transform.Translation = TransformProjection.To3D(position);
             return new TransformableDescription() { Transform = transform };
         }
         else
         {
-            if (Parent is null || Orbit.Shape is null || Orbit.Period is null) throw new NullReferenceException();
+            if (declaration.Parent is null || declaration.Orbit.Shape is null || declaration.Orbit.Period is null)
+                throw new NullReferenceException();
 
             var revolution = new RevolutionOptions()
             {
-                Parent = otherEntities[Parent],
-                Shape = new(Orbit.Shape.Value.X, Orbit.Shape.Value.Y),
-                Period = Orbit.Period.Value
+                Parent = otherEntities[declaration.Parent],
+                Shape = new(declaration.Orbit.Shape.Value.X, declaration.Orbit.Shape.Value.Y),
+                Period = declaration.Orbit.Period.Value
             };
 
-            if (Orbit.Phase is not null)
-                revolution.InitPhase = Orbit.Phase.Value * MathF.PI * 2;
+            if (declaration.Orbit.Phase is not null)
+                revolution.InitPhase = declaration.Orbit.Phase.Value * MathF.PI * 2;
 
             return new TransformableDescription() { Transform = revolution };
         }

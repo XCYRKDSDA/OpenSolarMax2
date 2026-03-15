@@ -10,6 +10,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 
@@ -48,6 +49,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
                                              [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                                              [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
                                          });
+        var translators = new TranslatorsRegistry(levelModContext.GameplayBehaviors.TranslatorTypes);
         _inputSystem = new AggregateSystem(
             _world, levelModContext.GameplayBehaviors.SystemTypes.Input.Sorted,
             new Dictionary<Type, object>
@@ -94,10 +96,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
         );
 
         // 加载关卡内容
-        var worldLoader = new WorldLoader(
-            factory,
-            levelModContext.GameplayBehaviors.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
-        );
+        var worldLoader = new WorldLoader(factory, translators);
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
         while (enumerator.MoveNext())

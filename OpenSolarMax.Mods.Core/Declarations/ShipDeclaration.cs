@@ -4,8 +4,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.Ship), SchemaName("ship")]
-public record ShipDeclaration : IDeclaration<ShipDescription, ShipDeclaration>
+[SchemaName("ship")]
+public record ShipDeclaration : IDeclaration<ShipDeclaration>
 {
     public string? Planet { get; set; }
 
@@ -21,15 +21,20 @@ public record ShipDeclaration : IDeclaration<ShipDescription, ShipDeclaration>
             Party = @new.Party ?? Party
         };
     }
+}
 
-    public ShipDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("ship", ConceptNames.Ship)]
+public class ShipDeclarationTranslator : ITranslator<ShipDeclaration, ShipDescription>
+{
+    public ShipDescription ToDescription(ShipDeclaration declaration,
+                                         IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Planet is null || Party is null) throw new NullReferenceException();
+        if (declaration.Planet is null || declaration.Party is null) throw new NullReferenceException();
 
         return new ShipDescription()
         {
-            Planet = otherEntities[Planet],
-            Party = otherEntities[Party],
+            Planet = otherEntities[declaration.Planet],
+            Party = otherEntities[declaration.Party],
         };
     }
 }

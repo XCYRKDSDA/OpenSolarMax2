@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.View), SchemaName("view"), BothForGameplayAndPreview]
-public class ViewDeclaration : IDeclaration<ViewDescription, ViewDeclaration>
+[SchemaName("view")]
+public class ViewDeclaration : IDeclaration<ViewDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -35,24 +35,32 @@ public class ViewDeclaration : IDeclaration<ViewDescription, ViewDeclaration>
             Party = newCfg.Party ?? Party
         };
     }
+}
 
-    public ViewDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("view", ConceptNames.View), BothForGameplayAndPreview]
+public class ViewDeclarationTranslator : ITranslator<ViewDeclaration, ViewDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public ViewDescription ToDescription(ViewDeclaration declaration,
+                                         IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Party is null) throw new NullReferenceException();
+        if (declaration.Party is null) throw new NullReferenceException();
 
         var desc = new ViewDescription()
         {
-            Party = otherEntities[Party],
+            Party = otherEntities[declaration.Party],
         };
 
-        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities);
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (Size is not null)
-            desc.Size = new Point(Size[0], Size[1]);
-        if (Depth is not null)
-            desc.Depth = (Depth[0], Depth[1]);
+        if (declaration.Size is not null)
+            desc.Size = new Point(declaration.Size[0], declaration.Size[1]);
+        if (declaration.Depth is not null)
+            desc.Depth = (declaration.Depth[0], declaration.Depth[1]);
 
         return desc;
     }

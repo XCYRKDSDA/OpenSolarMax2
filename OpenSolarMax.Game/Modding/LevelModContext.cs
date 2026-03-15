@@ -6,6 +6,7 @@ using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using Zio.FileSystems;
 
@@ -25,6 +26,8 @@ internal class LevelModContext
 
     public ImmutableArray<Type> ComponentTypes { get; }
 
+    public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; }
+
     public BakedBehaviorsInfo GameplayBehaviors { get; }
 
     public BakedBehaviorsInfo PreviewBehaviors { get; }
@@ -38,8 +41,8 @@ internal class LevelModContext
 
     private static BakedBehaviorsInfo MergeBehaviorsInfo(params BehaviorsInfo[] layers)
     {
-        // 合并实体配置类型。直接取并集即可
-        var mergedDeclarationSchemaInfos = layers.SelectMany(l => l.DeclarationSchemaInfos).ToImmutableDictionary();
+        // 合并声明翻译器
+        var mergedTranslatorTypes = layers.SelectMany(l => l.DeclarationTranslatorTypes).ToImmutableDictionary();
 
         // 合并概念
         var conceptInfos = new Dictionary<string, ConceptInfo>();
@@ -80,7 +83,7 @@ internal class LevelModContext
                                       .GroupBy(p => p.Key)
                                       .ToImmutableDictionary(g => g.Key, g => g.Select(p => p.Info).ToImmutableArray());
 
-        return new BakedBehaviorsInfo(mergedDeclarationSchemaInfos, mergedConceptInfos, mergedSystemTypes,
+        return new BakedBehaviorsInfo(mergedTranslatorTypes, mergedConceptInfos, mergedSystemTypes,
                                       mergedImplMethods);
     }
 
@@ -119,6 +122,9 @@ internal class LevelModContext
 
         // 合并组件类型。直接拼接列表即可
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
+
+        // 合并实体配置类型。直接取并集即可
+        DeclarationSchemaInfos = behaviorMods.SelectMany(l => l.DeclarationSchemaInfos).ToImmutableDictionary();
 
         GameplayBehaviors = MergeBehaviorsInfo(behaviorMods.Select(m => m.GameplayBehaviorsInfo).ToArray());
         PreviewBehaviors = MergeBehaviorsInfo(behaviorMods.Select(m => m.PreviewBehaviorsInfo).ToArray());

@@ -1,12 +1,13 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.Portal), SchemaName("portal")]
-public class PortalDeclaration : IDeclaration<PortalDescription, PortalDeclaration>
+[SchemaName("portal")]
+public class PortalDeclaration : IDeclaration<PortalDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -28,17 +29,47 @@ public class PortalDeclaration : IDeclaration<PortalDescription, PortalDeclarati
             Party = newCfg.Party ?? Party
         };
     }
+}
 
-    public PortalDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("portal", ConceptNames.Portal)]
+public class PortalDeclarationTranslator : ITranslator<PortalDeclaration, PortalDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public PortalDescription ToDescription(PortalDeclaration declaration,
+                                           IReadOnlyDictionary<string, Entity> otherEntities)
     {
         var desc = new PortalDescription();
 
-        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities);
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (Party is not null)
-            desc.Party = otherEntities[Party];
+        if (declaration.Party is not null)
+            desc.Party = otherEntities[declaration.Party];
+
+        return desc;
+    }
+}
+
+[Translate("portal", ConceptNames.PortalPreview), OnlyForPreview]
+public class PortalPreviewDeclarationTranslator : ITranslator<PortalDeclaration, PortalPreviewDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public PortalPreviewDescription ToDescription(PortalDeclaration declaration,
+                                                  IReadOnlyDictionary<string, Entity> otherEntities)
+    {
+        var desc = new PortalPreviewDescription();
+
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+        desc.Transform = tfDesc.Transform;
+
+        if (declaration.Party is not null)
+            desc.Party = otherEntities[declaration.Party];
 
         return desc;
     }

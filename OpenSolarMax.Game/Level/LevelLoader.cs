@@ -57,9 +57,7 @@ internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> de
         // 解析模板语句
         foreach (var (templateKey, templateJsonElement) in jsonLevel.Templates)
         {
-            var statement = templateJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions);
-            if (statement is null)
-                continue;
+            var statement = templateJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions)!;
 
             // 构造并添加新的模板语句
             level.Templates.Add(templateKey, statement);
@@ -71,9 +69,7 @@ internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> de
         // 解析实体语句
         foreach (var entityJsonElement in jsonLevel.Entities)
         {
-            var statement = entityJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions);
-            if (statement is null)
-                continue;
+            var statement = entityJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions)!;
 
             // 获取id, 如果有的话
             var id = entityJsonElement.TryGetProperty("$id", out var idProp) ? idProp.GetString() : null;

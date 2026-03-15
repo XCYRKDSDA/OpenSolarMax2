@@ -6,15 +6,16 @@ using OpenSolarMax.Game.Modding.ECS;
 namespace OpenSolarMax.Game.Modding;
 
 internal class BehaviorsInfo(
-    ImmutableDictionary<string, DeclarationSchemaInfo> declarationSchemaInfos,
+    ImmutableDictionary<string, DeclarationTranslatorInfo> declarationTranslatorTypes,
     ImmutableDictionary<string, ConceptRelatedTypes> conceptTypes,
     ImmutableSystemTypeCollection systemTypes,
     ImmutableDictionary<string, ImmutableArray<MethodInfo>> hookImplMethods)
 {
     /// <summary>
-    /// 模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引
+    /// 模组提供的所有将文件声明翻译为概念描述的翻译器，按照<see cref="TranslateAttribute"/>索引
     /// </summary>
-    public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; } = declarationSchemaInfos;
+    public ImmutableDictionary<string, DeclarationTranslatorInfo> DeclarationTranslatorTypes { get; } =
+        declarationTranslatorTypes;
 
     /// <summary>
     /// 模组提供的所有概念的定义、描述和应用器
