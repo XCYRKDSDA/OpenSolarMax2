@@ -29,7 +29,7 @@ public abstract class ViewDefinition : IDefinition
             typeof(ManeuvaringShipsStatus),
             typeof(FMOD.Studio.System),
             typeof(Viewport),
-            typeof(PreviewStatus),
+            typeof(RenderSettings),
             //
             typeof(InParty.AsAffiliate),
             // UI 插件

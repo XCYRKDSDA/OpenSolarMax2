@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Graphics;
 using OpenSolarMax.Mods.Core.Utils;
@@ -37,7 +38,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         RenderToCameraQuery(world, drawableEntities);
     }
 
-    private void DrawEntity(in Sprite sprite, in AbsoluteTransform absoluteTransform)
+    private void DrawEntity(in Sprite sprite, in AbsoluteTransform absoluteTransform, in RenderSettings renderSettings)
     {
         if (sprite.Texture is null)
             return;
@@ -58,6 +59,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         // 完成最后的缩放
         anchorToWorld = Matrix.CreateScale(sprite.Scale.X * sprite.Size.X / sprite.Texture.LogicalSize.X,
                                            sprite.Scale.Y * sprite.Size.Y / sprite.Texture.LogicalSize.Y, 1)
+                        * Matrix.CreateScale(renderSettings.SpriteScaling, renderSettings.SpriteScaling, 1)
                         * anchorToWorld;
 
         var leftTop = new Vector3(-sprite.Texture.LogicalOrigin.X, sprite.Texture.LogicalOrigin.Y, 0);
@@ -105,8 +107,9 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
+    [All<Camera, AbsoluteTransform, RenderSettings>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose,
+                                in RenderSettings renderSettings)
     {
         // 计算相机参数
         var view = Matrix.Invert(pose.TransformToRoot);
@@ -127,7 +130,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         foreach (var entity in entities)
         {
             var refs = entity.Get<Sprite, AbsoluteTransform>();
-            DrawEntity(in refs.t0, in refs.t1);
+            DrawEntity(in refs.t0, in refs.t1, in renderSettings);
         }
 
         // 恢复 Viewport
