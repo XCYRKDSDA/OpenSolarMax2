@@ -29,7 +29,7 @@ public class PartyDeclaration : IDeclaration<PartyDeclaration>
     }
 }
 
-[Translate("party", ConceptNames.Party), BothForGameplayAndPreview]
+[Translate("party", ConceptNames.Party)]
 public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDescription>
 {
     public PartyDescription ToDescription(PartyDeclaration declaration,
@@ -45,6 +45,24 @@ public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDes
             Workload = declaration.Workload.Value,
             Attack = declaration.Attack.Value,
             Health = declaration.Health.Value,
+        };
+
+        return desc;
+    }
+}
+
+[Translate("party", ConceptNames.PartyPreview), OnlyForPreview]
+public class PartyPreviewDeclarationTranslator : ITranslator<PartyDeclaration, PartyPreviewDescription>
+{
+    public PartyPreviewDescription ToDescription(PartyDeclaration declaration,
+                                                 IReadOnlyDictionary<string, Entity> otherEntities)
+    {
+        if (declaration.Color is null)
+            throw new NullReferenceException();
+
+        var desc = new PartyPreviewDescription()
+        {
+            Color = declaration.Color.Value,
         };
 
         return desc;

@@ -37,7 +37,7 @@ public class ViewDeclaration : IDeclaration<ViewDeclaration>
     }
 }
 
-[Translate("view", ConceptNames.View), BothForGameplayAndPreview]
+[Translate("view", ConceptNames.View)]
 public class ViewDeclarationTranslator : ITranslator<ViewDeclaration, ViewDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
@@ -51,6 +51,30 @@ public class ViewDeclarationTranslator : ITranslator<ViewDeclaration, ViewDescri
         {
             Party = otherEntities[declaration.Party],
         };
+
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+        desc.Transform = tfDesc.Transform;
+
+        if (declaration.Size is not null)
+            desc.Size = new Point(declaration.Size[0], declaration.Size[1]);
+        if (declaration.Depth is not null)
+            desc.Depth = (declaration.Depth[0], declaration.Depth[1]);
+
+        return desc;
+    }
+}
+
+[Translate("view", ConceptNames.ViewPreview), OnlyForPreview]
+public class ViewPreviewDeclarationTranslator : ITranslator<ViewDeclaration, ViewPreviewDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public ViewPreviewDescription ToDescription(ViewDeclaration declaration,
+                                                IReadOnlyDictionary<string, Entity> otherEntities)
+    {
+        var desc = new ViewPreviewDescription();
 
         var tfCfg = new TransformableDeclaration()
             { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
