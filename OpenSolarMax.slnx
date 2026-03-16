@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Third Party/">
+    <Project Path="Third Party/FMOD/FMOD.csproj" />
+    <Project Path="Third Party/Nine/Nine/Nine.MG.csproj" />
+  </Folder>
+  <Project Path="OpenSolarMax.Game/OpenSolarMax.Game.csproj" />
+  <Project Path="OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj" />
+  <Project Path="OpenSolarMax.Mods.Core.SourceGenerators/OpenSolarMax.Mods.Core.SourceGenerators.csproj" />
+  <Project Path="OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj" />
+</Solution>
