@@ -26,6 +26,7 @@ internal class DeclarationStatementJsonConverter(
             JsonValueKind.Array => baseProp.EnumerateArray().Select(x => x.GetString()!).ToArray(),
             _ => throw new JsonException(),
         };
+
         var schemaName = schemaNamesByDeclarationId[baseDeclarationIds[0]];
         if (baseDeclarationIds.Any(b => schemaNamesByDeclarationId[b] != schemaName))
             throw new Exception("All base configuration should have the same configuration key");

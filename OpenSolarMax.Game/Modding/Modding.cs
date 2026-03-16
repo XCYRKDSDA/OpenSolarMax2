@@ -63,6 +63,21 @@ internal static partial class Modding
     }
 
     /// <summary>
+    /// 获取行为类型所应用的场景
+    /// </summary>
+    /// <param name="type">行为类型</param>
+    /// <returns>场景。一个行为类型可能适用于多个场景</returns>
+    public static GameplayOrPreview GetBehaviorTypeScene(Type type)
+    {
+        return type.GetCustomAttribute<BothForGameplayAndPreviewAttribute>() is not null
+                   ? GameplayOrPreview.Preview | GameplayOrPreview.Gameplay
+                   : type.GetCustomAttribute<OnlyForPreviewAttribute>() is not null
+                       ? GameplayOrPreview.Preview
+                       : GameplayOrPreview.Gameplay;
+    }
+
+
+    /// <summary>
     /// 从一个程序集中找到所有的配置器类型
     /// </summary>
     /// <param name="assembly"></param>
@@ -76,26 +91,50 @@ internal static partial class Modding
             if (!type.GetInterfaces().Contains(typeof(IDeclaration)))
                 continue;
 
-            var configureAttr = type.GetCustomAttribute<DeclareAttribute>() ??
-                                throw new Exception($"Can't find attribute `Configure` in type {type.Name}");
-
             var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>()
                                  ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
 
             configurationTypes.Add(schemaNameAttr.Name,
-                                   new DeclarationSchemaInfo(type, configureAttr.Target, schemaNameAttr.Name));
+                                   new DeclarationSchemaInfo(type, schemaNameAttr.Name));
         }
 
         return configurationTypes;
     }
 
-    public static Dictionary<string, ConceptRelatedTypes> FindConceptRelatedTypes(Assembly assembly)
+    public static Dictionary<string, DeclarationTranslatorInfo> FindTranslatorTypes(
+        Assembly assembly, GameplayOrPreview scene)
+    {
+        var translators = new Dictionary<string, DeclarationTranslatorInfo>();
+
+        foreach (var type in assembly.GetExportedTypes())
+        {
+            if (!type.GetInterfaces().Contains(typeof(ITranslator)))
+                continue;
+
+            if ((GetBehaviorTypeScene(type) & scene) == 0)
+                continue;
+
+            var translateAttr = type.GetCustomAttribute<TranslateAttribute>() ??
+                                throw new Exception($"Can't find attribute `Translate` in type {type.Name}");
+            translators.Add(translateAttr.SchemaName,
+                            new DeclarationTranslatorInfo(type, translateAttr.SchemaName, translateAttr.ConceptName));
+        }
+
+        return translators;
+    }
+
+    public static Dictionary<string, ConceptRelatedTypes> FindConceptRelatedTypes(
+        Assembly assembly, GameplayOrPreview scene)
     {
         var definitionTypes = new Dictionary<string, Type>();
         var descriptionTypes = new Dictionary<string, Type>();
         var applierTypes = new Dictionary<string, Type>();
         foreach (var type in assembly.GetExportedTypes())
         {
+            // 筛选符合场景要求的概念类型
+            if ((GetBehaviorTypeScene(type) & scene) == 0)
+                continue;
+
             if (type.GetInterfaces().Contains(typeof(IDefinition)))
             {
                 var name = type.GetCustomAttribute<DefineAttribute>()!.Key;
@@ -127,8 +166,9 @@ internal static partial class Modding
     /// 从一个程序集中找到所有的系统类型
     /// </summary>
     /// <param name="assembly"></param>
+    /// <param name="scene"></param>
     /// <returns>各种类型系统类型的集合</returns>
-    public static ImmutableSystemTypeCollection FindSystemTypes(Assembly assembly)
+    public static ImmutableSystemTypeCollection FindSystemTypes(Assembly assembly, GameplayOrPreview scene)
     {
         var systemTypes = new SystemTypeCollection();
 
@@ -149,6 +189,10 @@ internal static partial class Modding
             if (type.GetCustomAttribute<DisableAttribute>() is not null)
                 continue;
 
+            // 筛选符合场景要求的系统
+            if ((GetBehaviorTypeScene(type) & scene) == 0)
+                continue;
+
             if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
                 systemTypes.Simulate.Add(type);
 
@@ -160,9 +204,6 @@ internal static partial class Modding
 
             if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
                 systemTypes.Render.Add(type);
-
-            if (type.GetCustomAttribute<PreviewSystemAttribute>() is not null)
-                systemTypes.Preview.Add(type);
         }
 
         return systemTypes.ToImmutableSystemTypeCollection();
@@ -172,12 +213,14 @@ internal static partial class Modding
     /// 从一个程序集中找到所有的 Hook 实现方法
     /// </summary>
     /// <param name="assembly"></param>
+    /// <param name="scene"></param>
     /// <returns></returns>
-    public static ILookup<string, MethodInfo> FindHookImplementations(Assembly assembly)
+    public static ILookup<string, MethodInfo> FindHookImplementations(Assembly assembly, GameplayOrPreview scene)
     {
         const BindingFlags implFlags = BindingFlags.Public | BindingFlags.Static;
         return assembly.GetExportedTypes()
                        .Where(t => t.GetCustomAttributes<HookProviderAttribute>().Any())
+                       .Where(t => (GetBehaviorTypeScene(t) & scene) != 0)
                        .SelectMany(t => t.GetMethods(implFlags))
                        .SelectMany(m => m.GetCustomAttributes<HookOnAttribute>(), (m, a) => (hook: a.Hook, method: m))
                        .ToLookup(p => p.hook, p => p.method);

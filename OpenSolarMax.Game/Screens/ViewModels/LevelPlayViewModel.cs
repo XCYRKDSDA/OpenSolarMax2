@@ -10,6 +10,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 
@@ -41,57 +42,61 @@ internal partial class LevelPlayViewModel : ViewModelBase
     {
         // 构造世界和系统
         _world = World.Create();
-        var factory = new ConceptFactory(levelModContext.ConceptInfos.Values, new Dictionary<Type, object>()
-        {
-            [typeof(GraphicsDevice)] = game.GraphicsDevice,
-            [typeof(IAssetsManager)] = levelModContext.LocalAssets,
-            [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
-        });
+        var factory = new ConceptFactory(levelModContext.GameplayBehaviors.ConceptInfos.Values,
+                                         new Dictionary<Type, object>()
+                                         {
+                                             [typeof(GraphicsDevice)] = game.GraphicsDevice,
+                                             [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                                             [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
+                                         });
+        var translators = new TranslatorsRegistry(levelModContext.GameplayBehaviors.TranslatorTypes);
         _inputSystem = new AggregateSystem(
-            _world, levelModContext.SystemTypes.Input.Sorted,
+            _world, levelModContext.GameplayBehaviors.SystemTypes.Input.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
-            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+            levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _aiSystem = new AggregateSystem(
-            _world, levelModContext.SystemTypes.Ai.Sorted,
+            _world, levelModContext.GameplayBehaviors.SystemTypes.Ai.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
-            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+            levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _simulateSystem = new AggregateSystem(
-            _world, levelModContext.SystemTypes.Simulate.Sorted,
+            _world, levelModContext.GameplayBehaviors.SystemTypes.Simulate.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = factory,
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
-            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+            levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
         _renderSystem = new AggregateSystem(
-            _world, levelModContext.SystemTypes.Render.Sorted,
+            _world, levelModContext.GameplayBehaviors.SystemTypes.Render.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
-            levelModContext.HookImplMethods.ToDictionary(kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+            levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
         );
 
         // 加载关卡内容
-        var worldLoader = new WorldLoader(
-            factory, levelModContext.DeclarationSchemaInfos.ToDictionary(p => p.Key, p => p.Value.ConceptName)
-        );
+        var worldLoader = new WorldLoader(factory, translators);
         var commandBuffer = new CommandBuffer();
         var enumerator = worldLoader.LoadStepByStep(level, _world, commandBuffer);
         while (enumerator.MoveNext())

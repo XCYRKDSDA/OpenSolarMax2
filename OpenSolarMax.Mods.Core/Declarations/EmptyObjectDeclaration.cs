@@ -5,8 +5,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.EmptyCoord), SchemaName("empty")]
-public class EmptyObjectDeclaration : IDeclaration<EmptyCoordDescription, EmptyObjectDeclaration>
+[SchemaName("empty")]
+public class EmptyObjectDeclaration : IDeclaration<EmptyObjectDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -25,13 +25,21 @@ public class EmptyObjectDeclaration : IDeclaration<EmptyCoordDescription, EmptyO
                         : newCfg.Orbit ?? Orbit,
         };
     }
+}
 
-    public EmptyCoordDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("empty", ConceptNames.EmptyCoord)]
+public class EmptyObjectDeclarationTranslator : ITranslator<EmptyObjectDeclaration, EmptyCoordDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public EmptyCoordDescription ToDescription(EmptyObjectDeclaration declaration,
+                                               IReadOnlyDictionary<string, Entity> otherEntities)
     {
         var desc = new EmptyCoordDescription();
 
-        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities);
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
         return desc;

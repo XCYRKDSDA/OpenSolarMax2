@@ -2,12 +2,13 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[PreviewSystem, RenderSystem, AfterStructuralChanges]
+[RenderSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(Viewport)), Write(typeof(Camera))]
 public sealed partial class UpdateCameraOutputSystem(World world) : ICalcSystem
 {

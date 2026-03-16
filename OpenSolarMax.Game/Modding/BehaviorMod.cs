@@ -42,19 +42,14 @@ internal class BehaviorMod
     public ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos { get; }
 
     /// <summary>
-    /// 模组提供的所有概念的定义、描述和应用器
+    /// 游玩时的行为信息
     /// </summary>
-    public ImmutableDictionary<string, ConceptRelatedTypes> ConceptTypes { get; }
+    public BehaviorsInfo GameplayBehaviorsInfo { get; }
 
     /// <summary>
-    /// 模组提供的所有系统类型
+    /// 预览时的行为信息
     /// </summary>
-    public ImmutableSystemTypeCollection SystemTypes { get; }
-
-    /// <summary>
-    /// 模组提供的所有钩子函数实现
-    /// </summary>
-    public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; }
+    public BehaviorsInfo PreviewBehaviorsInfo { get; }
 
     public BehaviorMod(BehaviorModInfo info, IReadOnlyDictionary<string, Assembly> sharedAssemblies)
     {
@@ -92,17 +87,25 @@ internal class BehaviorMod
         ComponentTypes = Assembly.ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
                                  .ToImmutableArray();
 
-        // 查找配置类型
+        // 查找关卡文件声明类型
         DeclarationSchemaInfos = Modding.FindDeclarationTypes(Assembly).ToImmutableDictionary();
 
-        // 查找概念类型
-        ConceptTypes = Modding.FindConceptRelatedTypes(Assembly).ToImmutableDictionary();
+        // 查找游玩场景行为相关类型
+        GameplayBehaviorsInfo = new BehaviorsInfo(
+            Modding.FindTranslatorTypes(Assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
+            Modding.FindConceptRelatedTypes(Assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
+            Modding.FindSystemTypes(Assembly, GameplayOrPreview.Gameplay),
+            Modding.FindHookImplementations(Assembly, GameplayOrPreview.Gameplay)
+                   .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
+        );
 
-        // 查找所有系统
-        SystemTypes = Modding.FindSystemTypes(Assembly);
-
-        // 查找所有 Hook 实现
-        HookImplMethods = Modding.FindHookImplementations(Assembly)
-                                 .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray());
+        // 查找预览场景行为相关类型
+        PreviewBehaviorsInfo = new BehaviorsInfo(
+            Modding.FindTranslatorTypes(Assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
+            Modding.FindConceptRelatedTypes(Assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
+            Modding.FindSystemTypes(Assembly, GameplayOrPreview.Preview),
+            Modding.FindHookImplementations(Assembly, GameplayOrPreview.Preview)
+                   .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
+        );
     }
 }

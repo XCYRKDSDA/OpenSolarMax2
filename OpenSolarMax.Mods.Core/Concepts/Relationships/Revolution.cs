@@ -1,6 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,7 +12,7 @@ public static partial class ConceptNames
     public const string Revolution = "Revolution";
 }
 
-[Define(ConceptNames.Revolution)]
+[Define(ConceptNames.Revolution), BothForGameplayAndPreview]
 public abstract class RevolutionDefinition : IDefinition
 {
     public static Signature Signature { get; } = new(
@@ -22,7 +23,7 @@ public abstract class RevolutionDefinition : IDefinition
     );
 }
 
-[Describe(ConceptNames.Revolution)]
+[Describe(ConceptNames.Revolution), BothForGameplayAndPreview]
 public class RevolutionDescription : IDescription
 {
     public required Entity Parent { get; set; }
@@ -38,7 +39,7 @@ public class RevolutionDescription : IDescription
     public float InitPhase { get; set; } = 0;
 }
 
-[Apply(ConceptNames.Revolution)]
+[Apply(ConceptNames.Revolution), BothForGameplayAndPreview]
 public class RevolutionApplier : IApplier<RevolutionDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, RevolutionDescription desc)

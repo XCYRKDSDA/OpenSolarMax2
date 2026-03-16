@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -8,7 +9,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 将阵营参考颜色设置到属于阵营的实体的系统
 /// </summary>
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(PartyReferenceColor)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class ApplyPartyColorSystem(World world)

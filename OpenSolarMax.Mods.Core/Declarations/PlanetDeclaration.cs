@@ -1,12 +1,13 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.Planet), SchemaName("planet")]
-public class PlanetDeclaration : IDeclaration<PlanetDescription, PlanetDeclaration>
+[SchemaName("planet")]
+public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -40,26 +41,63 @@ public class PlanetDeclaration : IDeclaration<PlanetDescription, PlanetDeclarati
             ProduceSpeed = newCfg.ProduceSpeed ?? ProduceSpeed
         };
     }
+}
 
-    public PlanetDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("planet", ConceptNames.Planet)]
+public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, PlanetDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public PlanetDescription ToDescription(PlanetDeclaration declaration,
+                                           IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Radius is null || Volume is null || Population is null || ProduceSpeed is null)
+        if (declaration.Radius is null || declaration.Volume is null || declaration.Population is null ||
+            declaration.ProduceSpeed is null)
             throw new NullReferenceException();
 
         var desc = new PlanetDescription()
         {
-            ReferenceRadius = Radius.Value,
-            Volume = Volume.Value,
-            Population = Population.Value,
-            ProduceSpeed = ProduceSpeed.Value,
+            ReferenceRadius = declaration.Radius.Value,
+            Volume = declaration.Volume.Value,
+            Population = declaration.Population.Value,
+            ProduceSpeed = declaration.ProduceSpeed.Value,
         };
 
-        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities);
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (Party is not null)
-            desc.Party = otherEntities[Party];
+        if (declaration.Party is not null)
+            desc.Party = otherEntities[declaration.Party];
+
+        return desc;
+    }
+}
+
+[Translate("planet", ConceptNames.PlanetPreview), OnlyForPreview]
+public class PlanetPreviewDeclarationTranslator : ITranslator<PlanetDeclaration, PlanetPreviewDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public PlanetPreviewDescription ToDescription(PlanetDeclaration declaration,
+                                                  IReadOnlyDictionary<string, Entity> otherEntities)
+    {
+        if (declaration.Radius is null)
+            throw new NullReferenceException();
+
+        var desc = new PlanetPreviewDescription()
+        {
+            ReferenceRadius = declaration.Radius.Value,
+        };
+
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+        desc.Transform = tfDesc.Transform;
+
+        if (declaration.Party is not null)
+            desc.Party = otherEntities[declaration.Party];
 
         return desc;
     }

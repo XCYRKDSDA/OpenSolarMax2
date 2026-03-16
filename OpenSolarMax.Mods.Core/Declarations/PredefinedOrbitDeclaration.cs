@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.PredefinedOrbit), SchemaName("orbit")]
-public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDescription, PredefinedOrbitDeclaration>
+[SchemaName("orbit")]
+public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -35,23 +35,31 @@ public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDescriptio
             Period = newCfg.Period ?? Period
         };
     }
+}
 
-    public PredefinedOrbitDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("orbit", ConceptNames.PredefinedOrbit)]
+public class PredefinedOrbitDeclarationTranslator : ITranslator<PredefinedOrbitDeclaration, PredefinedOrbitDescription>
+{
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
+
+    public PredefinedOrbitDescription ToDescription(PredefinedOrbitDeclaration declaration,
+                                                    IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Shape is null || Period is null) throw new NullReferenceException();
+        if (declaration.Shape is null || declaration.Period is null) throw new NullReferenceException();
 
         var desc = new PredefinedOrbitDescription()
         {
-            Shape = Shape.Value,
-            Period = Period.Value
+            Shape = declaration.Shape.Value,
+            Period = declaration.Period.Value
         };
 
-        var tfCfg = new TransformableDeclaration() { Parent = Parent, Position = Position, Orbit = Orbit };
-        var tfDesc = tfCfg.ToDescription(otherEntities);
+        var tfCfg = new TransformableDeclaration()
+            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (Roll is not null)
-            desc.Rotation = TransformProjection.To3D(Roll.Value);
+        if (declaration.Roll is not null)
+            desc.Rotation = TransformProjection.To3D(declaration.Roll.Value);
 
         return desc;
     }

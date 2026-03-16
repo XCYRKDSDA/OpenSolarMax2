@@ -1,6 +1,7 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
@@ -10,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相位计算实体绕其轨道的位姿变换的系统
 /// </summary>
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(RevolutionOrbit)), ReadCurr(typeof(RevolutionState))]
 [Write(typeof(RelativeTransform))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]

@@ -29,11 +29,11 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
         graphicsDevice.SetRenderTarget(_renderTarget);
 
         graphicsDevice.Clear(Color.Transparent);
-        world.Query(new QueryDescription().WithAll<Viewport, PreviewStatus>(),
-                    (ref Viewport viewport, ref PreviewStatus previewStatus) =>
+        world.Query(new QueryDescription().WithAll<Viewport, RenderSettings>(),
+                    (ref Viewport viewport, ref RenderSettings renderSettings) =>
                     {
                         viewport = graphicsDevice.Viewport;
-                        previewStatus.Scale = fadeIn;
+                        renderSettings.SpriteScaling = fadeIn;
                     });
         renderer.Update(new GameTime()); // 绘图系统无所谓时间，此处就随便传一个好了
 

@@ -5,8 +5,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[Declare(ConceptNames.InfiniteZBarrier), SchemaName("barrier")]
-public class BarrierDeclaration : IDeclaration<InfiniteZBarrierDescription, BarrierDeclaration>
+[SchemaName("barrier")]
+public class BarrierDeclaration : IDeclaration<BarrierDeclaration>
 {
     public Vector2? Head { get; set; }
 
@@ -20,15 +20,20 @@ public class BarrierDeclaration : IDeclaration<InfiniteZBarrierDescription, Barr
             Tail = newCfg.Tail ?? Tail
         };
     }
+}
 
-    public InfiniteZBarrierDescription ToDescription(IReadOnlyDictionary<string, Entity> otherEntities)
+[Translate("barrier", ConceptNames.InfiniteZBarrier)]
+public class BarrierDeclarationTranslator : ITranslator<BarrierDeclaration, InfiniteZBarrierDescription>
+{
+    public InfiniteZBarrierDescription ToDescription(BarrierDeclaration declaration,
+                                                     IReadOnlyDictionary<string, Entity> otherEntities)
     {
-        if (Head is null || Tail is null) throw new NullReferenceException();
+        if (declaration.Head is null || declaration.Tail is null) throw new NullReferenceException();
 
         var desc = new InfiniteZBarrierDescription()
         {
-            Head = Head.Value,
-            Tail = Tail.Value
+            Head = declaration.Head.Value,
+            Tail = declaration.Tail.Value
         };
 
         return desc;

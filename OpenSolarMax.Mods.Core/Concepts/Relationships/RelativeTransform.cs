@@ -1,6 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -11,7 +12,7 @@ public static partial class ConceptNames
     public const string RelativeTransform = "RelativeTransform";
 }
 
-[Define(ConceptNames.RelativeTransform)]
+[Define(ConceptNames.RelativeTransform), BothForGameplayAndPreview]
 public abstract class RelativeTransformDefinition : IDefinition
 {
     public static Signature Signature { get; } = new(
@@ -20,7 +21,7 @@ public abstract class RelativeTransformDefinition : IDefinition
     );
 }
 
-[Describe(ConceptNames.RelativeTransform)]
+[Describe(ConceptNames.RelativeTransform), BothForGameplayAndPreview]
 public class RelativeTransformDescription : IDescription
 {
     public required Entity Parent { get; set; }
@@ -32,7 +33,7 @@ public class RelativeTransformDescription : IDescription
     public Quaternion Rotation { get; set; } = Quaternion.Identity;
 }
 
-[Apply(ConceptNames.RelativeTransform)]
+[Apply(ConceptNames.RelativeTransform), BothForGameplayAndPreview]
 public class RelativeTransformApplier : IApplier<RelativeTransformDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, RelativeTransformDescription desc)

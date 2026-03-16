@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OneOf;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
@@ -12,34 +13,27 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string View = "View";
+    public const string ViewPreview = "ViewPreview";
 }
 
-[Define(ConceptNames.View)]
-public abstract class ViewDefinition : IDefinition
+[Define(ConceptNames.ViewPreview), OnlyForPreview]
+public abstract class ViewPreviewDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
         new Signature(
             // 位姿变换
             typeof(AbsoluteTransform),
-            // 交互
+            // 渲染
             typeof(Camera),
-            typeof(ManeuvaringShipsStatus),
-            typeof(FMOD.Studio.System),
             typeof(Viewport),
             typeof(RenderSettings),
-            //
-            typeof(InParty.AsAffiliate),
-            // UI 插件
-            typeof(TotalPopulationWidget),
             // 视图标识
             typeof(ViewTag)
         );
 }
 
-[Describe(ConceptNames.View)]
-public class ViewDescription : IDescription
+[Describe(ConceptNames.ViewPreview), OnlyForPreview]
+public class ViewPreviewDescription : IDescription
 {
     public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
         new AbsoluteTransformOptions();
@@ -47,16 +41,14 @@ public class ViewDescription : IDescription
     public Point Size { get; set; } = new(1920, 1080);
 
     public (float Near, float Far) Depth { get; set; } = (-1001, 1001);
-
-    public required Entity Party { get; set; }
 }
 
-[Apply(ConceptNames.View)]
-public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ViewDescription>
+[Apply(ConceptNames.ViewPreview), OnlyForPreview]
+public class ViewPreviewApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ViewPreviewDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, ViewDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ViewPreviewDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
@@ -72,12 +64,5 @@ public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
             ZNear = desc.Depth.Near,
             ZFar = desc.Depth.Far
         });
-
-        // 设置阵营
-        factory.Make(world, commandBuffer, ConceptNames.InParty,
-                     new InPartyDescription { Party = desc.Party, Affiliate = entity });
-
-        // 初始化 UI
-        commandBuffer.Set(in entity, new TotalPopulationWidget(assets));
     }
 }
