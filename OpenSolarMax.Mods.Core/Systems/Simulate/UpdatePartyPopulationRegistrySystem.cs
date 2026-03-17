@@ -11,9 +11,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(InParty.AsAffiliate)),
     ReadCurr(typeof(ProductionAbility)),
-    ReadCurr(typeof(PopulationCost))
+    ReadCurr(typeof(PopulationCost)),
+    Write(typeof(PartyPopulationRegistry))
 ]
-[Write(typeof(PartyPopulationRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : ICalcSystem
 {

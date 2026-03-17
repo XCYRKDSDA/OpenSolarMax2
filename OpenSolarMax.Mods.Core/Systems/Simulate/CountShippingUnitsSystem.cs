@@ -7,8 +7,12 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TreeRelationship<Anchorage>.AsChild)), ReadCurr(typeof(InParty.AsAffiliate))]
-[ReadCurr(typeof(ShippingStatus)), Write(typeof(ShippingUnitsRegistry))]
+[
+    ReadCurr(typeof(TreeRelationship<Anchorage>.AsChild)),
+    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(ShippingStatus)),
+    Write(typeof(ShippingUnitsRegistry))
+]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
 {

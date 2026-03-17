@@ -19,9 +19,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadPrev(typeof(AnchoredShipsRegistry)),
     ReadPrev(typeof(Combatable)),
     ReadPrev(typeof(Sprite)),
-    ReadPrev(typeof(AbsoluteTransform))
+    ReadPrev(typeof(AbsoluteTransform)),
+    Iterate(typeof(Battlefield)),
+    ChangeStructure
 ]
-[Iterate(typeof(Battlefield)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 先量变再质变
 [ExecuteAfter(typeof(ProgressCombatSystem))]

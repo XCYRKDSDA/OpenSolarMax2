@@ -14,9 +14,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsParent)),
-    ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))
+    ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild)),
+    ReadCurr(typeof(RelativeTransform)),
+    Write(typeof(AbsoluteTransform))
 ]
-[ReadCurr(typeof(RelativeTransform)), Write(typeof(AbsoluteTransform))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateAbsoluteTransformSystem(World world) : ICalcSystem
 {

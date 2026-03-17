@@ -18,7 +18,8 @@ internal static class UnitPostBornEffectParams
     internal static readonly TimeSpan FadeOutDuration = PostBornDuration * 0.1;
 }
 
-[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(UnitPostBornEffect))]
+[SimulateSystem, BeforeStructuralChanges]
+[Iterate(typeof(UnitPostBornEffect))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
 {
@@ -32,7 +33,8 @@ public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
     public void Update(GameTime gameTime) => UpdateBlinkEffectQuery(world, gameTime);
 }
 
-[SimulateSystem, BeforeStructuralChanges, ReadCurr(typeof(UnitPostBornEffect)), ChangeStructure]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(UnitPostBornEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class RemoveUnitPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
 {

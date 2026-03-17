@@ -18,9 +18,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadPrev(typeof(AttackCooldown)),
     ReadPrev(typeof(InParty.AsAffiliate)),
     ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(PartyReferenceColor))
+    ReadPrev(typeof(PartyReferenceColor)),
+    Iterate(typeof(AttackTimer)),
+    ChangeStructure
 ]
-[Iterate(typeof(AttackTimer)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
 public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactory factory)

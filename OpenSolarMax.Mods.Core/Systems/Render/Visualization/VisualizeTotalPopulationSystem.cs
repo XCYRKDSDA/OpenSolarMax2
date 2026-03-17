@@ -8,9 +8,12 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem, AfterStructuralChanges]
-[ReadCurr(typeof(InParty.AsAffiliate))]
-[ReadCurr(typeof(PartyPopulationRegistry)), ReadCurr(typeof(PartyReferenceColor))]
-[Write(typeof(TotalPopulationWidget))]
+[
+    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(PartyPopulationRegistry)),
+    ReadCurr(typeof(PartyReferenceColor)),
+    Write(typeof(TotalPopulationWidget))
+]
 public sealed partial class VisualizeTotalPopulationSystem(World world) : ICalcSystem
 {
     [Query]

@@ -10,7 +10,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新运输任务状态的系统。该系统作用于运输任务的所有阶段
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(ShippingStatus))]
+[SimulateSystem, BeforeStructuralChanges]
+[Iterate(typeof(ShippingStatus))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 {

@@ -12,9 +12,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(InParty.AsAffiliate)),
     ReadCurr(typeof(ShippingStatus)),
-    ReadCurr(typeof(AbsoluteTransform))
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(AttackRange)),
+    Write(typeof(InAttackRangeShipsRegistry))
 ]
-[ReadCurr(typeof(AttackRange)), Write(typeof(InAttackRangeShipsRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class GetShippingUnitsInRangeSystem(World world) : ICalcSystem
 {

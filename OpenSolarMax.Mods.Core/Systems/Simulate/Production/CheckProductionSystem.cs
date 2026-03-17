@@ -11,9 +11,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(InParty.AsAffiliate)),
     ReadCurr(typeof(AnchoredShipsRegistry)),
-    ReadCurr(typeof(ProductionAbility))
+    ReadCurr(typeof(ProductionAbility)),
+    Write(typeof(ProductionCondition))
 ]
-[Write(typeof(ProductionCondition))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CheckProductionSystem(World world) : ICalcSystem
 {

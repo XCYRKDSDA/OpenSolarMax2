@@ -21,15 +21,19 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(StartShippingRequest))]
-[ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(Shippable))]
-[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [
+    ReadPrev(typeof(StartShippingRequest)),
+    ReadPrev(typeof(AnchoredShipsRegistry)),
+    ReadPrev(typeof(Shippable)),
+    ReadPrev(typeof(AbsoluteTransform)),
+    ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild)),
     ReadPrev(typeof(RevolutionOrbit)),
     ReadPrev(typeof(RevolutionState)),
-    ReadPrev(typeof(PlanetGeostationaryOrbit))
+    ReadPrev(typeof(PlanetGeostationaryOrbit)),
+    Iterate(typeof(ShippingStatus)),
+    Write(typeof(SoundEffect)),
+    ChangeStructure
 ]
-[Iterate(typeof(ShippingStatus)), Write(typeof(SoundEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
 [

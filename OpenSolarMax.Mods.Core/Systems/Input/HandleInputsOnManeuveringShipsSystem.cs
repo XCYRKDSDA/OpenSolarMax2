@@ -21,9 +21,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(InParty.AsAffiliate)),
-    ReadCurr(typeof(ReachabilityRegistry))
+    ReadCurr(typeof(ReachabilityRegistry)),
+    Iterate(typeof(ShippingStatus)),
+    ChangeStructure
 ]
-[Iterate(typeof(ShippingStatus)), ChangeStructure]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
     World world,
     IConceptFactory factory,

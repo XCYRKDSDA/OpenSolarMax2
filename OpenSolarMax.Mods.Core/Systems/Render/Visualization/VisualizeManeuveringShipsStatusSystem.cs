@@ -24,8 +24,12 @@ public delegate bool? CheckLocationReachabilityCallback(
 
 [RenderSystem, AfterStructuralChanges]
 [Priority((int)GraphicsLayer.Interface)]
-[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
-[ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
+[
+    ReadCurr(typeof(Camera)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(ReferenceSize)),
+    ReadCurr(typeof(ManeuvaringShipsStatus))
+]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
     GraphicsDevice graphicsDevice,

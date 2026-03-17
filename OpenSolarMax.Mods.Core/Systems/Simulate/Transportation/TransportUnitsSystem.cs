@@ -33,8 +33,7 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 }
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TransportingStatus))]
-[Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
+[ReadCurr(typeof(TransportingStatus)), Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在自动计算绝对位姿系统之后以覆盖位姿
 [ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
