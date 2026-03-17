@@ -12,7 +12,8 @@ public class ExposureTransition(IScreen prevScreen, IScreen nextScreen, SolarMax
     : TransitionBase(prevScreen, nextScreen, game)
 {
     private readonly RenderTarget2D _renderTarget = new(
-        game.GraphicsDevice, game.GraphicsDevice.PresentationParameters.BackBufferWidth,
+        game.GraphicsDevice,
+        game.GraphicsDevice.PresentationParameters.BackBufferWidth,
         game.GraphicsDevice.PresentationParameters.BackBufferHeight
     );
 
@@ -46,8 +47,9 @@ public class ExposureTransition(IScreen prevScreen, IScreen nextScreen, SolarMax
         Game.GraphicsDevice.SetRenderTargets(renderTargetsCache);
 
         // 添加曝光
-        var halfLife = MathF.Sqrt(_renderTarget.Width * _renderTarget.Width
-                                  + _renderTarget.Height * _renderTarget.Height);
+        var halfLife = MathF.Sqrt(
+            _renderTarget.Width * _renderTarget.Width + _renderTarget.Height * _renderTarget.Height
+        );
         var ratio = (float)(1 - _duration / Duration);
         var exposure = (Curve?.Evaluate(ratio) ?? ratio) * 2;
         _exposureRenderer.DrawExposure(_renderTarget, Center, halfLife, exposure);

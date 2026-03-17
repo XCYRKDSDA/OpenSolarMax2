@@ -8,5 +8,4 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem, BeforeStructuralChanges]
 [Iterate(typeof(AiTimer))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public class AiCountDownSystem(World world) : CountDownSystemBase<AiTimer>(world), ITickSystem
-{ }
+public class AiCountDownSystem(World world) : CountDownSystemBase<AiTimer>(world), ITickSystem { }

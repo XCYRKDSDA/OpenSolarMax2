@@ -21,10 +21,14 @@ public sealed partial class ManageDependenceSystem(World world) : ICalcSystemWit
 
     [Query]
     [All<Dependence>]
-    private static void FindBrokenDependence(Entity relationship, in Dependence record,
-                                             [Data] HashSet<Entity> entitiesToDestroy)
+    private static void FindBrokenDependence(
+        Entity relationship,
+        in Dependence record,
+        [Data] HashSet<Entity> entitiesToDestroy
+    )
     {
-        if (entitiesToDestroy.Contains(relationship)) return;
+        if (entitiesToDestroy.Contains(relationship))
+            return;
 
         if (!record.Dependency.IsAlive() || entitiesToDestroy.Contains(record.Dependency))
         {

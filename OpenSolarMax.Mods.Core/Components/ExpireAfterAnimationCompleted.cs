@@ -1,4 +1,3 @@
 namespace OpenSolarMax.Mods.Core.Components;
 
-public struct ExpireAfterAnimationCompleted
-{ }
+public struct ExpireAfterAnimationCompleted { }

@@ -8,7 +8,9 @@ internal class LevelModInfo(DirectoryEntry dir, ModManifest manifest) : CommonMo
     public DirectoryEntry Levels { get; } =
         dir.EnumerateDirectories(manifest.Levels ?? Modding.DefaultLevelsDir).First();
 
-    public ImmutableArray<string> BehaviorDeps { get; } = manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [];
+    public ImmutableArray<string> BehaviorDeps { get; } =
+        manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [];
 
-    public ImmutableArray<string> ContentDeps { get; } = manifest.Dependencies?.Content?.ToImmutableArray() ?? [];
+    public ImmutableArray<string> ContentDeps { get; } =
+        manifest.Dependencies?.Content?.ToImmutableArray() ?? [];
 }

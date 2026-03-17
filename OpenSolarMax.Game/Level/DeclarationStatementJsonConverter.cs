@@ -14,8 +14,11 @@ internal class DeclarationStatementJsonConverter(
     IReadOnlyDictionary<string, DeclarationSchemaInfo> declarationSchemaInfos
 ) : JsonConverter<DeclarationStatement>
 {
-    public override DeclarationStatement? Read(ref Utf8JsonReader reader, Type typeToConvert,
-                                               JsonSerializerOptions options)
+    public override DeclarationStatement? Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options
+    )
     {
         var element = JsonElement.ParseValue(ref reader);
 
@@ -31,14 +34,19 @@ internal class DeclarationStatementJsonConverter(
         if (baseDeclarationIds.Any(b => schemaNamesByDeclarationId[b] != schemaName))
             throw new Exception("All base configuration should have the same configuration key");
 
-        var configuration = (IDeclaration)element.Deserialize(declarationSchemaInfos[schemaName].Type, options)!;
+        var configuration = (IDeclaration)
+            element.Deserialize(declarationSchemaInfos[schemaName].Type, options)!;
 
-        return new DeclarationStatement(schemaName,
-                                        [..baseDeclarationIds.Where(b => b != schemaName)],
-                                        configuration);
+        return new DeclarationStatement(
+            schemaName,
+            [.. baseDeclarationIds.Where(b => b != schemaName)],
+            configuration
+        );
     }
 
-    public override void Write(Utf8JsonWriter writer, DeclarationStatement value,
-                               JsonSerializerOptions options)
-        => throw new NotImplementedException();
+    public override void Write(
+        Utf8JsonWriter writer,
+        DeclarationStatement value,
+        JsonSerializerOptions options
+    ) => throw new NotImplementedException();
 }

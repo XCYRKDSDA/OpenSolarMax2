@@ -7,11 +7,17 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World world)
-    : ICalcSystemWithStructuralChanges where TRelationship : IRelationshipRecord
+    : ICalcSystemWithStructuralChanges
+    where TRelationship : IRelationshipRecord
 {
-    private static readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
+    private static readonly QueryDescription _relationshipDesc =
+        new QueryDescription().WithAll<TRelationship>();
 
-    private static void CheckRelationship(Entity relationship, in TRelationship record, CommandBuffer commandBuffer)
+    private static void CheckRelationship(
+        Entity relationship,
+        in TRelationship record,
+        CommandBuffer commandBuffer
+    )
     {
         foreach (var group in record)
         {

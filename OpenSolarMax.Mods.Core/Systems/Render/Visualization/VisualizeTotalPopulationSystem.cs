@@ -15,7 +15,10 @@ public sealed partial class VisualizeTotalPopulationSystem(World world) : ICalcS
 {
     [Query]
     [All<TotalPopulationWidget, InParty.AsAffiliate>]
-    private static void VisualizePopulation(TotalPopulationWidget widget, in InParty.AsAffiliate asAffiliate)
+    private static void VisualizePopulation(
+        TotalPopulationWidget widget,
+        in InParty.AsAffiliate asAffiliate
+    )
     {
         var party = asAffiliate.Relationship!.Value.Copy.Party;
         ref readonly var populationRegistry = ref party.Get<PartyPopulationRegistry>();

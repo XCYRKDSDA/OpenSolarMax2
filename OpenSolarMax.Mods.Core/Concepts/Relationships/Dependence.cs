@@ -13,9 +13,7 @@ public static partial class ConceptNames
 [Define(ConceptNames.Dependence)]
 public abstract class DependenceDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(Dependence)
-    );
+    public static Signature Signature { get; } = new(typeof(Dependence));
 }
 
 [Describe(ConceptNames.Dependence)]

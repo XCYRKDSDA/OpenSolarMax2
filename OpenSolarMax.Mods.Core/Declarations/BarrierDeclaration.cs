@@ -14,26 +14,26 @@ public class BarrierDeclaration : IDeclaration<BarrierDeclaration>
 
     public BarrierDeclaration Aggregate(BarrierDeclaration newCfg)
     {
-        return new BarrierDeclaration()
-        {
-            Head = newCfg.Head ?? Head,
-            Tail = newCfg.Tail ?? Tail
-        };
+        return new BarrierDeclaration() { Head = newCfg.Head ?? Head, Tail = newCfg.Tail ?? Tail };
     }
 }
 
 [Translate("barrier", ConceptNames.InfiniteZBarrier)]
-public class BarrierDeclarationTranslator : ITranslator<BarrierDeclaration, InfiniteZBarrierDescription>
+public class BarrierDeclarationTranslator
+    : ITranslator<BarrierDeclaration, InfiniteZBarrierDescription>
 {
-    public InfiniteZBarrierDescription ToDescription(BarrierDeclaration declaration,
-                                                     IReadOnlyDictionary<string, Entity> otherEntities)
+    public InfiniteZBarrierDescription ToDescription(
+        BarrierDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
-        if (declaration.Head is null || declaration.Tail is null) throw new NullReferenceException();
+        if (declaration.Head is null || declaration.Tail is null)
+            throw new NullReferenceException();
 
         var desc = new InfiniteZBarrierDescription()
         {
             Head = declaration.Head.Value,
-            Tail = declaration.Tail.Value
+            Tail = declaration.Tail.Value,
         };
 
         return desc;

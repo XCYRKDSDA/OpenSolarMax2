@@ -19,8 +19,11 @@ public sealed partial class ProgressCombatSystem(World world) : ITickSystem
 {
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
-    private static void ProgressCombat([Data] GameTime time,
-                                       in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
+    private static void ProgressCombat(
+        [Data] GameTime time,
+        in AnchoredShipsRegistry shipsRegistry,
+        ref Battlefield battle
+    )
     {
         var ships = shipsRegistry.Ships;
         var damage = battle.FrontlineDamage;
@@ -43,9 +46,10 @@ public sealed partial class ProgressCombatSystem(World world) : ITickSystem
         foreach (var party1 in engagedParties)
         {
             // 计算该阵营造成的总伤害
-            var totalDamage = party1.Get<Combatable>().AttackPerUnitPerSecond
-                              * ships[party1].Count()
-                              * (float)time.ElapsedGameTime.TotalSeconds;
+            var totalDamage =
+                party1.Get<Combatable>().AttackPerUnitPerSecond
+                * ships[party1].Count()
+                * (float)time.ElapsedGameTime.TotalSeconds;
 
             // 将总伤害平均到每个其他阵营
             foreach (var party2 in engagedParties.Where(party2 => party2 != party1))

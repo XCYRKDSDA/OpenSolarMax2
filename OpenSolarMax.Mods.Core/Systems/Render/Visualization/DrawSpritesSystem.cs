@@ -17,13 +17,18 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges, BothForGameplayAndPreview]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
-public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphicsDevice, IAssetsManager assets)
-    : ICalcSystem
+public sealed partial class DrawSpritesSystem(
+    World world,
+    GraphicsDevice graphicsDevice,
+    IAssetsManager assets
+) : ICalcSystem
 {
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
 
-    private static readonly QueryDescription _drawableDesc
-        = new QueryDescription().WithAll<Sprite, AbsoluteTransform>();
+    private static readonly QueryDescription _drawableDesc = new QueryDescription().WithAll<
+        Sprite,
+        AbsoluteTransform
+    >();
 
     private readonly Effect _effect = new(graphicsDevice, EffectResource.TintEffect.Bytecode);
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
@@ -32,37 +37,58 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
     {
         var drawableEntities = new List<Entity>();
         world.Query(in _drawableDesc, entity => drawableEntities.Add(entity));
-        drawableEntities.Sort((l, r) => Comparer<float>.Default.Compare(l.Get<AbsoluteTransform>().Translation.Z,
-                                                                        r.Get<AbsoluteTransform>().Translation.Z));
+        drawableEntities.Sort(
+            (l, r) =>
+                Comparer<float>.Default.Compare(
+                    l.Get<AbsoluteTransform>().Translation.Z,
+                    r.Get<AbsoluteTransform>().Translation.Z
+                )
+        );
 
         RenderToCameraQuery(world, drawableEntities);
     }
 
-    private void DrawEntity(in Sprite sprite, in AbsoluteTransform absoluteTransform, in RenderSettings renderSettings)
+    private void DrawEntity(
+        in Sprite sprite,
+        in AbsoluteTransform absoluteTransform,
+        in RenderSettings renderSettings
+    )
     {
         if (sprite.Texture is null)
             return;
 
         // 计算精灵纹理锚点到世界的变换
-        var anchorToWorld = Matrix.CreateRotationZ(sprite.Rotation)
-                            * Matrix.CreateTranslation(sprite.Position.X, sprite.Position.Y, 0)
-                            * absoluteTransform.TransformToRoot;
+        var anchorToWorld =
+            Matrix.CreateRotationZ(sprite.Rotation)
+            * Matrix.CreateTranslation(sprite.Position.X, sprite.Position.Y, 0)
+            * absoluteTransform.TransformToRoot;
 
         if (sprite.Billboard)
         {
             // 将变换投影到二维平面
-            var projectedRotation = TransformProjection.To2D(Quaternion.CreateFromRotationMatrix(anchorToWorld));
-            anchorToWorld = Matrix.CreateRotationZ(projectedRotation)
-                            * Matrix.CreateTranslation(anchorToWorld.Translation);
+            var projectedRotation = TransformProjection.To2D(
+                Quaternion.CreateFromRotationMatrix(anchorToWorld)
+            );
+            anchorToWorld =
+                Matrix.CreateRotationZ(projectedRotation)
+                * Matrix.CreateTranslation(anchorToWorld.Translation);
         }
 
         // 完成最后的缩放
-        anchorToWorld = Matrix.CreateScale(sprite.Scale.X * sprite.Size.X / sprite.Texture.LogicalSize.X,
-                                           sprite.Scale.Y * sprite.Size.Y / sprite.Texture.LogicalSize.Y, 1)
-                        * Matrix.CreateScale(renderSettings.SpriteScaling, renderSettings.SpriteScaling, 1)
-                        * anchorToWorld;
+        anchorToWorld =
+            Matrix.CreateScale(
+                sprite.Scale.X * sprite.Size.X / sprite.Texture.LogicalSize.X,
+                sprite.Scale.Y * sprite.Size.Y / sprite.Texture.LogicalSize.Y,
+                1
+            )
+            * Matrix.CreateScale(renderSettings.SpriteScaling, renderSettings.SpriteScaling, 1)
+            * anchorToWorld;
 
-        var leftTop = new Vector3(-sprite.Texture.LogicalOrigin.X, sprite.Texture.LogicalOrigin.Y, 0);
+        var leftTop = new Vector3(
+            -sprite.Texture.LogicalOrigin.X,
+            sprite.Texture.LogicalOrigin.Y,
+            0
+        );
         var leftToRight = new Vector3(sprite.Texture.Bounds.Width, 0, 0);
         var topToBottom = new Vector3(0, -sprite.Texture.Bounds.Height, 0);
 
@@ -70,20 +96,35 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         _vertices[0].Position = Vector3.Transform(leftTop, anchorToWorld);
         _vertices[1].Position = Vector3.Transform(leftTop + leftToRight, anchorToWorld);
         _vertices[2].Position = Vector3.Transform(leftTop + topToBottom, anchorToWorld);
-        _vertices[3].Position = Vector3.Transform(leftTop + leftToRight + topToBottom, anchorToWorld);
+        _vertices[3].Position = Vector3.Transform(
+            leftTop + leftToRight + topToBottom,
+            anchorToWorld
+        );
 
         // 计算四个顶点对应的原始纹理的UV坐标
-        _vertices[0].TextureCoordinate = new(sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
-                                             sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height);
-        _vertices[1].TextureCoordinate = new(sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
-                                             sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height);
-        _vertices[2].TextureCoordinate = new(sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
-                                             sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height);
-        _vertices[3].TextureCoordinate = new(sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
-                                             sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height);
+        _vertices[0].TextureCoordinate = new(
+            sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
+            sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height
+        );
+        _vertices[1].TextureCoordinate = new(
+            sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
+            sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height
+        );
+        _vertices[2].TextureCoordinate = new(
+            sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
+            sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height
+        );
+        _vertices[3].TextureCoordinate = new(
+            sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
+            sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height
+        );
 
         // 设置四个顶点的颜色
-        _vertices[0].Color = _vertices[1].Color = _vertices[2].Color = _vertices[3].Color = sprite.Color * sprite.Alpha;
+        _vertices[0].Color =
+            _vertices[1].Color =
+            _vertices[2].Color =
+            _vertices[3].Color =
+                sprite.Color * sprite.Alpha;
 
         // 设置混合模式
         graphicsDevice.BlendState = sprite.Blend switch
@@ -92,7 +133,7 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
             SpriteBlend.Additive => BlendState.Additive,
             SpriteBlend.Opaque => BlendState.Opaque,
             SpriteBlend.NonPremultiplied => BlendState.NonPremultiplied,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(),
         };
 
         // 设置Shader纹理
@@ -102,18 +143,35 @@ public sealed partial class DrawSpritesSystem(World world, GraphicsDevice graphi
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2);
+            graphicsDevice.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleList,
+                _vertices,
+                0,
+                4,
+                _indices,
+                0,
+                2
+            );
         }
     }
 
     [Query]
     [All<Camera, AbsoluteTransform, RenderSettings>]
-    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose,
-                                in RenderSettings renderSettings)
+    private void RenderToCamera(
+        [Data] IEnumerable<Entity> entities,
+        in Camera camera,
+        in AbsoluteTransform pose,
+        in RenderSettings renderSettings
+    )
     {
         // 计算相机参数
         var view = Matrix.Invert(pose.TransformToRoot);
-        var projection = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var projection = Matrix.CreateOrthographic(
+            camera.Width,
+            camera.Height,
+            camera.ZNear,
+            camera.ZFar
+        );
         _effect.Parameters["to_ndc"].SetValue(view * projection);
 
         // 设置绘图区域

@@ -20,27 +20,42 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredUnitsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
-    [Section("systems:visualization:anchored_units")] IConfiguration configs) : ICalcSystem
+    World world,
+    GraphicsDevice graphicsDevice,
+    IAssetsManager assets,
+    [Section("systems:visualization:anchored_units")] IConfiguration configs
+) : ICalcSystem
 {
     private readonly int _textSize = configs.RequireValue<int>("text:size");
     private readonly string _textFormat = configs.RequireValue<string>("text:template");
     private readonly float _shadowDistance = configs.RequireValue<float>("shadow:distance");
     private readonly float _shadowDensity = configs.RequireValue<float>("shadow:density");
 
-    private readonly float _labelXOffsetFactor = configs.RequireValue<float>("label:offset_multipliers:x");
-    private readonly float _labelYOffsetFactor = configs.RequireValue<float>("label:offset_multipliers:y");
+    private readonly float _labelXOffsetFactor = configs.RequireValue<float>(
+        "label:offset_multipliers:x"
+    );
+    private readonly float _labelYOffsetFactor = configs.RequireValue<float>(
+        "label:offset_multipliers:y"
+    );
 
-    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>(
+        "ring:radius_multiplier"
+    );
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
-    private readonly float _labelRadiusFactor = configs.RequireValue<float>("ring:label:radius_multiplier");
+    private readonly float _labelRadiusFactor = configs.RequireValue<float>(
+        "ring:label:radius_multiplier"
+    );
     private readonly float _arcGapAngle = configs.RequireValue<Angle>("ring:gap");
 
-    private static readonly QueryDescription _planetDesc =
-        new QueryDescription().WithAll<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
+    private static readonly QueryDescription _planetDesc = new QueryDescription().WithAll<
+        AnchoredShipsRegistry,
+        ReferenceSize,
+        AbsoluteTransform
+    >();
 
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
-                                                  .GetFont(configs.RequireValue<int>("text:size"));
+    private readonly SpriteFontBase _font = assets
+        .Load<FontSystem>(Game.Content.Fonts.Default)
+        .GetFont(configs.RequireValue<int>("text:size"));
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice);
@@ -88,8 +103,12 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         return arcsAngles;
     }
 
-    private void VisualizeOnePlanet(in AnchoredShipsRegistry registry, in ReferenceSize refSize,
-                                    in AbsoluteTransform pose, in Matrix worldToCanvas)
+    private void VisualizeOnePlanet(
+        in AnchoredShipsRegistry registry,
+        in ReferenceSize refSize,
+        in AbsoluteTransform pose,
+        in Matrix worldToCanvas
+    )
     {
         // 如果没有停泊任何单位则跳过绘制
         if (registry.Ships.Count == 0)
@@ -108,10 +127,13 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
 
             // 计算文字位置
             var textSize = _font.MeasureString(text);
-            var planetInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
-            var position = planetInCanvas
-                           + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius * scale
-                           - textSize / 2;
+            var planetInCanvas = TransformProjection.To2D(
+                Vector3.Transform(pose.Translation, worldToCanvas)
+            );
+            var position =
+                planetInCanvas
+                + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius * scale
+                - textSize / 2;
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
 
             // 计算文字颜色
@@ -132,7 +154,9 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             var labelRadius = refSize.Radius * _labelRadiusFactor * scale;
 
             // 获得战斗环的圆心
-            var ringCenter = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
+            var ringCenter = TransformProjection.To2D(
+                Vector3.Transform(pose.Translation, worldToCanvas)
+            );
 
             // 获得各阵营的单位数目、颜色和标签
             var shipsRegistry = registry.Ships;
@@ -148,8 +172,14 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             {
                 var radians = arcs[i + 1] - arcs[i] - _arcGapAngle;
 
-                _ringRenderer.DrawArc(ringCenter, ringRadius, arcs[i] + _arcGapAngle / 2, radians,
-                                      colors[i], _ringThickness);
+                _ringRenderer.DrawArc(
+                    ringCenter,
+                    ringRadius,
+                    arcs[i] + _arcGapAngle / 2,
+                    radians,
+                    colors[i],
+                    _ringThickness
+                );
             }
 
             // 绘制各个阵营的单位数目文字
@@ -158,13 +188,14 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
                 var textSize = _font.MeasureString(labels[i]);
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
-                var textPosition = ringCenter
-                                   + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * labelRadius
-                                   - textSize / 2;
+                var textPosition =
+                    ringCenter
+                    + new Vector2(MathF.Cos(textDir), MathF.Sin(textDir)) * labelRadius
+                    - textSize / 2;
                 var shadowPosition = textPosition with { Y = textPosition.Y + _shadowDistance };
 
-                var shadowColor = Color.Lerp(colors[i], Color.Black, _shadowDensity)
-                                  * _shadowDensity;
+                var shadowColor =
+                    Color.Lerp(colors[i], Color.Black, _shadowDensity) * _shadowDensity;
 
                 // 绘制文字
                 _font.DrawText(_fontRenderer, labels[i], shadowPosition, shadowColor);
@@ -175,13 +206,29 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
 
     [Query]
     [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
+    private void RenderToCamera(
+        [Data] IEnumerable<Entity> entities,
+        in Camera camera,
+        in AbsoluteTransform pose
+    )
     {
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var projectionMatrix = Matrix.CreateOrthographic(
+            camera.Width,
+            camera.Height,
+            camera.ZNear,
+            camera.ZFar
+        );
         var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(0, canvas.Width, canvas.Height, 0, 0, -1);
+        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
+            0,
+            canvas.Width,
+            canvas.Height,
+            0,
+            0,
+            -1
+        );
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域

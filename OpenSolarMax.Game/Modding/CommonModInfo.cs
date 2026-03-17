@@ -31,7 +31,8 @@ internal class CommonModInfo(DirectoryEntry dir, ModManifest manifest)
     /// 若为空，则不会显示背景图
     /// </summary>
     public FileEntry? Background { get; } =
-        dir.EnumerateFiles(manifest.Background ?? Modding.DefaultBackgroundPattern).FirstOrDefault();
+        dir.EnumerateFiles(manifest.Background ?? Modding.DefaultBackgroundPattern)
+            .FirstOrDefault();
 
     public string Author { get; } = manifest.Author;
 

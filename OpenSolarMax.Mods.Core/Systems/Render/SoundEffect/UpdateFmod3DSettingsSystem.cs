@@ -28,5 +28,3 @@
 //
 //     public void Update() => SetHearer3DAttributesQuery(world);
 // }
-
-

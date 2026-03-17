@@ -24,8 +24,12 @@ internal class LevelPlayScreen : ScreenBase
     private readonly Widget _embeddingWorldView;
     private Widget? _floatingWorldView;
 
-    public LevelPlayScreen(LevelPlayViewModel viewModel, HorizontalScrollingBackground sharedBackground,
-                           SolarMax game) : base(game)
+    public LevelPlayScreen(
+        LevelPlayViewModel viewModel,
+        HorizontalScrollingBackground sharedBackground,
+        SolarMax game
+    )
+        : base(game)
     {
         _viewModel = viewModel;
 
@@ -53,13 +57,13 @@ internal class LevelPlayScreen : ScreenBase
             {
                 new Proportion { Type = ProportionType.Auto },
                 new Proportion { Type = ProportionType.Fill },
-                new Proportion { Type = ProportionType.Auto }
+                new Proportion { Type = ProportionType.Auto },
             },
             ColumnsProportions =
             {
                 new Proportion { Type = ProportionType.Auto },
                 new Proportion { Type = ProportionType.Fill },
-                new Proportion { Type = ProportionType.Auto }
+                new Proportion { Type = ProportionType.Auto },
             },
         };
         _rootPanel.Widgets.Add(grid);
@@ -78,11 +82,15 @@ internal class LevelPlayScreen : ScreenBase
             Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
             {
-                Renderable = ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Idle)),
-                OverRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)),
-                PressedRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)),
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Idle)
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)
+                ),
             },
         };
         //exitButton.Click += OnExitButtonClicked;
@@ -90,11 +98,19 @@ internal class LevelPlayScreen : ScreenBase
         {
             Content = new Image()
             {
-                Renderable = ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.PauseBtn_Idle)),
-                OverRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.PauseBtn_Pressed)),
-                PressedRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.PauseBtn_Pressed)),
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.PauseBtn_Idle)
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.PauseBtn_Pressed
+                    )
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.PauseBtn_Pressed
+                    )
+                ),
             },
         };
         //pauseButton.Click += OnPauseButtonClicked;
@@ -114,11 +130,21 @@ internal class LevelPlayScreen : ScreenBase
             Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
             {
-                Renderable = ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.SlowSpeedBtn_Idle)),
-                OverRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.SlowSpeedBtn_Pressed)),
-                PressedRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.SlowSpeedBtn_Pressed))
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.SlowSpeedBtn_Idle
+                    )
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.SlowSpeedBtn_Pressed
+                    )
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.SlowSpeedBtn_Pressed
+                    )
+                ),
             },
         };
         slowButton.Click += OnSpeedOptionChanged;
@@ -127,12 +153,21 @@ internal class LevelPlayScreen : ScreenBase
             Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
             {
-                Renderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.NormalSpeedBtn_Idle)),
-                OverRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.NormalSpeedBtn_Pressed)),
-                PressedRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.NormalSpeedBtn_Pressed)),
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.NormalSpeedBtn_Idle
+                    )
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.NormalSpeedBtn_Pressed
+                    )
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.NormalSpeedBtn_Pressed
+                    )
+                ),
             },
         };
         normalButton.Click += OnSpeedOptionChanged;
@@ -140,11 +175,21 @@ internal class LevelPlayScreen : ScreenBase
         {
             Content = new Image()
             {
-                Renderable = ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.FastSpeedBtn_Idle)),
-                OverRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.FastSpeedBtn_Pressed)),
-                PressedRenderable =
-                    ToMyra(game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.FastSpeedBtn_Pressed)),
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.FastSpeedBtn_Idle
+                    )
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.FastSpeedBtn_Pressed
+                    )
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.Icons.FastSpeedBtn_Pressed
+                    )
+                ),
             },
         };
         fastButton.Click += OnSpeedOptionChanged;
@@ -228,8 +273,11 @@ internal class LevelPlayScreen : ScreenBase
         var allWidgets = new Dictionary<LevelWidgetPosition, List<(int, Widget)>>();
         foreach (var componentType in viewModel.ViewEntity.GetComponentTypes())
         {
-            if (!componentType.Type.IsSubclassOf(typeof(Widget)) ||
-                componentType.Type.GetCustomAttribute<LevelWidgetAttribute>() is not { } attribute)
+            if (
+                !componentType.Type.IsSubclassOf(typeof(Widget))
+                || componentType.Type.GetCustomAttribute<LevelWidgetAttribute>()
+                    is not { } attribute
+            )
                 continue;
 
             var pair = (attribute.Order, (Widget)viewModel.ViewEntity.Get(componentType)!);
@@ -239,7 +287,8 @@ internal class LevelPlayScreen : ScreenBase
                 allWidgets.Add(attribute.Position, [pair]);
         }
         // 按照 Order 排序
-        foreach (var (_, widgets) in allWidgets) widgets.Sort();
+        foreach (var (_, widgets) in allWidgets)
+            widgets.Sort();
         // 按顺序注册到对应 panel 中
         foreach (var (position, widgets) in allWidgets)
         {
@@ -295,9 +344,16 @@ internal class LevelPlayScreen : ScreenBase
 
         // 再画世界
         var worldView = _floatingWorldView ?? _embeddingWorldView; // 优先选用悬浮的世界视图控件以应用动画
-        var viewport = new Viewport(new Rectangle(worldView.ToGlobal(Point.Zero), worldView.ActualBounds.Size));
-        _viewModel.World.Query(new QueryDescription().WithAll<Viewport>(),
-                               (ref Viewport viewport2) => { viewport2 = viewport; });
+        var viewport = new Viewport(
+            new Rectangle(worldView.ToGlobal(Point.Zero), worldView.ActualBounds.Size)
+        );
+        _viewModel.World.Query(
+            new QueryDescription().WithAll<Viewport>(),
+            (ref Viewport viewport2) =>
+            {
+                viewport2 = viewport;
+            }
+        );
         _viewModel.RenderSystem.Update(gameTime);
 
         // 再画 UI
@@ -307,11 +363,14 @@ internal class LevelPlayScreen : ScreenBase
     protected override void OnStartTransitIn(object? context)
     {
         // 只在从菜单切换过来时播放世界过渡动画
-        if (context is not MenuNavigationContext ctx) return;
+        if (context is not MenuNavigationContext ctx)
+            return;
 
         // 记录动画结束时的目标预览位置
-        ctx.TargetPreviewLocation =
-            new Rectangle(_embeddingWorldView.ToGlobal(Point.Zero), _embeddingWorldView.ActualBounds.Size);
+        ctx.TargetPreviewLocation = new Rectangle(
+            _embeddingWorldView.ToGlobal(Point.Zero),
+            _embeddingWorldView.ActualBounds.Size
+        );
 
         // 创建悬浮世界视图控件
         _floatingWorldView = new Widget();
@@ -324,22 +383,41 @@ internal class LevelPlayScreen : ScreenBase
     public override void OnTransitIn(object? context, float progress)
     {
         // 只在从菜单切换过来时播放世界过渡动画
-        if (context is not MenuNavigationContext ctx) return;
+        if (context is not MenuNavigationContext ctx)
+            return;
 
         // 更新目标位置
-        ctx.TargetPreviewLocation =
-            new Rectangle(_embeddingWorldView.ToGlobal(Point.Zero), _embeddingWorldView.ActualBounds.Size);
+        ctx.TargetPreviewLocation = new Rectangle(
+            _embeddingWorldView.ToGlobal(Point.Zero),
+            _embeddingWorldView.ActualBounds.Size
+        );
 
         // 计算当前位置
         Debug.Assert(_floatingWorldView is not null);
-        _floatingWorldView.Left =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Left, ctx.TargetPreviewLocation.Left, progress);
-        _floatingWorldView.Top =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Top, ctx.TargetPreviewLocation.Top, progress);
-        _floatingWorldView.Width =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Width, ctx.TargetPreviewLocation.Width, progress);
-        _floatingWorldView.Height =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Height, ctx.TargetPreviewLocation.Height, progress);
+        _floatingWorldView.Left = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Left,
+                ctx.TargetPreviewLocation.Left,
+                progress
+            );
+        _floatingWorldView.Top = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Top,
+                ctx.TargetPreviewLocation.Top,
+                progress
+            );
+        _floatingWorldView.Width = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Width,
+                ctx.TargetPreviewLocation.Width,
+                progress
+            );
+        _floatingWorldView.Height = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Height,
+                ctx.TargetPreviewLocation.Height,
+                progress
+            );
 
         // 逐渐加速世界模拟
         _viewModel.SimulateSpeed = progress;
@@ -347,7 +425,8 @@ internal class LevelPlayScreen : ScreenBase
 
     protected override void OnFinishTransitIn(object? context)
     {
-        if (context is not MenuNavigationContext) return;
+        if (context is not MenuNavigationContext)
+            return;
 
         // 正常化世界模拟速度
         _viewModel.SimulateSpeed = 1;

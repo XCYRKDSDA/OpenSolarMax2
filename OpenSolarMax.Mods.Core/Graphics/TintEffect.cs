@@ -27,7 +27,7 @@ public class TintEffect : Effect, IEffectMatrices
         None = 0,
         WorldViewProj = 1 << 1,
         Texture = 1 << 2,
-        All = -1
+        All = -1,
     }
 
     private DirtyFlags _dirtyFlags = DirtyFlags.All;
@@ -78,7 +78,8 @@ public class TintEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public TintEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.TintEffect.Bytecode)
+    public TintEffect(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice, EffectResource.TintEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _textureParam = Parameters["tex_sampler+tex"];

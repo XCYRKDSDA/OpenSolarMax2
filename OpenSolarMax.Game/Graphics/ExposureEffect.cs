@@ -33,7 +33,7 @@ internal class ExposureEffect : Effect
         Center = 1 << 2,
         HalfLife = 1 << 3,
         Amount = 1 << 4,
-        All = -1
+        All = -1,
     }
 
     private DirtyFlags _dirtyFlags = DirtyFlags.All;

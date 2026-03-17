@@ -33,7 +33,7 @@ internal class CircleEffect : Effect, IEffectMatrices
         Center = 1 << 2,
         Radius = 1 << 3,
         Thickness = 1 << 4,
-        All = -1
+        All = -1,
     }
 
     private DirtyFlags _dirtyFlags = DirtyFlags.All;
@@ -104,7 +104,8 @@ internal class CircleEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public CircleEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.CircleEffect.Bytecode)
+    public CircleEffect(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice, EffectResource.CircleEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _centerParam = Parameters["center"];

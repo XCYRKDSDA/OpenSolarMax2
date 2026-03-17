@@ -19,8 +19,8 @@ public static partial class ConceptNames
 public abstract class PlanetDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        CelestialBodyDefinition.Signature +
-        new Signature(
+        CelestialBodyDefinition.Signature
+        + new Signature(
             // 运输相关
             typeof(DefaultLaunchPad),
             // 生产相关
@@ -41,8 +41,11 @@ public class PlanetDescription : IDescription
     /// <summary>
     /// 星球的变换关系
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 星球所属的阵营
@@ -67,15 +70,18 @@ public class PlanetDescription : IDescription
 
 [Apply(ConceptNames.Planet)]
 public class PlanetApplier(
-    IAssetsManager assets, IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:planet")] IConfiguration configs)
-    : IApplier<PlanetDescription>
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:planet")] IConfiguration configs
+) : IApplier<PlanetDescription>
 {
-    private readonly TextureRegion _defaultPlanetShape =
-        assets.Load<TextureRegion>(Content.Textures.DefaultPlanetShape);
+    private readonly TextureRegion _defaultPlanetShape = assets.Load<TextureRegion>(
+        Content.Textures.DefaultPlanetShape
+    );
 
-    private readonly TextureRegion[] _defaultPlanetTextures =
-        Content.Textures.DefaultPlanetTextures.Select(k => assets.Load<TextureRegion>(k)).ToArray();
+    private readonly TextureRegion[] _defaultPlanetTextures = Content
+        .Textures.DefaultPlanetTextures.Select(k => assets.Load<TextureRegion>(k))
+        .ToArray();
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
@@ -83,21 +89,28 @@ public class PlanetApplier(
     {
         // 设置天体基本信息
         var randomIndex = new Random().Next(Content.Textures.DefaultPlanetTextures.Length);
-        _celestialBodyApplier.Apply(commandBuffer, entity, new CelestialBodyDescription()
-        {
-            Shape = _defaultPlanetShape,
-            Texture = _defaultPlanetTextures[randomIndex],
-            ReferenceRadius = desc.ReferenceRadius,
-            Transform = desc.Transform,
-            Party = desc.Party,
-            Volume = desc.Volume,
-        });
+        _celestialBodyApplier.Apply(
+            commandBuffer,
+            entity,
+            new CelestialBodyDescription()
+            {
+                Shape = _defaultPlanetShape,
+                Texture = _defaultPlanetTextures[randomIndex],
+                ReferenceRadius = desc.ReferenceRadius,
+                Transform = desc.Transform,
+                Party = desc.Party,
+                Volume = desc.Volume,
+            }
+        );
 
         // 设置生产能力
-        commandBuffer.Set(in entity, new ProductionAbility
-        {
-            Population = desc.Population,
-            ProgressPerSecond = desc.ProduceSpeed
-        });
+        commandBuffer.Set(
+            in entity,
+            new ProductionAbility
+            {
+                Population = desc.Population,
+                ProgressPerSecond = desc.ProduceSpeed,
+            }
+        );
     }
 }

@@ -59,5 +59,4 @@ public class IterateAttribute(Type type) : Attribute, IReadWriteAttribute
 }
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class ChangeStructureAttribute : Attribute
-{ }
+public class ChangeStructureAttribute : Attribute { }

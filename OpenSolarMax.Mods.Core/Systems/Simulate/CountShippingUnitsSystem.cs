@@ -14,12 +14,17 @@ public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
 {
     [Query]
     [All<TreeRelationship<Anchorage>.AsChild, ShippingStatus, InParty.AsAffiliate>]
-    private static void CountShippingUnits(Entity unit, in TreeRelationship<Anchorage>.AsChild asChild,
-                                           in ShippingStatus shippingStatus, in InParty.AsAffiliate asAffiliate,
-                                           // 目的地 -> (阵营, 单位)...
-                                           [Data] Dictionary<Entity, List<(Entity, Entity)>> shippingUnits)
+    private static void CountShippingUnits(
+        Entity unit,
+        in TreeRelationship<Anchorage>.AsChild asChild,
+        in ShippingStatus shippingStatus,
+        in InParty.AsAffiliate asAffiliate,
+        // 目的地 -> (阵营, 单位)...
+        [Data] Dictionary<Entity, List<(Entity, Entity)>> shippingUnits
+    )
     {
-        if (asChild.Relationship is not null || shippingStatus.State == ShippingState.Idle) return;
+        if (asChild.Relationship is not null || shippingStatus.State == ShippingState.Idle)
+            return;
 
         var destination = shippingStatus.Task.DestinationPlanet;
         var party = asAffiliate.Relationship!.Value.Copy.Party;
@@ -32,9 +37,11 @@ public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
 
     [Query]
     [All<ShippingUnitsRegistry>]
-    private static void UpdateShippingShipsRegistry(Entity destination, ref ShippingUnitsRegistry shipRegistry,
-                                                    [Data]
-                                                    Dictionary<Entity, List<(Entity Party, Entity Unit)>> shippingUnits)
+    private static void UpdateShippingShipsRegistry(
+        Entity destination,
+        ref ShippingUnitsRegistry shipRegistry,
+        [Data] Dictionary<Entity, List<(Entity Party, Entity Unit)>> shippingUnits
+    )
     {
         if (!shippingUnits.TryGetValue(destination, out var unitInfos))
         {

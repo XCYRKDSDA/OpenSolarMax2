@@ -19,9 +19,9 @@ public static partial class ConceptNames
 public abstract class DestinationSurroundFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        TransformableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + TransformableDefinition.Signature
+        + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
@@ -45,63 +45,88 @@ public class DestinationSurroundFlareDescription : IDescription
 public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<DestinationSurroundFlareDescription>
 {
-    private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>("Textures/SolarMax2.Atlas.json:Halo");
+    private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:Halo"
+    );
 
-    private readonly AnimationClip<Entity> _flareRotating =
-        assets.Load<AnimationClip<Entity>>("Animations/DestinationSurroundFlareRotating.json");
+    private readonly AnimationClip<Entity> _flareRotating = assets.Load<AnimationClip<Entity>>(
+        "Animations/DestinationSurroundFlareRotating.json"
+    );
 
-    private readonly AnimationClip<Entity> _flareCharging =
-        assets.Load<AnimationClip<Entity>>("Animations/DestinationSurroundFlareCharging.json");
+    private readonly AnimationClip<Entity> _flareCharging = assets.Load<AnimationClip<Entity>>(
+        "Animations/DestinationSurroundFlareCharging.json"
+    );
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, DestinationSurroundFlareDescription desc)
+    public void Apply(
+        CommandBuffer commandBuffer,
+        Entity entity,
+        DestinationSurroundFlareDescription desc
+    )
     {
         var world = World.Worlds[entity.WorldId];
 
         // 填充默认纹理
-        commandBuffer.Set(in entity, new Sprite
-        {
-            Texture = _flareTexture,
-            Color = desc.Color,
-            Alpha = 1,
-            Size = new(desc.Radius * 2),
-            Position = Vector2.Zero,
-            Rotation = -MathF.PI / 2,
-            Scale = Vector2.One,
-            Blend = SpriteBlend.Additive,
-            Billboard = false
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _flareTexture,
+                Color = desc.Color,
+                Alpha = 1,
+                Size = new(desc.Radius * 2),
+                Position = Vector2.Zero,
+                Rotation = -MathF.PI / 2,
+                Scale = Vector2.One,
+                Blend = SpriteBlend.Additive,
+                Billboard = false,
+            }
+        );
 
         // 初始化动画
-        commandBuffer.Set(in entity, new Animation
-        {
-            TimeElapsed = TimeSpan.Zero,
-            TimeOffset = TimeSpan.Zero,
-            Clip = _flareCharging
-        });
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                TimeElapsed = TimeSpan.Zero,
+                TimeOffset = TimeSpan.Zero,
+                Clip = _flareCharging,
+            }
+        );
 
         // 设置到总特效实体的关系
-        factory.Make(world, commandBuffer, ConceptNames.Dependence,
-                     new DependenceDescription { Dependent = entity, Dependency = desc.Effect });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.Dependence,
+            new DependenceDescription { Dependent = entity, Dependency = desc.Effect }
+        );
         var baseCoord = factory.Make(
-            world, commandBuffer, ConceptNames.EmptyCoord, new EmptyCoordDescription
+            world,
+            commandBuffer,
+            ConceptNames.EmptyCoord,
+            new EmptyCoordDescription
             {
                 Transform = new RelativeTransformOptions
                 {
                     Parent = desc.Effect,
-                    Rotation = TransformProjection.To3D(desc.Angle)
-                }
-            });
+                    Rotation = TransformProjection.To3D(desc.Angle),
+                },
+            }
+        );
         var transform = factory.Make(
-            world, commandBuffer, ConceptNames.RelativeTransform, new RelativeTransformDescription
+            world,
+            commandBuffer,
+            ConceptNames.RelativeTransform,
+            new RelativeTransformDescription { Parent = baseCoord, Child = entity }
+        );
+        commandBuffer.Add(
+            in transform,
+            new Animation
             {
-                Parent = baseCoord,
-                Child = entity
-            });
-        commandBuffer.Add(in transform, new Animation
-        {
-            Clip = _flareRotating,
-            TimeOffset = TimeSpan.Zero,
-            TimeElapsed = TimeSpan.Zero
-        });
+                Clip = _flareRotating,
+                TimeOffset = TimeSpan.Zero,
+                TimeElapsed = TimeSpan.Zero,
+            }
+        );
     }
 }

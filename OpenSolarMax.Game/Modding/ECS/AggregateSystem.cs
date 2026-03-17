@@ -8,15 +8,19 @@ namespace OpenSolarMax.Game.Modding.ECS;
 
 internal class AggregateSystem
 {
-    private static void RegisterHook(IEnumerable<object> systems,
-                                     IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
+    private static void RegisterHook(
+        IEnumerable<object> systems,
+        IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos
+    )
     {
         // 收集所有的挂载点
         const BindingFlags hookFlags = BindingFlags.Public | BindingFlags.Instance;
-        var hookPropertyInfos =
-            systems.SelectMany(s => s.GetType().GetProperties(hookFlags), (s, p) => (obj: s, prop: p))
-                   .SelectMany(p => p.prop.GetCustomAttributes<HookAttribute>(),
-                               (p, a) => (hook: a.Name, p.obj, p.prop));
+        var hookPropertyInfos = systems
+            .SelectMany(s => s.GetType().GetProperties(hookFlags), (s, p) => (obj: s, prop: p))
+            .SelectMany(
+                p => p.prop.GetCustomAttributes<HookAttribute>(),
+                (p, a) => (hook: a.Name, p.obj, p.prop)
+            );
 
         // 为每个挂载追加委托实现
         foreach (var (name, obj, prop) in hookPropertyInfos)
@@ -42,14 +46,18 @@ internal class AggregateSystem
 
     private readonly CommandBuffer _commandBuffer = new();
 
-    public AggregateSystem(World world, IReadOnlyList<Type> sortedSystemTypes,
-                           IReadOnlyDictionary<Type, object> @params,
-                           IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos)
+    public AggregateSystem(
+        World world,
+        IReadOnlyList<Type> sortedSystemTypes,
+        IReadOnlyDictionary<Type, object> @params,
+        IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos
+    )
     {
         _world = world;
 
-        var systems = sortedSystemTypes.Select(t => PluginFactory.Instantiate(t, [(typeof(World), world)], @params))
-                                       .ToList();
+        var systems = sortedSystemTypes
+            .Select(t => PluginFactory.Instantiate(t, [(typeof(World), world)], @params))
+            .ToList();
         RegisterHook(systems, hookImplInfos);
 
         // 寻找响应式结构化变更的部分，根据其划分为三部分
@@ -83,11 +91,16 @@ internal class AggregateSystem
 
         foreach (var system in _beforeStructuralChangesSystems)
         {
-            if (system is ITickSystem s1) s1.Update(gameTime);
-            else if (system is ITickSystemWithStructuralChanges s2) s2.Update(gameTime, _commandBuffer);
-            else if (system is ICalcSystem s3) s3.Update();
-            else if (system is ICalcSystemWithStructuralChanges s4) s4.Update(_commandBuffer);
-            else throw new Exception();
+            if (system is ITickSystem s1)
+                s1.Update(gameTime);
+            else if (system is ITickSystemWithStructuralChanges s2)
+                s2.Update(gameTime, _commandBuffer);
+            else if (system is ICalcSystem s3)
+                s3.Update();
+            else if (system is ICalcSystemWithStructuralChanges s4)
+                s4.Update(_commandBuffer);
+            else
+                throw new Exception();
         }
         _commandBuffer.Playback(_world, dispose: true);
 

@@ -18,7 +18,7 @@ public record ShipDeclaration : IDeclaration<ShipDeclaration>
         return new ShipDeclaration()
         {
             Planet = @new.Planet ?? Planet,
-            Party = @new.Party ?? Party
+            Party = @new.Party ?? Party,
         };
     }
 }
@@ -26,10 +26,13 @@ public record ShipDeclaration : IDeclaration<ShipDeclaration>
 [Translate("ship", ConceptNames.Ship)]
 public class ShipDeclarationTranslator : ITranslator<ShipDeclaration, ShipDescription>
 {
-    public ShipDescription ToDescription(ShipDeclaration declaration,
-                                         IReadOnlyDictionary<string, Entity> otherEntities)
+    public ShipDescription ToDescription(
+        ShipDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
-        if (declaration.Planet is null || declaration.Party is null) throw new NullReferenceException();
+        if (declaration.Planet is null || declaration.Party is null)
+            throw new NullReferenceException();
 
         return new ShipDescription()
         {

@@ -8,7 +8,11 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(ProductionAbility)), ReadCurr(typeof(PopulationCost))]
+[
+    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(ProductionAbility)),
+    ReadCurr(typeof(PopulationCost))
+]
 [Write(typeof(PartyPopulationRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : ICalcSystem
@@ -24,8 +28,10 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
 
     [Query]
     [All<InParty.AsAffiliate, ProductionAbility>]
-    private static void CountPopulationLimit(in InParty.AsAffiliate asAffiliate,
-                                             in ProductionAbility productionAbility)
+    private static void CountPopulationLimit(
+        in InParty.AsAffiliate asAffiliate,
+        in ProductionAbility productionAbility
+    )
     {
         if (asAffiliate.Relationship is null)
             return;
@@ -38,7 +44,8 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
     [All<InParty.AsAffiliate, Colonizable>]
     private static void CountColonizedPlanets(Entity planet, in InParty.AsAffiliate asAffiliate)
     {
-        if (asAffiliate.Relationship is null) return;
+        if (asAffiliate.Relationship is null)
+            return;
 
         var party = asAffiliate.Relationship!.Value.Copy.Party;
         party.Get<PartyPopulationRegistry>().Planets.Add(planet);
@@ -46,8 +53,10 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
 
     [Query]
     [All<InParty.AsAffiliate, PopulationCost>]
-    private static void CountCurrentPopulation(in InParty.AsAffiliate asAffiliate,
-                                               in PopulationCost populationCost)
+    private static void CountCurrentPopulation(
+        in InParty.AsAffiliate asAffiliate,
+        in PopulationCost populationCost
+    )
     {
         if (asAffiliate.Relationship is null)
             return;

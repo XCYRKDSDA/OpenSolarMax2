@@ -18,7 +18,8 @@ public static partial class ConceptNames
 [Define(ConceptNames.CelestialBodyPreview), OnlyForPreview]
 public class CelestialBodyPreviewDefinition : IDefinition
 {
-    public static Signature Signature { get; } = Drawable.Signature + new Signature(typeof(InParty.AsAffiliate));
+    public static Signature Signature { get; } =
+        Drawable.Signature + new Signature(typeof(InParty.AsAffiliate));
 }
 
 [Describe(ConceptNames.CelestialBodyPreview), OnlyForPreview]
@@ -37,8 +38,11 @@ public class CelestialBodyPreviewDescription : IDescription
     /// <summary>
     /// 天体的变换关系
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 天体所属的阵营
@@ -52,30 +56,44 @@ public class CelestialBodyPreviewApplier(IAssetsManager assets, IConceptFactory 
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, CelestialBodyPreviewDescription desc)
+    public void Apply(
+        CommandBuffer commandBuffer,
+        Entity entity,
+        CelestialBodyPreviewDescription desc
+    )
     {
         var world = World.Worlds[entity.WorldId];
 
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
 
         // 设置外形
-        commandBuffer.Set(in entity, new Sprite()
-        {
-            Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
-            Size = new Vector2(desc.ReferenceRadius * 2),
-            Position = Vector2.Zero,
-            Rotation = 0,
-            Scale = Vector2.One,
-            Billboard = true,
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite()
+            {
+                Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
+                Size = new Vector2(desc.ReferenceRadius * 2),
+                Position = Vector2.Zero,
+                Rotation = 0,
+                Scale = Vector2.One,
+                Billboard = true,
+            }
+        );
 
         // 设置阵营
         if (desc.Party != Entity.Null)
         {
-            factory.Make(world, commandBuffer, ConceptNames.InParty,
-                         new InPartyDescription { Party = desc.Party, Affiliate = entity });
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InParty,
+                new InPartyDescription { Party = desc.Party, Affiliate = entity }
+            );
         }
     }
 }

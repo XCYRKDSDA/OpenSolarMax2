@@ -15,13 +15,14 @@ public static partial class ConceptNames
 [Define(ConceptNames.PartyPreview), OnlyForPreview]
 public abstract class PartyPreviewDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new Signature(
-        // 阵营参考颜色
-        typeof(PartyReferenceColor),
-        // 隶属关系
-        typeof(InParty.AsParty),
-        typeof(PartyPopulationRegistry)
-    );
+    public static Signature Signature { get; } =
+        new Signature(
+            // 阵营参考颜色
+            typeof(PartyReferenceColor),
+            // 隶属关系
+            typeof(InParty.AsParty),
+            typeof(PartyPopulationRegistry)
+        );
 }
 
 [Describe(ConceptNames.PartyPreview), OnlyForPreview]

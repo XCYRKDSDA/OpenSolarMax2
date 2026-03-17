@@ -17,7 +17,8 @@ public static class Signatures
     );
 
     public static readonly Signature Planet =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -34,7 +35,8 @@ public static class Signatures
         );
 
     public static readonly Signature Ship =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -50,7 +52,8 @@ public static class Signatures
         );
 
     public static readonly Signature PredefinedOrbit =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -58,7 +61,8 @@ public static class Signatures
         );
 
     public static readonly Signature Party =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(PartyReferenceColor),
             typeof(Producible),
             typeof(Combatable),
@@ -69,7 +73,8 @@ public static class Signatures
         );
 
     public static readonly Signature View =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(AbsoluteTransform),
             typeof(Camera),
             typeof(ManeuvaringShipsStatus),
@@ -79,7 +84,8 @@ public static class Signatures
         );
 
     public static readonly Signature Animation =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
@@ -88,7 +94,8 @@ public static class Signatures
         );
 
     public static readonly Signature CountDownAnimation =
-        Dependentable + new Signature(
+        Dependentable
+        + new Signature(
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),

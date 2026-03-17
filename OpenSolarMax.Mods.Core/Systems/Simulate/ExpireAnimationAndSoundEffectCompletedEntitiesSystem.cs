@@ -16,15 +16,19 @@ public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem
 {
     [Query]
     [All<ExpireAfterAnimationAndSoundEffectCompleted, Animation>]
-    private static void ExpireEntities([Data] CommandBuffer commands,
-                                       Entity entity, in Animation animation, in SoundEffect soundEffect)
+    private static void ExpireEntities(
+        [Data] CommandBuffer commands,
+        Entity entity,
+        in Animation animation,
+        in SoundEffect soundEffect
+    )
     {
         if (animation.RawClip is not null)
             return;
 
         // 没有指定动画剪辑也算是播完了
-        bool animationDone = animation.Clip is null ||
-                             animation.TimeElapsed.TotalSeconds > animation.Clip.Length;
+        bool animationDone =
+            animation.Clip is null || animation.TimeElapsed.TotalSeconds > animation.Clip.Length;
 
         soundEffect.EventInstance.getPlaybackState(out var playbackState);
         bool soundEffectDone = playbackState == PLAYBACK_STATE.STOPPED;

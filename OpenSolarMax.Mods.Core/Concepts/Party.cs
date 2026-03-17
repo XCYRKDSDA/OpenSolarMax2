@@ -15,8 +15,8 @@ public static partial class ConceptNames
 public abstract class PartyDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + new Signature(
             // 阵营参考值
             typeof(PartyReferenceColor),
             // 阵营属性
@@ -67,11 +67,14 @@ public class PartyApplier : IApplier<PartyDescription>
 
         commandBuffer.Set(in entity, new Producible { WorkloadPerShip = desc.Workload });
 
-        commandBuffer.Set(in entity, new Combatable
-        {
-            AttackPerUnitPerSecond = desc.Attack,
-            MaximumDamagePerUnit = desc.Health
-        });
+        commandBuffer.Set(
+            in entity,
+            new Combatable
+            {
+                AttackPerUnitPerSecond = desc.Attack,
+                MaximumDamagePerUnit = desc.Health,
+            }
+        );
 
         commandBuffer.Set(in entity, new Shippable { Speed = 100 });
 

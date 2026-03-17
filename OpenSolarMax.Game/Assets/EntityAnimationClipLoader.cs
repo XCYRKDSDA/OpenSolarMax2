@@ -17,8 +17,10 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
     {
         foreach (var type in types.Reverse())
         {
-            if (type.FullName == typeName
-                || (!typeName.Contains('.') && type.FullName!.Split('.')[^1] == typeName))
+            if (
+                type.FullName == typeName
+                || (!typeName.Contains('.') && type.FullName!.Split('.')[^1] == typeName)
+            )
                 return type;
         }
 
@@ -30,18 +32,27 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
         // 获取成员类型
         var memberType = componentType;
         foreach (var part in memberPath.Split('.'))
-            memberType = memberType.GetField(part) is { } field ? field.FieldType :
-                         memberType.GetProperty(part) is { } property ? property.PropertyType :
-                         throw new KeyNotFoundException();
+            memberType =
+                memberType.GetField(part) is { } field ? field.FieldType
+                : memberType.GetProperty(part) is { } property ? property.PropertyType
+                : throw new KeyNotFoundException();
         return memberType;
     }
 
     private static readonly MethodInfo _componentGetter =
-        typeof(Arch.Core.Extensions.EntityExtensions).GetMethod("Get", 1, [typeof(Entity).MakeByRefType()])!;
+        typeof(Arch.Core.Extensions.EntityExtensions).GetMethod(
+            "Get",
+            1,
+            [typeof(Entity).MakeByRefType()]
+        )!;
 
     private static Delegate CompileGetter(Type componentType, Type memberType, string memberPath)
     {
-        var dynMethod = new DynamicMethod("GetMember", memberType, [typeof(Entity).MakeByRefType()]);
+        var dynMethod = new DynamicMethod(
+            "GetMember",
+            memberType,
+            [typeof(Entity).MakeByRefType()]
+        );
         var ilGenerator = dynMethod.GetILGenerator();
         var localVariablesCount = 0;
 
@@ -71,13 +82,18 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
         ilGenerator.Emit(OpCodes.Ldobj, memberType);
         ilGenerator.Emit(OpCodes.Ret);
 
-        return dynMethod.CreateDelegate(typeof(Getter<>).MakeGenericType(typeof(Entity), memberType));
+        return dynMethod.CreateDelegate(
+            typeof(Getter<>).MakeGenericType(typeof(Entity), memberType)
+        );
     }
 
     private static Delegate CompileSetter(Type componentType, Type memberType, string memberPath)
     {
-        var dynMethod =
-            new DynamicMethod("SetMember", null, [typeof(Entity).MakeByRefType(), memberType.MakeByRefType()]);
+        var dynMethod = new DynamicMethod(
+            "SetMember",
+            null,
+            [typeof(Entity).MakeByRefType(), memberType.MakeByRefType()]
+        );
         var ilGenerator = dynMethod.GetILGenerator();
         var variablesStack = new Stack<(LocalBuilder, LocalBuilder, PropertyInfo)>(); // 属性缓存、属性属于的对象的引用、属性信息
 
@@ -127,10 +143,13 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
         }
 
         ilGenerator.Emit(OpCodes.Ret);
-        return dynMethod.CreateDelegate(typeof(Setter<>).MakeGenericType(typeof(Entity), memberType));
+        return dynMethod.CreateDelegate(
+            typeof(Setter<>).MakeGenericType(typeof(Entity), memberType)
+        );
     }
 
-    private class DynamicProperty<ValueT>(Getter<ValueT> getter, Setter<ValueT> setter) : IProperty<Entity, ValueT>
+    private class DynamicProperty<ValueT>(Getter<ValueT> getter, Setter<ValueT> setter)
+        : IProperty<Entity, ValueT>
     {
         public ValueT Get(in Entity obj) => getter.Invoke(in obj);
 
@@ -150,8 +169,13 @@ internal class EntityAnimationClipLoader : AnimationClipLoaderBase<Entity>
         // 编译属性对象
         var getter = CompileGetter(componentType, memberType, memberPath);
         var setter = CompileSetter(componentType, memberType, memberPath);
-        var propertyInstance = (IProperty<Entity>)
-            Activator.CreateInstance(typeof(DynamicProperty<>).MakeGenericType(memberType), getter, setter)!;
+        var propertyInstance =
+            (IProperty<Entity>)
+                Activator.CreateInstance(
+                    typeof(DynamicProperty<>).MakeGenericType(memberType),
+                    getter,
+                    setter
+                )!;
 
         return (propertyInstance, memberType);
     }

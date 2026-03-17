@@ -8,13 +8,20 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(AnchoredShipsRegistry)), ReadCurr(typeof(ProductionAbility))]
+[
+    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(AnchoredShipsRegistry)),
+    ReadCurr(typeof(ProductionAbility))
+]
 [Write(typeof(ProductionCondition))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CheckProductionSystem(World world) : ICalcSystem
 {
-    private static bool CanProduce(in InParty.AsAffiliate asAffiliate, in AnchoredShipsRegistry shipsRegistry,
-                                   in ProductionAbility productable)
+    private static bool CanProduce(
+        in InParty.AsAffiliate asAffiliate,
+        in AnchoredShipsRegistry shipsRegistry,
+        in ProductionAbility productable
+    )
     {
         // 无所属阵营的不生产
         if (asAffiliate.Relationship is null)
@@ -31,7 +38,8 @@ public sealed partial class CheckProductionSystem(World world) : ICalcSystem
             return false;
 
         // 己方各星球单位总数量超过总容量的不生产
-        var populationRegistry = asAffiliate.Relationship!.Value.Copy.Party.Get<PartyPopulationRegistry>();
+        var populationRegistry =
+            asAffiliate.Relationship!.Value.Copy.Party.Get<PartyPopulationRegistry>();
         if (populationRegistry.CurrentPopulation >= populationRegistry.PopulationLimit)
             return false;
 
@@ -40,8 +48,12 @@ public sealed partial class CheckProductionSystem(World world) : ICalcSystem
 
     [Query]
     [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InParty.AsAffiliate>]
-    private static void CheckProduction(in InParty.AsAffiliate asAffiliate, in AnchoredShipsRegistry shipsRegistry,
-                                        in ProductionAbility productable, ref ProductionCondition productionCondition)
+    private static void CheckProduction(
+        in InParty.AsAffiliate asAffiliate,
+        in AnchoredShipsRegistry shipsRegistry,
+        in ProductionAbility productable,
+        ref ProductionCondition productionCondition
+    )
     {
         productionCondition.IsMet = CanProduce(in asAffiliate, in shipsRegistry, in productable);
     }

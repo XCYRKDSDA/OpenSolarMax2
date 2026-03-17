@@ -12,5 +12,5 @@ public partial struct TrailOf(Entity ship, Entity trail)
     [Participant]
     public Entity Trail = trail;
 
-    public readonly static TrailOf Empty = new(Entity.Null, Entity.Null);
+    public static readonly TrailOf Empty = new(Entity.Null, Entity.Null);
 }

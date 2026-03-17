@@ -51,7 +51,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
-    public MainMenuViewModel(SolarMax game, IProgress<float> progress) : base(game)
+    public MainMenuViewModel(SolarMax game, IProgress<float> progress)
+        : base(game)
     {
         progress.Report(0);
 
@@ -68,29 +69,42 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
         // 加载 默认、模组、编辑器 的预览。该步骤占 20%
 
         _items.Add("Editor");
-        _previews.Add(new FadableRichText(new RichTextLayout()
-        {
-            Text = "E  D  I  T  O  R",
-            Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
-        }));
+        _previews.Add(
+            new FadableRichText(
+                new RichTextLayout()
+                {
+                    Text = "E  D  I  T  O  R",
+                    Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                }
+            )
+        );
         _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 1 / 3f);
 
         _items.Add("Mods");
-        _previews.Add(new FadableRichText(new RichTextLayout()
-        {
-            Text = "M  O  D  S",
-            Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
-        }));
+        _previews.Add(
+            new FadableRichText(
+                new RichTextLayout()
+                {
+                    Text = "M  O  D  S",
+                    Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                }
+            )
+        );
         _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 2 / 3f);
 
         _items.Add("OS");
-        _previews.Add(new FadableRichText(new RichTextLayout()
-        {
-            Text = "O  P  E  N    S  O  L  A  R  M  A  X",
-            Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
-        }, new Smooth()));
+        _previews.Add(
+            new FadableRichText(
+                new RichTextLayout()
+                {
+                    Text = "O  P  E  N    S  O  L  A  R  M  A  X",
+                    Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                },
+                new Smooth()
+            )
+        );
         _backgrounds.Add(null);
         progress.Report(0.1f + 0.2f * 3 / 3f);
 
@@ -108,25 +122,41 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
             // TODO: 若未指定预览文件则加载缺省图片
 
             // 加载预览
-            using var previewStream = _levelModInfos[i].Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var previewStream = _levelModInfos[i]
+                .Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             var previewExtension = _levelModInfos[i].Preview!.ExtensionWithDot;
             IImage preview = previewExtension switch
             {
-                ".png" => new TextureRegion(Texture2D.FromStream(MyraEnvironment.GraphicsDevice, previewStream,
-                                                                 DefaultColorProcessors.PremultiplyAlpha)),
-                ".svg" => new SvgMyraImage(MyraEnvironment.GraphicsDevice,
-                                           SvgDocument.Open<SvgDocument>(previewStream)),
-                _ => throw new ArgumentOutOfRangeException(nameof(previewExtension))
+                ".png" => new TextureRegion(
+                    Texture2D.FromStream(
+                        MyraEnvironment.GraphicsDevice,
+                        previewStream,
+                        DefaultColorProcessors.PremultiplyAlpha
+                    )
+                ),
+                ".svg" => new SvgMyraImage(
+                    MyraEnvironment.GraphicsDevice,
+                    SvgDocument.Open<SvgDocument>(previewStream)
+                ),
+                _ => throw new ArgumentOutOfRangeException(nameof(previewExtension)),
             };
             _previews.Add(new FadableWrapper(preview));
 
             // 加载背景
             if (_levelModInfos[i].Background is { } backgroundFile)
             {
-                using var backgroundStream = backgroundFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-                _backgrounds.Add(Texture2D.FromStream(MyraEnvironment.GraphicsDevice,
-                                                      backgroundStream,
-                                                      DefaultColorProcessors.PremultiplyAlpha));
+                using var backgroundStream = backgroundFile.Open(
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                );
+                _backgrounds.Add(
+                    Texture2D.FromStream(
+                        MyraEnvironment.GraphicsDevice,
+                        backgroundStream,
+                        DefaultColorProcessors.PremultiplyAlpha
+                    )
+                );
             }
             else
                 _backgrounds.Add(null);
@@ -161,7 +191,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnSelectItem(int idx)
     {
-        if (idx < 3) return;
+        if (idx < 3)
+            return;
         var chaptersViewModel = new LevelsViewModel(_levelModInfos[idx - 3], Game, null);
         NavigateIn?.Invoke(this, chaptersViewModel);
     }

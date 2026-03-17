@@ -6,12 +6,16 @@ internal class SingleItemGroup<TKey, TItem>(TKey key, TItem item) : IGrouping<TK
 {
     public TKey Key => key;
 
-    public IEnumerator<TItem> GetEnumerator() { yield return item; }
+    public IEnumerator<TItem> GetEnumerator()
+    {
+        yield return item;
+    }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-internal class EnumerableGroup<TKey, TItem>(TKey key, IEnumerable<TItem> items) : IGrouping<TKey, TItem>
+internal class EnumerableGroup<TKey, TItem>(TKey key, IEnumerable<TItem> items)
+    : IGrouping<TKey, TItem>
 {
     public TKey Key => key;
 

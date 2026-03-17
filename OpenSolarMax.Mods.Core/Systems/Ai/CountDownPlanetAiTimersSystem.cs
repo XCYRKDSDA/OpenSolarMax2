@@ -36,8 +36,10 @@ public partial class CleanPlanetAiTimerEntry(World world) : ICalcSystem
         var timeLeft = aiTimers.TimeLeft;
         var keysToRemove = timeLeft.Keys.Where(k => !parties.Contains(k)).ToList();
         var keysToAdd = parties.Where(k => !timeLeft.ContainsKey(k)).ToList();
-        foreach (var key in keysToRemove) timeLeft.Remove(key);
-        foreach (var key in keysToAdd) timeLeft.Add(key, TimeSpan.Zero);
+        foreach (var key in keysToRemove)
+            timeLeft.Remove(key);
+        foreach (var key in keysToAdd)
+            timeLeft.Add(key, TimeSpan.Zero);
     }
 
     [Query]

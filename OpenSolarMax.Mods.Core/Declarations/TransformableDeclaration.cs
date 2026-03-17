@@ -21,18 +21,22 @@ public class TransformableDeclaration : IDeclaration<TransformableDeclaration>
         {
             Parent = @new.Parent ?? Parent,
             Position = @new.Position ?? Position,
-            Orbit = Orbit is not null && @new.Orbit is not null
-                        ? Orbit.Aggregate(@new.Orbit)
-                        : @new.Orbit ?? Orbit,
+            Orbit =
+                Orbit is not null && @new.Orbit is not null
+                    ? Orbit.Aggregate(@new.Orbit)
+                    : @new.Orbit ?? Orbit,
         };
     }
 }
 
 [Translate("transformable", ConceptNames.Transformable)]
-public class TransformableDeclarationTranslator : ITranslator<TransformableDeclaration, TransformableDescription>
+public class TransformableDeclarationTranslator
+    : ITranslator<TransformableDeclaration, TransformableDescription>
 {
-    public TransformableDescription ToDescription(TransformableDeclaration declaration,
-                                                  IReadOnlyDictionary<string, Entity> otherEntities)
+    public TransformableDescription ToDescription(
+        TransformableDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
         if (declaration.Parent is null)
         {
@@ -43,21 +47,28 @@ public class TransformableDeclarationTranslator : ITranslator<TransformableDecla
         }
         else if (declaration.Orbit is null)
         {
-            var transform = new RelativeTransformOptions() { Parent = otherEntities[declaration.Parent] };
+            var transform = new RelativeTransformOptions()
+            {
+                Parent = otherEntities[declaration.Parent],
+            };
             if (declaration.Position is { } position)
                 transform.Translation = TransformProjection.To3D(position);
             return new TransformableDescription() { Transform = transform };
         }
         else
         {
-            if (declaration.Parent is null || declaration.Orbit.Shape is null || declaration.Orbit.Period is null)
+            if (
+                declaration.Parent is null
+                || declaration.Orbit.Shape is null
+                || declaration.Orbit.Period is null
+            )
                 throw new NullReferenceException();
 
             var revolution = new RevolutionOptions()
             {
                 Parent = otherEntities[declaration.Parent],
                 Shape = new(declaration.Orbit.Shape.Value.X, declaration.Orbit.Shape.Value.Y),
-                Period = declaration.Orbit.Period.Value
+                Period = declaration.Orbit.Period.Value,
             };
 
             if (declaration.Orbit.Phase is not null)

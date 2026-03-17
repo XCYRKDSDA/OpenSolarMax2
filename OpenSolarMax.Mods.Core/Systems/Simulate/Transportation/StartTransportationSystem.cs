@@ -16,24 +16,39 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [ReadPrev(typeof(StartShippingRequest))]
-[ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild))]
-[ReadPrev(typeof(RevolutionOrbit)), ReadPrev(typeof(RevolutionState)), ReadPrev(typeof(PlanetGeostationaryOrbit))]
+[
+    ReadPrev(typeof(AnchoredShipsRegistry)),
+    ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild))
+]
+[
+    ReadPrev(typeof(RevolutionOrbit)),
+    ReadPrev(typeof(RevolutionState)),
+    ReadPrev(typeof(PlanetGeostationaryOrbit))
+]
 [ReadPrev(typeof(ReferenceSize)), ReadPrev(typeof(PartyReferenceColor))]
 [Write(typeof(TransportingStatus)), Write(typeof(PortalChargingJobs)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
-[ExecuteAfter(typeof(ProgressUnitsTransportationSystem)), ExecuteAfter(typeof(TransportUnitsSystem))]
+[
+    ExecuteAfter(typeof(ProgressUnitsTransportationSystem)),
+    ExecuteAfter(typeof(TransportUnitsSystem))
+]
 public sealed partial class StartTransportationSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<StartShippingRequest>]
-    private void StartTransporting(Entity requestEntity, in StartShippingRequest request,
-                                   [Data] CommandBuffer commandBuffer)
+    private void StartTransporting(
+        Entity requestEntity,
+        in StartShippingRequest request,
+        [Data] CommandBuffer commandBuffer
+    )
     {
-        Debug.Assert(requestEntity.WorldId == request.Departure.WorldId
-                     && requestEntity.WorldId == request.Destination.WorldId
-                     && requestEntity.WorldId == request.Party.WorldId);
+        Debug.Assert(
+            requestEntity.WorldId == request.Departure.WorldId
+                && requestEntity.WorldId == request.Destination.WorldId
+                && requestEntity.WorldId == request.Party.WorldId
+        );
 
         if (!request.Departure.Has<PortalChargingJobs>())
             return;
@@ -51,17 +66,21 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
                 ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
             ref readonly var revolutionOrbit = ref transformRelationship.Get<RevolutionOrbit>();
             ref readonly var revolutionState = ref transformRelationship.Get<RevolutionState>();
-            ref readonly var departurePlanetOrbit = ref request.Departure.Get<PlanetGeostationaryOrbit>();
-            ref readonly var destinationPlanetOrbit = ref request.Destination.Get<PlanetGeostationaryOrbit>();
+            ref readonly var departurePlanetOrbit =
+                ref request.Departure.Get<PlanetGeostationaryOrbit>();
+            ref readonly var destinationPlanetOrbit =
+                ref request.Destination.Get<PlanetGeostationaryOrbit>();
 
             // 计算泊入轨道
             var orbitOffset = revolutionOrbit.Shape.X / 2 / departurePlanetOrbit.Radius;
             var expectedOrbit = new RevolutionOrbit()
             {
                 Rotation = destinationPlanetOrbit.Rotation,
-                Shape = new(destinationPlanetOrbit.Radius * orbitOffset * 2,
-                            destinationPlanetOrbit.Radius * orbitOffset * 2),
-                Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f)
+                Shape = new(
+                    destinationPlanetOrbit.Radius * orbitOffset * 2,
+                    destinationPlanetOrbit.Radius * orbitOffset * 2
+                ),
+                Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f),
             };
 
             ref var transportingStatus = ref ship.Get<TransportingStatus>();
@@ -70,18 +89,22 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
             {
                 DestinationPlanet = request.Destination,
                 ExpectedRevolutionOrbit = expectedOrbit,
-                ExpectedRevolutionState = revolutionState
+                ExpectedRevolutionState = revolutionState,
             };
             transportingStatus.PreTransportation = new() { ElapsedTime = TimeSpan.Zero };
         }
 
         // 创建传送门特效
-        factory.Make(world, commandBuffer, new PortalChargingEffectDescription()
-        {
-            Portal = request.Departure,
-            PortalRadius = request.Departure.Get<ReferenceSize>().Radius,
-            Color = request.Party.Get<PartyReferenceColor>().Value
-        });
+        factory.Make(
+            world,
+            commandBuffer,
+            new PortalChargingEffectDescription()
+            {
+                Portal = request.Departure,
+                PortalRadius = request.Departure.Get<ReferenceSize>().Radius,
+                Color = request.Party.Get<PartyReferenceColor>().Value,
+            }
+        );
     }
 
     public void Update(CommandBuffer commandBuffer) => StartTransportingQuery(world, commandBuffer);

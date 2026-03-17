@@ -16,7 +16,7 @@ internal class SystemTypeCollection
     public HashSet<Type> Render { get; set; } = [];
 
     public ImmutableSystemTypeCollection ToImmutableSystemTypeCollection() =>
-        new([..Input], [..Ai], [..Simulate], [..Render]);
+        new([.. Input], [.. Ai], [.. Simulate], [.. Render]);
 }
 
 /// <summary>

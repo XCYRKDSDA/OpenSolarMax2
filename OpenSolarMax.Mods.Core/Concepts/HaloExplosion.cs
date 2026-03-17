@@ -18,16 +18,17 @@ public static partial class ConceptNames
 [Define(ConceptNames.HaloExplosion)]
 public abstract class HaloExplosionDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        // 效果
-        typeof(Sprite),
-        typeof(SoundEffect),
-        // 动画
-        typeof(Animation),
-        typeof(ExpireAfterAnimationAndSoundEffectCompleted)
-    );
+    public static Signature Signature { get; } =
+        new(
+            // 位姿变换
+            typeof(AbsoluteTransform),
+            // 效果
+            typeof(Sprite),
+            typeof(SoundEffect),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
+        );
 }
 
 [Describe(ConceptNames.HaloExplosion)]
@@ -43,37 +44,50 @@ public class HaloExplosionDescription : IDescription
 [Apply(ConceptNames.HaloExplosion)]
 public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosionDescription>
 {
-    private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>("Textures/Halo.json:Halo");
+    private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>(
+        "Textures/Halo.json:Halo"
+    );
 
-    private readonly AnimationClip<Entity> _explosionAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/HaloExplosion.json");
+    private readonly AnimationClip<Entity> _explosionAnimation = assets.Load<AnimationClip<Entity>>(
+        "Animations/HaloExplosion.json"
+    );
 
-    private FmodEventDescription _colonizedSoundEvent =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
+    private FmodEventDescription _colonizedSoundEvent = assets.Load<FmodEventDescription>(
+        "Sounds/Master.bank:/PlanetColonized"
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, HaloExplosionDescription desc)
     {
         // 摆放位置
-        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position with { Z = 1000 } });
+        commandBuffer.Set(
+            in entity,
+            new AbsoluteTransform { Translation = desc.Position with { Z = 1000 } }
+        );
 
         // 设置纹理
-        commandBuffer.Set(in entity, new Sprite
-        {
-            Texture = _haloTexture,
-            Color = desc.Color,
-            Alpha = 1,
-            Size = new(desc.PlanetRadius * 2),
-            Scale = Vector2.One,
-            Blend = SpriteBlend.Additive
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _haloTexture,
+                Color = desc.Color,
+                Alpha = 1,
+                Size = new(desc.PlanetRadius * 2),
+                Scale = Vector2.One,
+                Blend = SpriteBlend.Additive,
+            }
+        );
 
         // 设置动画
-        commandBuffer.Set(in entity, new Animation
-        {
-            Clip = _explosionAnimation,
-            TimeElapsed = TimeSpan.Zero,
-            TimeOffset = TimeSpan.Zero
-        });
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                Clip = _explosionAnimation,
+                TimeElapsed = TimeSpan.Zero,
+                TimeOffset = TimeSpan.Zero,
+            }
+        );
 
         // 设置音效
         _colonizedSoundEvent.createInstance(out var eventInstance);

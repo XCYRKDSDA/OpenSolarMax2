@@ -5,8 +5,10 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class ModLoadContext(FileEntry file, IReadOnlyDictionary<string, Assembly> sharedAssemblies)
-    : AssemblyLoadContext
+internal class ModLoadContext(
+    FileEntry file,
+    IReadOnlyDictionary<string, Assembly> sharedAssemblies
+) : AssemblyLoadContext
 {
     private static string GetPhysicalPath(FileEntry fileEntry)
     {

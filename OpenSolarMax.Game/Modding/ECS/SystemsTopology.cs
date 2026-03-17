@@ -6,8 +6,11 @@ namespace OpenSolarMax.Game.Modding.ECS;
 
 internal static class SystemsTopology
 {
-    private static void RecordReadWriteAttribute<T>(Type systemType, Dictionary<Type, HashSet<Type>> record,
-                                                    HashSet<Type> alls)
+    private static void RecordReadWriteAttribute<T>(
+        Type systemType,
+        Dictionary<Type, HashSet<Type>> record,
+        HashSet<Type> alls
+    )
         where T : Attribute, IReadWriteAttribute
     {
         foreach (var attribute in systemType.GetCustomAttributes<T>())
@@ -44,7 +47,9 @@ internal static class SystemsTopology
             foreach (var executeAfterAttribute in executeAfterAttributes)
             {
                 if (systemTypes.Contains(executeAfterAttribute.TheOther))
-                    explicitOrders.Add(new OrderedTypePair(executeAfterAttribute.TheOther, systemType));
+                    explicitOrders.Add(
+                        new OrderedTypePair(executeAfterAttribute.TheOther, systemType)
+                    );
             }
 
             // 检查 ExecuteBefore 属性
@@ -52,16 +57,22 @@ internal static class SystemsTopology
             foreach (var executeBeforeAttribute in executeBeforeAttributes)
             {
                 if (systemTypes.Contains(executeBeforeAttribute.TheOther))
-                    explicitOrders.Add(new OrderedTypePair(systemType, executeBeforeAttribute.TheOther));
+                    explicitOrders.Add(
+                        new OrderedTypePair(systemType, executeBeforeAttribute.TheOther)
+                    );
             }
 
             // 检查 FineWith 属性
             var fineWithAttributes = systemType.GetCustomAttributes<FineWithAttribute>();
             foreach (var fineWithAttribute in fineWithAttributes)
-                explicitFinePairs.Add(new UnorderedTypePair(systemType, fineWithAttribute.TheOther));
+                explicitFinePairs.Add(
+                    new UnorderedTypePair(systemType, fineWithAttribute.TheOther)
+                );
 
             // 检查 Priority 属性
-            var priorityAttribute = systemType.GetCustomAttributes<PriorityAttribute>().FirstOrDefault();
+            var priorityAttribute = systemType
+                .GetCustomAttributes<PriorityAttribute>()
+                .FirstOrDefault();
             if (priorityAttribute is not null)
             {
                 if (priorityGroups.TryGetValue(priorityAttribute.Value, out var group))
@@ -73,11 +84,18 @@ internal static class SystemsTopology
         }
 
         // 检测同一对系统是否有多个相互矛盾的显式关系
-        foreach (var group in explicitOrders.ToLookup(p => new UnorderedTypePair(p.Before, p.After), p => p))
+        foreach (
+            var group in explicitOrders.ToLookup(
+                p => new UnorderedTypePair(p.Before, p.After),
+                p => p
+            )
+        )
         {
             if (group.Count() > 1 || explicitFinePairs.Contains(group.Key))
-                throw new Exception("Conflicted explicit execution order" +
-                                    $"between {group.Key.Sys1} and {group.Key.Sys2}");
+                throw new Exception(
+                    "Conflicted explicit execution order"
+                        + $"between {group.Key.Sys1} and {group.Key.Sys2}"
+                );
         }
 
         // 检测同一个系统是否位于多个优先级
@@ -88,7 +106,8 @@ internal static class SystemsTopology
         {
             foreach (var (priority2, group2) in priorityGroups.Reverse()) // 从大到小
             {
-                if (priority2 <= priority1) break; // 当访问到第一个比自己优先级相同或低的就结束遍历
+                if (priority2 <= priority1)
+                    break; // 当访问到第一个比自己优先级相同或低的就结束遍历
 
                 explicitOrders.UnionWith(
                     from sys1 in group1
@@ -99,10 +118,17 @@ internal static class SystemsTopology
         }
 
         // 检查显式关系有无自相矛盾
-        foreach (var group in explicitOrders.ToLookup(p => new UnorderedTypePair(p.Before, p.After), p => p))
+        foreach (
+            var group in explicitOrders.ToLookup(
+                p => new UnorderedTypePair(p.Before, p.After),
+                p => p
+            )
+        )
         {
             if (group.Count() > 1)
-                throw new Exception($"Conflicted strong execution order between {group.Key.Sys1} and {group.Key.Sys2}");
+                throw new Exception(
+                    $"Conflicted strong execution order between {group.Key.Sys1} and {group.Key.Sys2}"
+                );
         }
 
         #endregion
@@ -129,38 +155,53 @@ internal static class SystemsTopology
             // 检查单个系统所有属性是否满足规则：
 
             // > 禁止同时 Read/Write 同一个组件
-            if (Enumerable.Concat(systemType.GetCustomAttributes<ReadPrevAttribute>().Select(a => a.Type),
-                                  systemType.GetCustomAttributes<ReadCurrAttribute>().Select(a => a.Type))
-                          .Intersect(systemType.GetCustomAttributes<WriteAttribute>().Select(a => a.Type))
-                          .Any())
+            if (
+                Enumerable
+                    .Concat(
+                        systemType.GetCustomAttributes<ReadPrevAttribute>().Select(a => a.Type),
+                        systemType.GetCustomAttributes<ReadCurrAttribute>().Select(a => a.Type)
+                    )
+                    .Intersect(systemType.GetCustomAttributes<WriteAttribute>().Select(a => a.Type))
+                    .Any()
+            )
                 throw new Exception("A system shall not read and write the same component!");
 
             // > 有且只有一个执行阶段属性
-            if (systemType.GetCustomAttributes<BeforeStructuralChangesAttribute>().Count() +
-                systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Count() +
-                systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Count() != 1)
+            if (
+                systemType.GetCustomAttributes<BeforeStructuralChangesAttribute>().Count()
+                    + systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Count()
+                    + systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Count()
+                != 1
+            )
                 throw new Exception("A system shall belong to exactly one stage!");
 
-            if (systemType.GetCustomAttributes<BeforeStructuralChangesAttribute>().Any())
-            { }
-            else if (systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any())
-            { }
+            if (systemType.GetCustomAttributes<BeforeStructuralChangesAttribute>().Any()) { }
+            else if (systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any()) { }
             else if (systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Any())
             {
                 // 结构化变更之后的系统禁止产生结构化变更
                 if (systemType.GetCustomAttributes<ChangeStructureAttribute>().Any())
-                    throw new Exception("A after-structural-changes system shall not make structural changes!");
+                    throw new Exception(
+                        "A after-structural-changes system shall not make structural changes!"
+                    );
             }
 
             // 检查属性和接口是否匹配
 
             // > 声明了结构化变更的系统必须继承 IXxxSystemWithStructuralChanges；反之亦然
-            if (systemType.GetCustomAttributes<ChangeStructureAttribute>().Any() ^
-                systemType.GetInterfaces().Intersect([
-                    typeof(ITickSystemWithStructuralChanges), typeof(ICalcSystemWithStructuralChanges)
-                ]).Any())
+            if (
+                systemType.GetCustomAttributes<ChangeStructureAttribute>().Any()
+                ^ systemType
+                    .GetInterfaces()
+                    .Intersect([
+                        typeof(ITickSystemWithStructuralChanges),
+                        typeof(ICalcSystemWithStructuralChanges),
+                    ])
+                    .Any()
+            )
                 throw new Exception(
-                    "A system declaring structural changes must implement IXxxSystemWithStructuralChanges, and vice versa!");
+                    "A system declaring structural changes must implement IXxxSystemWithStructuralChanges, and vice versa!"
+                );
 
             // > 检查系统阶段是否与接口匹配
             HashSet<Type> expectedInterfaces;
@@ -168,24 +209,49 @@ internal static class SystemsTopology
             {
                 expectedInterfaces =
                 [
-                    typeof(ITickSystem), typeof(ITickSystemWithStructuralChanges),
-                    typeof(ICalcSystem), typeof(ICalcSystemWithStructuralChanges)
+                    typeof(ITickSystem),
+                    typeof(ITickSystemWithStructuralChanges),
+                    typeof(ICalcSystem),
+                    typeof(ICalcSystemWithStructuralChanges),
                 ];
             }
-            else if (systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any() ||
-                     systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Any())
-                expectedInterfaces = [typeof(ICalcSystem), typeof(ICalcSystemWithStructuralChanges)];
+            else if (
+                systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any()
+                || systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Any()
+            )
+                expectedInterfaces =
+                [
+                    typeof(ICalcSystem),
+                    typeof(ICalcSystemWithStructuralChanges),
+                ];
             else
                 throw new Exception("HOW???");
             if (systemType.GetInterfaces().Intersect(expectedInterfaces).Count() != 1)
                 throw new Exception(
-                    $"{systemType} shall implement exactly one interface among: {expectedInterfaces}");
+                    $"{systemType} shall implement exactly one interface among: {expectedInterfaces}"
+                );
 
             // 记录属性
-            RecordReadWriteAttribute<ReadPrevAttribute>(systemType, prevComponentsReaders, allPrevComponentsReaders);
-            RecordReadWriteAttribute<ReadCurrAttribute>(systemType, newComponentsReaders, allNewComponentsReaders);
-            RecordReadWriteAttribute<IterateAttribute>(systemType, componentsIterators, allComponentsIterators);
-            RecordReadWriteAttribute<WriteAttribute>(systemType, componentsWriters, allComponentsWriters);
+            RecordReadWriteAttribute<ReadPrevAttribute>(
+                systemType,
+                prevComponentsReaders,
+                allPrevComponentsReaders
+            );
+            RecordReadWriteAttribute<ReadCurrAttribute>(
+                systemType,
+                newComponentsReaders,
+                allNewComponentsReaders
+            );
+            RecordReadWriteAttribute<IterateAttribute>(
+                systemType,
+                componentsIterators,
+                allComponentsIterators
+            );
+            RecordReadWriteAttribute<WriteAttribute>(
+                systemType,
+                componentsWriters,
+                allComponentsWriters
+            );
 
             // 记录系统阶段
             if (systemType.GetCustomAttributes<BeforeStructuralChangesAttribute>().Any())
@@ -197,13 +263,19 @@ internal static class SystemsTopology
         }
 
         // 将任意组件读写系统并入其他关系
-        foreach (var (_, readers) in prevComponentsReaders) readers.UnionWith(allPrevComponentsReaders);
-        foreach (var (_, readers) in newComponentsReaders) readers.UnionWith(allNewComponentsReaders);
+        foreach (var (_, readers) in prevComponentsReaders)
+            readers.UnionWith(allPrevComponentsReaders);
+        foreach (var (_, readers) in newComponentsReaders)
+            readers.UnionWith(allNewComponentsReaders);
 
-        var componentsEditors =
-            componentsWriters.Concat(componentsIterators).GroupBy(p => p.Key)
-                             .Select(g => new KeyValuePair<Type, HashSet<Type>>(
-                                         g.Key, g.SelectMany(p => p.Value).ToHashSet())).ToDictionary();
+        var componentsEditors = componentsWriters
+            .Concat(componentsIterators)
+            .GroupBy(p => p.Key)
+            .Select(g => new KeyValuePair<Type, HashSet<Type>>(
+                g.Key,
+                g.SelectMany(p => p.Value).ToHashSet()
+            ))
+            .ToDictionary();
         var allComponentsEditors = allComponentsWriters.Union(allComponentsIterators).ToHashSet();
 
         foreach (var (_, editors) in componentsEditors)
@@ -214,13 +286,20 @@ internal static class SystemsTopology
         foreach (var (_, editors) in componentsEditors.Where(p => p.Value.Count >= 1))
         {
             // 多个 Writer 或 Iterator 之间必须两两显式声明执行顺序先后或者无关
-            foreach (var (editor1, editor2) in
-                     from w1 in editors from w2 in editors.Where(w => w != w1) select (w1, w2)) // TODO: 有重复
+            foreach (
+                var (editor1, editor2) in from w1 in editors
+                from w2 in editors.Where(w => w != w1)
+                select (w1, w2)
+            ) // TODO: 有重复
             {
-                if (!explicitOrders.Contains(new OrderedTypePair(editor1, editor2)) &&
-                    !explicitOrders.Contains(new OrderedTypePair(editor2, editor1)) &&
-                    !explicitFinePairs.Contains(new UnorderedTypePair(editor1, editor2)))
-                    throw new Exception("Multiple writers of one component must explicitly declare pairwise order!");
+                if (
+                    !explicitOrders.Contains(new OrderedTypePair(editor1, editor2))
+                    && !explicitOrders.Contains(new OrderedTypePair(editor2, editor1))
+                    && !explicitFinePairs.Contains(new UnorderedTypePair(editor1, editor2))
+                )
+                    throw new Exception(
+                        "Multiple writers of one component must explicitly declare pairwise order!"
+                    );
             }
         }
 
@@ -230,7 +309,8 @@ internal static class SystemsTopology
         // ReadPrev 在所有 Write 和 Iterate 之前执行
         foreach (var (componentType, readers) in prevComponentsReaders)
         {
-            if (!componentsEditors.TryGetValue(componentType, out var editors)) continue;
+            if (!componentsEditors.TryGetValue(componentType, out var editors))
+                continue;
 
             readWriteOrders.UnionWith(
                 from reader in readers
@@ -242,7 +322,8 @@ internal static class SystemsTopology
         // ReadNew 在所有 Write 和 Iterate 之后执行
         foreach (var (componentType, readers) in newComponentsReaders)
         {
-            if (!componentsEditors.TryGetValue(componentType, out var editors)) continue;
+            if (!componentsEditors.TryGetValue(componentType, out var editors))
+                continue;
 
             readWriteOrders.UnionWith(
                 from reader in readers
@@ -274,8 +355,11 @@ internal static class SystemsTopology
         var finalOrders = explicitOrders.ToHashSet();
 
         // 添加所有组件读写关系。若组件读写关系与显式顺序冲突，以显式顺序为准；但是若组件读写顺序与结构化变更顺序冲突，需要暴露
-        finalOrders.UnionWith(readWriteOrders.Where(p => !explicitOrders.Contains(p.Reverse()) &&
-                                                         !explicitFinePairs.Contains(p.Unorder())));
+        finalOrders.UnionWith(
+            readWriteOrders.Where(p =>
+                !explicitOrders.Contains(p.Reverse()) && !explicitFinePairs.Contains(p.Unorder())
+            )
+        );
 
         // 构建 graphviz 文本
         var dotsBuilder = new StringBuilder();
@@ -317,8 +401,10 @@ internal static class SystemsTopology
     /// </summary>
     /// <param name="systemTypes">所有参与排序的系统类型</param>
     /// <param name="orders">一个集合，记录了所有代码中声明了的执行顺序关系</param>
-    public static List<Type> TopologicalSortSystems(IReadOnlySet<Type> systemTypes,
-                                                    IReadOnlySet<OrderedTypePair> orders)
+    public static List<Type> TopologicalSortSystems(
+        IReadOnlySet<Type> systemTypes,
+        IReadOnlySet<OrderedTypePair> orders
+    )
     {
         // 要求 graph 反向。然后从反向开始排序，优先排普通系统，
         // 直到无法排入普通系统。此时剩下的所有系统就是最小的循环集合。
@@ -334,7 +420,10 @@ internal static class SystemsTopology
         // 拓扑排序
         while (graph.Count > 0)
         {
-            var okSystemTypes = graph.Where(pair => pair.Value.Count == 0).Select(pair => pair.Key).ToList();
+            var okSystemTypes = graph
+                .Where(pair => pair.Value.Count == 0)
+                .Select(pair => pair.Key)
+                .ToList();
 
             if (okSystemTypes.Count == 0)
                 throw new ArgumentException("Cyclic connections are not allowed");

@@ -15,11 +15,12 @@ public static partial class ConceptNames
 [Define(ConceptNames.Transformable)]
 public abstract class TransformableDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(AbsoluteTransform),
-        typeof(TreeRelationship<RelativeTransform>.AsChild),
-        typeof(TreeRelationship<RelativeTransform>.AsParent)
-    );
+    public static Signature Signature { get; } =
+        new(
+            typeof(AbsoluteTransform),
+            typeof(TreeRelationship<RelativeTransform>.AsChild),
+            typeof(TreeRelationship<RelativeTransform>.AsParent)
+        );
 }
 
 public record AbsoluteTransformOptions
@@ -69,7 +70,11 @@ public record RevolutionOptions
 [Describe(ConceptNames.Transformable)]
 public class TransformableDescription : IDescription
 {
-    public required OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; }
+    public required OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; }
 }
 
 [Apply(ConceptNames.Transformable)]
@@ -80,30 +85,39 @@ public class TransformableApplier(IConceptFactory factory) : IApplier<Transforma
         var world = World.Worlds[entity.WorldId];
 
         desc.Transform.Switch(
-            transform => commandBuffer.Set(
-                in entity, new AbsoluteTransform(transform.Translation, transform.Rotation)
-            ),
+            transform =>
+                commandBuffer.Set(
+                    in entity,
+                    new AbsoluteTransform(transform.Translation, transform.Rotation)
+                ),
             transform =>
                 _ = factory.Make(
-                    world, commandBuffer, ConceptNames.RelativeTransform,
+                    world,
+                    commandBuffer,
+                    ConceptNames.RelativeTransform,
                     new RelativeTransformDescription()
                     {
                         Parent = transform.Parent,
                         Child = entity,
                         Translation = transform.Translation,
-                        Rotation = transform.Rotation
-                    }),
+                        Rotation = transform.Rotation,
+                    }
+                ),
             revolution =>
                 _ = factory.Make(
-                    world, commandBuffer, ConceptNames.Revolution, new RevolutionDescription()
+                    world,
+                    commandBuffer,
+                    ConceptNames.Revolution,
+                    new RevolutionDescription()
                     {
                         Parent = revolution.Parent,
                         Child = entity,
                         Shape = revolution.Shape,
                         Period = revolution.Period,
                         Rotation = revolution.Rotation,
-                        InitPhase = revolution.InitPhase
-                    })
+                        InitPhase = revolution.InitPhase,
+                    }
+                )
         );
     }
 }

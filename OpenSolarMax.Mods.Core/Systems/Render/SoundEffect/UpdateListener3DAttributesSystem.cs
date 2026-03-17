@@ -3,8 +3,8 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using FmodSystem = FMOD.Studio.System;
 using Fmod3DAttributes = FMOD.ATTRIBUTES_3D;
+using FmodSystem = FMOD.Studio.System;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -21,20 +21,41 @@ public sealed partial class UpdateListener3DAttributesSystem(World world) : ICal
 
     [Query]
     [All<FmodSystem, AbsoluteTransform, Camera>]
-    private static void SetHearer3DAttributes(ref FmodSystem fmodSystem, in AbsoluteTransform transform,
-                                              in Camera camera)
+    private static void SetHearer3DAttributes(
+        ref FmodSystem fmodSystem,
+        in AbsoluteTransform transform,
+        in Camera camera
+    )
     {
-        fmodSystem.setListenerAttributes(0, new Fmod3DAttributes()
-        {
-            forward = { x = 0, y = 0, z = 1 },
-            position =
+        fmodSystem.setListenerAttributes(
+            0,
+            new Fmod3DAttributes()
             {
-                x = transform.Translation.X,
-                y = transform.Translation.Y,
-                z = camera.Width / 2 / 1.7320508f,
-            },
-            up = { x = 0, y = 1, z = 0 },
-            velocity = { x = 0, y = 0, z = 0 },
-        });
+                forward =
+                {
+                    x = 0,
+                    y = 0,
+                    z = 1,
+                },
+                position =
+                {
+                    x = transform.Translation.X,
+                    y = transform.Translation.Y,
+                    z = camera.Width / 2 / 1.7320508f,
+                },
+                up =
+                {
+                    x = 0,
+                    y = 1,
+                    z = 0,
+                },
+                velocity =
+                {
+                    x = 0,
+                    y = 0,
+                    z = 0,
+                },
+            }
+        );
     }
 }

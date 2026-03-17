@@ -3,14 +3,12 @@ using Microsoft.CodeAnalysis;
 namespace OpenSolarMax.Mods.Core.SourceGenerators;
 
 /// <summary>
-/// 
+///
 /// </summary>
 /// <param name="exclusive">该成员是否只能参与一个关系</param>
 /// <param name="theOther">在该成员的索引组件中，使用关系中的哪个成员协助索引</param>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-public class ParticipantAttribute(
-    bool exclusive = true, string? theOther = null
-) : Attribute
+public class ParticipantAttribute(bool exclusive = true, string? theOther = null) : Attribute
 {
     public bool Exclusive => exclusive;
     public string? TheOther => theOther;
@@ -28,9 +26,14 @@ public class ParticipantAttribute(
 
             switch (i)
             {
-                case 0: exclusive = (bool)arg.Value!; break;
-                case 1: theOther = (string?)arg.Value; break;
-                default: return null;
+                case 0:
+                    exclusive = (bool)arg.Value!;
+                    break;
+                case 1:
+                    theOther = (string?)arg.Value;
+                    break;
+                default:
+                    return null;
             }
         }
 
@@ -41,9 +44,14 @@ public class ParticipantAttribute(
 
             switch (name)
             {
-                case "exclusive": exclusive = (bool)arg.Value!; break;
-                case "theOther": theOther = (string?)arg.Value; break;
-                default: return null;
+                case "exclusive":
+                    exclusive = (bool)arg.Value!;
+                    break;
+                case "theOther":
+                    theOther = (string?)arg.Value;
+                    break;
+                default:
+                    return null;
             }
         }
 

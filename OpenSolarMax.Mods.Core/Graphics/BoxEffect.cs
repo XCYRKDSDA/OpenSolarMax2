@@ -9,7 +9,8 @@ internal class BoxEffect : Effect, IEffectMatrices
 
     private readonly EffectParameter _toNdcParam;
 
-    private readonly EffectParameter _originParam, _sizeParam;
+    private readonly EffectParameter _originParam,
+        _sizeParam;
     private readonly EffectParameter _thicknessParam;
 
     #endregion
@@ -20,7 +21,8 @@ internal class BoxEffect : Effect, IEffectMatrices
     private Matrix _view = Matrix.Identity;
     private Matrix _proj = Matrix.Identity;
 
-    private Vector2 _origin = Vector2.Zero, _size = Vector2.Zero;
+    private Vector2 _origin = Vector2.Zero,
+        _size = Vector2.Zero;
     private float _thickness = 0;
 
     [Flags]
@@ -30,7 +32,7 @@ internal class BoxEffect : Effect, IEffectMatrices
         WorldViewProj = 1 << 1,
         Shape = 1 << 2,
         Thickness = 1 << 3,
-        All = -1
+        All = -1,
     }
 
     private DirtyFlags _dirtyFlags = DirtyFlags.All;
@@ -112,7 +114,8 @@ internal class BoxEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public BoxEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.BoxEffect.Bytecode)
+    public BoxEffect(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice, EffectResource.BoxEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _originParam = Parameters["origin"];

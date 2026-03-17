@@ -7,5 +7,6 @@ public interface IFadableImage : IImage
 {
     void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn);
 
-    void IBrush.Draw(RenderContext context, Rectangle dest, Color color) => Draw(context, dest, color, 1);
+    void IBrush.Draw(RenderContext context, Rectangle dest, Color color) =>
+        Draw(context, dest, color, 1);
 }

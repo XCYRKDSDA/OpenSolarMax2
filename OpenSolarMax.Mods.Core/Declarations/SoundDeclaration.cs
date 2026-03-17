@@ -22,9 +22,10 @@ public class SoundDeclaration : IDeclaration<SoundDeclaration>
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
-            Orbit = Orbit is not null && newCfg.Orbit is not null
-                        ? Orbit.Aggregate(newCfg.Orbit)
-                        : newCfg.Orbit ?? Orbit,
+            Orbit =
+                Orbit is not null && newCfg.Orbit is not null
+                    ? Orbit.Aggregate(newCfg.Orbit)
+                    : newCfg.Orbit ?? Orbit,
             Sound = newCfg.Sound ?? Sound,
         };
     }
@@ -35,18 +36,22 @@ public class SoundDeclarationTranslator : ITranslator<SoundDeclaration, SimpleSo
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public SimpleSoundDescription ToDescription(SoundDeclaration declaration,
-                                                IReadOnlyDictionary<string, Entity> otherEntities)
+    public SimpleSoundDescription ToDescription(
+        SoundDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
-        if (string.IsNullOrEmpty(declaration.Sound)) throw new NullReferenceException();
+        if (string.IsNullOrEmpty(declaration.Sound))
+            throw new NullReferenceException();
 
-        var desc = new SimpleSoundDescription()
-        {
-            SoundEffect = declaration.Sound,
-        };
+        var desc = new SimpleSoundDescription() { SoundEffect = declaration.Sound };
 
         var tfCfg = new TransformableDeclaration()
-            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 

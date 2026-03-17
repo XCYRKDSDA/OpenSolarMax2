@@ -19,13 +19,19 @@ public class SvgMyraImage : IImage
 
     private Texture2D Render(int logScale)
     {
-        var bitmap = _doc.Draw((int)(_doc.ViewBox.Width * (2 << logScale)),
-                               (int)(_doc.ViewBox.Height * (2 << logScale)));
+        var bitmap = _doc.Draw(
+            (int)(_doc.ViewBox.Width * (2 << logScale)),
+            (int)(_doc.ViewBox.Height * (2 << logScale))
+        );
 
         using var stream = new MemoryStream();
         bitmap.Save(stream, ImageFormat.Png);
         stream.Seek(0, SeekOrigin.Begin);
-        return Texture2D.FromStream(_graphicsDevice, stream, DefaultColorProcessors.PremultiplyAlpha);
+        return Texture2D.FromStream(
+            _graphicsDevice,
+            stream,
+            DefaultColorProcessors.PremultiplyAlpha
+        );
     }
 
     public SvgMyraImage(GraphicsDevice graphicsDevice, SvgDocument doc)
@@ -34,9 +40,16 @@ public class SvgMyraImage : IImage
         _doc = doc;
 
         // 尺寸设置为等比例的无限大，以尽可能放大图片
-        Size = doc.ViewBox.Width < doc.ViewBox.Height
-                   ? new Point((int)(int.MaxValue * doc.ViewBox.Width / doc.ViewBox.Height), int.MaxValue)
-                   : new Point(int.MaxValue, (int)(int.MaxValue * doc.ViewBox.Height / doc.ViewBox.Width));
+        Size =
+            doc.ViewBox.Width < doc.ViewBox.Height
+                ? new Point(
+                    (int)(int.MaxValue * doc.ViewBox.Width / doc.ViewBox.Height),
+                    int.MaxValue
+                )
+                : new Point(
+                    int.MaxValue,
+                    (int)(int.MaxValue * doc.ViewBox.Height / doc.ViewBox.Width)
+                );
 
         // 绘制默认大小作为首个缓存
         _cache.Add(0, Render(0));

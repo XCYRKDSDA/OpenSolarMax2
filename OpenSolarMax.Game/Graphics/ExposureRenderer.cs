@@ -30,7 +30,15 @@ internal class ExposureRenderer(GraphicsDevice graphicsDevice)
         foreach (var pass in Effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
+            GraphicsDevice.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleStrip,
+                _vertices,
+                0,
+                4,
+                _indices,
+                0,
+                2
+            );
         }
     }
 }

@@ -27,12 +27,13 @@ public class ViewDeclaration : IDeclaration<ViewDeclaration>
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
-            Orbit = Orbit is not null && newCfg.Orbit is not null
-                        ? Orbit.Aggregate(newCfg.Orbit)
-                        : newCfg.Orbit ?? Orbit,
+            Orbit =
+                Orbit is not null && newCfg.Orbit is not null
+                    ? Orbit.Aggregate(newCfg.Orbit)
+                    : newCfg.Orbit ?? Orbit,
             Size = newCfg.Size ?? Size,
             Depth = newCfg.Depth ?? Depth,
-            Party = newCfg.Party ?? Party
+            Party = newCfg.Party ?? Party,
         };
     }
 }
@@ -42,18 +43,22 @@ public class ViewDeclarationTranslator : ITranslator<ViewDeclaration, ViewDescri
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public ViewDescription ToDescription(ViewDeclaration declaration,
-                                         IReadOnlyDictionary<string, Entity> otherEntities)
+    public ViewDescription ToDescription(
+        ViewDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
-        if (declaration.Party is null) throw new NullReferenceException();
+        if (declaration.Party is null)
+            throw new NullReferenceException();
 
-        var desc = new ViewDescription()
-        {
-            Party = otherEntities[declaration.Party],
-        };
+        var desc = new ViewDescription() { Party = otherEntities[declaration.Party] };
 
         var tfCfg = new TransformableDeclaration()
-            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
@@ -71,13 +76,19 @@ public class ViewPreviewDeclarationTranslator : ITranslator<ViewDeclaration, Vie
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public ViewPreviewDescription ToDescription(ViewDeclaration declaration,
-                                                IReadOnlyDictionary<string, Entity> otherEntities)
+    public ViewPreviewDescription ToDescription(
+        ViewDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
         var desc = new ViewPreviewDescription();
 
         var tfCfg = new TransformableDeclaration()
-            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 

@@ -12,16 +12,25 @@ public static partial class Content
 
         private static readonly string[] _defaultPlanetTextureIds =
         {
-            "Planet01", "Planet02", "Planet03", "Planet04", "Planet05",
-            "Planet06", "Planet07", "Planet08", "Planet09",
+            "Planet01",
+            "Planet02",
+            "Planet03",
+            "Planet04",
+            "Planet05",
+            "Planet06",
+            "Planet07",
+            "Planet08",
+            "Planet09",
         };
 
         public const string DefaultShip = $"{_base}/ShipAtlas.json:Ship";
 
         static Textures()
         {
-            DefaultPlanetTextures = (from string id in _defaultPlanetTextureIds
-                                     select $"{_base}/PlanetsAtlas.json:{id}").ToArray();
+            DefaultPlanetTextures = (
+                from string id in _defaultPlanetTextureIds
+                select $"{_base}/PlanetsAtlas.json:{id}"
+            ).ToArray();
         }
     }
 }

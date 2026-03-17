@@ -17,9 +17,9 @@ public static partial class ConceptNames
 public abstract class PortalChargingEffectDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        TransformableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + TransformableDefinition.Signature
+        + new Signature(
             //
             typeof(SoundEffect),
             typeof(PortalChargingEffectAssignment)
@@ -40,20 +40,29 @@ public class PortalChargingEffectDescription : IDescription
 public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<PortalChargingEffectDescription>
 {
-    private FmodEventDescription _warpChargingSoundEffect =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/WarpCharging");
+    private FmodEventDescription _warpChargingSoundEffect = assets.Load<FmodEventDescription>(
+        "Sounds/Master.bank:/WarpCharging"
+    );
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, PortalChargingEffectDescription desc)
+    public void Apply(
+        CommandBuffer commandBuffer,
+        Entity entity,
+        PortalChargingEffectDescription desc
+    )
     {
         var world = World.Worlds[entity.WorldId];
 
-        var backFlare = factory.Make(world, commandBuffer, ConceptNames.PortalChargingBackFlare,
-                                     new PortalChargingBackFlareDescription
-                                     {
-                                         Effect = entity,
-                                         Radius = desc.PortalRadius * 3f,
-                                         Color = desc.Color
-                                     });
+        var backFlare = factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.PortalChargingBackFlare,
+            new PortalChargingBackFlareDescription
+            {
+                Effect = entity,
+                Radius = desc.PortalRadius * 3f,
+                Color = desc.Color,
+            }
+        );
 
         float rate = 2.6f;
         float maxSize = 1;
@@ -66,17 +75,23 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
         {
             for (int j = 0; j < 3; j++)
             {
-                surroundFlares.Add(factory.Make(world, commandBuffer, ConceptNames.PortalChargingSurroundFlare,
-                                                new PortalChargingSurroundFlareDescription
-                                                {
-                                                    Effect = entity,
-                                                    Radius = desc.PortalRadius * 3f,
-                                                    Color = desc.Color,
-                                                    MaxSize = maxSize,
-                                                    Ratio = rate,
-                                                    Angle = angle,
-                                                    Delay = delay
-                                                }));
+                surroundFlares.Add(
+                    factory.Make(
+                        world,
+                        commandBuffer,
+                        ConceptNames.PortalChargingSurroundFlare,
+                        new PortalChargingSurroundFlareDescription
+                        {
+                            Effect = entity,
+                            Radius = desc.PortalRadius * 3f,
+                            Color = desc.Color,
+                            MaxSize = maxSize,
+                            Ratio = rate,
+                            Angle = angle,
+                            Delay = delay,
+                        }
+                    )
+                );
 
                 delay += delayStep;
                 angle += MathF.PI * 2 / 3;
@@ -86,17 +101,28 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
             maxSize *= 0.8f;
         }
 
-        commandBuffer.Set(in entity, new PortalChargingEffectAssignment(surroundFlares.ToArray(), backFlare));
+        commandBuffer.Set(
+            in entity,
+            new PortalChargingEffectAssignment(surroundFlares.ToArray(), backFlare)
+        );
 
-        factory.Make(world, commandBuffer, ConceptNames.Dependence,
-                     new DependenceDescription { Dependent = entity, Dependency = desc.Portal });
-        factory.Make(world, commandBuffer, ConceptNames.RelativeTransform,
-                     new RelativeTransformDescription
-                     {
-                         Parent = desc.Portal,
-                         Child = entity,
-                         Translation = Vector3.Zero with { Z = 500 } // 保证位于前边
-                     });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.Dependence,
+            new DependenceDescription { Dependent = entity, Dependency = desc.Portal }
+        );
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.RelativeTransform,
+            new RelativeTransformDescription
+            {
+                Parent = desc.Portal,
+                Child = entity,
+                Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
+            }
+        );
 
         _warpChargingSoundEffect.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });

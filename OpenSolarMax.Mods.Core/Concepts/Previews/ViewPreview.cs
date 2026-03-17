@@ -35,8 +35,11 @@ public abstract class ViewPreviewDefinition : IDefinition
 [Describe(ConceptNames.ViewPreview), OnlyForPreview]
 public class ViewPreviewDescription : IDescription
 {
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     public Point Size { get; set; } = new(1920, 1080);
 
@@ -44,7 +47,8 @@ public class ViewPreviewDescription : IDescription
 }
 
 [Apply(ConceptNames.ViewPreview), OnlyForPreview]
-public class ViewPreviewApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ViewPreviewDescription>
+public class ViewPreviewApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ViewPreviewDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
 
@@ -53,16 +57,22 @@ public class ViewPreviewApplier(IAssetsManager assets, IConceptFactory factory) 
         var world = World.Worlds[entity.WorldId];
 
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
 
         // 设置相机尺寸
-        commandBuffer.Set(in entity, new Camera
-        {
-            Width = desc.Size.X,
-            Height = desc.Size.Y,
-            ZNear = desc.Depth.Near,
-            ZFar = desc.Depth.Far
-        });
+        commandBuffer.Set(
+            in entity,
+            new Camera
+            {
+                Width = desc.Size.X,
+                Height = desc.Size.Y,
+                ZNear = desc.Depth.Near,
+                ZFar = desc.Depth.Far,
+            }
+        );
     }
 }

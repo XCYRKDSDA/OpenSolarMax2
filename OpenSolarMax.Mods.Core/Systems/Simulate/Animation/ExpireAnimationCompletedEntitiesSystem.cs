@@ -10,12 +10,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem, BeforeStructuralChanges]
 [ReadCurr(typeof(ExpireAfterAnimationCompleted)), ReadCurr(typeof(Animation)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world) : ICalcSystemWithStructuralChanges
+public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
+    : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<ExpireAfterAnimationCompleted, Animation>]
-    private static void ExpireEntities([Data] CommandBuffer commands,
-                                       Entity entity, in Animation animation)
+    private static void ExpireEntities(
+        [Data] CommandBuffer commands,
+        Entity entity,
+        in Animation animation
+    )
     {
         if (animation.RawClip is not null)
             return;

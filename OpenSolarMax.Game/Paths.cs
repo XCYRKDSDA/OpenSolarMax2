@@ -9,27 +9,31 @@ internal static class Paths
 
     public static class BaseDirectories
     {
-        public static UPath Binary { get; }
-            = _physicalFileSystem.ConvertPathFromInternal(AppContext.BaseDirectory);
+        public static UPath Binary { get; } =
+            _physicalFileSystem.ConvertPathFromInternal(AppContext.BaseDirectory);
 
-        public static UPath Current { get; }
-            = _physicalFileSystem.ConvertPathFromInternal(Environment.CurrentDirectory);
+        public static UPath Current { get; } =
+            _physicalFileSystem.ConvertPathFromInternal(Environment.CurrentDirectory);
 
         public static UPath UserData { get; } =
             _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+            );
 
         public static UPath UserConfig { get; } =
             _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+            );
 
         public static UPath SystemData { get; } =
             _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+            );
 
         public static UPath SystemConfig { get; } =
             _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+            );
     }
 
     public static UPath Content => "Content";

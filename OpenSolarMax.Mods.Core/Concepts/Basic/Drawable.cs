@@ -18,10 +18,7 @@ public static partial class ConceptNames
 public abstract class Drawable : IDefinition
 {
     public static Signature Signature { get; } =
-        TransformableDefinition.Signature +
-        new Signature(
-            typeof(Sprite)
-        );
+        TransformableDefinition.Signature + new Signature(typeof(Sprite));
 }
 
 [Describe(ConceptNames.Drawable)]
@@ -30,8 +27,11 @@ public class DrawableDescription : IDescription
     /// <summary>
     /// 实体的位置
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 精灵纹理
@@ -80,28 +80,35 @@ public class DrawableDescription : IDescription
 }
 
 [Apply(ConceptNames.Drawable)]
-public class DrawableApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<DrawableDescription>
+public class DrawableApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<DrawableDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, DrawableDescription desc)
     {
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
 
         // 设置外观
-        commandBuffer.Set(in entity, new Sprite()
-        {
-            Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
-            Color = desc.Color,
-            Alpha = desc.Alpha,
-            Size = desc.Size,
-            Position = desc.Position,
-            Rotation = desc.Rotation,
-            Scale = desc.Scale,
-            Blend = desc.Blend,
-            Billboard = desc.Billboard,
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite()
+            {
+                Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
+                Color = desc.Color,
+                Alpha = desc.Alpha,
+                Size = desc.Size,
+                Position = desc.Position,
+                Rotation = desc.Rotation,
+                Scale = desc.Scale,
+                Blend = desc.Blend,
+                Billboard = desc.Billboard,
+            }
+        );
     }
 }

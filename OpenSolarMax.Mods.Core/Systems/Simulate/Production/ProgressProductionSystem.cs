@@ -12,15 +12,24 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 更新生产系统. 在所有可生产部队的星球上推进生产
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(ProductionAbility)), ReadPrev(typeof(Producible)), ReadPrev(typeof(ProductionCondition))]
+[
+    ReadPrev(typeof(ProductionAbility)),
+    ReadPrev(typeof(Producible)),
+    ReadPrev(typeof(ProductionCondition))
+]
 [Iterate(typeof(ProductionState))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ProgressProductionSystem(World world) : ITickSystem
 {
     [Query]
     [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InParty.AsAffiliate>]
-    private static void UpdateProduction([Data] GameTime time, Entity planet, in ProductionAbility ability,
-                                         in ProductionCondition cond, ref ProductionState state)
+    private static void UpdateProduction(
+        [Data] GameTime time,
+        Entity planet,
+        in ProductionAbility ability,
+        in ProductionCondition cond,
+        ref ProductionState state
+    )
     {
         state.UnitsProducedThisFrame = 0;
 

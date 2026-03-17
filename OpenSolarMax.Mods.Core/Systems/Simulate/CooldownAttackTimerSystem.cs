@@ -7,5 +7,5 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, BeforeStructuralChanges, Iterate(typeof(AttackTimer))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class CooldownAttackTimerSystem(World world) : CountDownSystemBase<AttackTimer>(world)
-{ }
+public sealed partial class CooldownAttackTimerSystem(World world)
+    : CountDownSystemBase<AttackTimer>(world) { }

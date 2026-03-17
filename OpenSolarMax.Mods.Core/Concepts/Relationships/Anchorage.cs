@@ -13,9 +13,7 @@ public static partial class ConceptNames
 [Define(ConceptNames.Anchorage)]
 public abstract class AnchorageDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(TreeRelationship<Anchorage>)
-    );
+    public static Signature Signature { get; } = new(typeof(TreeRelationship<Anchorage>));
 }
 
 [Describe(ConceptNames.Anchorage)]

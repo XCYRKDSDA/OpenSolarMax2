@@ -6,17 +6,28 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-public delegate bool? CheckPlanetReachabilityCallback(World world,
-                                                      Entity departure, in AbsoluteTransform departurePose,
-                                                      Entity destination, in AbsoluteTransform destinationPose);
+public delegate bool? CheckPlanetReachabilityCallback(
+    World world,
+    Entity departure,
+    in AbsoluteTransform departurePose,
+    Entity destination,
+    in AbsoluteTransform destinationPose
+);
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(AbsoluteTransform)), ReadCurr(typeof(InfiniteZBarrier)), Write(typeof(ReachabilityRegistry))]
+[
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(InfiniteZBarrier)),
+    Write(typeof(ReachabilityRegistry))
+]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public class CountReachabilitySystem(World world) : ICalcSystem
 {
-    private static readonly QueryDescription _planetDesc = new QueryDescription()
-        .WithAll<ReachabilityRegistry, AbsoluteTransform, TreeRelationship<Anchorage>.AsParent>();
+    private static readonly QueryDescription _planetDesc = new QueryDescription().WithAll<
+        ReachabilityRegistry,
+        AbsoluteTransform,
+        TreeRelationship<Anchorage>.AsParent
+    >();
 
     [Hook("CheckPlanetReachability")]
     public CheckPlanetReachabilityCallback? CheckReachabilityDelegate { get; set; }
@@ -64,14 +75,19 @@ public class CountReachabilitySystem(World world) : ICalcSystem
 
                 if (reachability12 is null || reachability21 is null)
                 {
-                    var reachability =
-                        !ManeuveringUtils.CheckBarriersBlocking(world, pose1.Translation, pose2.Translation);
+                    var reachability = !ManeuveringUtils.CheckBarriersBlocking(
+                        world,
+                        pose1.Translation,
+                        pose2.Translation
+                    );
                     reachability12 ??= reachability;
                     reachability21 ??= reachability;
                 }
 
-                registry1.FromHereTo[planet2] = registry2.ToHereFrom[planet1] = reachability12!.Value;
-                registry2.FromHereTo[planet1] = registry1.ToHereFrom[planet2] = reachability21!.Value;
+                registry1.FromHereTo[planet2] = registry2.ToHereFrom[planet1] =
+                    reachability12!.Value;
+                registry2.FromHereTo[planet1] = registry1.ToHereFrom[planet2] =
+                    reachability21!.Value;
             }
         }
     }

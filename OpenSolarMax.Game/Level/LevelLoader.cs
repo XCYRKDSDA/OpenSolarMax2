@@ -8,8 +8,9 @@ using Zio;
 
 namespace OpenSolarMax.Game.Level;
 
-internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> declarationSchemaInfos)
-    : IAssetLoader<LevelFile>
+internal class LevelLoader(
+    IReadOnlyDictionary<string, DeclarationSchemaInfo> declarationSchemaInfos
+) : IAssetLoader<LevelFile>
 {
     private class JsonLevel
     {
@@ -27,15 +28,16 @@ internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> de
         var basicSerializerOptions = new JsonSerializerOptions()
         {
             PropertyNameCaseInsensitive = true,
-            IncludeFields = true
+            IncludeFields = true,
         };
-        var jsonLevel = JsonSerializer.Deserialize<JsonLevel>(stream, basicSerializerOptions) ??
-                        throw new JsonException();
+        var jsonLevel =
+            JsonSerializer.Deserialize<JsonLevel>(stream, basicSerializerOptions)
+            ?? throw new JsonException();
 
         var statementSerializerOptions = new JsonSerializerOptions()
         {
             PropertyNameCaseInsensitive = true,
-            IncludeFields = true
+            IncludeFields = true,
         };
         // 添加基础类型转换器
         statementSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -44,20 +46,28 @@ internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> de
         statementSerializerOptions.Converters.Add(new BlendStateJsonConverter());
         // 添加资源引用转换器
         var directory = path.GetDirectory();
-        statementSerializerOptions.Converters.Add(new AssetReferenceJsonConverter<TextureRegion>(assets, directory));
+        statementSerializerOptions.Converters.Add(
+            new AssetReferenceJsonConverter<TextureRegion>(assets, directory)
+        );
 
         // 初始化从配置模式索引到配置模式名称的映射
         var schemaNamesByDeclarationId = declarationSchemaInfos.Keys.ToDictionary(key => key);
         // 添加语句转换器
         statementSerializerOptions.Converters.Add(
-            new DeclarationStatementJsonConverter(schemaNamesByDeclarationId, declarationSchemaInfos));
+            new DeclarationStatementJsonConverter(
+                schemaNamesByDeclarationId,
+                declarationSchemaInfos
+            )
+        );
 
         var level = new LevelFile();
 
         // 解析模板语句
         foreach (var (templateKey, templateJsonElement) in jsonLevel.Templates)
         {
-            var statement = templateJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions)!;
+            var statement = templateJsonElement.Deserialize<DeclarationStatement>(
+                statementSerializerOptions
+            )!;
 
             // 构造并添加新的模板语句
             level.Templates.Add(templateKey, statement);
@@ -69,13 +79,19 @@ internal class LevelLoader(IReadOnlyDictionary<string, DeclarationSchemaInfo> de
         // 解析实体语句
         foreach (var entityJsonElement in jsonLevel.Entities)
         {
-            var statement = entityJsonElement.Deserialize<DeclarationStatement>(statementSerializerOptions)!;
+            var statement = entityJsonElement.Deserialize<DeclarationStatement>(
+                statementSerializerOptions
+            )!;
 
             // 获取id, 如果有的话
-            var id = entityJsonElement.TryGetProperty("$id", out var idProp) ? idProp.GetString() : null;
+            var id = entityJsonElement.TryGetProperty("$id", out var idProp)
+                ? idProp.GetString()
+                : null;
 
             // 获取实体构建个数，如果有的话
-            var num = entityJsonElement.TryGetProperty("$num", out var numProp) ? numProp.GetInt32() : 1;
+            var num = entityJsonElement.TryGetProperty("$num", out var numProp)
+                ? numProp.GetInt32()
+                : 1;
 
             // 构造并添加新的实体语句
             level.Entities.Add((id, statement, num));

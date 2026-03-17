@@ -23,15 +23,20 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
     /// </summary>
     protected abstract void ApplyPartyReferenceImpl(in TReference reference, ref TTarget target);
 
-    private static readonly QueryDescription _entitiesDesc =
-        new QueryDescription().WithAll<InParty.AsAffiliate, TTarget>();
+    private static readonly QueryDescription _entitiesDesc = new QueryDescription().WithAll<
+        InParty.AsAffiliate,
+        TTarget
+    >();
 
     public void Update()
     {
         var query = world.Query(in _entitiesDesc);
         foreach (ref var chunk in query.GetChunkIterator())
         {
-            chunk.GetSpan<InParty.AsAffiliate, TTarget>(out var relationshipSpan, out var componentSpan);
+            chunk.GetSpan<InParty.AsAffiliate, TTarget>(
+                out var relationshipSpan,
+                out var componentSpan
+            );
             foreach (var entity in chunk)
                 ApplyPartyReference(in relationshipSpan[entity], ref componentSpan[entity]);
         }
@@ -46,7 +51,8 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
             return;
         }
 
-        ref readonly var reference = ref asAffiliate.Relationship.Value.Copy.Party.Get<TReference>();
+        ref readonly var reference =
+            ref asAffiliate.Relationship.Value.Copy.Party.Get<TReference>();
         ApplyPartyReferenceImpl(in reference, ref target);
     }
 }

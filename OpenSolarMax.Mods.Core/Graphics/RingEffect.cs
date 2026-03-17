@@ -29,7 +29,8 @@ internal class RingEffect : Effect, IEffectMatrices
     private float _radius = 0;
     private float _thickness = 0;
 
-    private float _head = 0, _radians = 0;
+    private float _head = 0,
+        _radians = 0;
 
     [Flags]
     private enum DirtyFlags
@@ -40,7 +41,7 @@ internal class RingEffect : Effect, IEffectMatrices
         Radius = 1 << 3,
         Thickness = 1 << 4,
         ArcRange = 1 << 5,
-        All = -1
+        All = -1,
     }
 
     private DirtyFlags _dirtyFlags = DirtyFlags.All;
@@ -131,7 +132,8 @@ internal class RingEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public RingEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.RingEffect.Bytecode)
+    public RingEffect(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice, EffectResource.RingEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _centerParam = Parameters["center"];
@@ -169,7 +171,8 @@ internal class RingEffect : Effect, IEffectMatrices
             _head %= 2 * MathF.PI;
             _radians %= 2 * MathF.PI;
 
-            Vector2 headVec, tailVec;
+            Vector2 headVec,
+                tailVec;
             (headVec.Y, headVec.X) = MathF.SinCos(_head);
             (tailVec.Y, tailVec.X) = MathF.SinCos(_head + _radians);
 

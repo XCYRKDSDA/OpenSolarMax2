@@ -9,9 +9,13 @@ public class FadableRichText(RichTextLayout text, ICurve<float>? map = null) : I
 {
     public Point Size => text.Size;
 
-    public void Draw(RenderContext context, Rectangle dest, Color color)
-        => context.DrawRichText(text, dest.Location.ToVector2(), color);
+    public void Draw(RenderContext context, Rectangle dest, Color color) =>
+        context.DrawRichText(text, dest.Location.ToVector2(), color);
 
-    public void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn)
-        => context.DrawRichText(text, dest.Location.ToVector2(), color * (map?.Evaluate(fadeIn) ?? fadeIn));
+    public void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn) =>
+        context.DrawRichText(
+            text,
+            dest.Location.ToVector2(),
+            color * (map?.Evaluate(fadeIn) ?? fadeIn)
+        );
 }

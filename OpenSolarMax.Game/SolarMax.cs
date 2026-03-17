@@ -8,8 +8,8 @@ using Nine.Screens;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.Screens.Views;
 using OpenSolarMax.Game.Utils;
-using XNAGame = Microsoft.Xna.Framework.Game;
 using FmodStudioSystem = FMOD.Studio.System;
+using XNAGame = Microsoft.Xna.Framework.Game;
 
 namespace OpenSolarMax.Game;
 
@@ -31,7 +31,7 @@ public class SolarMax : XNAGame
         {
             PreferredBackBufferWidth = 1920,
             PreferredBackBufferHeight = 1080,
-            PreferMultiSampling = true
+            PreferMultiSampling = true,
         };
         _graphics.PreparingDeviceSettings += PreparingDeviceSettings;
 
@@ -42,7 +42,10 @@ public class SolarMax : XNAGame
         MyraEnvironment.DrawWidgetsFrames = true;
 
         // 注册全局类型转换
-        TypeDescriptor.AddAttributes(typeof(Color), new TypeConverterAttribute(typeof(ColorConverter)));
+        TypeDescriptor.AddAttributes(
+            typeof(Color),
+            new TypeConverterAttribute(typeof(ColorConverter))
+        );
     }
 
     public FmodStudioSystem FmodSystem => _globalFmodSystem;
@@ -62,14 +65,19 @@ public class SolarMax : XNAGame
             GraphicsDevice,
             GraphicsDevice.PresentationParameters.BackBufferWidth,
             GraphicsDevice.PresentationParameters.BackBufferHeight,
-            false, SurfaceFormat.Color, DepthFormat.None, 0,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
             RenderTargetUsage.PreserveContents // 保留
         );
         _spriteBatch = new SpriteBatch(GraphicsDevice, 1);
 
         // 初始化全局 fmod 音频系统
         FmodException.Check(FmodStudioSystem.create(out _globalFmodSystem));
-        FmodException.Check(_globalFmodSystem.initialize(512, INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0));
+        FmodException.Check(
+            _globalFmodSystem.initialize(512, INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, 0)
+        );
 
         // 初始化默认资产加载器
         AssetsManager.RegisterDefaultLoader(new Texture2DLoader(GraphicsDevice));

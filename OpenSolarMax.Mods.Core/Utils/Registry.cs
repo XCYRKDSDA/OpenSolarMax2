@@ -2,7 +2,8 @@ using System.Collections;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
-public class Registry<TKey, TElement> : IEnumerable<KeyValuePair<TKey, List<TElement>>> where TKey : notnull
+public class Registry<TKey, TElement> : IEnumerable<KeyValuePair<TKey, List<TElement>>>
+    where TKey : notnull
 {
     private readonly Dictionary<TKey, List<TElement>> _impl = [];
 
@@ -30,8 +31,8 @@ public class Registry<TKey, TElement> : IEnumerable<KeyValuePair<TKey, List<TEle
 
     #region IEnumerable
 
-    public IEnumerator<KeyValuePair<TKey, List<TElement>>> GetEnumerator()
-        => _impl.Where(kv => kv.Value.Count != 0).GetEnumerator();
+    public IEnumerator<KeyValuePair<TKey, List<TElement>>> GetEnumerator() =>
+        _impl.Where(kv => kv.Value.Count != 0).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

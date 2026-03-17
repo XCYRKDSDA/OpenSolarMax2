@@ -19,8 +19,8 @@ public static partial class ConceptNames
 public abstract class TransportationTrailDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + new Signature(
             // 位姿变换
             typeof(AbsoluteTransform),
             // 效果
@@ -42,45 +42,62 @@ public class TransportationTrailDescription : IDescription
 }
 
 [Apply(ConceptNames.TransportationTrail)]
-public class TransportationTrailApplier(IAssetsManager assets) : IApplier<TransportationTrailDescription>
+public class TransportationTrailApplier(IAssetsManager assets)
+    : IApplier<TransportationTrailDescription>
 {
-    private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>("/Textures/ShipAtlas.json:ShipTrail");
+    private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
+        "/Textures/ShipAtlas.json:ShipTrail"
+    );
 
-    private readonly AnimationClip<Entity> _trailFadeOutAnimationClip =
-        assets.Load<AnimationClip<Entity>>("/Animations/TransportationTrailFadeOut.json");
+    private readonly AnimationClip<Entity> _trailFadeOutAnimationClip = assets.Load<
+        AnimationClip<Entity>
+    >("/Animations/TransportationTrailFadeOut.json");
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, TransportationTrailDescription desc)
+    public void Apply(
+        CommandBuffer commandBuffer,
+        Entity entity,
+        TransportationTrailDescription desc
+    )
     {
         var vector = desc.Tail - desc.Head;
         var length = vector.Length();
 
         // 填充默认纹理
-        commandBuffer.Set(in entity, new Sprite
-        {
-            Texture = _defaultTexture,
-            Color = desc.Color,
-            Alpha = 1,
-            Size = _defaultTexture.LogicalSize with { X = length },
-            Position = Vector2.Zero,
-            Rotation = 0,
-            Scale = Vector2.One,
-            Blend = SpriteBlend.Additive,
-            Billboard = false
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _defaultTexture,
+                Color = desc.Color,
+                Alpha = 1,
+                Size = _defaultTexture.LogicalSize with { X = length },
+                Position = Vector2.Zero,
+                Rotation = 0,
+                Scale = Vector2.One,
+                Blend = SpriteBlend.Additive,
+                Billboard = false,
+            }
+        );
 
         // 放置位置
-        commandBuffer.Set(in entity, new AbsoluteTransform
-        {
-            Translation = desc.Tail,
-            Rotation = TransformProjection.UprightAim(vector)
-        });
+        commandBuffer.Set(
+            in entity,
+            new AbsoluteTransform
+            {
+                Translation = desc.Tail,
+                Rotation = TransformProjection.UprightAim(vector),
+            }
+        );
 
         // 播放动画
-        commandBuffer.Set(in entity, new Animation
-        {
-            Clip = _trailFadeOutAnimationClip,
-            TimeElapsed = TimeSpan.Zero,
-            TimeOffset = TimeSpan.Zero
-        });
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                Clip = _trailFadeOutAnimationClip,
+                TimeElapsed = TimeSpan.Zero,
+                TimeOffset = TimeSpan.Zero,
+            }
+        );
     }
 }

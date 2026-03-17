@@ -19,7 +19,10 @@ public sealed class ApplyPartyColorToShapeSystem(World world)
         target.Color = Color.White;
     }
 
-    protected override void ApplyPartyReferenceImpl(in PartyReferenceColor reference, ref Shape target)
+    protected override void ApplyPartyReferenceImpl(
+        in PartyReferenceColor reference,
+        ref Shape target
+    )
     {
         target.Color = reference.Value;
     }

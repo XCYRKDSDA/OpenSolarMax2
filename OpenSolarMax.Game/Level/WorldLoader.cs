@@ -22,9 +22,10 @@ internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry t
         // 首先解析所有模板
         foreach (var (id, templateStatement) in level.Templates)
         {
-            var configuration = templateStatement.BaseDecalarationIds.Select(k => namedDeclarations[k])
-                                                 .Append(templateStatement.Declaration)
-                                                 .Aggregate((c1, c2) => c1.Aggregate(c2));
+            var configuration = templateStatement
+                .BaseDecalarationIds.Select(k => namedDeclarations[k])
+                .Append(templateStatement.Declaration)
+                .Aggregate((c1, c2) => c1.Aggregate(c2));
             namedDeclarations.Add(id, configuration);
         }
 
@@ -33,12 +34,19 @@ internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry t
         {
             // 如果没有对应的描述翻译器, 则跳过该实体
             // TODO: 应当应用更严格的检查
-            if (!translators.TryGetBySchema(entityStatement.SchemaName, out var conceptName, out var translator))
+            if (
+                !translators.TryGetBySchema(
+                    entityStatement.SchemaName,
+                    out var conceptName,
+                    out var translator
+                )
+            )
                 continue;
 
-            var configuration = entityStatement.BaseDecalarationIds.Select(k => namedDeclarations[k])
-                                               .Append(entityStatement.Declaration)
-                                               .Aggregate((c1, c2) => c1.Aggregate(c2));
+            var configuration = entityStatement
+                .BaseDecalarationIds.Select(k => namedDeclarations[k])
+                .Append(entityStatement.Declaration)
+                .Aggregate((c1, c2) => c1.Aggregate(c2));
 
             // 检查是否所有依赖均已满足
             if (configuration.Requirements.Any(s => !satisfiedEntities.Contains(s)))
