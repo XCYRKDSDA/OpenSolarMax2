@@ -1,0 +1,11 @@
+{
+    "profiles": {
+        "LocalDevelopment": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "OSM_LEVEL_MOD_PATHS": "."
+            },
+            "workingDirectory": ".."
+        }
+    }
+}
