@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch OpenSolarMax",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build: Everything",
+            "program": "${workspaceFolder}/OpenSolarMax.Launcher/bin/Debug/net8.0/OpenSolarMax.Launcher.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "env": {
+                "OSM_LEVEL_MOD_PATHS": "${workspaceFolder}"
+            }
+        }
+    ]
+}
