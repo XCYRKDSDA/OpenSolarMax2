@@ -58,7 +58,7 @@ public static class Folders
                 var fs = new PhysicalFileSystem();
                 _behaviorsFs.AddFileSystem(
                     fs.GetOrCreateSubFileSystem(
-                        Paths.BaseDirectories.Current / fs.ConvertPathFromInternal(path)
+                        fs.ConvertPathFromInternal((Paths.BaseDirectories.Current / path).FullName)
                     )
                 );
             }
@@ -82,7 +82,7 @@ public static class Folders
                 var fs = new PhysicalFileSystem();
                 _levelsFs.AddFileSystem(
                     fs.GetOrCreateSubFileSystem(
-                        Paths.BaseDirectories.Current / fs.ConvertPathFromInternal(path)
+                        fs.ConvertPathFromInternal((Paths.BaseDirectories.Current / path).FullName)
                     )
                 );
             }
