@@ -27,7 +27,7 @@ public enum TransportingState
 {
     Idle,
     PreTransportation,
-    PostTransportation
+    PostTransportation,
 }
 
 public struct TransportingStatus_PreTransportation

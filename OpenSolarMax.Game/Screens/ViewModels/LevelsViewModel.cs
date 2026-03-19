@@ -55,7 +55,12 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
-    public LevelsViewModel(LevelModInfo levelModInfo, SolarMax game, IProgress<float>? progress = null) : base(game)
+    public LevelsViewModel(
+        LevelModInfo levelModInfo,
+        SolarMax game,
+        IProgress<float>? progress = null
+    )
+        : base(game)
     {
         progress?.Report(0);
 
@@ -74,27 +79,36 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         // 加载所有关卡
 
-        var factory = new ConceptFactory(_levelModContext.PreviewBehaviors.ConceptInfos.Values,
-                                         new Dictionary<Type, object>()
-                                         {
-                                             [typeof(GraphicsDevice)] = game.GraphicsDevice,
-                                             [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
-                                             [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
-                                         });
-        var translators = new TranslatorsRegistry(_levelModContext.PreviewBehaviors.TranslatorTypes);
+        var factory = new ConceptFactory(
+            _levelModContext.PreviewBehaviors.ConceptInfos.Values,
+            new Dictionary<Type, object>()
+            {
+                [typeof(GraphicsDevice)] = game.GraphicsDevice,
+                [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
+                [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+            }
+        );
+        var translators = new TranslatorsRegistry(
+            _levelModContext.PreviewBehaviors.TranslatorTypes
+        );
         var worldLoader = new WorldLoader(factory, translators);
         var levelLoader = new LevelLoader(_levelModContext.DeclarationSchemaInfos);
 
         // 目前假设所有关卡平铺在 Levels 目录下
         foreach (var levelFile in levelModInfo.Levels.EnumerateFiles("*.json"))
         {
-            var level = levelLoader.Load(levelFile.FileSystem, _levelModContext.LocalAssets, levelFile.Path);
+            var level = levelLoader.Load(
+                levelFile.FileSystem,
+                _levelModContext.LocalAssets,
+                levelFile.Path
+            );
             _levels.Add(level);
 
             // 加载关卡内容
             var world = World.Create();
             var simulateSystem = new AggregateSystem(
-                world, _levelModContext.PreviewBehaviors.SystemTypes.Simulate.Sorted,
+                world,
+                _levelModContext.PreviewBehaviors.SystemTypes.Simulate.Sorted,
                 new Dictionary<Type, object>
                 {
                     [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
@@ -102,7 +116,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                     [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
                 },
                 _levelModContext.PreviewBehaviors.HookImplMethods.ToDictionary(
-                    kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                    kv => kv.Key,
+                    kv => kv.Value as IReadOnlyList<MethodInfo>
+                )
             );
             var commandBuffer = new CommandBuffer();
             var enumerator = worldLoader.LoadStepByStep(level, world, commandBuffer);
@@ -115,29 +131,42 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
             // 构造预览系统
             var previewSystem = new AggregateSystem(
-                world, _levelModContext.PreviewBehaviors.SystemTypes.Render.Sorted,
+                world,
+                _levelModContext.PreviewBehaviors.SystemTypes.Render.Sorted,
                 new Dictionary<Type, object>
                 {
                     [typeof(GraphicsDevice)] = game.GraphicsDevice,
                     [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 },
                 _levelModContext.PreviewBehaviors.HookImplMethods.ToDictionary(
-                    kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                    kv => kv.Key,
+                    kv => kv.Value as IReadOnlyList<MethodInfo>
+                )
             );
             _previewSystems.Add(previewSystem);
 
             // 添加元素
             _items.Add(levelFile.Name);
-            _previews.Add(new FadableRichText(new RichTextLayout()
-            {
-                Text = levelFile.Name,
-                Font = _levelModContext.LocalAssets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
-            }));
+            _previews.Add(
+                new FadableRichText(
+                    new RichTextLayout()
+                    {
+                        Text = levelFile.Name,
+                        Font = _levelModContext
+                            .LocalAssets.Load<FontSystem>(Content.Fonts.Default)
+                            .GetFont(80),
+                    }
+                )
+            );
         }
 
         // 移动到默认位置
         _primaryItemIndex = 0;
-        _primaryItemPreview = new WorldRenderer(_worlds[0], _previewSystems[0], game.GraphicsDevice);
+        _primaryItemPreview = new WorldRenderer(
+            _worlds[0],
+            _previewSystems[0],
+            game.GraphicsDevice
+        );
         _primaryItemBackground = null;
         _secondaryItemIndex = null;
         _secondaryItemPreview = null;
@@ -148,15 +177,22 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     partial void OnPrimaryItemIndexChanged(int value)
     {
-        PrimaryItemPreview = new WorldRenderer(_worlds[value], _previewSystems[value], Game.GraphicsDevice);
+        PrimaryItemPreview = new WorldRenderer(
+            _worlds[value],
+            _previewSystems[value],
+            Game.GraphicsDevice
+        );
     }
 
     partial void OnSecondaryItemIndexChanged(int? value)
     {
-        SecondaryItemPreview =
-            value is null
-                ? null
-                : new WorldRenderer(_worlds[value.Value], _previewSystems[value.Value], Game.GraphicsDevice);
+        SecondaryItemPreview = value is null
+            ? null
+            : new WorldRenderer(
+                _worlds[value.Value],
+                _previewSystems[value.Value],
+                Game.GraphicsDevice
+            );
     }
 
     private void OnSelectItem(int idx)

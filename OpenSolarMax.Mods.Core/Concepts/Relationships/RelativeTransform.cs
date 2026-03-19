@@ -15,10 +15,8 @@ public static partial class ConceptNames
 [Define(ConceptNames.RelativeTransform), BothForGameplayAndPreview]
 public abstract class RelativeTransformDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(TreeRelationship<RelativeTransform>),
-        typeof(RelativeTransform)
-    );
+    public static Signature Signature { get; } =
+        new(typeof(TreeRelationship<RelativeTransform>), typeof(RelativeTransform));
 }
 
 [Describe(ConceptNames.RelativeTransform), BothForGameplayAndPreview]
@@ -38,7 +36,10 @@ public class RelativeTransformApplier : IApplier<RelativeTransformDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, RelativeTransformDescription desc)
     {
-        commandBuffer.Set(in entity, new TreeRelationship<RelativeTransform>(desc.Parent, desc.Child));
+        commandBuffer.Set(
+            in entity,
+            new TreeRelationship<RelativeTransform>(desc.Parent, desc.Child)
+        );
         commandBuffer.Set(in entity, new RelativeTransform(desc.Translation, desc.Rotation));
     }
 }

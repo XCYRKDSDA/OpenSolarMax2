@@ -27,8 +27,8 @@ internal class InitializationScreen : ScreenBase
     private readonly Label _logoLabel;
     private readonly HorizontalProgressBar _progressBar;
 
-
-    public InitializationScreen(InitializationViewModel viewModel, SolarMax game) : base(game)
+    public InitializationScreen(InitializationViewModel viewModel, SolarMax game)
+        : base(game)
     {
         _viewModel = viewModel;
 
@@ -38,15 +38,21 @@ internal class InitializationScreen : ScreenBase
 
         _logoLabel = new Label()
         {
-            Text = _logoText, TextColor = _gray, Font = font,
+            Text = _logoText,
+            TextColor = _gray,
+            Font = font,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 0, 0, _textSize / 2),
         };
         _progressBar = new HorizontalProgressBar()
         {
-            Minimum = 0, Maximum = 1, Value = viewModel.Progress,
-            HorizontalAlignment = HorizontalAlignment.Stretch, Height = _textSize / 8,
-            Background = new SolidBrush(_lightGray), Filler = new SolidBrush(_gray),
+            Minimum = 0,
+            Maximum = 1,
+            Value = viewModel.Progress,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Height = _textSize / 8,
+            Background = new SolidBrush(_lightGray),
+            Filler = new SolidBrush(_gray),
         };
         var band1 = new Widget()
         {
@@ -97,12 +103,13 @@ internal class InitializationScreen : ScreenBase
 
     private class Smooth : ICurve<float>
     {
-        public float Evaluate(float x) => x switch
-        {
-            < 0 => 0,
-            > 1 => 1,
-            _ => x * x,
-        };
+        public float Evaluate(float x) =>
+            x switch
+            {
+                < 0 => 0,
+                > 1 => 1,
+                _ => x * x,
+            };
     }
 
     private void ViewModelOnOnMenuViewModelLoaded(object? sender, MainMenuViewModel e)

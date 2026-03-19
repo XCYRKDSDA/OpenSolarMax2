@@ -21,8 +21,8 @@ public static partial class ConceptNames
 public abstract class LaserBeamDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        TransformableDefinition.Signature +
-        new Signature(
+        TransformableDefinition.Signature
+        + new Signature(
             // 效果
             typeof(Sprite),
             typeof(SoundEffect),
@@ -43,15 +43,20 @@ public class LaserBeamDescription : IDescription
 }
 
 [Apply(ConceptNames.LaserBeam)]
-public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<LaserBeamDescription>
+public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<LaserBeamDescription>
 {
-    private readonly TextureRegion _beamTexture = assets.Load<TextureRegion>("Textures/TurretAtlas.json:Beam");
+    private readonly TextureRegion _beamTexture = assets.Load<TextureRegion>(
+        "Textures/TurretAtlas.json:Beam"
+    );
 
-    private readonly AnimationClip<Entity> _beamAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/LaserBeam.json");
+    private readonly AnimationClip<Entity> _beamAnimation = assets.Load<AnimationClip<Entity>>(
+        "Animations/LaserBeam.json"
+    );
 
-    private readonly FmodEventDescription _laserSoundEffect =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/LaserShoot");
+    private readonly FmodEventDescription _laserSoundEffect = assets.Load<FmodEventDescription>(
+        "Sounds/Master.bank:/LaserShoot"
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserBeamDescription desc)
     {
@@ -60,34 +65,44 @@ public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory) : 
         // 摆放位置
         ref readonly var turretPose = ref desc.Planet.Get<AbsoluteTransform>();
         var vector = desc.TargetPosition - turretPose.Translation;
-        factory.Make(world, commandBuffer, ConceptNames.RelativeTransform,
-                     new RelativeTransformDescription
-                     {
-                         Parent = desc.Planet,
-                         Child = entity,
-                         Translation = Vector3.Zero,
-                         Rotation = TransformProjection.UprightAim(vector)
-                     });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.RelativeTransform,
+            new RelativeTransformDescription
+            {
+                Parent = desc.Planet,
+                Child = entity,
+                Translation = Vector3.Zero,
+                Rotation = TransformProjection.UprightAim(vector),
+            }
+        );
 
         // 设置纹理
-        commandBuffer.Set(in entity, new Sprite
-        {
-            Texture = _beamTexture,
-            Color = desc.Color,
-            Alpha = 1,
-            Size = _beamTexture.LogicalSize with { X = vector.Length() },
-            Scale = Vector2.One,
-            Blend = SpriteBlend.Additive,
-            Billboard = false
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _beamTexture,
+                Color = desc.Color,
+                Alpha = 1,
+                Size = _beamTexture.LogicalSize with { X = vector.Length() },
+                Scale = Vector2.One,
+                Blend = SpriteBlend.Additive,
+                Billboard = false,
+            }
+        );
 
         // 设置动画
-        commandBuffer.Set(in entity, new Animation
-        {
-            Clip = _beamAnimation,
-            TimeElapsed = TimeSpan.Zero,
-            TimeOffset = TimeSpan.Zero
-        });
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                Clip = _beamAnimation,
+                TimeElapsed = TimeSpan.Zero,
+                TimeOffset = TimeSpan.Zero,
+            }
+        );
 
         // 设置音效
         _laserSoundEffect.createInstance(out var eventInstance);

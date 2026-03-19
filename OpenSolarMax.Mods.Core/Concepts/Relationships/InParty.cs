@@ -14,9 +14,7 @@ public static partial class ConceptNames
 [Define(ConceptNames.InParty), BothForGameplayAndPreview]
 public abstract class InPartyDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(InParty)
-    );
+    public static Signature Signature { get; } = new(typeof(InParty));
 }
 
 [Describe(ConceptNames.InParty), BothForGameplayAndPreview]

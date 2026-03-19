@@ -19,18 +19,35 @@ public sealed partial class UpdateSoundEffect3DAttributesSystem(World world) : I
     [All<SoundEffect, AbsoluteTransform>]
     private static void Set3DAttributes(ref SoundEffect soundEffect, in AbsoluteTransform transform)
     {
-        soundEffect.EventInstance.set3DAttributes(new Fmod3DAttributes()
-        {
-            forward = { x = 0, y = 0, z = 1 },
-            position =
+        soundEffect.EventInstance.set3DAttributes(
+            new Fmod3DAttributes()
             {
-                x = transform.Translation.X,
-                y = transform.Translation.Y,
-                z = transform.Translation.Z
-            },
-            up = { x = 0, y = 1, z = 0 },
-            velocity = { x = 0, y = 0, z = 0 },
-        });
+                forward =
+                {
+                    x = 0,
+                    y = 0,
+                    z = 1,
+                },
+                position =
+                {
+                    x = transform.Translation.X,
+                    y = transform.Translation.Y,
+                    z = transform.Translation.Z,
+                },
+                up =
+                {
+                    x = 0,
+                    y = 1,
+                    z = 0,
+                },
+                velocity =
+                {
+                    x = 0,
+                    y = 0,
+                    z = 0,
+                },
+            }
+        );
     }
 
     public void Update() => Set3DAttributesQuery(world);

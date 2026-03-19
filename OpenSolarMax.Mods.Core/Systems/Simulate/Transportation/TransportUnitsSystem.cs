@@ -33,8 +33,7 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 }
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TransportingStatus))]
-[Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
+[ReadCurr(typeof(TransportingStatus)), Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在自动计算绝对位姿系统之后以覆盖位姿
 [ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
@@ -44,13 +43,16 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 [FineWith(typeof(ApplyPartyColorSystem))]
 // 覆盖新生单位动画
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
-public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets) : ICalcSystem
+public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets)
+    : ICalcSystem
 {
-    private readonly AnimationClip<Entity> _unitPreTransportationAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitPreTransportation.json");
+    private readonly AnimationClip<Entity> _unitPreTransportationAnimationClip = assets.Load<
+        AnimationClip<Entity>
+    >("Animations/UnitPreTransportation.json");
 
-    private readonly AnimationClip<Entity> _unitPostTransportationAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitPostTransportation.json");
+    private readonly AnimationClip<Entity> _unitPostTransportationAnimationClip = assets.Load<
+        AnimationClip<Entity>
+    >("Animations/UnitPostTransportation.json");
 
     [Query]
     [All<TransportingStatus, Sprite, AbsoluteTransform>]
@@ -61,10 +63,15 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
             // 面向目标位置
             var head = ship.Get<AbsoluteTransform>().Translation;
 
-            var destinationPlanetPose = status.Task.DestinationPlanet.Get<AbsoluteTransform>().TransformToRoot;
-            var expectedPoseInDestination = RevolutionUtils.CalculateTransform(status.Task.ExpectedRevolutionOrbit,
-                                                                               status.Task.ExpectedRevolutionState)
-                                                           .TransformToParent;
+            var destinationPlanetPose = status
+                .Task.DestinationPlanet.Get<AbsoluteTransform>()
+                .TransformToRoot;
+            var expectedPoseInDestination = RevolutionUtils
+                .CalculateTransform(
+                    status.Task.ExpectedRevolutionOrbit,
+                    status.Task.ExpectedRevolutionState
+                )
+                .TransformToParent;
             var tail = (expectedPoseInDestination * destinationPlanetPose).Translation;
 
             pose.Rotation = TransformProjection.UprightAim(tail - head);
@@ -73,22 +80,36 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
             var animationTime = (float)status.PreTransportation.ElapsedTime.TotalSeconds;
 
             if (animationTime < 0.25f) // 用0.5秒渐入
-                AnimationEvaluator<Entity>.TweenAndSet(ref ship,
-                                                       null, float.NaN,
-                                                       _unitPreTransportationAnimationClip, animationTime,
-                                                       null, animationTime / 0.25f);
+                AnimationEvaluator<Entity>.TweenAndSet(
+                    ref ship,
+                    null,
+                    float.NaN,
+                    _unitPreTransportationAnimationClip,
+                    animationTime,
+                    null,
+                    animationTime / 0.25f
+                );
             else
-                AnimationEvaluator<Entity>.EvaluateAndSet(ref ship, _unitPreTransportationAnimationClip, animationTime);
+                AnimationEvaluator<Entity>.EvaluateAndSet(
+                    ref ship,
+                    _unitPreTransportationAnimationClip,
+                    animationTime
+                );
         }
         else if (status.State == TransportingState.PostTransportation)
         {
             // 播放动画
             var animationTime = (float)status.PostTransportation.ElapsedTime.TotalSeconds;
 
-            AnimationEvaluator<Entity>.TweenAndSet(ref ship,
-                                                   _unitPostTransportationAnimationClip, animationTime,
-                                                   null, float.NaN,
-                                                   null, animationTime);
+            AnimationEvaluator<Entity>.TweenAndSet(
+                ref ship,
+                _unitPostTransportationAnimationClip,
+                animationTime,
+                null,
+                float.NaN,
+                null,
+                animationTime
+            );
         }
     }
 
@@ -96,69 +117,114 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 }
 
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(Sprite)), ReadPrev(typeof(PartyReferenceColor)),
- ReadPrev(typeof(TreeRelationship<Anchorage>.AsChild)), ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
- ReadPrev(typeof(InParty.AsAffiliate))]
+[
+    ReadPrev(typeof(AbsoluteTransform)),
+    ReadPrev(typeof(Sprite)),
+    ReadPrev(typeof(PartyReferenceColor)),
+    ReadPrev(typeof(TreeRelationship<Anchorage>.AsChild)),
+    ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
+    ReadPrev(typeof(InParty.AsAffiliate))
+]
 [Iterate(typeof(TransportingStatus)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(ProgressUnitsTransportationSystem))]
-public partial class TransportUnitsSystem(World world, IAssetsManager assets, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+public partial class TransportUnitsSystem(
+    World world,
+    IAssetsManager assets,
+    IConceptFactory factory
+) : ICalcSystemWithStructuralChanges
 {
-    private readonly FmodEventDescription _warpingSoundEffect =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/Warping");
+    private readonly FmodEventDescription _warpingSoundEffect = assets.Load<FmodEventDescription>(
+        "Sounds/Master.bank:/Warping"
+    );
 
     [Query]
-    [All<TransportingStatus, AbsoluteTransform, Sprite, TreeRelationship<Anchorage>.AsChild,
-        TreeRelationship<RelativeTransform>.AsChild, InParty.AsAffiliate>]
-    private void TransportUnits(Entity ship, ref TransportingStatus status,
-                                in AbsoluteTransform pose, in Sprite sprite,
-                                in TreeRelationship<Anchorage>.AsChild asChild, in InParty.AsAffiliate asAffiliate,
-                                [Data] HashSet<(Entity, Entity)> jobs,
-                                [Data] HashSet<(Entity, Entity)> arrivals,
-                                [Data] CommandBuffer commandBuffer)
+    [All<
+        TransportingStatus,
+        AbsoluteTransform,
+        Sprite,
+        TreeRelationship<Anchorage>.AsChild,
+        TreeRelationship<RelativeTransform>.AsChild,
+        InParty.AsAffiliate
+    >]
+    private void TransportUnits(
+        Entity ship,
+        ref TransportingStatus status,
+        in AbsoluteTransform pose,
+        in Sprite sprite,
+        in TreeRelationship<Anchorage>.AsChild asChild,
+        in InParty.AsAffiliate asAffiliate,
+        [Data] HashSet<(Entity, Entity)> jobs,
+        [Data] HashSet<(Entity, Entity)> arrivals,
+        [Data] CommandBuffer commandBuffer
+    )
     {
-        if (status.State == TransportingState.PreTransportation &&
-            status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9333))
+        if (
+            status.State == TransportingState.PreTransportation
+            && status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9333)
+        )
         {
             var departure = asChild.Relationship!.Value.Copy.Parent;
             var destination = status.Task.DestinationPlanet;
 
-            factory.Make(world, commandBuffer, new UnitAfterImageDescription()
-            {
-                Position = pose.Translation,
-                Rotation = pose.Rotation,
-                Color = sprite.Color
-            });
+            factory.Make(
+                world,
+                commandBuffer,
+                new UnitAfterImageDescription()
+                {
+                    Position = pose.Translation,
+                    Rotation = pose.Rotation,
+                    Color = sprite.Color,
+                }
+            );
 
             // 解除到星球的锚定
-            commandBuffer.Destroy(ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref);
-            commandBuffer.Destroy(ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref);
+            commandBuffer.Destroy(
+                ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref
+            );
+            commandBuffer.Destroy(
+                ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref
+            );
             // 锚定单位到新星球
-            factory.Make(world, commandBuffer, new AnchorageDescription()
-            {
-                Planet = status.Task.DestinationPlanet,
-                Ship = ship
-            });
-            factory.Make(world, commandBuffer, new RevolutionDescription()
-            {
-                Parent = status.Task.DestinationPlanet,
-                Child = ship,
-                Shape = status.Task.ExpectedRevolutionOrbit.Shape,
-                Period = status.Task.ExpectedRevolutionOrbit.Period,
-                Rotation = status.Task.ExpectedRevolutionOrbit.Rotation,
-                InitPhase = status.Task.ExpectedRevolutionState.Phase
-            });
+            factory.Make(
+                world,
+                commandBuffer,
+                new AnchorageDescription() { Planet = status.Task.DestinationPlanet, Ship = ship }
+            );
+            factory.Make(
+                world,
+                commandBuffer,
+                new RevolutionDescription()
+                {
+                    Parent = status.Task.DestinationPlanet,
+                    Child = ship,
+                    Shape = status.Task.ExpectedRevolutionOrbit.Shape,
+                    Period = status.Task.ExpectedRevolutionOrbit.Period,
+                    Rotation = status.Task.ExpectedRevolutionOrbit.Rotation,
+                    InitPhase = status.Task.ExpectedRevolutionState.Phase,
+                }
+            );
 
-            factory.Make(world, commandBuffer, new TransportationTrailDescription()
-            {
-                Head = ship.Get<AbsoluteTransform>().Translation,
-                Tail = (RevolutionUtils
-                        .CalculateTransform(status.Task.ExpectedRevolutionOrbit, status.Task.ExpectedRevolutionState)
-                        .TransformToParent *
-                        destination.Get<AbsoluteTransform>().TransformToRoot).Translation,
-                Color = asAffiliate.Relationship!.Value.Copy.Party.Get<PartyReferenceColor>().Value
-            });
+            factory.Make(
+                world,
+                commandBuffer,
+                new TransportationTrailDescription()
+                {
+                    Head = ship.Get<AbsoluteTransform>().Translation,
+                    Tail = (
+                        RevolutionUtils
+                            .CalculateTransform(
+                                status.Task.ExpectedRevolutionOrbit,
+                                status.Task.ExpectedRevolutionState
+                            )
+                            .TransformToParent
+                        * destination.Get<AbsoluteTransform>().TransformToRoot
+                    ).Translation,
+                    Color = asAffiliate
+                        .Relationship!.Value.Copy.Party.Get<PartyReferenceColor>()
+                        .Value,
+                }
+            );
 
             status.State = TransportingState.PostTransportation;
             status.PostTransportation = new() { ElapsedTime = TimeSpan.Zero };
@@ -166,8 +232,10 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets, IC
             jobs.Add((departure, destination));
             arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Party));
         }
-        else if (status.State == TransportingState.PostTransportation &&
-                 status.PostTransportation.ElapsedTime > TimeSpan.FromSeconds(1))
+        else if (
+            status.State == TransportingState.PostTransportation
+            && status.PostTransportation.ElapsedTime > TimeSpan.FromSeconds(1)
+        )
         {
             status.State = TransportingState.Idle;
         }
@@ -185,27 +253,42 @@ public partial class TransportUnitsSystem(World world, IAssetsManager assets, IC
         // 对每个阵营每次抵达只创建一个抵达效果
         foreach (var (destination, party) in _arrivalsPerFrame)
         {
-            factory.Make(world, commandBuffer, new DestinationEffectDescription()
-            {
-                Portal = destination,
-                Color = party.Get<PartyReferenceColor>().Value,
-                PortalRadius = destination.Get<ReferenceSize>().Radius
-            });
+            factory.Make(
+                world,
+                commandBuffer,
+                new DestinationEffectDescription()
+                {
+                    Portal = destination,
+                    Color = party.Get<PartyReferenceColor>().Value,
+                    PortalRadius = destination.Get<ReferenceSize>().Radius,
+                }
+            );
         }
 
         // 对每组从某个起点到某个终点的传送任务只创建一个传送音效
         foreach (var (departure, destination) in _jobs)
         {
             // 计算音效位置
-            var center = (departure.Get<AbsoluteTransform>().Translation +
-                          destination.Get<AbsoluteTransform>().Translation) / 2;
+            var center =
+                (
+                    departure.Get<AbsoluteTransform>().Translation
+                    + destination.Get<AbsoluteTransform>().Translation
+                ) / 2;
 
             // 创建音效
-            factory.Make(world, commandBuffer, new SimpleSoundDescription()
-            {
-                Transform = new AbsoluteTransformOptions() { Translation = center, Rotation = Quaternion.Identity },
-                SoundEffect = _warpingSoundEffect,
-            });
+            factory.Make(
+                world,
+                commandBuffer,
+                new SimpleSoundDescription()
+                {
+                    Transform = new AbsoluteTransformOptions()
+                    {
+                        Translation = center,
+                        Rotation = Quaternion.Identity,
+                    },
+                    SoundEffect = _warpingSoundEffect,
+                }
+            );
         }
     }
 }

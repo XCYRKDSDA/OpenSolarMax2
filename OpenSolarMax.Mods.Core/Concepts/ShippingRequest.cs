@@ -13,10 +13,8 @@ public static partial class ConceptNames
 [Define(ConceptNames.ShippingRequest)]
 public abstract class ShippingRequestDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(InputEvent),
-        typeof(StartShippingRequest)
-    );
+    public static Signature Signature { get; } =
+        new(typeof(InputEvent), typeof(StartShippingRequest));
 }
 
 [Describe(ConceptNames.ShippingRequest)]
@@ -36,12 +34,15 @@ public class ShippingRequestApplier : IApplier<ShippingRequestDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShippingRequestDescription desc)
     {
-        commandBuffer.Set(in entity, new StartShippingRequest
-        {
-            Departure = desc.Departure,
-            Destination = desc.Destination,
-            Party = desc.Party,
-            ExpectedNum = desc.ExpectedNum,
-        });
+        commandBuffer.Set(
+            in entity,
+            new StartShippingRequest
+            {
+                Departure = desc.Departure,
+                Destination = desc.Destination,
+                Party = desc.Party,
+                ExpectedNum = desc.ExpectedNum,
+            }
+        );
     }
 }

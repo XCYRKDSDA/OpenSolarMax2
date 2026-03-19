@@ -15,19 +15,30 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(AnchoredShipsRegistry)), ReadPrev(typeof(Combatable)), ReadPrev(typeof(Sprite)),
- ReadPrev(typeof(AbsoluteTransform))]
-[Iterate(typeof(Battlefield)), ChangeStructure]
+[
+    ReadPrev(typeof(AnchoredShipsRegistry)),
+    ReadPrev(typeof(Combatable)),
+    ReadPrev(typeof(Sprite)),
+    ReadPrev(typeof(AbsoluteTransform)),
+    Iterate(typeof(Battlefield)),
+    ChangeStructure
+]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 先量变再质变
 [ExecuteAfter(typeof(ProgressCombatSystem))]
-public sealed partial class SettleCombatSystem(World world, IAssetsManager assets, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+public sealed partial class SettleCombatSystem(
+    World world,
+    IAssetsManager assets,
+    IConceptFactory factory
+) : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
-    private void SettleCombat(in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle,
-                              [Data] CommandBuffer commandBuffer)
+    private void SettleCombat(
+        in AnchoredShipsRegistry shipsRegistry,
+        ref Battlefield battle,
+        [Data] CommandBuffer commandBuffer
+    )
     {
         // 考察各个阵营的破坏度
         foreach (var party in battle.FrontlineDamage.Keys)
@@ -47,10 +58,18 @@ public sealed partial class SettleCombatSystem(World world, IAssetsManager asset
                 var position = ship.Get<AbsoluteTransform>().Translation;
 
                 // 生成闪光
-                factory.Make(world, commandBuffer, new UnitFlareDescription() { Color = color, Position = position });
+                factory.Make(
+                    world,
+                    commandBuffer,
+                    new UnitFlareDescription() { Color = color, Position = position }
+                );
 
                 // 生成冲击波
-                factory.Make(world, commandBuffer, new UnitPulseDescription() { Color = color, Position = position });
+                factory.Make(
+                    world,
+                    commandBuffer,
+                    new UnitPulseDescription() { Color = color, Position = position }
+                );
 
                 // 移除单位
                 commandBuffer.Destroy(ship);

@@ -13,7 +13,8 @@ public interface IDescriptionApplier
     void Apply(CommandBuffer commandBuffer, Entity entity, IDescription desc);
 }
 
-public interface IApplier<in T> : IDescriptionApplier where T : IDescription
+public interface IApplier<in T> : IDescriptionApplier
+    where T : IDescription
 {
     void Apply(CommandBuffer commandBuffer, Entity entity, T desc);
 

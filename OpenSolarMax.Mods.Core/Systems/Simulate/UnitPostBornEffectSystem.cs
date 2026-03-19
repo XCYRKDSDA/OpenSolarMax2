@@ -18,7 +18,8 @@ internal static class UnitPostBornEffectParams
     internal static readonly TimeSpan FadeOutDuration = PostBornDuration * 0.1;
 }
 
-[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(UnitPostBornEffect))]
+[SimulateSystem, BeforeStructuralChanges]
+[Iterate(typeof(UnitPostBornEffect))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
 {
@@ -32,20 +33,25 @@ public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
     public void Update(GameTime gameTime) => UpdateBlinkEffectQuery(world, gameTime);
 }
 
-[SimulateSystem, BeforeStructuralChanges, ReadCurr(typeof(UnitPostBornEffect)), ChangeStructure]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(UnitPostBornEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class RemoveUnitPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<UnitPostBornEffect>]
-    private static void RemoveUnitPostBornEffect(Entity entity, in UnitPostBornEffect effect,
-                                                 [Data] CommandBuffer commandBuffer)
+    private static void RemoveUnitPostBornEffect(
+        Entity entity,
+        in UnitPostBornEffect effect,
+        [Data] CommandBuffer commandBuffer
+    )
     {
         if (effect.TimeElapsed >= Params.PostBornDuration)
             commandBuffer.Remove<UnitPostBornEffect>(entity);
     }
 
-    public void Update(CommandBuffer commandBuffer) => RemoveUnitPostBornEffectQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer) =>
+        RemoveUnitPostBornEffectQuery(world, commandBuffer);
 }
 
 [SimulateSystem, AfterStructuralChanges]
@@ -58,8 +64,9 @@ public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager a
     /// 外置的单位出生后动画。<br/>
     /// 要求的组件为<see cref="Sprite"/>
     /// </summary>
-    private readonly AnimationClip<Entity> _unitPostBornAnimationClip =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitPostBorn.json");
+    private readonly AnimationClip<Entity> _unitPostBornAnimationClip = assets.Load<
+        AnimationClip<Entity>
+    >("Animations/UnitPostBorn.json");
 
     [Query]
     [All<UnitPostBornEffect, Sprite>]
@@ -71,13 +78,22 @@ public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager a
         switch (fadeOutRatio)
         {
             case < 0:
-                AnimationEvaluator<Entity>.EvaluateAndSet(ref entity, _unitPostBornAnimationClip, animationTime);
+                AnimationEvaluator<Entity>.EvaluateAndSet(
+                    ref entity,
+                    _unitPostBornAnimationClip,
+                    animationTime
+                );
                 break;
             case >= 0 and < 1:
-                AnimationEvaluator<Entity>.TweenAndSet(ref entity,
-                                                       _unitPostBornAnimationClip, animationTime,
-                                                       null, float.NaN,
-                                                       null, fadeOutRatio);
+                AnimationEvaluator<Entity>.TweenAndSet(
+                    ref entity,
+                    _unitPostBornAnimationClip,
+                    animationTime,
+                    null,
+                    float.NaN,
+                    null,
+                    fadeOutRatio
+                );
                 break;
         }
     }

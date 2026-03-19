@@ -24,7 +24,7 @@ public class PartyDeclaration : IDeclaration<PartyDeclaration>
             Color = newCfg.Color ?? Color,
             Workload = newCfg.Workload ?? Workload,
             Attack = newCfg.Attack ?? Attack,
-            Health = newCfg.Health ?? Health
+            Health = newCfg.Health ?? Health,
         };
     }
 }
@@ -32,11 +32,17 @@ public class PartyDeclaration : IDeclaration<PartyDeclaration>
 [Translate("party", ConceptNames.Party)]
 public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDescription>
 {
-    public PartyDescription ToDescription(PartyDeclaration declaration,
-                                          IReadOnlyDictionary<string, Entity> otherEntities)
+    public PartyDescription ToDescription(
+        PartyDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
-        if (declaration.Color is null || declaration.Workload is null ||
-            declaration.Attack is null || declaration.Health is null)
+        if (
+            declaration.Color is null
+            || declaration.Workload is null
+            || declaration.Attack is null
+            || declaration.Health is null
+        )
             throw new NullReferenceException();
 
         var desc = new PartyDescription()
@@ -52,18 +58,18 @@ public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDes
 }
 
 [Translate("party", ConceptNames.PartyPreview), OnlyForPreview]
-public class PartyPreviewDeclarationTranslator : ITranslator<PartyDeclaration, PartyPreviewDescription>
+public class PartyPreviewDeclarationTranslator
+    : ITranslator<PartyDeclaration, PartyPreviewDescription>
 {
-    public PartyPreviewDescription ToDescription(PartyDeclaration declaration,
-                                                 IReadOnlyDictionary<string, Entity> otherEntities)
+    public PartyPreviewDescription ToDescription(
+        PartyDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
         if (declaration.Color is null)
             throw new NullReferenceException();
 
-        var desc = new PartyPreviewDescription()
-        {
-            Color = declaration.Color.Value,
-        };
+        var desc = new PartyPreviewDescription() { Color = declaration.Color.Value };
 
         return desc;
     }

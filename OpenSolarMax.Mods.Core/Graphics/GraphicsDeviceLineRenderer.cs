@@ -5,47 +5,69 @@ using Nine.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Graphics;
 
-internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets) : ILineRenderer
+internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssetsManager assets)
+    : ILineRenderer
 {
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[8];
 
     private static readonly short[] _indices =
     [
-        0, 1, 4, 4, 1, 5,
-        1, 2, 5, 5, 2, 6,
-        2, 3, 6, 6, 3, 7,
+        0,
+        1,
+        4,
+        4,
+        1,
+        5,
+        1,
+        2,
+        5,
+        5,
+        2,
+        6,
+        2,
+        3,
+        6,
+        6,
+        3,
+        7,
     ];
 
     private readonly GraphicsDevice _graphicsDevice = graphicsDevice;
     private readonly TintEffect _effect = new TintEffect(graphicsDevice);
 
-    public void DrawLine(Vector2 head, Vector2 tail, float thickness,
-                         NinePatchRegion texture, Color color,
-                         float headOffset = 0, float tailOffset = 0)
+    public void DrawLine(
+        Vector2 head,
+        Vector2 tail,
+        float thickness,
+        NinePatchRegion texture,
+        Color color,
+        float headOffset = 0,
+        float tailOffset = 0
+    )
     {
         throw new NotImplementedException(); // TODO: 未实现首尾偏移
 
         var scale = thickness / texture.Bounds.Height;
 
-        _vertices[0].TextureCoordinate.X
-            = _vertices[4].TextureCoordinate.X = (float)texture.Bounds.Left / texture.Texture.Width;
-        _vertices[1].TextureCoordinate.X
-            = _vertices[5].TextureCoordinate.X = (float)(texture.Bounds.Left + texture.Padding.Left)
-                                                 / texture.Texture.Width;
-        _vertices[2].TextureCoordinate.X
-            = _vertices[6].TextureCoordinate.X = (float)(texture.Bounds.Right - texture.Padding.Right)
-                                                 / texture.Texture.Width;
-        _vertices[3].TextureCoordinate.X
-            = _vertices[7].TextureCoordinate.X = (float)texture.Bounds.Right / texture.Texture.Width;
+        _vertices[0].TextureCoordinate.X = _vertices[4].TextureCoordinate.X =
+            (float)texture.Bounds.Left / texture.Texture.Width;
+        _vertices[1].TextureCoordinate.X = _vertices[5].TextureCoordinate.X =
+            (float)(texture.Bounds.Left + texture.Padding.Left) / texture.Texture.Width;
+        _vertices[2].TextureCoordinate.X = _vertices[6].TextureCoordinate.X =
+            (float)(texture.Bounds.Right - texture.Padding.Right) / texture.Texture.Width;
+        _vertices[3].TextureCoordinate.X = _vertices[7].TextureCoordinate.X =
+            (float)texture.Bounds.Right / texture.Texture.Width;
 
-        _vertices[0].TextureCoordinate.Y
-            = _vertices[1].TextureCoordinate.Y
-                  = _vertices[2].TextureCoordinate.Y
-                        = _vertices[3].TextureCoordinate.Y = (float)texture.Bounds.Top / texture.Texture.Height;
-        _vertices[4].TextureCoordinate.Y
-            = _vertices[5].TextureCoordinate.Y
-                  = _vertices[6].TextureCoordinate.Y
-                        = _vertices[7].TextureCoordinate.Y = (float)texture.Bounds.Bottom / texture.Texture.Height;
+        _vertices[0].TextureCoordinate.Y =
+            _vertices[1].TextureCoordinate.Y =
+            _vertices[2].TextureCoordinate.Y =
+            _vertices[3].TextureCoordinate.Y =
+                (float)texture.Bounds.Top / texture.Texture.Height;
+        _vertices[4].TextureCoordinate.Y =
+            _vertices[5].TextureCoordinate.Y =
+            _vertices[6].TextureCoordinate.Y =
+            _vertices[7].TextureCoordinate.Y =
+                (float)texture.Bounds.Bottom / texture.Texture.Height;
 
         for (var i = 0; i < _vertices.Length; i++)
             _vertices[i].Color = color;
@@ -62,8 +84,10 @@ internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssets
         _vertices[4].Position = new Vector3(head - perpendicular, 0);
         for (var i = 0; i < 2; i++)
         {
-            _vertices[i * 4 + 1].Position = _vertices[i * 4].Position + new Vector3(head2LeftSplit, 0);
-            _vertices[i * 4 + 2].Position = _vertices[i * 4].Position + new Vector3(head2RightSplit, 0);
+            _vertices[i * 4 + 1].Position =
+                _vertices[i * 4].Position + new Vector3(head2LeftSplit, 0);
+            _vertices[i * 4 + 2].Position =
+                _vertices[i * 4].Position + new Vector3(head2RightSplit, 0);
             _vertices[i * 4 + 3].Position = _vertices[i * 4].Position + new Vector3(head2Tail, 0);
         }
 
@@ -72,16 +96,29 @@ internal class GraphicsDeviceLineRenderer(GraphicsDevice graphicsDevice, IAssets
         foreach (var pass in _effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                                                      _vertices, 0, _vertices.Length,
-                                                      _indices, 0, _indices.Length / 3);
+            _graphicsDevice.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleList,
+                _vertices,
+                0,
+                _vertices.Length,
+                _indices,
+                0,
+                _indices.Length / 3
+            );
         }
     }
 
-    public void DrawDashLine(Vector2 head, Vector2 tail, float thickness,
-                             float dashLength, float gapLength,
-                             NinePatchRegion texture, Color color,
-                             float headOffset = 0, float tailOffset = 0)
+    public void DrawDashLine(
+        Vector2 head,
+        Vector2 tail,
+        float thickness,
+        float dashLength,
+        float gapLength,
+        NinePatchRegion texture,
+        Color color,
+        float headOffset = 0,
+        float tailOffset = 0
+    )
     {
         throw new NotImplementedException();
     }

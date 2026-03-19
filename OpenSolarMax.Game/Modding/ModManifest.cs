@@ -4,7 +4,7 @@ internal enum ModType
 {
     Behavior,
     Content,
-    Levels
+    Levels,
 }
 
 internal class ModDependencies

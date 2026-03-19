@@ -14,8 +14,7 @@ public static partial class ConceptNames
 public abstract class EmptyCoordDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        TransformableDefinition.Signature;
+        DependencyCapableDefinition.Signature + TransformableDefinition.Signature;
 }
 
 // 1. 接口的需求来自使用方。接口希望选项平铺，
@@ -23,8 +22,11 @@ public abstract class EmptyCoordDefinition : IDefinition
 [Describe(ConceptNames.EmptyCoord)]
 public class EmptyCoordDescription : IDescription
 {
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 }
 
 [Apply(ConceptNames.EmptyCoord)]
@@ -35,7 +37,10 @@ public class EmptyCoordApplier(IConceptFactory factory) : IApplier<EmptyCoordDes
     public void Apply(CommandBuffer commandBuffer, Entity entity, EmptyCoordDescription desc)
     {
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
     }
 }

@@ -14,8 +14,11 @@ public static class RevolutionUtils
     /// <param name="random">随机引擎</param>
     /// <param name="orbitOffsetRange">单位半径偏差范围</param>
     /// <returns>单位公转轨道组件</returns>
-    public static RevolutionOrbit CreateRandomRevolutionOrbit(in PlanetGeostationaryOrbit planetOrbit,
-                                                              Random random, float orbitOffsetRange)
+    public static RevolutionOrbit CreateRandomRevolutionOrbit(
+        in PlanetGeostationaryOrbit planetOrbit,
+        Random random,
+        float orbitOffsetRange
+    )
     {
         float offset = ((float)random.NextDouble() - 0.5f) * orbitOffsetRange + 1;
 
@@ -23,7 +26,7 @@ public static class RevolutionUtils
         {
             Rotation = planetOrbit.Rotation,
             Shape = new(planetOrbit.Radius * offset * 2, planetOrbit.Radius * offset * 2),
-            Period = planetOrbit.Period * MathF.Pow(offset, 1.5f)
+            Period = planetOrbit.Period * MathF.Pow(offset, 1.5f),
         };
     }
 
@@ -42,15 +45,21 @@ public static class RevolutionUtils
 
     private const float _defaultOrbitOffsetRange = 0.3f;
 
-    public static void RandomlySetShipOrbitAroundPlanet(Entity relationship, Entity planet,
-                                                        Random? random = null,
-                                                        float orbitOffsetRange = _defaultOrbitOffsetRange)
+    public static void RandomlySetShipOrbitAroundPlanet(
+        Entity relationship,
+        Entity planet,
+        Random? random = null,
+        float orbitOffsetRange = _defaultOrbitOffsetRange
+    )
     {
         random ??= new();
 
         ref readonly var geostationaryOrbit = ref planet.Get<PlanetGeostationaryOrbit>();
-        relationship.Get<RevolutionOrbit>() =
-            CreateRandomRevolutionOrbit(in geostationaryOrbit, random, _defaultOrbitOffsetRange);
+        relationship.Get<RevolutionOrbit>() = CreateRandomRevolutionOrbit(
+            in geostationaryOrbit,
+            random,
+            _defaultOrbitOffsetRange
+        );
         relationship.Get<RevolutionState>() = CreateRandomState(random);
     }
 
@@ -60,10 +69,16 @@ public static class RevolutionUtils
     /// <param name="orbit">实体所在轨道</param>
     /// <param name="state">实体当前公转状态</param>
     /// <returns>单位相对轨道所在实体的相对变换</returns>
-    public static RelativeTransform CalculateTransform(in RevolutionOrbit orbit, in RevolutionState state)
+    public static RelativeTransform CalculateTransform(
+        in RevolutionOrbit orbit,
+        in RevolutionState state
+    )
         // 以+Z轴为轴, 逆时针旋转
-        => new(Matrix.CreateTranslation(orbit.Shape.X / 2, 0, 0)
-               * Matrix.CreateRotationZ(state.Phase)
-               * Matrix.CreateScale(1, orbit.Shape.Y / orbit.Shape.X, 1)
-               * Matrix.CreateFromQuaternion(orbit.Rotation));
+        =>
+        new(
+            Matrix.CreateTranslation(orbit.Shape.X / 2, 0, 0)
+                * Matrix.CreateRotationZ(state.Phase)
+                * Matrix.CreateScale(1, orbit.Shape.Y / orbit.Shape.X, 1)
+                * Matrix.CreateFromQuaternion(orbit.Rotation)
+        );
 }

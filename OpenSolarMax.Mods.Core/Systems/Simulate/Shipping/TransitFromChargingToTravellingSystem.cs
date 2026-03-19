@@ -19,21 +19,24 @@ namespace OpenSolarMax.Mods.Core.Systems;
 // 状态先量变才能质变
 [ExecuteAfter(typeof(UpdateShipsStateSystem))]
 public sealed partial class TransitFromChargingToTravellingSystem(
-    World world, IAssetsManager assets,
-    [Section("systems:simulate:shipping")] IConfiguration configs)
-    : ICalcSystem
+    World world,
+    IAssetsManager assets,
+    [Section("systems:simulate:shipping")] IConfiguration configs
+) : ICalcSystem
 {
     private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
 
-    private FmodEventDescription _travelBegunSoundEvent =
-        assets.Load<FmodEventDescription>("Sounds/Master.bank:/ShipBegun");
+    private FmodEventDescription _travelBegunSoundEvent = assets.Load<FmodEventDescription>(
+        "Sounds/Master.bank:/ShipBegun"
+    );
 
     [Query]
     [All<ShippingStatus, SoundEffect>]
     private void Proceed(ref ShippingStatus status, ref SoundEffect soundEffect)
     {
         // 只考察Charging状态
-        if (status.State != ShippingState.Charging) return;
+        if (status.State != ShippingState.Charging)
+            return;
 
         if (status.Charging.ElapsedTime > _chargingDuration)
         {

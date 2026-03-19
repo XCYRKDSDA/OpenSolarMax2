@@ -20,11 +20,13 @@ internal class EffectResource(string name)
     {
         get
         {
-            if (_bytecode is not null) return _bytecode;
+            if (_bytecode is not null)
+                return _bytecode;
 
             lock (_locker)
             {
-                if (_bytecode is not null) return _bytecode;
+                if (_bytecode is not null)
+                    return _bytecode;
 
                 _bytecode = PlatformGetBytecode(name);
             }

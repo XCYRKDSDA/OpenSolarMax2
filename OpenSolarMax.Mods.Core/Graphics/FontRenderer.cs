@@ -14,20 +14,25 @@ internal class FontRenderer(GraphicsDevice graphicsDevice) : IFontStashRenderer2
     private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
     private static readonly int[] _indices = [0, 1, 2, 3];
 
-    public BasicEffect Effect { get; } = new(graphicsDevice)
-    {
-        World = Matrix.Identity,
-        View = Matrix.Identity,
-        Projection = Matrix.Identity,
-        VertexColorEnabled = true,
-        TextureEnabled = true,
-    };
+    public BasicEffect Effect { get; } =
+        new(graphicsDevice)
+        {
+            World = Matrix.Identity,
+            View = Matrix.Identity,
+            Projection = Matrix.Identity,
+            VertexColorEnabled = true,
+            TextureEnabled = true,
+        };
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 
-    public void DrawQuad(Texture2D texture,
-                         ref VertexPositionColorTexture topLeft, ref VertexPositionColorTexture topRight,
-                         ref VertexPositionColorTexture bottomLeft, ref VertexPositionColorTexture bottomRight)
+    public void DrawQuad(
+        Texture2D texture,
+        ref VertexPositionColorTexture topLeft,
+        ref VertexPositionColorTexture topRight,
+        ref VertexPositionColorTexture bottomLeft,
+        ref VertexPositionColorTexture bottomRight
+    )
     {
         Effect.Texture = texture;
 
@@ -39,7 +44,15 @@ internal class FontRenderer(GraphicsDevice graphicsDevice) : IFontStashRenderer2
         foreach (var pass in Effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
+            GraphicsDevice.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleStrip,
+                _vertices,
+                0,
+                4,
+                _indices,
+                0,
+                2
+            );
         }
     }
 }

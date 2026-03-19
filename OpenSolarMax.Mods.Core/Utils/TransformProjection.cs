@@ -22,7 +22,8 @@ public static class TransformProjection
     /// <param name="rotation">XY 平面上从 X 轴逆时针旋转的弧度</param>
     /// <returns>XY 平面上的 3D 旋转</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Quaternion To3D(float rotation) => Quaternion.CreateFromAxisAngle(Vector3.UnitZ, rotation);
+    public static Quaternion To3D(float rotation) =>
+        Quaternion.CreateFromAxisAngle(Vector3.UnitZ, rotation);
 
     /// <summary>
     /// 将 2D 坐标和旋转转换为 3D 坐标和旋转。转换后的 3D 位姿将严格位于 XY 平面上。<br/>
@@ -32,7 +33,8 @@ public static class TransformProjection
     /// <param name="rotation">XY 平面上从 X 轴逆时针旋转的弧度</param>
     /// <returns>3D 坐标系中的位姿</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static (Vector3, Quaternion) To3D(Vector2 position, float rotation) => (To3D(position), To3D(rotation));
+    public static (Vector3, Quaternion) To3D(Vector2 position, float rotation) =>
+        (To3D(position), To3D(rotation));
 
     /// <summary>
     /// 将 3D 向量投影到 2D XY 平面上
@@ -65,7 +67,8 @@ public static class TransformProjection
     /// <param name="position"></param>
     /// <param name="rotation"></param>
     /// <returns></returns>
-    public static (Vector2, float) To2D(Vector3 position, Quaternion rotation) => (To2D(position), To2D(rotation));
+    public static (Vector2, float) To2D(Vector3 position, Quaternion rotation) =>
+        (To2D(position), To2D(rotation));
 
     /// <summary>
     /// 使位姿的 X 轴指向目标方向，同时将 Z 轴约束在 X 轴与世界 Z 轴构成的平面内，从而让贴图尽可能面向世界 XY 平面
@@ -77,7 +80,12 @@ public static class TransformProjection
         var unitX = Vector3.Normalize(vector);
         var unitY = Vector3.Normalize(new Vector3(-unitX.Y, unitX.X, 0));
         var unitZ = Vector3.Cross(unitX, unitY);
-        var rotation = new Matrix { Right = unitX, Up = unitY, Backward = unitZ };
+        var rotation = new Matrix
+        {
+            Right = unitX,
+            Up = unitY,
+            Backward = unitZ,
+        };
         return Quaternion.CreateFromRotationMatrix(rotation);
     }
 }

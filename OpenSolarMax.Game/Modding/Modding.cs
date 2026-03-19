@@ -24,19 +24,30 @@ internal static partial class Modding
 
     public static string DefaultLevelsDir => "Levels";
 
-    private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(DirectoryEntry dir, ModType type)
+    private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(
+        DirectoryEntry dir,
+        ModType type
+    )
     {
         var result = new List<(DirectoryEntry, ModManifest)>();
-        var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IncludeFields = true };
+        var options = new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true,
+            IncludeFields = true,
+        };
         options.Converters.Add(new JsonStringEnumConverter());
         foreach (var subDir in dir.EnumerateDirectories())
         {
             var manifestFile = subDir.EnumerateFiles("manifest.json").FirstOrDefault();
-            if (manifestFile is null) continue;
+            if (manifestFile is null)
+                continue;
 
             using var stream = manifestFile.Open(FileMode.Open, FileAccess.Read);
-            var manifest = JsonSerializer.Deserialize<ModManifest>(stream, options) ?? throw new JsonException();
-            if (manifest.Type != type) continue;
+            var manifest =
+                JsonSerializer.Deserialize<ModManifest>(stream, options)
+                ?? throw new JsonException();
+            if (manifest.Type != type)
+                continue;
 
             result.Add((subDir, manifest));
         }
@@ -47,19 +58,22 @@ internal static partial class Modding
     public static List<BehaviorModInfo> ListBehaviorMods()
     {
         return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"), ModType.Behavior)
-               .Select(pair => new BehaviorModInfo(pair.Item1, pair.Item2)).ToList();
+            .Select(pair => new BehaviorModInfo(pair.Item1, pair.Item2))
+            .ToList();
     }
 
     public static List<ContentModInfo> ListContentMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Content)
-               .Select(pair => new ContentModInfo(pair.Item1, pair.Item2)).ToList();
+            .Select(pair => new ContentModInfo(pair.Item1, pair.Item2))
+            .ToList();
     }
 
     public static List<LevelModInfo> ListLevelMods()
     {
         return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Levels)
-               .Select(pair => new LevelModInfo(pair.Item1, pair.Item2)).ToList();
+            .Select(pair => new LevelModInfo(pair.Item1, pair.Item2))
+            .ToList();
     }
 
     /// <summary>
@@ -70,12 +84,11 @@ internal static partial class Modding
     public static GameplayOrPreview GetBehaviorTypeScene(Type type)
     {
         return type.GetCustomAttribute<BothForGameplayAndPreviewAttribute>() is not null
-                   ? GameplayOrPreview.Preview | GameplayOrPreview.Gameplay
-                   : type.GetCustomAttribute<OnlyForPreviewAttribute>() is not null
-                       ? GameplayOrPreview.Preview
-                       : GameplayOrPreview.Gameplay;
+                ? GameplayOrPreview.Preview | GameplayOrPreview.Gameplay
+            : type.GetCustomAttribute<OnlyForPreviewAttribute>() is not null
+                ? GameplayOrPreview.Preview
+            : GameplayOrPreview.Gameplay;
     }
-
 
     /// <summary>
     /// 从一个程序集中找到所有的配置器类型
@@ -91,18 +104,23 @@ internal static partial class Modding
             if (!type.GetInterfaces().Contains(typeof(IDeclaration)))
                 continue;
 
-            var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>()
-                                 ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
+            var schemaNameAttr =
+                type.GetCustomAttribute<SchemaNameAttribute>()
+                ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
 
-            configurationTypes.Add(schemaNameAttr.Name,
-                                   new DeclarationSchemaInfo(type, schemaNameAttr.Name));
+            configurationTypes.Add(
+                schemaNameAttr.Name,
+                new DeclarationSchemaInfo(type, schemaNameAttr.Name)
+            );
         }
 
         return configurationTypes;
     }
 
     public static Dictionary<string, DeclarationTranslatorInfo> FindTranslatorTypes(
-        Assembly assembly, GameplayOrPreview scene)
+        Assembly assembly,
+        GameplayOrPreview scene
+    )
     {
         var translators = new Dictionary<string, DeclarationTranslatorInfo>();
 
@@ -114,17 +132,26 @@ internal static partial class Modding
             if ((GetBehaviorTypeScene(type) & scene) == 0)
                 continue;
 
-            var translateAttr = type.GetCustomAttribute<TranslateAttribute>() ??
-                                throw new Exception($"Can't find attribute `Translate` in type {type.Name}");
-            translators.Add(translateAttr.SchemaName,
-                            new DeclarationTranslatorInfo(type, translateAttr.SchemaName, translateAttr.ConceptName));
+            var translateAttr =
+                type.GetCustomAttribute<TranslateAttribute>()
+                ?? throw new Exception($"Can't find attribute `Translate` in type {type.Name}");
+            translators.Add(
+                translateAttr.SchemaName,
+                new DeclarationTranslatorInfo(
+                    type,
+                    translateAttr.SchemaName,
+                    translateAttr.ConceptName
+                )
+            );
         }
 
         return translators;
     }
 
     public static Dictionary<string, ConceptRelatedTypes> FindConceptRelatedTypes(
-        Assembly assembly, GameplayOrPreview scene)
+        Assembly assembly,
+        GameplayOrPreview scene
+    )
     {
         var definitionTypes = new Dictionary<string, Type>();
         var descriptionTypes = new Dictionary<string, Type>();
@@ -145,20 +172,28 @@ internal static partial class Modding
                 var name = type.GetCustomAttribute<DescribeAttribute>()!.Key;
                 descriptionTypes.Add(name, type);
             }
-            else if (type.GetInterfaces().Contains(typeof(IApplier)) ||
-                     type.GetInterfaces().Any(i => i.IsGenericType &&
-                                                   i.GetGenericTypeDefinition() == typeof(IApplier<>)))
+            else if (
+                type.GetInterfaces().Contains(typeof(IApplier))
+                || type.GetInterfaces()
+                    .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IApplier<>))
+            )
             {
                 var name = type.GetCustomAttribute<ApplyAttribute>()!.Key;
                 applierTypes.Add(name, type);
             }
         }
 
-        var allConceptNames = definitionTypes.Keys.Concat(descriptionTypes.Keys).Concat(applierTypes.Keys).ToHashSet();
+        var allConceptNames = definitionTypes
+            .Keys.Concat(descriptionTypes.Keys)
+            .Concat(applierTypes.Keys)
+            .ToHashSet();
         return allConceptNames.ToDictionary(
             k => k,
-            k => new ConceptRelatedTypes(definitionTypes.GetValueOrDefault(k), descriptionTypes.GetValueOrDefault(k),
-                                         applierTypes.GetValueOrDefault(k))
+            k => new ConceptRelatedTypes(
+                definitionTypes.GetValueOrDefault(k),
+                descriptionTypes.GetValueOrDefault(k),
+                applierTypes.GetValueOrDefault(k)
+            )
         );
     }
 
@@ -168,7 +203,10 @@ internal static partial class Modding
     /// <param name="assembly"></param>
     /// <param name="scene"></param>
     /// <returns>各种类型系统类型的集合</returns>
-    public static ImmutableSystemTypeCollection FindSystemTypes(Assembly assembly, GameplayOrPreview scene)
+    public static ImmutableSystemTypeCollection FindSystemTypes(
+        Assembly assembly,
+        GameplayOrPreview scene
+    )
     {
         var systemTypes = new SystemTypeCollection();
 
@@ -179,10 +217,16 @@ internal static partial class Modding
                 continue;
 
             // 筛选系统类型
-            if (!type.GetInterfaces().Intersect([
-                    typeof(ITickSystem), typeof(ITickSystemWithStructuralChanges),
-                    typeof(ICalcSystem), typeof(ICalcSystemWithStructuralChanges),
-                ]).Any())
+            if (
+                !type.GetInterfaces()
+                    .Intersect([
+                        typeof(ITickSystem),
+                        typeof(ITickSystemWithStructuralChanges),
+                        typeof(ICalcSystem),
+                        typeof(ICalcSystemWithStructuralChanges),
+                    ])
+                    .Any()
+            )
                 continue;
 
             // 排除禁用的系统
@@ -215,15 +259,22 @@ internal static partial class Modding
     /// <param name="assembly"></param>
     /// <param name="scene"></param>
     /// <returns></returns>
-    public static ILookup<string, MethodInfo> FindHookImplementations(Assembly assembly, GameplayOrPreview scene)
+    public static ILookup<string, MethodInfo> FindHookImplementations(
+        Assembly assembly,
+        GameplayOrPreview scene
+    )
     {
         const BindingFlags implFlags = BindingFlags.Public | BindingFlags.Static;
-        return assembly.GetExportedTypes()
-                       .Where(t => t.GetCustomAttributes<HookProviderAttribute>().Any())
-                       .Where(t => (GetBehaviorTypeScene(t) & scene) != 0)
-                       .SelectMany(t => t.GetMethods(implFlags))
-                       .SelectMany(m => m.GetCustomAttributes<HookOnAttribute>(), (m, a) => (hook: a.Hook, method: m))
-                       .ToLookup(p => p.hook, p => p.method);
+        return assembly
+            .GetExportedTypes()
+            .Where(t => t.GetCustomAttributes<HookProviderAttribute>().Any())
+            .Where(t => (GetBehaviorTypeScene(t) & scene) != 0)
+            .SelectMany(t => t.GetMethods(implFlags))
+            .SelectMany(
+                m => m.GetCustomAttributes<HookOnAttribute>(),
+                (m, a) => (hook: a.Hook, method: m)
+            )
+            .ToLookup(p => p.hook, p => p.method);
     }
 
     /// <summary>
@@ -231,12 +282,18 @@ internal static partial class Modding
     /// </summary>
     /// <param name="assembly"></param>
     /// <returns></returns>
-    public static IEnumerable<KeyValuePair<LevelWidgetAttribute, Type>> FindLevelWidgetTypes(Assembly assembly)
+    public static IEnumerable<KeyValuePair<LevelWidgetAttribute, Type>> FindLevelWidgetTypes(
+        Assembly assembly
+    )
     {
-        return assembly.ExportedTypes
-                       .Where(t => t.GetCustomAttribute<LevelWidgetAttribute>() is not null &&
-                                   t.IsSubclassOf(typeof(Widget)))
-                       .Select(t => new KeyValuePair<LevelWidgetAttribute, Type>(
-                                   t.GetCustomAttribute<LevelWidgetAttribute>()!, t));
+        return assembly
+            .ExportedTypes.Where(t =>
+                t.GetCustomAttribute<LevelWidgetAttribute>() is not null
+                && t.IsSubclassOf(typeof(Widget))
+            )
+            .Select(t => new KeyValuePair<LevelWidgetAttribute, Type>(
+                t.GetCustomAttribute<LevelWidgetAttribute>()!,
+                t
+            ));
     }
 }

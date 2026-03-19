@@ -19,9 +19,9 @@ public static partial class ConceptNames
 public abstract class LaserFlashDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        TransformableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + TransformableDefinition.Signature
+        + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
@@ -41,40 +41,52 @@ public class LaserFlashDescription : IDescription
 }
 
 [Apply(ConceptNames.LaserFlash)]
-public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<LaserFlashDescription>
+public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<LaserFlashDescription>
 {
-    private readonly AnimationClip<Entity> _glowAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/LaserFlash.json");
+    private readonly AnimationClip<Entity> _glowAnimation = assets.Load<AnimationClip<Entity>>(
+        "Animations/LaserFlash.json"
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserFlashDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
         // 摆放位置
-        factory.Make(world, commandBuffer, ConceptNames.RelativeTransform,
-                     new RelativeTransformDescription
-                     {
-                         Parent = desc.Turret,
-                         Child = entity,
-                         Translation = Vector3.UnitZ * 0.1f,
-                         Rotation = Quaternion.Identity
-                     });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.RelativeTransform,
+            new RelativeTransformDescription
+            {
+                Parent = desc.Turret,
+                Child = entity,
+                Translation = Vector3.UnitZ * 0.1f,
+                Rotation = Quaternion.Identity,
+            }
+        );
 
         // 设置纹理
         ref readonly var turretSprite = ref desc.Turret.Get<Sprite>();
-        commandBuffer.Set(in entity, turretSprite with
-        {
-            Texture = desc.Texture,
-            Color = desc.Color,
-            Blend = SpriteBlend.Additive,
-        });
+        commandBuffer.Set(
+            in entity,
+            turretSprite with
+            {
+                Texture = desc.Texture,
+                Color = desc.Color,
+                Blend = SpriteBlend.Additive,
+            }
+        );
 
         // 设置动画
-        commandBuffer.Set(in entity, new Animation
-        {
-            Clip = _glowAnimation,
-            TimeElapsed = TimeSpan.Zero,
-            TimeOffset = TimeSpan.Zero
-        });
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                Clip = _glowAnimation,
+                TimeElapsed = TimeSpan.Zero,
+                TimeOffset = TimeSpan.Zero,
+            }
+        );
     }
 }

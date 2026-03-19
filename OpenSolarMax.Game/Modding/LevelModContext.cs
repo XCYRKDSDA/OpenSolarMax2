@@ -36,13 +36,15 @@ internal class LevelModContext
     {
         var orders = SystemsTopology.ExtractExecutionOrders(systemTypes);
         var sorted = SystemsTopology.TopologicalSortSystems(systemTypes, orders);
-        return new ImmutableSortedSystemTypes([..systemTypes], [..orders], [..sorted]);
+        return new ImmutableSortedSystemTypes([.. systemTypes], [.. orders], [.. sorted]);
     }
 
     private static BakedBehaviorsInfo MergeBehaviorsInfo(params BehaviorsInfo[] layers)
     {
         // 合并声明翻译器
-        var mergedTranslatorTypes = layers.SelectMany(l => l.DeclarationTranslatorTypes).ToImmutableDictionary();
+        var mergedTranslatorTypes = layers
+            .SelectMany(l => l.DeclarationTranslatorTypes)
+            .ToImmutableDictionary();
 
         // 合并概念
         var conceptInfos = new Dictionary<string, ConceptInfo>();
@@ -54,15 +56,22 @@ internal class LevelModContext
                 {
                     if (relatedTypes.Description is not null)
                         throw new Exception("Concept description cannot be extended!");
-                    var extendedConcept = conceptInfo.Extend(relatedTypes.Definition, relatedTypes.Applier);
+                    var extendedConcept = conceptInfo.Extend(
+                        relatedTypes.Definition,
+                        relatedTypes.Applier
+                    );
                     conceptInfos[key] = extendedConcept;
                 }
                 else
                 {
                     if (relatedTypes.Definition is null)
                         throw new Exception("A new concept must be provided a definition!");
-                    var newConcept = ConceptInfo.Define(key, relatedTypes.Definition, relatedTypes.Description,
-                                                        relatedTypes.Applier);
+                    var newConcept = ConceptInfo.Define(
+                        key,
+                        relatedTypes.Definition,
+                        relatedTypes.Description,
+                        relatedTypes.Applier
+                    );
                     conceptInfos.Add(key, newConcept);
                 }
             }
@@ -78,13 +87,18 @@ internal class LevelModContext
         );
 
         // 合并钩子函数
-        var mergedImplMethods = layers.SelectMany(l => l.HookImplMethods)
-                                      .SelectMany(kv => kv.Value, (kv, i) => (kv.Key, Info: i))
-                                      .GroupBy(p => p.Key)
-                                      .ToImmutableDictionary(g => g.Key, g => g.Select(p => p.Info).ToImmutableArray());
+        var mergedImplMethods = layers
+            .SelectMany(l => l.HookImplMethods)
+            .SelectMany(kv => kv.Value, (kv, i) => (kv.Key, Info: i))
+            .GroupBy(p => p.Key)
+            .ToImmutableDictionary(g => g.Key, g => g.Select(p => p.Info).ToImmutableArray());
 
-        return new BakedBehaviorsInfo(mergedTranslatorTypes, mergedConceptInfos, mergedSystemTypes,
-                                      mergedImplMethods);
+        return new BakedBehaviorsInfo(
+            mergedTranslatorTypes,
+            mergedConceptInfos,
+            mergedSystemTypes,
+            mergedImplMethods
+        );
     }
 
     public LevelModContext(LevelModInfo info, SolarMax game)
@@ -104,7 +118,9 @@ internal class LevelModContext
 
         // 加载行为模组
         var behaviorMods = new List<BehaviorMod>();
-        var sharedAssemblies = AppDomain.CurrentDomain.GetAssemblies().ToDictionary(a => a.FullName!, a => a);
+        var sharedAssemblies = AppDomain
+            .CurrentDomain.GetAssemblies()
+            .ToDictionary(a => a.FullName!, a => a);
         foreach (var behaviorModInfo in behaviorModInfos)
         {
             var behaviorMod = new BehaviorMod(behaviorModInfo, sharedAssemblies);
@@ -124,10 +140,16 @@ internal class LevelModContext
         ComponentTypes = behaviorMods.SelectMany(m => m.ComponentTypes).ToImmutableArray();
 
         // 合并实体配置类型。直接取并集即可
-        DeclarationSchemaInfos = behaviorMods.SelectMany(l => l.DeclarationSchemaInfos).ToImmutableDictionary();
+        DeclarationSchemaInfos = behaviorMods
+            .SelectMany(l => l.DeclarationSchemaInfos)
+            .ToImmutableDictionary();
 
-        GameplayBehaviors = MergeBehaviorsInfo(behaviorMods.Select(m => m.GameplayBehaviorsInfo).ToArray());
-        PreviewBehaviors = MergeBehaviorsInfo(behaviorMods.Select(m => m.PreviewBehaviorsInfo).ToArray());
+        GameplayBehaviors = MergeBehaviorsInfo(
+            behaviorMods.Select(m => m.GameplayBehaviorsInfo).ToArray()
+        );
+        PreviewBehaviors = MergeBehaviorsInfo(
+            behaviorMods.Select(m => m.PreviewBehaviorsInfo).ToArray()
+        );
 
         #endregion
 
@@ -138,8 +160,12 @@ internal class LevelModContext
         // 全局资产位于最底层
         localFileSystem.AddFileSystem(Folders.Content);
         // 逐个添加资产文件系统
-        foreach (var fs in Enumerable.Concat(BehaviorMods.SelectMany(m => m.ContentFileSystems),
-                                             ContentMods.SelectMany(m => m.ContentFileSystems)))
+        foreach (
+            var fs in Enumerable.Concat(
+                BehaviorMods.SelectMany(m => m.ContentFileSystems),
+                ContentMods.SelectMany(m => m.ContentFileSystems)
+            )
+        )
             localFileSystem.AddFileSystem(fs);
 
         // 构建局部资产管理器
@@ -150,53 +176,65 @@ internal class LevelModContext
         localAssets.RegisterLoader(new NinePatchRegionLoader());
         localAssets.RegisterLoader(new FontSystemLoader());
         localAssets.RegisterLoader(new ByteArrayLoader());
-        localAssets.RegisterLoader(new EntityAnimationClipLoader()
-        {
-            ComponentTypes = ComponentTypes.ToList(),
-            CurveLoaders =
+        localAssets.RegisterLoader(
+            new EntityAnimationClipLoader()
             {
+                ComponentTypes = ComponentTypes.ToList(),
+                CurveLoaders =
                 {
-                    typeof(float),
-                    new SingleCubicKeyFrameCurveLoader(null)
+                    { typeof(float), new SingleCubicKeyFrameCurveLoader(null) },
+                    {
+                        typeof(Vector2),
+                        new Vector2CubicKeyFrameCurveLoader(new Vector2JsonConverter())
+                    },
+                    {
+                        typeof(Vector3),
+                        new Vector3CubicKeyFrameCurveLoader(new Vector3JsonConverter())
+                    },
+                    {
+                        typeof(Quaternion),
+                        new SphereKeyFrameCurveLoader(
+                            new RotationJsonConverter(),
+                            new Vector3JsonConverter()
+                        )
+                    },
                 },
-                {
-                    typeof(Vector2),
-                    new Vector2CubicKeyFrameCurveLoader(new Vector2JsonConverter())
-                },
-                {
-                    typeof(Vector3),
-                    new Vector3CubicKeyFrameCurveLoader(new Vector3JsonConverter())
-                },
-                {
-                    typeof(Quaternion),
-                    new SphereKeyFrameCurveLoader(new RotationJsonConverter(), new Vector3JsonConverter())
-                }
             }
-        });
-        localAssets.RegisterLoader(new ParametricEntityAnimationClipLoader()
-        {
-            ComponentTypes = ComponentTypes.ToList(),
-            CurveLoaders =
+        );
+        localAssets.RegisterLoader(
+            new ParametricEntityAnimationClipLoader()
             {
+                ComponentTypes = ComponentTypes.ToList(),
+                CurveLoaders =
                 {
-                    typeof(float),
-                    new ParametricSingleCubicKeyFrameCurveLoader(new ParametricFloatJsonConverter())
+                    {
+                        typeof(float),
+                        new ParametricSingleCubicKeyFrameCurveLoader(
+                            new ParametricFloatJsonConverter()
+                        )
+                    },
+                    {
+                        typeof(Vector2),
+                        new ParametricVector2CubicKeyFrameCurveLoader(
+                            new ParametricVector2JsonConverter()
+                        )
+                    },
+                    {
+                        typeof(Vector3),
+                        new ParametricVector3CubicKeyFrameCurveLoader(
+                            new ParametricVector3JsonConverter()
+                        )
+                    },
+                    {
+                        typeof(Quaternion),
+                        new ParametricSphereKeyFrameCurveLoader(
+                            new ParametricRotationJsonConverter(),
+                            new ParametricVector3JsonConverter()
+                        )
+                    },
                 },
-                {
-                    typeof(Vector2),
-                    new ParametricVector2CubicKeyFrameCurveLoader(new ParametricVector2JsonConverter())
-                },
-                {
-                    typeof(Vector3),
-                    new ParametricVector3CubicKeyFrameCurveLoader(new ParametricVector3JsonConverter())
-                },
-                {
-                    typeof(Quaternion),
-                    new ParametricSphereKeyFrameCurveLoader(new ParametricRotationJsonConverter(),
-                                                            new ParametricVector3JsonConverter())
-                }
             }
-        });
+        );
 
         LocalAssets = localAssets;
 

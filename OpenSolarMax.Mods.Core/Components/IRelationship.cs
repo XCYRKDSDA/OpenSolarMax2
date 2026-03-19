@@ -13,5 +13,4 @@ public interface IRelationshipRecord : ILookup<Type, Entity>
 /// <summary>
 /// 参与者一侧的索引组件接口，用于快速检索实体参与的关系
 /// </summary>
-public interface IParticipantIndex : ICollection<Entity>
-{ }
+public interface IParticipantIndex : ICollection<Entity> { }

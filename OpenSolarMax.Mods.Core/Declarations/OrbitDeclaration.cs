@@ -10,10 +10,11 @@ public class OrbitDeclaration
 
     public float? Phase { get; set; }
 
-    public OrbitDeclaration Aggregate(OrbitDeclaration newCfg) => new()
-    {
-        Shape = newCfg.Shape ?? Shape,
-        Period = newCfg.Period ?? Period,
-        Phase = newCfg.Phase ?? Phase
-    };
+    public OrbitDeclaration Aggregate(OrbitDeclaration newCfg) =>
+        new()
+        {
+            Shape = newCfg.Shape ?? Shape,
+            Period = newCfg.Period ?? Period,
+            Phase = newCfg.Phase ?? Phase,
+        };
 }

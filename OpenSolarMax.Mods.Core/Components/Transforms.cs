@@ -18,7 +18,8 @@ public struct AbsoluteTransform
     /// </summary>
     public Matrix TransformToRoot
     {
-        readonly get => Matrix.CreateFromQuaternion(Rotation) * Matrix.CreateTranslation(Translation);
+        readonly get =>
+            Matrix.CreateFromQuaternion(Rotation) * Matrix.CreateTranslation(Translation);
         set => value.Decompose(out _, out Rotation, out Translation);
     }
 
@@ -30,9 +31,13 @@ public struct AbsoluteTransform
         Rotation = rotation;
     }
 
-    public AbsoluteTransform(in Matrix matrix) { matrix.Decompose(out _, out Rotation, out Translation); }
+    public AbsoluteTransform(in Matrix matrix)
+    {
+        matrix.Decompose(out _, out Rotation, out Translation);
+    }
 
-    public override readonly string? ToString() => $"Translation: {Translation}, Rotation: {Rotation}";
+    public override readonly string? ToString() =>
+        $"Translation: {Translation}, Rotation: {Rotation}";
 }
 
 /// <summary>
@@ -50,7 +55,8 @@ public struct RelativeTransform
     /// </summary>
     public Matrix TransformToParent
     {
-        readonly get => Matrix.CreateFromQuaternion(Rotation) * Matrix.CreateTranslation(Translation);
+        readonly get =>
+            Matrix.CreateFromQuaternion(Rotation) * Matrix.CreateTranslation(Translation);
         set => value.Decompose(out _, out Rotation, out Translation);
     }
 
@@ -62,7 +68,11 @@ public struct RelativeTransform
         Rotation = rotation;
     }
 
-    public RelativeTransform(in Matrix matrix) { matrix.Decompose(out _, out Rotation, out Translation); }
+    public RelativeTransform(in Matrix matrix)
+    {
+        matrix.Decompose(out _, out Rotation, out Translation);
+    }
 
-    public override readonly string? ToString() => $"Translation: {Translation}, Rotation: {Rotation}";
+    public override readonly string? ToString() =>
+        $"Translation: {Translation}, Rotation: {Rotation}";
 }

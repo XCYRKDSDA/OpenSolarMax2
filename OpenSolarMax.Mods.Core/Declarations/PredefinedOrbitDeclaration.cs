@@ -27,34 +27,43 @@ public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDeclaratio
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
-            Orbit = Orbit is not null && newCfg.Orbit is not null
-                        ? Orbit.Aggregate(newCfg.Orbit)
-                        : newCfg.Orbit ?? Orbit,
+            Orbit =
+                Orbit is not null && newCfg.Orbit is not null
+                    ? Orbit.Aggregate(newCfg.Orbit)
+                    : newCfg.Orbit ?? Orbit,
             Shape = newCfg.Shape ?? Shape,
             Roll = newCfg.Roll ?? Roll,
-            Period = newCfg.Period ?? Period
+            Period = newCfg.Period ?? Period,
         };
     }
 }
 
 [Translate("orbit", ConceptNames.PredefinedOrbit)]
-public class PredefinedOrbitDeclarationTranslator : ITranslator<PredefinedOrbitDeclaration, PredefinedOrbitDescription>
+public class PredefinedOrbitDeclarationTranslator
+    : ITranslator<PredefinedOrbitDeclaration, PredefinedOrbitDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public PredefinedOrbitDescription ToDescription(PredefinedOrbitDeclaration declaration,
-                                                    IReadOnlyDictionary<string, Entity> otherEntities)
+    public PredefinedOrbitDescription ToDescription(
+        PredefinedOrbitDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
-        if (declaration.Shape is null || declaration.Period is null) throw new NullReferenceException();
+        if (declaration.Shape is null || declaration.Period is null)
+            throw new NullReferenceException();
 
         var desc = new PredefinedOrbitDescription()
         {
             Shape = declaration.Shape.Value,
-            Period = declaration.Period.Value
+            Period = declaration.Period.Value,
         };
 
         var tfCfg = new TransformableDeclaration()
-            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 

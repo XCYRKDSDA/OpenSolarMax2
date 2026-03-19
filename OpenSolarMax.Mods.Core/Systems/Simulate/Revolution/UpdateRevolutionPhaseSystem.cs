@@ -19,7 +19,11 @@ public sealed partial class UpdateRevolutionPhaseSystem(World world) : ITickSyst
     [Query]
     [All<RevolutionOrbit, RevolutionState>]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void UpdateRevolution([Data] GameTime time, in RevolutionOrbit orbit, ref RevolutionState state)
+    private static void UpdateRevolution(
+        [Data] GameTime time,
+        in RevolutionOrbit orbit,
+        ref RevolutionState state
+    )
     {
         // 更新旋转状态
         state.Phase += MathF.PI * 2 * (float)time.ElapsedGameTime.TotalSeconds / orbit.Period;

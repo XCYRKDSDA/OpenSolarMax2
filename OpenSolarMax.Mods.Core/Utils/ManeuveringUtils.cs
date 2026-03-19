@@ -8,8 +8,8 @@ namespace OpenSolarMax.Mods.Core.Utils;
 
 public static class ManeuveringUtils
 {
-    private static readonly QueryDescription _barrierDesc = new QueryDescription().WithAll<InfiniteZBarrier>();
-
+    private static readonly QueryDescription _barrierDesc =
+        new QueryDescription().WithAll<InfiniteZBarrier>();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static float CrossProduct(Vector2 a, Vector2 b) => a.X * b.Y - a.Y * b.X;
@@ -41,11 +41,17 @@ public static class ManeuveringUtils
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool CheckBarriersBlocking(World world, Vector3 departure, Vector3 destination) =>
-        CheckBarriersBlocking(world, new Vector2(departure.X, departure.Y), new Vector2(destination.X, destination.Y));
+        CheckBarriersBlocking(
+            world,
+            new Vector2(departure.X, departure.Y),
+            new Vector2(destination.X, destination.Y)
+        );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool CheckBarriersBlocking(World world, Entity departure, Entity destination)
-        => CheckBarriersBlocking(world,
-                                 departure.Get<AbsoluteTransform>().Translation,
-                                 destination.Get<AbsoluteTransform>().Translation);
+    public static bool CheckBarriersBlocking(World world, Entity departure, Entity destination) =>
+        CheckBarriersBlocking(
+            world,
+            departure.Get<AbsoluteTransform>().Translation,
+            destination.Get<AbsoluteTransform>().Translation
+        );
 }

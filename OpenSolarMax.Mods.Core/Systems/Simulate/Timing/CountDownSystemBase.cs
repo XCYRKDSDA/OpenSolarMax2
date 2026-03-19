@@ -5,7 +5,8 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems.Timing;
 
-public abstract class CountDownSystemBase<TTimer>(World world) : ITickSystem where TTimer : ICountDownTimer
+public abstract class CountDownSystemBase<TTimer>(World world) : ITickSystem
+    where TTimer : ICountDownTimer
 {
     private readonly QueryDescription _timerDesc = new QueryDescription().WithAll<TTimer>();
 

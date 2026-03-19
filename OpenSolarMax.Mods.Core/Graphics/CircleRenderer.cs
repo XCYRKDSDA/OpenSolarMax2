@@ -13,7 +13,13 @@ internal class CircleRenderer(GraphicsDevice graphicsDevice)
 {
     private readonly VertexPositionColor[] _vertices = new VertexPositionColor[4];
     private static readonly int[] _indices = [0, 1, 2, 3];
-    private static readonly Vector3[] _square = [new(-1, 1, 0), new(1, 1, 0), new(-1, -1, 0), new(1, -1, 0)];
+    private static readonly Vector3[] _square =
+    [
+        new(-1, 1, 0),
+        new(1, 1, 0),
+        new(-1, -1, 0),
+        new(1, -1, 0),
+    ];
 
     public CircleEffect Effect { get; } = new(graphicsDevice);
 
@@ -35,7 +41,15 @@ internal class CircleRenderer(GraphicsDevice graphicsDevice)
         foreach (var pass in Effect.CurrentTechnique.Passes)
         {
             pass.Apply();
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleStrip, _vertices, 0, 4, _indices, 0, 2);
+            GraphicsDevice.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleStrip,
+                _vertices,
+                0,
+                4,
+                _indices,
+                0,
+                2
+            );
         }
     }
 }

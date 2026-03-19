@@ -18,5 +18,4 @@ public struct PortalChargingStatus
     public Entity Effect;
 }
 
-public class PortalChargingJobs() : List<PortalChargingStatus>
-{ }
+public class PortalChargingJobs() : List<PortalChargingStatus> { }

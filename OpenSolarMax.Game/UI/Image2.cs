@@ -15,7 +15,8 @@ public class Image2 : Widget
         get => _image;
         set
         {
-            if (value == _image) return;
+            if (value == _image)
+                return;
             _image = value;
             InvalidateMeasure();
         }
@@ -36,7 +37,8 @@ public class Image2 : Widget
 
     public override void InternalRender(RenderContext context)
     {
-        if (Renderable is null) return;
+        if (Renderable is null)
+            return;
 
         var bounds = ActualBounds;
 

@@ -12,9 +12,16 @@ using OpenSolarMax.Mods.Core.Concepts;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, BeforeStructuralChanges]
-[ReadPrev(typeof(Turret)), ReadPrev(typeof(InAttackRangeShipsRegistry)), ReadPrev(typeof(AttackCooldown)),
- ReadPrev(typeof(InParty.AsAffiliate)), ReadPrev(typeof(AbsoluteTransform)), ReadPrev(typeof(PartyReferenceColor))]
-[Iterate(typeof(AttackTimer)), ChangeStructure]
+[
+    ReadPrev(typeof(Turret)),
+    ReadPrev(typeof(InAttackRangeShipsRegistry)),
+    ReadPrev(typeof(AttackCooldown)),
+    ReadPrev(typeof(InParty.AsAffiliate)),
+    ReadPrev(typeof(AbsoluteTransform)),
+    ReadPrev(typeof(PartyReferenceColor)),
+    Iterate(typeof(AttackTimer)),
+    ChangeStructure
+]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
 public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactory factory)
@@ -38,10 +45,15 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
 
     [Query]
     [All<Turret, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InParty.AsAffiliate>]
-    private void Shoot(Entity entity, in Turret turret,
-                       in InAttackRangeShipsRegistry registry, ref AttackTimer timer, in AttackCooldown cooldown,
-                       in InParty.AsAffiliate asAffiliate,
-                       [Data] CommandBuffer commandBuffer)
+    private void Shoot(
+        Entity entity,
+        in Turret turret,
+        in InAttackRangeShipsRegistry registry,
+        ref AttackTimer timer,
+        in AttackCooldown cooldown,
+        in InParty.AsAffiliate asAffiliate,
+        [Data] CommandBuffer commandBuffer
+    )
     {
         if (timer.TimeLeft > TimeSpan.Zero)
             return;
@@ -58,33 +70,47 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
         var turretColor = turretParty.Get<PartyReferenceColor>().Value;
-        factory.Make(world, commandBuffer, new LaserBeamDescription()
-        {
-            Planet = entity,
-            TargetPosition = targetPosition,
-            Color = turretColor
-        });
+        factory.Make(
+            world,
+            commandBuffer,
+            new LaserBeamDescription()
+            {
+                Planet = entity,
+                TargetPosition = targetPosition,
+                Color = turretColor,
+            }
+        );
 
         if (turret.GlowTexture is not null)
         {
-            factory.Make(world, commandBuffer, new LaserFlashDescription()
-            {
-                Turret = entity,
-                Color = Color.White,
-                Texture = turret.GlowTexture
-            });
+            factory.Make(
+                world,
+                commandBuffer,
+                new LaserFlashDescription()
+                {
+                    Turret = entity,
+                    Color = Color.White,
+                    Texture = turret.GlowTexture,
+                }
+            );
         }
 
         var targetParty = target.Value.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party;
         var targetColor = targetParty.Get<PartyReferenceColor>().Value;
 
         // 生成闪光
-        factory.Make(world, commandBuffer,
-                     new UnitFlareDescription() { Color = targetColor, Position = targetPosition });
+        factory.Make(
+            world,
+            commandBuffer,
+            new UnitFlareDescription() { Color = targetColor, Position = targetPosition }
+        );
 
         // 生成冲击波
-        factory.Make(world, commandBuffer,
-                     new UnitPulseDescription() { Color = targetColor, Position = targetPosition });
+        factory.Make(
+            world,
+            commandBuffer,
+            new UnitPulseDescription() { Color = targetColor, Position = targetPosition }
+        );
 
         commandBuffer.Destroy(target.Value);
     }

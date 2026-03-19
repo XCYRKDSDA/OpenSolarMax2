@@ -59,7 +59,9 @@ internal class BehaviorMod
         var ctx = new ModLoadContext(info.Assembly, sharedAssemblies);
         using var dllStream = info.Assembly.Open(FileMode.Open, FileAccess.Read);
 #if DEBUG
-        var pdb = info.Assembly.Directory.EnumerateFiles($"{info.Assembly.NameWithoutExtension}.pdb").FirstOrDefault();
+        var pdb = info
+            .Assembly.Directory.EnumerateFiles($"{info.Assembly.NameWithoutExtension}.pdb")
+            .FirstOrDefault();
         using var pdbStream = pdb?.Open(FileMode.Open, FileAccess.Read);
         Assembly = ctx.LoadFromStream(dllStream, pdbStream);
 #else
@@ -76,7 +78,11 @@ internal class BehaviorMod
         if (info.Configs is not null)
         {
             var configsBuilder = new ConfigurationBuilder();
-            using var tomlStream = info.Configs.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var tomlStream = info.Configs.Open(
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read
+            );
             configsBuilder.AddTomlStream(tomlStream);
             Configs = configsBuilder.Build();
         }
@@ -84,28 +90,39 @@ internal class BehaviorMod
             Configs = null;
 
         // 查找组件类型
-        ComponentTypes = Assembly.ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
-                                 .ToImmutableArray();
+        ComponentTypes = Assembly
+            .ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
+            .ToImmutableArray();
 
         // 查找关卡文件声明类型
         DeclarationSchemaInfos = Modding.FindDeclarationTypes(Assembly).ToImmutableDictionary();
 
         // 查找游玩场景行为相关类型
         GameplayBehaviorsInfo = new BehaviorsInfo(
-            Modding.FindTranslatorTypes(Assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
-            Modding.FindConceptRelatedTypes(Assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
+            Modding
+                .FindTranslatorTypes(Assembly, GameplayOrPreview.Gameplay)
+                .ToImmutableDictionary(),
+            Modding
+                .FindConceptRelatedTypes(Assembly, GameplayOrPreview.Gameplay)
+                .ToImmutableDictionary(),
             Modding.FindSystemTypes(Assembly, GameplayOrPreview.Gameplay),
-            Modding.FindHookImplementations(Assembly, GameplayOrPreview.Gameplay)
-                   .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
+            Modding
+                .FindHookImplementations(Assembly, GameplayOrPreview.Gameplay)
+                .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
         );
 
         // 查找预览场景行为相关类型
         PreviewBehaviorsInfo = new BehaviorsInfo(
-            Modding.FindTranslatorTypes(Assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
-            Modding.FindConceptRelatedTypes(Assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
+            Modding
+                .FindTranslatorTypes(Assembly, GameplayOrPreview.Preview)
+                .ToImmutableDictionary(),
+            Modding
+                .FindConceptRelatedTypes(Assembly, GameplayOrPreview.Preview)
+                .ToImmutableDictionary(),
             Modding.FindSystemTypes(Assembly, GameplayOrPreview.Preview),
-            Modding.FindHookImplementations(Assembly, GameplayOrPreview.Preview)
-                   .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
+            Modding
+                .FindHookImplementations(Assembly, GameplayOrPreview.Preview)
+                .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
         );
     }
 }

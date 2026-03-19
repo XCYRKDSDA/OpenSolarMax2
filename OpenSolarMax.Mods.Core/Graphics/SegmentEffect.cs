@@ -9,7 +9,8 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
     private readonly EffectParameter _toNdcParam;
 
-    private readonly EffectParameter _headParam, _tailParam;
+    private readonly EffectParameter _headParam,
+        _tailParam;
     private readonly EffectParameter _thicknessParam;
     private readonly EffectParameter _roundParam;
 
@@ -21,7 +22,8 @@ internal class SegmentEffect : Effect, IEffectMatrices
     private Matrix _view = Matrix.Identity;
     private Matrix _proj = Matrix.Identity;
 
-    private Vector2 _head = Vector2.Zero, _tail = Vector2.Zero;
+    private Vector2 _head = Vector2.Zero,
+        _tail = Vector2.Zero;
     private float _thickness = 0;
     private float _round = 0;
 
@@ -33,7 +35,7 @@ internal class SegmentEffect : Effect, IEffectMatrices
         Shape = 1 << 2,
         Thickness = 1 << 3,
         Round = 1 << 4,
-        All = -1
+        All = -1,
     }
 
     private DirtyFlags _dirtyFlags = DirtyFlags.All;
@@ -114,7 +116,8 @@ internal class SegmentEffect : Effect, IEffectMatrices
 
     #endregion
 
-    public SegmentEffect(GraphicsDevice graphicsDevice) : base(graphicsDevice, EffectResource.SegmentEffect.Bytecode)
+    public SegmentEffect(GraphicsDevice graphicsDevice)
+        : base(graphicsDevice, EffectResource.SegmentEffect.Bytecode)
     {
         _toNdcParam = Parameters["to_ndc"];
         _headParam = Parameters["head"];

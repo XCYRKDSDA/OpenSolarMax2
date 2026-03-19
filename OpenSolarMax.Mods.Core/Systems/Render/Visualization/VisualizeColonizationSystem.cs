@@ -17,15 +17,24 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeColonizationSystem(
-    World world, GraphicsDevice graphicsDevice,
-    [Section("systems:visualization:colonization")] IConfiguration configs) : ICalcSystem
+    World world,
+    GraphicsDevice graphicsDevice,
+    [Section("systems:visualization:colonization")] IConfiguration configs
+) : ICalcSystem
 {
-    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>(
+        "ring:radius_multiplier"
+    );
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
     private readonly float _defaultAlpha = configs.RequireValue<float>("ring:default_alpha");
 
-    private static readonly QueryDescription _planetDesc = new QueryDescription()
-        .WithAll<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
+    private static readonly QueryDescription _planetDesc = new QueryDescription().WithAll<
+        AnchoredShipsRegistry,
+        Colonizable,
+        ColonizationState,
+        ReferenceSize,
+        AbsoluteTransform
+    >();
 
     private readonly RingRenderer _ringRenderer = new(graphicsDevice);
 
@@ -36,9 +45,14 @@ public sealed partial class VisualizeColonizationSystem(
         RenderToCameraQuery(world, planetEntities);
     }
 
-    private void VisualizeOnePlanet(in AnchoredShipsRegistry shipsRegistry,
-                                    in Colonizable colonizable, in ColonizationState colonizationState,
-                                    in ReferenceSize refSize, in AbsoluteTransform pose, in Matrix worldToCanvas)
+    private void VisualizeOnePlanet(
+        in AnchoredShipsRegistry shipsRegistry,
+        in Colonizable colonizable,
+        in ColonizationState colonizationState,
+        in ReferenceSize refSize,
+        in AbsoluteTransform pose,
+        in Matrix worldToCanvas
+    )
     {
         // 当且仅当有一个阵营时绘制占领环
         if (shipsRegistry.Ships.Count != 1)
@@ -60,7 +74,9 @@ public sealed partial class VisualizeColonizationSystem(
         var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
 
         // 获得殖民环的圆心
-        var ringCenter = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
+        var ringCenter = TransformProjection.To2D(
+            Vector3.Transform(pose.Translation, worldToCanvas)
+        );
 
         // 计算首尾角度
         var angle = MathF.PI * 2 * colonizationState.Progress / colonizable.Volume;
@@ -70,20 +86,41 @@ public sealed partial class VisualizeColonizationSystem(
         var color = colonizationState.Party.Get<PartyReferenceColor>().Value;
 
         _ringRenderer.DrawArc(ringCenter, ringRadius, head, angle, color, _ringThickness);
-        _ringRenderer.DrawArc(ringCenter, ringRadius, head + angle, MathF.PI * 2 - angle, color * _defaultAlpha,
-                              _ringThickness);
+        _ringRenderer.DrawArc(
+            ringCenter,
+            ringRadius,
+            head + angle,
+            MathF.PI * 2 - angle,
+            color * _defaultAlpha,
+            _ringThickness
+        );
     }
-
 
     [Query]
     [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Camera camera, in AbsoluteTransform pose)
+    private void RenderToCamera(
+        [Data] IEnumerable<Entity> entities,
+        in Camera camera,
+        in AbsoluteTransform pose
+    )
     {
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var projectionMatrix = Matrix.CreateOrthographic(
+            camera.Width,
+            camera.Height,
+            camera.ZNear,
+            camera.ZFar
+        );
         var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(0, canvas.Width, canvas.Height, 0, 0, -1);
+        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
+            0,
+            canvas.Width,
+            canvas.Height,
+            0,
+            0,
+            -1
+        );
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
@@ -102,9 +139,21 @@ public sealed partial class VisualizeColonizationSystem(
         // 逐个绘制
         foreach (var entity in entities)
         {
-            var refs = entity
-                .Get<AnchoredShipsRegistry, Colonizable, ColonizationState, ReferenceSize, AbsoluteTransform>();
-            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in refs.t3, in refs.t4, in worldToCanvas);
+            var refs = entity.Get<
+                AnchoredShipsRegistry,
+                Colonizable,
+                ColonizationState,
+                ReferenceSize,
+                AbsoluteTransform
+            >();
+            VisualizeOnePlanet(
+                in refs.t0,
+                in refs.t1,
+                in refs.t2,
+                in refs.t3,
+                in refs.t4,
+                in worldToCanvas
+            );
         }
 
         // 恢复 Viewport

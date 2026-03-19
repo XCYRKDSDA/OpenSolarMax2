@@ -9,13 +9,16 @@ internal class BehaviorsInfo(
     ImmutableDictionary<string, DeclarationTranslatorInfo> declarationTranslatorTypes,
     ImmutableDictionary<string, ConceptRelatedTypes> conceptTypes,
     ImmutableSystemTypeCollection systemTypes,
-    ImmutableDictionary<string, ImmutableArray<MethodInfo>> hookImplMethods)
+    ImmutableDictionary<string, ImmutableArray<MethodInfo>> hookImplMethods
+)
 {
     /// <summary>
     /// 模组提供的所有将文件声明翻译为概念描述的翻译器，按照<see cref="TranslateAttribute"/>索引
     /// </summary>
-    public ImmutableDictionary<string, DeclarationTranslatorInfo> DeclarationTranslatorTypes { get; } =
-        declarationTranslatorTypes;
+    public ImmutableDictionary<
+        string,
+        DeclarationTranslatorInfo
+    > DeclarationTranslatorTypes { get; } = declarationTranslatorTypes;
 
     /// <summary>
     /// 模组提供的所有概念的定义、描述和应用器
@@ -30,5 +33,6 @@ internal class BehaviorsInfo(
     /// <summary>
     /// 模组提供的所有钩子函数实现
     /// </summary>
-    public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; } = hookImplMethods;
+    public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; } =
+        hookImplMethods;
 }

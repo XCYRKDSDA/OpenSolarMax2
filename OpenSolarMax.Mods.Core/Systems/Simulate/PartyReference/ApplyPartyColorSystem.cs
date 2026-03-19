@@ -10,7 +10,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 将阵营参考颜色设置到属于阵营的实体的系统
 /// </summary>
 [SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
-[ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(PartyReferenceColor)), Write(typeof(Sprite))]
+[
+    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(PartyReferenceColor)),
+    Write(typeof(Sprite))
+]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class ApplyPartyColorSystem(World world)
     : ApplyPartyReferenceSystemBase<Sprite, PartyReferenceColor>(world)
@@ -20,7 +24,10 @@ public sealed class ApplyPartyColorSystem(World world)
         target.Color = Color.White;
     }
 
-    protected override void ApplyPartyReferenceImpl(in PartyReferenceColor reference, ref Sprite target)
+    protected override void ApplyPartyReferenceImpl(
+        in PartyReferenceColor reference,
+        ref Sprite target
+    )
     {
         target.Color = reference.Value;
     }

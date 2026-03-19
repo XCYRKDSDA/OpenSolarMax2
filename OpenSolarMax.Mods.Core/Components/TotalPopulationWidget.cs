@@ -27,28 +27,20 @@ public sealed class TotalPopulationWidget : HorizontalStackPanel
     {
         var font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(_textSize);
 
-        _prefixLabel = new Label()
-        {
-            Text = _populationTextPrefix,
-            Font = font
-        };
+        _prefixLabel = new Label() { Text = _populationTextPrefix, Font = font };
 
         _currentPopulationLabel = new Label()
         {
             Text = string.Format(_populationTextFormat, 0),
-            Font = font
+            Font = font,
         };
 
-        _splitterLabel = new Label()
-        {
-            Text = _splitterString,
-            Font = font
-        };
+        _splitterLabel = new Label() { Text = _splitterString, Font = font };
 
         _populationLimitLabel = new Label()
         {
             Text = string.Format(_populationTextFormat, 0),
-            Font = font
+            Font = font,
         };
 
         this.Widgets.Add(_prefixLabel);
@@ -62,7 +54,8 @@ public sealed class TotalPopulationWidget : HorizontalStackPanel
         get => _currentPopulation;
         set
         {
-            if (_currentPopulation == value) return;
+            if (_currentPopulation == value)
+                return;
 
             _currentPopulation = value;
             _currentPopulationLabel.Text = string.Format(_populationTextFormat, value);
@@ -74,7 +67,8 @@ public sealed class TotalPopulationWidget : HorizontalStackPanel
         get => _populationLimit;
         set
         {
-            if (_populationLimit == value) return;
+            if (_populationLimit == value)
+                return;
 
             _populationLimit = value;
             _populationLimitLabel.Text = string.Format(_populationTextFormat, value);
@@ -86,11 +80,15 @@ public sealed class TotalPopulationWidget : HorizontalStackPanel
         get => _color;
         set
         {
-            if (_color == value) return;
+            if (_color == value)
+                return;
 
             _color = value;
-            _prefixLabel.TextColor = _currentPopulationLabel.TextColor =
-                                         _splitterLabel.TextColor = _populationLimitLabel.TextColor = value;
+            _prefixLabel.TextColor =
+                _currentPopulationLabel.TextColor =
+                _splitterLabel.TextColor =
+                _populationLimitLabel.TextColor =
+                    value;
         }
     }
 }

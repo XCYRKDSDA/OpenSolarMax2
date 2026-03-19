@@ -9,20 +9,26 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 将关系实体描述的关系缓存到各个参与者的参与组件的索引中
 /// </summary>
-public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
-    : ICalcSystem where TRelationship : IRelationshipRecord
+public abstract class IndexRelationshipSystemBase<TRelationship>(World world) : ICalcSystem
+    where TRelationship : IRelationshipRecord
 {
-    private readonly QueryDescription _relationshipDesc = new QueryDescription().WithAll<TRelationship>();
+    private readonly QueryDescription _relationshipDesc =
+        new QueryDescription().WithAll<TRelationship>();
 
     protected static void ClearAllIndex<TParticipant>(World world)
-        where TParticipant : IParticipantIndex
-        => world.Query(new QueryDescription().WithAll<TParticipant>(),
-                       (Entity _, ref TParticipant index) => index.Clear());
+        where TParticipant : IParticipantIndex =>
+        world.Query(
+            new QueryDescription().WithAll<TParticipant>(),
+            (Entity _, ref TParticipant index) => index.Clear()
+        );
 
     #region `ClearAllIndex` Cache
 
-    private static readonly MethodInfo _clearerInfo = typeof(IndexRelationshipSystemBase<TRelationship>)
-        .GetMethod("ClearAllIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
+    private static readonly MethodInfo _clearerInfo =
+        typeof(IndexRelationshipSystemBase<TRelationship>).GetMethod(
+            "ClearAllIndex",
+            BindingFlags.Static | BindingFlags.NonPublic
+        )!;
 
     private delegate void ClearerDelegate(World world);
 
@@ -51,8 +57,11 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world)
 
     #region `BuildIndex` Cache
 
-    private static readonly MethodInfo _indexerInfo = typeof(IndexRelationshipSystemBase<TRelationship>)
-        .GetMethod("BuildIndex", BindingFlags.Static | BindingFlags.NonPublic)!;
+    private static readonly MethodInfo _indexerInfo =
+        typeof(IndexRelationshipSystemBase<TRelationship>).GetMethod(
+            "BuildIndex",
+            BindingFlags.Static | BindingFlags.NonPublic
+        )!;
 
     private delegate void IndexerDelegate(Entity relationship, Entity participant);
 

@@ -14,9 +14,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(InAttackRangeShipsRegistry)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在其他设置外观的系统之后执行以覆写
-[ExecuteAfter(typeof(ApplyPartyColorSystem)), ExecuteAfter(typeof(UpdateShippingEffectSystem)),
- ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
-public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets) : ICalcSystem
+[
+    ExecuteAfter(typeof(ApplyPartyColorSystem)),
+    ExecuteAfter(typeof(UpdateShippingEffectSystem)),
+    ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))
+]
+public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets)
+    : ICalcSystem
 {
     [Query]
     [All<InAttackRangeShipsRegistry>]

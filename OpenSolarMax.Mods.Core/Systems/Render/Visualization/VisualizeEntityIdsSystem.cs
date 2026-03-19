@@ -19,14 +19,18 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(
-    World world, GraphicsDevice graphicsDevice, IAssetsManager assets,
-    [Section("systems:visualization:entity_ids")] IConfiguration configs) : ICalcSystem
+    World world,
+    GraphicsDevice graphicsDevice,
+    IAssetsManager assets,
+    [Section("systems:visualization:entity_ids")] IConfiguration configs
+) : ICalcSystem
 {
     private readonly int _textSize = configs.RequireValue<int>("text:size");
     private readonly Color _textColor = configs.RequireValue<Color>("text:color");
 
-    private readonly SpriteFontBase _font = assets.Load<FontSystem>(Game.Content.Fonts.Default)
-                                                  .GetFont(configs.RequireValue<int>("text:size"));
+    private readonly SpriteFontBase _font = assets
+        .Load<FontSystem>(Game.Content.Fonts.Default)
+        .GetFont(configs.RequireValue<int>("text:size"));
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);
     private readonly RingRenderer _ringRenderer = new(graphicsDevice);
@@ -42,11 +46,20 @@ public sealed partial class VisualizeEntityIdsSystem(
 
         // 计算文字位置
         var textSize = _font.MeasureString(text);
-        var entityInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
+        var entityInCanvas = TransformProjection.To2D(
+            Vector3.Transform(pose.Translation, worldToCanvas)
+        );
         var position = entityInCanvas - textSize / 2;
 
         // 绘制文字
-        _font.DrawText(_fontRenderer, text, position, _textColor, effect: FontSystemEffect.Stroked, effectAmount: 1);
+        _font.DrawText(
+            _fontRenderer,
+            text,
+            position,
+            _textColor,
+            effect: FontSystemEffect.Stroked,
+            effectAmount: 1
+        );
     }
 
     [Query]
@@ -55,9 +68,21 @@ public sealed partial class VisualizeEntityIdsSystem(
     {
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var projectionMatrix = Matrix.CreateOrthographic(
+            camera.Width,
+            camera.Height,
+            camera.ZNear,
+            camera.ZFar
+        );
         var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(0, canvas.Width, canvas.Height, 0, 0, -1);
+        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
+            0,
+            canvas.Width,
+            canvas.Height,
+            0,
+            0,
+            -1
+        );
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域

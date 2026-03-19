@@ -38,20 +38,26 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(LevelFile level, LevelModContext levelModContext, SolarMax game) : base(game)
+    public LevelPlayViewModel(LevelFile level, LevelModContext levelModContext, SolarMax game)
+        : base(game)
     {
         // 构造世界和系统
         _world = World.Create();
-        var factory = new ConceptFactory(levelModContext.GameplayBehaviors.ConceptInfos.Values,
-                                         new Dictionary<Type, object>()
-                                         {
-                                             [typeof(GraphicsDevice)] = game.GraphicsDevice,
-                                             [typeof(IAssetsManager)] = levelModContext.LocalAssets,
-                                             [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
-                                         });
-        var translators = new TranslatorsRegistry(levelModContext.GameplayBehaviors.TranslatorTypes);
+        var factory = new ConceptFactory(
+            levelModContext.GameplayBehaviors.ConceptInfos.Values,
+            new Dictionary<Type, object>()
+            {
+                [typeof(GraphicsDevice)] = game.GraphicsDevice,
+                [typeof(IAssetsManager)] = levelModContext.LocalAssets,
+                [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
+            }
+        );
+        var translators = new TranslatorsRegistry(
+            levelModContext.GameplayBehaviors.TranslatorTypes
+        );
         _inputSystem = new AggregateSystem(
-            _world, levelModContext.GameplayBehaviors.SystemTypes.Input.Sorted,
+            _world,
+            levelModContext.GameplayBehaviors.SystemTypes.Input.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
@@ -59,10 +65,13 @@ internal partial class LevelPlayViewModel : ViewModelBase
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                kv => kv.Key,
+                kv => kv.Value as IReadOnlyList<MethodInfo>
+            )
         );
         _aiSystem = new AggregateSystem(
-            _world, levelModContext.GameplayBehaviors.SystemTypes.Ai.Sorted,
+            _world,
+            levelModContext.GameplayBehaviors.SystemTypes.Ai.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
@@ -70,10 +79,13 @@ internal partial class LevelPlayViewModel : ViewModelBase
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                kv => kv.Key,
+                kv => kv.Value as IReadOnlyList<MethodInfo>
+            )
         );
         _simulateSystem = new AggregateSystem(
-            _world, levelModContext.GameplayBehaviors.SystemTypes.Simulate.Sorted,
+            _world,
+            levelModContext.GameplayBehaviors.SystemTypes.Simulate.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = levelModContext.LocalAssets,
@@ -81,10 +93,13 @@ internal partial class LevelPlayViewModel : ViewModelBase
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                kv => kv.Key,
+                kv => kv.Value as IReadOnlyList<MethodInfo>
+            )
         );
         _renderSystem = new AggregateSystem(
-            _world, levelModContext.GameplayBehaviors.SystemTypes.Render.Sorted,
+            _world,
+            levelModContext.GameplayBehaviors.SystemTypes.Render.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
@@ -92,7 +107,9 @@ internal partial class LevelPlayViewModel : ViewModelBase
                 [typeof(IConfigurationRoot)] = levelModContext.LocalConfigs,
             },
             levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key, kv => kv.Value as IReadOnlyList<MethodInfo>)
+                kv => kv.Key,
+                kv => kv.Value as IReadOnlyList<MethodInfo>
+            )
         );
 
         // 加载关卡内容
@@ -115,13 +132,16 @@ internal partial class LevelPlayViewModel : ViewModelBase
         _world.GetEntities(in viewDesc, MemoryMarshal.CreateSpan(ref _viewEntity, 1));
 
         // 设置 fmod 系统
-        _world.Query(new QueryDescription().WithAll<FMOD.Studio.System>(),
-                     (ref FMOD.Studio.System fmodSystem) => fmodSystem = game.FmodSystem);
+        _world.Query(
+            new QueryDescription().WithAll<FMOD.Studio.System>(),
+            (ref FMOD.Studio.System fmodSystem) => fmodSystem = game.FmodSystem
+        );
     }
 
     public override void Update(GameTime gameTime)
     {
-        if (Paused) return;
+        if (Paused)
+            return;
 
         // 更新时间
         _playTime.ElapsedGameTime = gameTime.ElapsedGameTime * SimulateSpeed;

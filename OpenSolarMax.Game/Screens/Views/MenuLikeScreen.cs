@@ -21,8 +21,10 @@ internal class MenuLikeScreen : ScreenBase
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持预览悬浮动画
     private readonly HorizontalScrollingBackground _pageBackground;
-    private readonly HorizontalScrollingBackground _primaryBackground, _secondaryBackground;
-    private readonly FadableImage _primaryPreview, _secondaryPreview;
+    private readonly HorizontalScrollingBackground _primaryBackground,
+        _secondaryBackground;
+    private readonly FadableImage _primaryPreview,
+        _secondaryPreview;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private Image2? _floatingPreview;
 
@@ -33,7 +35,8 @@ internal class MenuLikeScreen : ScreenBase
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
 
-    public MenuLikeScreen(IMenuLikeViewModel viewModel, SolarMax game) : base(game)
+    public MenuLikeScreen(IMenuLikeViewModel viewModel, SolarMax game)
+        : base(game)
     {
         _viewModel = viewModel;
         _desktop = new Desktop();
@@ -43,7 +46,7 @@ internal class MenuLikeScreen : ScreenBase
         _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.PageBackground,
-            Left = 0
+            Left = 0,
         };
         _primaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
@@ -69,10 +72,7 @@ internal class MenuLikeScreen : ScreenBase
             VerticalAlignment = VerticalAlignment.Bottom,
         };
 
-        _scrollViewer = new CustomHorizontalScrollViewer()
-        {
-            Margin = new Thickness(40),
-        };
+        _scrollViewer = new CustomHorizontalScrollViewer() { Margin = new Thickness(40) };
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
         _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
 
@@ -86,7 +86,8 @@ internal class MenuLikeScreen : ScreenBase
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            FadeIn = 0, Visible = false,
+            FadeIn = 0,
+            Visible = false,
         };
         _scrollViewer.PreviewPanel.Widgets.Add(_primaryPreview);
         _scrollViewer.PreviewPanel.Widgets.Add(_secondaryPreview);
@@ -122,10 +123,16 @@ internal class MenuLikeScreen : ScreenBase
         _scrollViewer.ConvergeImmediately();
     }
 
-    public MenuLikeScreen(IMenuLikeViewModel viewModel, HorizontalScrollingBackground sharedBackground,
-                          SolarMax game) : this(viewModel, game)
+    public MenuLikeScreen(
+        IMenuLikeViewModel viewModel,
+        HorizontalScrollingBackground sharedBackground,
+        SolarMax game
+    )
+        : this(viewModel, game)
     {
-        _pageBackground = new HorizontalScrollingBackground(sharedBackground.Texture!.GraphicsDevice)
+        _pageBackground = new HorizontalScrollingBackground(
+            sharedBackground.Texture!.GraphicsDevice
+        )
         {
             Alpha = sharedBackground.Alpha,
             Left = sharedBackground.Left,
@@ -135,13 +142,14 @@ internal class MenuLikeScreen : ScreenBase
         _actualBackgroundLeft = sharedBackground.Left;
     }
 
-    private Label GenerateLabel(string name) => new()
-    {
-        Text = name,
-        TextAlign = TextHorizontalAlignment.Center,
-        TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
-        Font = Game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40)
-    };
+    private Label GenerateLabel(string name) =>
+        new()
+        {
+            Text = name,
+            TextAlign = TextHorizontalAlignment.Center,
+            TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
+            Font = Game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40),
+        };
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -166,29 +174,42 @@ internal class MenuLikeScreen : ScreenBase
     {
         if (e is LevelsViewModel levelsViewModel)
         {
-            Game.ScreenManager.ActiveScreen =
-                new CustomFadeInTransition(MyraEnvironment.GraphicsDevice, Game.ScreenManager, this,
-                                           new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
-                                           TimeSpan.FromSeconds(0.5));
+            Game.ScreenManager.ActiveScreen = new CustomFadeInTransition(
+                MyraEnvironment.GraphicsDevice,
+                Game.ScreenManager,
+                this,
+                new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
+                TimeSpan.FromSeconds(0.5)
+            );
         }
         else if (e is LevelPlayViewModel levelPlayViewModel)
         {
-            Game.ScreenManager.ActiveScreen =
-                new CustomFadeInTransition(Game.GraphicsDevice, Game.ScreenManager, this,
-                                           // TODO: 修复选择共享的背景的逻辑
-                                           new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
-                                           TimeSpan.FromSeconds(1), new MenuNavigationContext());
+            Game.ScreenManager.ActiveScreen = new CustomFadeInTransition(
+                Game.GraphicsDevice,
+                Game.ScreenManager,
+                this,
+                // TODO: 修复选择共享的背景的逻辑
+                new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
+                TimeSpan.FromSeconds(1),
+                new MenuNavigationContext()
+            );
         }
         else
             throw new NotImplementedException();
     }
 
-    private void ViewModelItemsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void ViewModelItemsOnCollectionChanged(
+        object? sender,
+        NotifyCollectionChangedEventArgs e
+    )
     {
         switch (e.Action)
         {
             case NotifyCollectionChangedAction.Add:
-                _scrollViewer.Widgets.Insert(e.NewStartingIndex, GenerateLabel((string)e.NewItems?[0]!));
+                _scrollViewer.Widgets.Insert(
+                    e.NewStartingIndex,
+                    GenerateLabel((string)e.NewItems?[0]!)
+                );
                 break;
             case NotifyCollectionChangedAction.Remove:
                 _scrollViewer.Widgets.RemoveAt(e.OldStartingIndex);
@@ -214,20 +235,24 @@ internal class MenuLikeScreen : ScreenBase
         var primaryOnly =
             _scrollViewer.Offset == 0
             || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
-            || (_scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1 && _scrollViewer.Offset > 0);
+            || (
+                _scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1
+                && _scrollViewer.Offset > 0
+            );
 
         _viewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
-        _viewModel.SecondaryItemIndex =
-            primaryOnly ? null : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
+        _viewModel.SecondaryItemIndex = primaryOnly
+            ? null
+            : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
 
         _primaryPreview.FadeIn = MathF.Max(
             1 - int.Abs(_scrollViewer.Offset) / (_scrollViewer.ThumbnailsInterval / 2f),
             0
         );
         _secondaryPreview.FadeIn = MathF.Max(
-            1 -
-            (_scrollViewer.ThumbnailsInterval - int.Abs(_scrollViewer.Offset)) /
-            (_scrollViewer.ThumbnailsInterval / 2f),
+            1
+                - (_scrollViewer.ThumbnailsInterval - int.Abs(_scrollViewer.Offset))
+                    / (_scrollViewer.ThumbnailsInterval / 2f),
             0
         );
         _secondaryPreview.Visible = !primaryOnly;
@@ -236,15 +261,15 @@ internal class MenuLikeScreen : ScreenBase
         if (_primaryBackground.Texture is not null)
         {
             _primaryBackground.Alpha =
-                MathF.Max(1 - float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0) *
-                _commonBackgroundAlpha;
+                MathF.Max(1 - float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0)
+                * _commonBackgroundAlpha;
             _secondaryBackground.Alpha = 1 * _commonBackgroundAlpha;
         }
         else
         {
             _secondaryBackground.Alpha =
-                MathF.Max(float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0) *
-                _commonBackgroundAlpha;
+                MathF.Max(float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0)
+                * _commonBackgroundAlpha;
         }
     }
 
@@ -274,7 +299,8 @@ internal class MenuLikeScreen : ScreenBase
 
             _pageBackground.Left = _actualBackgroundLeft;
             _primaryBackground.Left =
-                _actualBackgroundLeft + _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+                _actualBackgroundLeft
+                + _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
             if (_viewModel.SecondaryItemIndex is { } secondaryItemIndex)
             {
                 _secondaryBackground.Left =
@@ -291,11 +317,14 @@ internal class MenuLikeScreen : ScreenBase
 
     protected override void OnStartTransitOut(object? context)
     {
-        if (context is not MenuNavigationContext ctx) return;
+        if (context is not MenuNavigationContext ctx)
+            return;
 
         // 记录动画开始时的预览位置
-        ctx.OriginalPreviewLocation =
-            new Rectangle(_primaryPreview.ToGlobal(Point.Zero), _primaryPreview.ActualBounds.Size);
+        ctx.OriginalPreviewLocation = new Rectangle(
+            _primaryPreview.ToGlobal(Point.Zero),
+            _primaryPreview.ActualBounds.Size
+        );
 
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
@@ -318,23 +347,41 @@ internal class MenuLikeScreen : ScreenBase
 
     public override void OnTransitOut(object? context, float progress)
     {
-        if (context is not MenuNavigationContext ctx) return;
+        if (context is not MenuNavigationContext ctx)
+            return;
 
         // 计算当前位置
         Debug.Assert(_floatingPreview is not null);
-        _floatingPreview.Left =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Left, ctx.TargetPreviewLocation.Left, progress);
-        _floatingPreview.Top =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Top, ctx.TargetPreviewLocation.Top, progress);
-        _floatingPreview.Width =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Width, ctx.TargetPreviewLocation.Width, progress);
-        _floatingPreview.Height =
-            (int)MathHelper.Lerp(ctx.OriginalPreviewLocation.Height, ctx.TargetPreviewLocation.Height, progress);
+        _floatingPreview.Left = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Left,
+                ctx.TargetPreviewLocation.Left,
+                progress
+            );
+        _floatingPreview.Top = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Top,
+                ctx.TargetPreviewLocation.Top,
+                progress
+            );
+        _floatingPreview.Width = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Width,
+                ctx.TargetPreviewLocation.Width,
+                progress
+            );
+        _floatingPreview.Height = (int)
+            MathHelper.Lerp(
+                ctx.OriginalPreviewLocation.Height,
+                ctx.TargetPreviewLocation.Height,
+                progress
+            );
     }
 
     protected override void OnFinishTransitOut(object? context)
     {
-        if (context is not MenuNavigationContext) return;
+        if (context is not MenuNavigationContext)
+            return;
 
         // 恢复默认状态
 

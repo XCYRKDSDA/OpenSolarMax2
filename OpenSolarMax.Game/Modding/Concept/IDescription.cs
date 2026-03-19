@@ -1,4 +1,3 @@
 namespace OpenSolarMax.Game.Modding.Concept;
 
-public interface IDescription
-{ }
+public interface IDescription { }

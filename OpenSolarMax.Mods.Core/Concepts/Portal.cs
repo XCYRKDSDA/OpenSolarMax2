@@ -19,8 +19,8 @@ public static partial class ConceptNames
 public abstract class PortalDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        CelestialBodyDefinition.Signature +
-        new Signature(
+        CelestialBodyDefinition.Signature
+        + new Signature(
             // 传送任务
             typeof(PortalChargingJobs)
         );
@@ -32,8 +32,11 @@ public class PortalDescription : IDescription
     /// <summary>
     /// 传送门的变换关系
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 传送门所属的阵营
@@ -43,32 +46,41 @@ public class PortalDescription : IDescription
 
 [Apply(ConceptNames.Portal)]
 public class PortalApplier(
-    IAssetsManager assets, IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:portal")] IConfiguration configs)
-    : IApplier<PortalDescription>
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:portal")] IConfiguration configs
+) : IApplier<PortalDescription>
 {
     // 固定的尺寸
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
     private readonly int _volume = configs.RequireValue<int>("volume");
 
-    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Shape");
+    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>(
+        "/Textures/PortalAtlas.json:Shape"
+    );
 
-    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Portal");
+    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>(
+        "/Textures/PortalAtlas.json:Portal"
+    );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PortalDescription desc)
     {
         // 设置天体基本信息
-        _celestialBodyApplier.Apply(commandBuffer, entity, new CelestialBodyDescription()
-        {
-            Shape = _portalShape,
-            Texture = _portalTexture,
-            ReferenceRadius = _referenceRadius,
-            Transform = desc.Transform,
-            Party = desc.Party,
-            Volume = _volume,
-        });
+        _celestialBodyApplier.Apply(
+            commandBuffer,
+            entity,
+            new CelestialBodyDescription()
+            {
+                Shape = _portalShape,
+                Texture = _portalTexture,
+                ReferenceRadius = _referenceRadius,
+                Transform = desc.Transform,
+                Party = desc.Party,
+                Volume = _volume,
+            }
+        );
 
         // 初始化传送任务
         commandBuffer.Set(in entity, new PortalChargingJobs());

@@ -19,8 +19,11 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
         graphicsDevice.PresentationParameters.BackBufferHeight
     );
 
-    public Point Size => new(graphicsDevice.PresentationParameters.BackBufferWidth,
-                             graphicsDevice.PresentationParameters.BackBufferHeight);
+    public Point Size =>
+        new(
+            graphicsDevice.PresentationParameters.BackBufferWidth,
+            graphicsDevice.PresentationParameters.BackBufferHeight
+        );
 
     public void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn)
     {
@@ -29,12 +32,14 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
         graphicsDevice.SetRenderTarget(_renderTarget);
 
         graphicsDevice.Clear(Color.Transparent);
-        world.Query(new QueryDescription().WithAll<Viewport, RenderSettings>(),
-                    (ref Viewport viewport, ref RenderSettings renderSettings) =>
-                    {
-                        viewport = graphicsDevice.Viewport;
-                        renderSettings.SpriteScaling = fadeIn;
-                    });
+        world.Query(
+            new QueryDescription().WithAll<Viewport, RenderSettings>(),
+            (ref Viewport viewport, ref RenderSettings renderSettings) =>
+            {
+                viewport = graphicsDevice.Viewport;
+                renderSettings.SpriteScaling = fadeIn;
+            }
+        );
         renderer.Update(new GameTime()); // 绘图系统无所谓时间，此处就随便传一个好了
 
         graphicsDevice.SetRenderTargets(renderTargetsCache);

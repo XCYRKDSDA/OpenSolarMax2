@@ -16,10 +16,7 @@ public static partial class ConceptNames
 public abstract class PredefinedOrbitDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        TransformableDefinition.Signature +
-        new Signature(
-            typeof(PredefinedOrbit)
-        );
+        TransformableDefinition.Signature + new Signature(typeof(PredefinedOrbit));
 }
 
 [Describe(ConceptNames.PredefinedOrbit)]
@@ -43,8 +40,11 @@ public class PredefinedOrbitDescription : IDescription
     /// <summary>
     /// 轨道的位姿变换
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 }
 
 [Apply(ConceptNames.PredefinedOrbit)]
@@ -55,17 +55,23 @@ public class PredefinedOrbitApplier(IConceptFactory factory) : IApplier<Predefin
     public void Apply(CommandBuffer commandBuffer, Entity entity, PredefinedOrbitDescription desc)
     {
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
 
-        commandBuffer.Set(in entity, new PredefinedOrbit
-        {
-            Template = new RevolutionOrbit()
+        commandBuffer.Set(
+            in entity,
+            new PredefinedOrbit
             {
-                Shape = new(desc.Shape.X, desc.Shape.Y),
-                Period = desc.Period,
-                Rotation = desc.Rotation
+                Template = new RevolutionOrbit()
+                {
+                    Shape = new(desc.Shape.X, desc.Shape.Y),
+                    Period = desc.Period,
+                    Rotation = desc.Rotation,
+                },
             }
-        });
+        );
     }
 }

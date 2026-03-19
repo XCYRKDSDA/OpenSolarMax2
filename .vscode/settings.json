@@ -1,0 +1,10 @@
+{
+    "[csharp]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
+    "[xml]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
+}

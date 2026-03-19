@@ -88,7 +88,9 @@ public sealed class CustomHorizontalScrollViewer : Container
         {
             _thumbnailsHeight = value;
             // 通过设置 Grid 的第一行和第三行高度来配置缩略图高度
-            ((GridLayout)ChildrenLayout).RowsProportions[0].Value = value;
+            ((GridLayout)ChildrenLayout)
+                .RowsProportions[0]
+                .Value = value;
             ((GridLayout)ChildrenLayout).RowsProportions[2].Value = value;
         }
     }
@@ -138,7 +140,7 @@ public sealed class CustomHorizontalScrollViewer : Container
             MinWidth = _thumbnailsInterval,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Stretch,
-            Content = widget
+            Content = widget,
         };
         return item;
     }
@@ -154,10 +156,14 @@ public sealed class CustomHorizontalScrollViewer : Container
         switch (e.Action)
         {
             case NotifyCollectionChangedAction.Add:
-                _thumbnailContainer.Widgets.Insert(e.NewStartingIndex, Wrap((Widget)e.NewItems?[0]!));
+                _thumbnailContainer.Widgets.Insert(
+                    e.NewStartingIndex,
+                    Wrap((Widget)e.NewItems?[0]!)
+                );
                 break;
             case NotifyCollectionChangedAction.Remove:
-                if (e.OldStartingIndex >= 0) _thumbnailContainer.Widgets.RemoveAt(e.OldStartingIndex);
+                if (e.OldStartingIndex >= 0)
+                    _thumbnailContainer.Widgets.RemoveAt(e.OldStartingIndex);
                 break;
             case NotifyCollectionChangedAction.Replace:
                 _thumbnailContainer.Widgets[e.NewStartingIndex] = Wrap((Widget)e.NewItems?[0]!);
@@ -177,25 +183,31 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     private List<int> GetRelativeCenters()
     {
-        return _thumbnailContainer.Widgets
-                                  .Select(w => _thumbnailContainer.ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
-                                  .ToList();
+        return _thumbnailContainer
+            .Widgets.Select(w => _thumbnailContainer.ToLocal(w.ToGlobal(w.ActualBounds.Center)).X)
+            .ToList();
     }
 
     private static int BinarySearchNearest(List<int> list, int x)
     {
-        if (list[0] >= x) return 0;
-        if (list[^1] <= x) return list.Count - 1;
+        if (list[0] >= x)
+            return 0;
+        if (list[^1] <= x)
+            return list.Count - 1;
 
-        int left = 0, right = list.Count - 1;
+        int left = 0,
+            right = list.Count - 1;
         while (true)
         {
             var mid = (left + right) / 2;
             if (mid == left || mid == right)
                 return Math.Abs(list[left] - x) < Math.Abs(list[right] - x) ? left : right;
-            if (list[mid] < x) left = mid;
-            else if (list[mid] > x) right = mid;
-            else return mid;
+            if (list[mid] < x)
+                left = mid;
+            else if (list[mid] > x)
+                right = mid;
+            else
+                return mid;
         }
     }
 
@@ -203,7 +215,8 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         base.OnTouchDown();
 
-        if (Desktop is null) return;
+        if (Desktop is null)
+            return;
 
         // 必须在控件内按下，但是可以移动到控件外
         Desktop.TouchMoved += DesktopTouchMoved;
@@ -217,12 +230,17 @@ public sealed class CustomHorizontalScrollViewer : Container
     {
         base.OnMouseWheel(delta);
 
-        if (_lastTouchPos.HasValue) return;
+        if (_lastTouchPos.HasValue)
+            return;
 
-        if (delta > 0) _nearestIndex += 1;
-        if (delta < 0) _nearestIndex -= 1;
-        if (_nearestIndex < 0) _nearestIndex = 0;
-        if (_nearestIndex >= _thumbnails.Count) _nearestIndex = _thumbnails.Count - 1;
+        if (delta > 0)
+            _nearestIndex += 1;
+        if (delta < 0)
+            _nearestIndex -= 1;
+        if (_nearestIndex < 0)
+            _nearestIndex = 0;
+        if (_nearestIndex >= _thumbnails.Count)
+            _nearestIndex = _thumbnails.Count - 1;
     }
 
     private void DesktopTouchMoved(object? sender, EventArgs args)
@@ -232,7 +250,8 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         var touchPosition = Desktop.TouchPosition!;
         var totalDelta = touchPosition.Value.X - _firstTouchPos!.Value.X;
-        if (MathF.Abs(totalDelta) < 5) return;
+        if (MathF.Abs(totalDelta) < 5)
+            return;
 
         var delta = touchPosition.Value.X - _lastTouchPos.Value.X;
         _lastTouchPos = touchPosition.Value;
@@ -249,10 +268,16 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         if (_firstTouchPos == _lastTouchPos)
         {
-            if (_thumbnailContainer.Bounds.Contains(_thumbnailContainer.ToLocal(_firstTouchPos.Value)))
+            if (
+                _thumbnailContainer.Bounds.Contains(
+                    _thumbnailContainer.ToLocal(_firstTouchPos.Value)
+                )
+            )
             {
-                _targetIndex =
-                    BinarySearchNearest(GetRelativeCenters(), _thumbnailContainer.ToLocal(_firstTouchPos.Value).X);
+                _targetIndex = BinarySearchNearest(
+                    GetRelativeCenters(),
+                    _thumbnailContainer.ToLocal(_firstTouchPos.Value).X
+                );
             }
             else
                 ItemTapped?.Invoke(this, _nearestIndex);
@@ -266,14 +291,21 @@ public sealed class CustomHorizontalScrollViewer : Container
     private void UpdateScrolling()
     {
         // 二分法查找最近点
-        _nearestIndex = BinarySearchNearest(GetRelativeCenters(), ActualBounds.Width / 2 - _thumbnailContainer.Left);
+        _nearestIndex = BinarySearchNearest(
+            GetRelativeCenters(),
+            ActualBounds.Width / 2 - _thumbnailContainer.Left
+        );
 
         // 计算距离最近元素的偏移
-        _offset = ActualBounds.Width / 2 - _thumbnailContainer.Left - GetRelativeCenters()[_nearestIndex];
+        _offset =
+            ActualBounds.Width / 2 - _thumbnailContainer.Left - GetRelativeCenters()[_nearestIndex];
 
         // 设置渐变透明度
         for (int i = 0; i < _thumbnailContainer.Widgets.Count; i++)
-            _thumbnailContainer.Widgets[i].Opacity = MathF.Max(1 - 0.2f * MathF.Abs(i - _nearestIndex), 0);
+            _thumbnailContainer.Widgets[i].Opacity = MathF.Max(
+                1 - 0.2f * MathF.Abs(i - _nearestIndex),
+                0
+            );
 
         // 设置选框尺寸和透明度
         var ratio = 1 - MathF.Abs(_offset) / (_thumbnailsInterval / 2f);
@@ -291,12 +323,14 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     public void Update(GameTime gameTime)
     {
-        if (_lastTouchPos is not null) return;
+        if (_lastTouchPos is not null)
+            return;
 
         // 计算当前偏差
         var target = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
         var error = target - _thumbnailContainer.Left;
-        if (error == 0) return;
+        if (error == 0)
+            return;
 
         // 以线性控制率将选中元素拉向中心
         const float kp = 10;
@@ -306,7 +340,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         {
             < 0 and > -1 => -1,
             > 0 and < 1 => 1,
-            _ => (int)movementF
+            _ => (int)movementF,
         };
         if (MathF.Abs(movement) > MathF.Abs(error))
             _thumbnailContainer.Left = target;
@@ -333,11 +367,16 @@ public sealed class CustomHorizontalScrollViewer : Container
         _thumbnailContainer = new HorizontalStackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Stretch
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
         _thumbnailsPanel.Widgets.Add(_thumbnailContainer);
 
-        _circle = new Circle() { Radius = 160 / 2, Thickness = 3, Steps = 64 };
+        _circle = new Circle()
+        {
+            Radius = 160 / 2,
+            Thickness = 3,
+            Steps = 64,
+        };
         _circleImage = new Image()
         {
             Renderable = _circle,

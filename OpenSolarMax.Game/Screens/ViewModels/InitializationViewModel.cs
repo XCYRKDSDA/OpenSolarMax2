@@ -20,10 +20,13 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
 
     private readonly Task<MainMenuViewModel> _menuLoadTask;
 
-    public InitializationViewModel(SolarMax game) : base(game)
+    public InitializationViewModel(SolarMax game)
+        : base(game)
     {
         _menuLoadTask = new Task<MainMenuViewModel>( //
-            () => new MainMenuViewModel(game, new Progress<float>(v => Progress = v)));
+            () =>
+            new MainMenuViewModel(game, new Progress<float>(v => Progress = v))
+        );
 
         _startLoadingCommand = new RelayCommand(OnStartLoading);
     }

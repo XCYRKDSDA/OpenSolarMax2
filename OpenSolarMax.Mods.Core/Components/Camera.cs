@@ -9,9 +9,11 @@ namespace OpenSolarMax.Mods.Core.Components;
 [Component]
 public struct Camera
 {
-    public float Width, Height;
+    public float Width,
+        Height;
 
-    public float ZNear, ZFar;
+    public float ZNear,
+        ZFar;
 
     /// <summary>
     /// 根据该相机绘制的图像将输出到窗口的视口

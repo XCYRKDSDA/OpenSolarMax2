@@ -13,10 +13,8 @@ public static partial class ConceptNames
 [Define(ConceptNames.DependencyCapable)]
 public abstract class DependencyCapableDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(Dependence.AsDependency),
-        typeof(Dependence.AsDependent)
-    );
+    public static Signature Signature { get; } =
+        new(typeof(Dependence.AsDependency), typeof(Dependence.AsDependent));
 }
 
 [Describe(ConceptNames.DependencyCapable)]
@@ -28,7 +26,8 @@ public record DependencyCapableDescription : IDescription
 }
 
 [Apply(ConceptNames.DependencyCapable)]
-public class DependencyCapableApplier(IConceptFactory factory) : IApplier<DependencyCapableDescription>
+public class DependencyCapableApplier(IConceptFactory factory)
+    : IApplier<DependencyCapableDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, DependencyCapableDescription desc)
     {
@@ -36,20 +35,20 @@ public class DependencyCapableApplier(IConceptFactory factory) : IApplier<Depend
 
         foreach (var dependency in desc.Dependencies)
         {
-            _ = factory.Make(world, commandBuffer, new DependenceDescription()
-            {
-                Dependency = dependency,
-                Dependent = entity,
-            });
+            _ = factory.Make(
+                world,
+                commandBuffer,
+                new DependenceDescription() { Dependency = dependency, Dependent = entity }
+            );
         }
 
         foreach (var dependent in desc.Dependents)
         {
-            _ = factory.Make(world, commandBuffer, new DependenceDescription()
-            {
-                Dependency = entity,
-                Dependent = dependent,
-            });
+            _ = factory.Make(
+                world,
+                commandBuffer,
+                new DependenceDescription() { Dependency = entity, Dependent = dependent }
+            );
         }
     }
 }

@@ -17,15 +17,16 @@ public static partial class ConceptNames
 [Define(ConceptNames.UnitPulse)]
 public abstract class UnitPulseDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        // 位姿变换
-        typeof(AbsoluteTransform),
-        // 效果
-        typeof(Sprite),
-        // 动画
-        typeof(Animation),
-        typeof(ExpireAfterAnimationCompleted)
-    );
+    public static Signature Signature { get; } =
+        new(
+            // 位姿变换
+            typeof(AbsoluteTransform),
+            // 效果
+            typeof(Sprite),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationCompleted)
+        );
 }
 
 [Describe(ConceptNames.UnitPulse)]
@@ -39,36 +40,42 @@ public class UnitPulseDescription : IDescription
 [Apply(ConceptNames.UnitPulse)]
 public class UnitPulseApplier(IAssetsManager assets) : IApplier<UnitPulseDescription>
 {
-    private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipPulse");
+    private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
+        "Textures/ShipAtlas.json:ShipPulse"
+    );
 
-    private readonly AnimationClip<Entity> _pulseAnimation =
-        assets.Load<AnimationClip<Entity>>("Animations/UnitPulse.json");
+    private readonly AnimationClip<Entity> _pulseAnimation = assets.Load<AnimationClip<Entity>>(
+        "Animations/UnitPulse.json"
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, UnitPulseDescription desc)
     {
         // 设置位置
-        commandBuffer.Set(in entity, new AbsoluteTransform
-        {
-            Translation = desc.Position
-        });
+        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });
 
         // 设置颜色
-        commandBuffer.Set(in entity, new Sprite
-        {
-            Texture = _pulseTexture,
-            Color = desc.Color,
-            Alpha = 1,
-            Size = _pulseTexture.LogicalSize,
-            Scale = Vector2.Zero,
-            Blend = SpriteBlend.Additive
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _pulseTexture,
+                Color = desc.Color,
+                Alpha = 1,
+                Size = _pulseTexture.LogicalSize,
+                Scale = Vector2.Zero,
+                Blend = SpriteBlend.Additive,
+            }
+        );
 
         // 设置动画
-        commandBuffer.Set(in entity, new Animation
-        {
-            Clip = _pulseAnimation,
-            TimeOffset = TimeSpan.Zero,
-            TimeElapsed = TimeSpan.Zero
-        });
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                Clip = _pulseAnimation,
+                TimeOffset = TimeSpan.Zero,
+                TimeElapsed = TimeSpan.Zero,
+            }
+        );
     }
 }

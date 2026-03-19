@@ -9,7 +9,8 @@ namespace OpenSolarMax.Game.Modding.ECS;
 /// <param name="After">要后执行的系统类型</param>
 internal record OrderedTypePair(Type Before, Type After)
 {
-    public override int GetHashCode() => HashCode.Combine(Before.GetHashCode(), After.GetHashCode());
+    public override int GetHashCode() =>
+        HashCode.Combine(Before.GetHashCode(), After.GetHashCode());
 
     public OrderedTypePair Reverse() => new(After, Before);
 
@@ -27,8 +28,10 @@ internal record UnorderedTypePair(Type Sys1, Type Sys2)
 
     public virtual bool Equals(UnorderedTypePair? other)
     {
-        if (other is null) return false;
-        return (Sys1 == other.Sys1 && Sys2 == other.Sys2) || (Sys1 == other.Sys2 && Sys2 == other.Sys1);
+        if (other is null)
+            return false;
+        return (Sys1 == other.Sys1 && Sys2 == other.Sys2)
+            || (Sys1 == other.Sys2 && Sys2 == other.Sys1);
     }
 }
 

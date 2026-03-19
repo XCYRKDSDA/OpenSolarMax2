@@ -8,7 +8,8 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(ExpiredAfterTimeout))]
+[SimulateSystem, BeforeStructuralChanges]
+[Iterate(typeof(ExpiredAfterTimeout))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSystem
 {
@@ -22,14 +23,19 @@ public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSy
     public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
 }
 
-[SimulateSystem, BeforeStructuralChanges, ReadCurr(typeof(ExpiredAfterTimeout)), ChangeStructure]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(ExpiredAfterTimeout)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class ExpireTimeoutEntitiesSystem(World world) : ICalcSystemWithStructuralChanges
+public sealed partial class ExpireTimeoutEntitiesSystem(World world)
+    : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<ExpiredAfterTimeout>]
-    private static void ExpireEntities([Data] CommandBuffer commands,
-                                       Entity entity, ref ExpiredAfterTimeout expiration)
+    private static void ExpireEntities(
+        [Data] CommandBuffer commands,
+        Entity entity,
+        ref ExpiredAfterTimeout expiration
+    )
     {
         if (expiration.ElapsedTime > expiration.ExpiryTime)
             commands.Destroy(entity);

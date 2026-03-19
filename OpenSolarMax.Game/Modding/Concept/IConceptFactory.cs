@@ -19,7 +19,8 @@ public interface IConceptFactory
     /// <param name="description">要创建的概念的描述</param>
     /// <typeparam name="T">要创建的概念的描述的类型</typeparam>
     /// <returns>新创建的概念的实体</returns>
-    Entity Make<T>(World world, CommandBuffer commandBuffer, string key, T description) where T : IDescription;
+    Entity Make<T>(World world, CommandBuffer commandBuffer, string key, T description)
+        where T : IDescription;
 
     /// <summary>
     /// 使用概念描述创建唯一采用该描述类型的概念实体
@@ -29,7 +30,8 @@ public interface IConceptFactory
     /// <param name="description">要创建的概念的描述</param>
     /// <typeparam name="T">要创建的概念的描述的类型</typeparam>
     /// <returns>新创建的概念的实体</returns>
-    Entity Make<T>(World world, CommandBuffer commandBuffer, T description) where T : IDescription;
+    Entity Make<T>(World world, CommandBuffer commandBuffer, T description)
+        where T : IDescription;
 
     /// <summary>
     /// 使用概念描述创建指定概念的实体

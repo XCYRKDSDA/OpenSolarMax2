@@ -12,9 +12,10 @@ internal class ParametricObjectAnimationClipLoader<T> : ParametricAnimationClipL
         // 获取成员类型
         var memberType = componentType;
         foreach (var part in memberPath.Split('.'))
-            memberType = memberType.GetField(part) is { } field ? field.FieldType :
-                         memberType.GetProperty(part) is { } property ? property.PropertyType :
-                         throw new KeyNotFoundException();
+            memberType =
+                memberType.GetField(part) is { } field ? field.FieldType
+                : memberType.GetProperty(part) is { } property ? property.PropertyType
+                : throw new KeyNotFoundException();
         return memberType;
     }
 
@@ -54,8 +55,11 @@ internal class ParametricObjectAnimationClipLoader<T> : ParametricAnimationClipL
 
     private static Delegate CompileSetter(Type memberType, string memberPath)
     {
-        var dynMethod =
-            new DynamicMethod("SetMember", null, [typeof(T).MakeByRefType(), memberType.MakeByRefType()]);
+        var dynMethod = new DynamicMethod(
+            "SetMember",
+            null,
+            [typeof(T).MakeByRefType(), memberType.MakeByRefType()]
+        );
         var ilGenerator = dynMethod.GetILGenerator();
         var variablesStack = new Stack<(LocalBuilder, LocalBuilder, PropertyInfo)>(); // 属性缓存、属性属于的对象的引用、属性信息
 
@@ -81,7 +85,8 @@ internal class ParametricObjectAnimationClipLoader<T> : ParametricAnimationClipL
 
                 // 读取属性
                 ilGenerator.Emit(OpCodes.Ldloc, fieldRef);
-                if (!fieldRef.LocalType.IsValueType) ilGenerator.Emit(OpCodes.Ldind_Ref);
+                if (!fieldRef.LocalType.IsValueType)
+                    ilGenerator.Emit(OpCodes.Ldind_Ref);
                 ilGenerator.Emit(OpCodes.Callvirt, property.GetMethod!);
                 ilGenerator.Emit(OpCodes.Stloc, cacheVar);
 
@@ -100,7 +105,8 @@ internal class ParametricObjectAnimationClipLoader<T> : ParametricAnimationClipL
             var (assignedCacheVar, fieldRef, property) = variablesStack.Pop();
 
             ilGenerator.Emit(OpCodes.Ldloc, fieldRef);
-            if (!fieldRef.LocalType.IsValueType) ilGenerator.Emit(OpCodes.Ldind_Ref);
+            if (!fieldRef.LocalType.IsValueType)
+                ilGenerator.Emit(OpCodes.Ldind_Ref);
             ilGenerator.Emit(OpCodes.Ldloc, assignedCacheVar);
             ilGenerator.Emit(OpCodes.Callvirt, property.SetMethod!);
         }
@@ -109,7 +115,8 @@ internal class ParametricObjectAnimationClipLoader<T> : ParametricAnimationClipL
         return dynMethod.CreateDelegate(typeof(Setter<>).MakeGenericType(typeof(T), memberType));
     }
 
-    private class DynamicProperty<ValueT>(Getter<ValueT> getter, Setter<ValueT> setter) : IProperty<T, ValueT>
+    private class DynamicProperty<ValueT>(Getter<ValueT> getter, Setter<ValueT> setter)
+        : IProperty<T, ValueT>
     {
         public ValueT Get(in T obj) => getter.Invoke(in obj);
 
@@ -124,8 +131,13 @@ internal class ParametricObjectAnimationClipLoader<T> : ParametricAnimationClipL
         // 编译属性对象
         var getter = CompileGetter(memberType, property);
         var setter = CompileSetter(memberType, property);
-        var propertyInstance = (IProperty<T>)
-            Activator.CreateInstance(typeof(DynamicProperty<>).MakeGenericType(typeof(T), memberType), getter, setter)!;
+        var propertyInstance =
+            (IProperty<T>)
+                Activator.CreateInstance(
+                    typeof(DynamicProperty<>).MakeGenericType(typeof(T), memberType),
+                    getter,
+                    setter
+                )!;
 
         return (propertyInstance, memberType);
     }

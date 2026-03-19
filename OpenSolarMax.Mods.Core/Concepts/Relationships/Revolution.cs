@@ -15,12 +15,13 @@ public static partial class ConceptNames
 [Define(ConceptNames.Revolution), BothForGameplayAndPreview]
 public abstract class RevolutionDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(TreeRelationship<RelativeTransform>),
-        typeof(RelativeTransform),
-        typeof(RevolutionOrbit),
-        typeof(RevolutionState)
-    );
+    public static Signature Signature { get; } =
+        new(
+            typeof(TreeRelationship<RelativeTransform>),
+            typeof(RelativeTransform),
+            typeof(RevolutionOrbit),
+            typeof(RevolutionState)
+        );
 }
 
 [Describe(ConceptNames.Revolution), BothForGameplayAndPreview]
@@ -44,9 +45,19 @@ public class RevolutionApplier : IApplier<RevolutionDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, RevolutionDescription desc)
     {
-        commandBuffer.Set(in entity, new TreeRelationship<RelativeTransform>(desc.Parent, desc.Child));
         commandBuffer.Set(
-            in entity, new RevolutionOrbit { Shape = desc.Shape, Period = desc.Period, Rotation = desc.Rotation });
+            in entity,
+            new TreeRelationship<RelativeTransform>(desc.Parent, desc.Child)
+        );
+        commandBuffer.Set(
+            in entity,
+            new RevolutionOrbit
+            {
+                Shape = desc.Shape,
+                Period = desc.Period,
+                Rotation = desc.Rotation,
+            }
+        );
         commandBuffer.Set(in entity, new RevolutionState { Phase = desc.InitPhase });
     }
 }

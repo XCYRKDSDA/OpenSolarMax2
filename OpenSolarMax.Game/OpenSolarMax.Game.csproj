@@ -1,66 +1,67 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <MGFXProfile>OpenGL</MGFXProfile>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <MGFXProfile>OpenGL</MGFXProfile>
-    </PropertyGroup>
+  <ItemGroup>
+    <Effect Include="Graphics\Exposure.fx" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <Effect Include="Graphics\Exposure.fx" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Arch" Version="2.1.0" />
+    <PackageReference Include="Arch.System" Version="1.1.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CsToml.Extensions.Configuration" Version="1.8.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
+    <PackageReference
+      Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
+      Version="10.0.1"
+    />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Myra" Version="1.5.9" />
+    <PackageReference Include="OneOf" Version="3.0.271" />
+    <PackageReference Include="Svg" Version="3.4.7" />
+    <PackageReference Include="ValueOf" Version="2.0.31" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Arch" Version="2.1.0" />
-        <PackageReference Include="Arch.System" Version="1.1.0" />
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="CsToml.Extensions.Configuration" Version="1.8.0"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.1"/>
-        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
-            <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Myra" Version="1.5.9" />
-        <PackageReference Include="OneOf" Version="3.0.271" />
-        <PackageReference Include="Svg" Version="3.4.7" />
-        <PackageReference Include="ValueOf" Version="2.0.31" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj" />
+    <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj"/>
-        <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="Content\Fonts\Downlink-gav1.ttf">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Content\UIs\IconsAtlas.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Content\UIs\IconsAtlas.png">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Levels\Demo.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Content\Animations\TitleScreen\PrefixAnimation.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Content\Animations\TitleScreen\LogoAnimation.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Content\UIs\S2.png">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Content\Background.png">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
+  <ItemGroup>
+    <None Update="Content\Fonts\Downlink-gav1.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\UIs\IconsAtlas.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\UIs\IconsAtlas.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Levels\Demo.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Animations\TitleScreen\PrefixAnimation.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Animations\TitleScreen\LogoAnimation.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\UIs\S2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Background.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

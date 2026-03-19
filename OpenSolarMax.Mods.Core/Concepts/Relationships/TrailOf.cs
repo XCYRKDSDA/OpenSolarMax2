@@ -13,9 +13,7 @@ public static partial class ConceptNames
 [Define(ConceptNames.TrailOf)]
 public abstract class TrailOfDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(
-        typeof(TrailOf)
-    );
+    public static Signature Signature { get; } = new(typeof(TrailOf));
 }
 
 [Describe(ConceptNames.TrailOf)]

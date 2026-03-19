@@ -21,9 +21,9 @@ public static partial class ConceptNames
 public abstract class CelestialBodyDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        TransformableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + TransformableDefinition.Signature
+        + new Signature(
             // 效果
             typeof(Sprite),
             typeof(Shape),
@@ -70,8 +70,11 @@ public class CelestialBodyDescription : IDescription
     /// <summary>
     /// 天体的变换关系
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 天体所属的阵营
@@ -86,9 +89,10 @@ public class CelestialBodyDescription : IDescription
 
 [Apply(ConceptNames.CelestialBody)]
 public class CelestialBodyApplier(
-    IAssetsManager assets, IConceptFactory factory,
-    [Section("applier:celestial_body")] IConfiguration configs)
-    : IApplier<CelestialBodyDescription>
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body")] IConfiguration configs
+) : IApplier<CelestialBodyDescription>
 {
     private readonly float _orbitMinPitch = configs.RequireValue<Angle>("orbit:pitch:min");
     private readonly float _orbitMaxPitch = configs.RequireValue<Angle>("orbit:pitch:max");
@@ -103,64 +107,78 @@ public class CelestialBodyApplier(
         var random = new Random();
 
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
 
         // 设置纹理和外形
-        commandBuffer.Set(in entity, new Sprite()
-        {
-            Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
-            Alpha = 1,
-            Size = new Vector2(desc.ReferenceRadius * 2),
-            Position = Vector2.Zero,
-            Rotation = 0,
-            Scale = Vector2.One,
-            Blend = SpriteBlend.Alpha,
-        });
-        commandBuffer.Set(in entity, new Shape()
-        {
-            Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
-            Size = new Vector2(desc.ReferenceRadius * 2),
-            Position = Vector2.Zero,
-            Rotation = 0,
-            Scale = Vector2.One,
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite()
+            {
+                Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
+                Alpha = 1,
+                Size = new Vector2(desc.ReferenceRadius * 2),
+                Position = Vector2.Zero,
+                Rotation = 0,
+                Scale = Vector2.One,
+                Blend = SpriteBlend.Alpha,
+            }
+        );
+        commandBuffer.Set(
+            in entity,
+            new Shape()
+            {
+                Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
+                Size = new Vector2(desc.ReferenceRadius * 2),
+                Position = Vector2.Zero,
+                Rotation = 0,
+                Scale = Vector2.One,
+            }
+        );
 
         // 设置参考尺寸
-        commandBuffer.Set(in entity, new ReferenceSize
-        {
-            Radius = desc.ReferenceRadius
-        });
+        commandBuffer.Set(in entity, new ReferenceSize { Radius = desc.ReferenceRadius });
 
         // 随机设置同步轨道
         var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
         var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
-        commandBuffer.Set(in entity, new PlanetGeostationaryOrbit
-        {
-            Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll) *
-                       Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
-            Radius = desc.ReferenceRadius * 2,
-            Period = desc.ReferenceRadius * 2 / 6
-        });
+        commandBuffer.Set(
+            in entity,
+            new PlanetGeostationaryOrbit
+            {
+                Rotation =
+                    Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll)
+                    * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+                Radius = desc.ReferenceRadius * 2,
+                Period = desc.ReferenceRadius * 2 / 6,
+            }
+        );
 
         // 设置殖民体量
-        commandBuffer.Set(in entity, new Colonizable
-        {
-            Volume = desc.Volume
-        });
+        commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
 
         // 设置阵营
         if (desc.Party != Entity.Null)
         {
-            factory.Make(world, commandBuffer, ConceptNames.InParty,
-                         new InPartyDescription { Party = desc.Party, Affiliate = entity });
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InParty,
+                new InPartyDescription { Party = desc.Party, Affiliate = entity }
+            );
 
-            commandBuffer.Set(in entity, new ColonizationState
-            {
-                Party = desc.Party,
-                Progress = desc.Volume,
-                Event = ColonizationEvent.Idle
-            });
+            commandBuffer.Set(
+                in entity,
+                new ColonizationState
+                {
+                    Party = desc.Party,
+                    Progress = desc.Volume,
+                    Event = ColonizationEvent.Idle,
+                }
+            );
         }
     }
 }

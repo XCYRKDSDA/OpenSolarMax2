@@ -4,5 +4,5 @@ public enum ImageStretch
 {
     Fill,
     Uniform,
-    UniformToFill
+    UniformToFill,
 }

@@ -8,13 +8,19 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges, ReadCurr(typeof(SoundEffect)), ChangeStructure]
+[SimulateSystem, BeforeStructuralChanges]
+[ReadCurr(typeof(SoundEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class ExpireSoundEffectCompletedEntitiesSystem(World world) : ICalcSystemWithStructuralChanges
+public sealed partial class ExpireSoundEffectCompletedEntitiesSystem(World world)
+    : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<ExpireAfterSoundEffectCompleted, SoundEffect>]
-    private static void ExpireEntities([Data] CommandBuffer commands, Entity entity, ref SoundEffect soundEffect)
+    private static void ExpireEntities(
+        [Data] CommandBuffer commands,
+        Entity entity,
+        ref SoundEffect soundEffect
+    )
     {
         soundEffect.EventInstance.getPlaybackState(out var playbackState);
         bool soundEffectDone = playbackState == PLAYBACK_STATE.STOPPED;

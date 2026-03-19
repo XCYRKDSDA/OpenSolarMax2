@@ -12,7 +12,8 @@ internal class ConceptFactory : IConceptFactory
 {
     private static Signature GetSignature(Type definitionType)
     {
-        const BindingFlags bindingFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy;
+        const BindingFlags bindingFlags =
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy;
         return (Signature)definitionType.GetProperty("Signature", bindingFlags)!.GetValue(null)!;
     }
 
@@ -23,13 +24,13 @@ internal class ConceptFactory : IConceptFactory
             info.DefinitionTypes.Select(GetSignature).Aggregate((s1, s2) => s1 + s2),
             info.DescriptionType,
             [
-                ..info.ApplierTypes.Select(applierType =>
+                .. info.ApplierTypes.Select(applierType =>
                 {
                     var applier = PluginFactory.Instantiate(applierType, [], @params);
                     return info.DescriptionType is null
-                               ? OneOf<IApplier, IDescriptionApplier>.FromT0((IApplier)applier)
-                               : OneOf<IApplier, IDescriptionApplier>.FromT1((IDescriptionApplier)applier);
-                })
+                        ? OneOf<IApplier, IDescriptionApplier>.FromT0((IApplier)applier)
+                        : OneOf<IApplier, IDescriptionApplier>.FromT1((IDescriptionApplier)applier);
+                }),
             ]
         );
     }
@@ -38,18 +39,24 @@ internal class ConceptFactory : IConceptFactory
 
     private readonly Lookup<Type, string> _conceptNamesByDescriptionType;
 
-    public ConceptFactory(IEnumerable<ConceptInfo> conceptInfos, IReadOnlyDictionary<Type, object> @params)
+    public ConceptFactory(
+        IEnumerable<ConceptInfo> conceptInfos,
+        IReadOnlyDictionary<Type, object> @params
+    )
     {
         var params2 = new Dictionary<Type, object>(@params) { { typeof(IConceptFactory), this } }; // 添加自己
         _concepts = conceptInfos.Select(i => BakeConcept(i, params2)).ToDictionary(c => c.Name);
-        _conceptNamesByDescriptionType = (Lookup<Type, string>)
-            _concepts.Where(p => p.Value.DescriptionType is not null)
-                     .ToLookup(p => p.Value.DescriptionType!, p => p.Value.Name);
+        _conceptNamesByDescriptionType =
+            (Lookup<Type, string>)
+                _concepts
+                    .Where(p => p.Value.DescriptionType is not null)
+                    .ToLookup(p => p.Value.DescriptionType!, p => p.Value.Name);
     }
 
     public IReadOnlyDictionary<string, Concept> Concepts => _concepts;
 
-    public Entity Make<T>(World world, CommandBuffer commandBuffer, string key, T description) where T : IDescription
+    public Entity Make<T>(World world, CommandBuffer commandBuffer, string key, T description)
+        where T : IDescription
     {
         var conceptTemplate = _concepts[key];
         Debug.Assert(typeof(T) == conceptTemplate.DescriptionType);
@@ -66,7 +73,8 @@ internal class ConceptFactory : IConceptFactory
         return entity;
     }
 
-    public Entity Make<T>(World world, CommandBuffer commandBuffer, T description) where T : IDescription
+    public Entity Make<T>(World world, CommandBuffer commandBuffer, T description)
+        where T : IDescription
     {
         var matchedConceptNames = _conceptNamesByDescriptionType[typeof(T)].ToImmutableArray();
         if (matchedConceptNames.Length is 0 or > 1)
@@ -74,7 +82,12 @@ internal class ConceptFactory : IConceptFactory
         return Make(world, commandBuffer, matchedConceptNames[0], description);
     }
 
-    public Entity Make(World world, CommandBuffer commandBuffer, string key, IDescription description)
+    public Entity Make(
+        World world,
+        CommandBuffer commandBuffer,
+        string key,
+        IDescription description
+    )
     {
         var conceptTemplate = _concepts[key];
         Debug.Assert(description.GetType() == conceptTemplate.DescriptionType);
@@ -99,10 +112,7 @@ internal class ConceptFactory : IConceptFactory
         var entity = world.Construct(commandBuffer, conceptTemplate.Signature);
         foreach (var applier in conceptTemplate.Appliers)
         {
-            applier.Switch(
-                a => a.Apply(commandBuffer, entity),
-                _ => throw new Exception()
-            );
+            applier.Switch(a => a.Apply(commandBuffer, entity), _ => throw new Exception());
         }
 
         return entity;

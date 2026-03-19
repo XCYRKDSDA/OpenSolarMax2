@@ -23,10 +23,11 @@ public class TurretDeclaration : IDeclaration<TurretDeclaration>
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
-            Orbit = Orbit is not null && newCfg.Orbit is not null
-                        ? Orbit.Aggregate(newCfg.Orbit)
-                        : newCfg.Orbit ?? Orbit,
-            Party = newCfg.Party ?? Party
+            Orbit =
+                Orbit is not null && newCfg.Orbit is not null
+                    ? Orbit.Aggregate(newCfg.Orbit)
+                    : newCfg.Orbit ?? Orbit,
+            Party = newCfg.Party ?? Party,
         };
     }
 }
@@ -36,13 +37,19 @@ public class TurretDeclarationTranslator : ITranslator<TurretDeclaration, Turret
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public TurretDescription ToDescription(TurretDeclaration declaration,
-                                           IReadOnlyDictionary<string, Entity> otherEntities)
+    public TurretDescription ToDescription(
+        TurretDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
         var desc = new TurretDescription();
 
         var tfCfg = new TransformableDeclaration()
-            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
@@ -54,17 +61,24 @@ public class TurretDeclarationTranslator : ITranslator<TurretDeclaration, Turret
 }
 
 [Translate("turret", ConceptNames.TurretPreview), OnlyForPreview]
-public class TurretPreviewDeclarationTranslator : ITranslator<TurretDeclaration, TurretPreviewDescription>
+public class TurretPreviewDeclarationTranslator
+    : ITranslator<TurretDeclaration, TurretPreviewDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public TurretPreviewDescription ToDescription(TurretDeclaration declaration,
-                                                  IReadOnlyDictionary<string, Entity> otherEntities)
+    public TurretPreviewDescription ToDescription(
+        TurretDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
     {
         var desc = new TurretPreviewDescription();
 
         var tfCfg = new TransformableDeclaration()
-            { Parent = declaration.Parent, Position = declaration.Position, Orbit = declaration.Orbit };
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 

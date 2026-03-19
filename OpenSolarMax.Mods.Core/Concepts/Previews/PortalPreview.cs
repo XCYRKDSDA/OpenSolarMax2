@@ -27,8 +27,11 @@ public class PortalPreviewDescription : IDescription
     /// <summary>
     /// 传送门的变换关系
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 传送门所属的阵营
@@ -38,26 +41,33 @@ public class PortalPreviewDescription : IDescription
 
 [Apply(ConceptNames.PortalPreview), OnlyForPreview]
 public class PortalPreviewApplier(
-    IAssetsManager assets, IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:portal")] IConfiguration configs) : IApplier<PortalPreviewDescription>
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:portal")] IConfiguration configs
+) : IApplier<PortalPreviewDescription>
 {
     // 固定的尺寸
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
 
-    private readonly TextureRegion _defaultPortalShape =
-        assets.Load<TextureRegion>("/Textures/PortalAtlas.json:Shape");
+    private readonly TextureRegion _defaultPortalShape = assets.Load<TextureRegion>(
+        "/Textures/PortalAtlas.json:Shape"
+    );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PortalPreviewDescription desc)
     {
         // 设置天体预览基本信息
-        _celestialBodyApplier.Apply(commandBuffer, entity, new CelestialBodyPreviewDescription()
-        {
-            Shape = _defaultPortalShape,
-            ReferenceRadius = _referenceRadius,
-            Transform = desc.Transform,
-            Party = desc.Party,
-        });
+        _celestialBodyApplier.Apply(
+            commandBuffer,
+            entity,
+            new CelestialBodyPreviewDescription()
+            {
+                Shape = _defaultPortalShape,
+                ReferenceRadius = _referenceRadius,
+                Transform = desc.Transform,
+                Party = desc.Party,
+            }
+        );
     }
 }

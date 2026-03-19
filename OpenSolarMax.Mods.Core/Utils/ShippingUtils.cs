@@ -114,23 +114,27 @@ public static class ShippingUtils
             parentProxy.Get<AbsoluteTransform>() = parent.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
-            var relationshipRecord =
-                new TreeRelationship<RelativeTransform>(parentProxy, childProxy);
-            var relationshipProxy =
-                relationship.Has<RevolutionOrbit, RevolutionState>()
-                    ? virtualWorld.Create(
-                        relationshipRecord,
-                        relationship.Get<RelativeTransform>(),
-                        relationship.Get<RevolutionOrbit>(), relationship.Get<RevolutionState>())
-                    : virtualWorld.Create(
-                        relationshipRecord,
-                        relationship.Get<RelativeTransform>());
+            var relationshipRecord = new TreeRelationship<RelativeTransform>(
+                parentProxy,
+                childProxy
+            );
+            var relationshipProxy = relationship.Has<RevolutionOrbit, RevolutionState>()
+                ? virtualWorld.Create(
+                    relationshipRecord,
+                    relationship.Get<RelativeTransform>(),
+                    relationship.Get<RevolutionOrbit>(),
+                    relationship.Get<RevolutionState>()
+                )
+                : virtualWorld.Create(relationshipRecord, relationship.Get<RelativeTransform>());
 
             // 将关系直接记录到两侧组件中
-            childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship =
-                (relationshipProxy, relationshipRecord);
-            parentProxy.Get<TreeRelationship<RelativeTransform>.AsParent>().Relationships.Add(
-                relationshipProxy, relationshipRecord);
+            childProxy.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship = (
+                relationshipProxy,
+                relationshipRecord
+            );
+            parentProxy
+                .Get<TreeRelationship<RelativeTransform>.AsParent>()
+                .Relationships.Add(relationshipProxy, relationshipRecord);
 
             child = parent;
             childProxy = parentProxy;
@@ -140,14 +144,19 @@ public static class ShippingUtils
     private static readonly float _dt = 1f;
 
     public static (Vector3 Destination, float Duration, Vector3 Derivative) CalculateShippingTask(
-        Entity departure, Entity destination, Shippable shippable)
+        Entity departure,
+        Entity destination,
+        Shippable shippable
+    )
     {
         // 获取出发位置
         var departurePosition = departure.Get<AbsoluteTransform>().Translation;
 
         // 提取最简的变换树
         var (virtualWorld, destinationProxy) = ExtractBareTransforms(destination);
-        ref readonly var destinationPositionRef = ref destinationProxy.Get<AbsoluteTransform>().Translation;
+        ref readonly var destinationPositionRef = ref destinationProxy
+            .Get<AbsoluteTransform>()
+            .Translation;
 
         // 生成模拟系统
         var simulateSystems = new object[]
@@ -168,8 +177,10 @@ public static class ShippingUtils
             var simTime = new GameTime(TimeSpan.FromSeconds(t), TimeSpan.FromSeconds(_dt));
             foreach (var system in simulateSystems)
             {
-                if (system is ITickSystem s1) s1.Update(simTime);
-                else if (system is ICalcSystem s2) s2.Update();
+                if (system is ITickSystem s1)
+                    s1.Update(simTime);
+                else if (system is ICalcSystem s2)
+                    s2.Update();
             }
 
             // 计算距离
@@ -187,10 +198,10 @@ public static class ShippingUtils
                 // 上一刻为t，误差为err；此刻为t2，误差为err2。做一个线性近似
                 var k = (0 - err1) / (err - err1);
                 return (
-                           Vector3.Lerp(destinationPosition1, destinationPositionRef, k),
-                           MathHelper.Lerp(t - _dt, t, k),
-                           (destinationPositionRef - destinationPosition1) / _dt
-                       );
+                    Vector3.Lerp(destinationPosition1, destinationPositionRef, k),
+                    MathHelper.Lerp(t - _dt, t, k),
+                    (destinationPositionRef - destinationPosition1) / _dt
+                );
             }
 
             err1 = err;

@@ -19,8 +19,8 @@ public static partial class ConceptNames
 public abstract class ViewDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + new Signature(
             // 位姿变换
             typeof(AbsoluteTransform),
             // 交互
@@ -41,8 +41,11 @@ public abstract class ViewDefinition : IDefinition
 [Describe(ConceptNames.View)]
 public class ViewDescription : IDescription
 {
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     public Point Size { get; set; } = new(1920, 1080);
 
@@ -61,21 +64,31 @@ public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         var world = World.Worlds[entity.WorldId];
 
         // 设置位姿
-        _transformableApplier.Apply(commandBuffer, entity,
-                                    new TransformableDescription() { Transform = desc.Transform });
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription() { Transform = desc.Transform }
+        );
 
         // 设置相机尺寸
-        commandBuffer.Set(in entity, new Camera
-        {
-            Width = desc.Size.X,
-            Height = desc.Size.Y,
-            ZNear = desc.Depth.Near,
-            ZFar = desc.Depth.Far
-        });
+        commandBuffer.Set(
+            in entity,
+            new Camera
+            {
+                Width = desc.Size.X,
+                Height = desc.Size.Y,
+                ZNear = desc.Depth.Near,
+                ZFar = desc.Depth.Far,
+            }
+        );
 
         // 设置阵营
-        factory.Make(world, commandBuffer, ConceptNames.InParty,
-                     new InPartyDescription { Party = desc.Party, Affiliate = entity });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.InParty,
+            new InPartyDescription { Party = desc.Party, Affiliate = entity }
+        );
 
         // 初始化 UI
         commandBuffer.Set(in entity, new TotalPopulationWidget(assets));

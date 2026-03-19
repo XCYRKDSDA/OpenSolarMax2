@@ -17,9 +17,9 @@ public static partial class ConceptNames
 public abstract class UnitTrailDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        DependencyCapableDefinition.Signature +
-        TransformableDefinition.Signature +
-        new Signature(
+        DependencyCapableDefinition.Signature
+        + TransformableDefinition.Signature
+        + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
@@ -36,33 +36,51 @@ public class UnitTrailDescription : IDescription
 }
 
 [Apply(ConceptNames.UnitTrail)]
-public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<UnitTrailDescription>
+public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<UnitTrailDescription>
 {
-    private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>("Textures/ShipAtlas.json:ShipTrail");
+    private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>(
+        "Textures/ShipAtlas.json:ShipTrail"
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, UnitTrailDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
         // 设置纹理
-        commandBuffer.Set(in entity, new Sprite
-        {
-            Texture = _trailTexture,
-            Color = Color.White,
-            Alpha = 0.5f,
-            Size = _trailTexture.Bounds.Size.ToVector2(),
-            Scale = new Vector2(0, 1),
-            Blend = SpriteBlend.Additive
-        });
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _trailTexture,
+                Color = Color.White,
+                Alpha = 0.5f,
+                Size = _trailTexture.Bounds.Size.ToVector2(),
+                Scale = new Vector2(0, 1),
+                Blend = SpriteBlend.Additive,
+            }
+        );
 
         // 挂载到单位上
-        factory.Make(world, commandBuffer, ConceptNames.TrailOf,
-                     new TrailOfDescription { Ship = desc.Unit, Trail = entity });
-        factory.Make(world, commandBuffer, ConceptNames.RelativeTransform,
-                     new RelativeTransformDescription { Child = entity, Parent = desc.Unit });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.TrailOf,
+            new TrailOfDescription { Ship = desc.Unit, Trail = entity }
+        );
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.RelativeTransform,
+            new RelativeTransformDescription { Child = entity, Parent = desc.Unit }
+        );
 
         // 设置依赖关系
-        factory.Make(world, commandBuffer, ConceptNames.Dependence,
-                     new DependenceDescription { Dependent = entity, Dependency = desc.Unit });
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.Dependence,
+            new DependenceDescription { Dependent = entity, Dependency = desc.Unit }
+        );
     }
 }

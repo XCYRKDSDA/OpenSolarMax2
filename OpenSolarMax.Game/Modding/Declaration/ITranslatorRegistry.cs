@@ -20,7 +20,9 @@ public interface ITranslatorRegistry
     /// <param name="conceptName">内部 Concept 名称</param>
     /// <param name="translator">Translator 对象</param>
     /// <returns></returns>
-    bool TryGetBySchema(string schemaName,
-                        [MaybeNullWhen(false)] out string conceptName,
-                        [MaybeNullWhen(false)] out ITranslator translator);
+    bool TryGetBySchema(
+        string schemaName,
+        [MaybeNullWhen(false)] out string conceptName,
+        [MaybeNullWhen(false)] out ITranslator translator
+    );
 }

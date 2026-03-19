@@ -19,8 +19,8 @@ public static partial class ConceptNames
 public abstract class TurretDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        CelestialBodyDefinition.Signature +
-        new Signature(
+        CelestialBodyDefinition.Signature
+        + new Signature(
             // 运输相关
             typeof(DefaultLaunchPad),
             // 攻击相关
@@ -38,8 +38,11 @@ public class TurretDescription : IDescription
     /// <summary>
     /// 炮塔的变换关系
     /// </summary>
-    public OneOf<AbsoluteTransformOptions, RelativeTransformOptions, RevolutionOptions> Transform { get; set; } =
-        new AbsoluteTransformOptions();
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
 
     /// <summary>
     /// 炮塔所属的阵营
@@ -59,34 +62,45 @@ public class TurretDescription : IDescription
 
 [Apply(ConceptNames.Turret)]
 public class TurretApplier(
-    IAssetsManager assets, IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:turret")] IConfiguration configs)
-    : IApplier<TurretDescription>
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:turret")] IConfiguration configs
+) : IApplier<TurretDescription>
 {
     // 固定的尺寸
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
     private readonly int _volume = configs.RequireValue<int>("volume");
 
-    private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>("/Textures/TurretAtlas.json:Turret");
+    private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>(
+        "/Textures/TurretAtlas.json:Turret"
+    );
 
-    private readonly TextureRegion _turretShape = assets.Load<TextureRegion>("Textures/TurretAtlas.json:Shape");
+    private readonly TextureRegion _turretShape = assets.Load<TextureRegion>(
+        "Textures/TurretAtlas.json:Shape"
+    );
 
-    private readonly TextureRegion _turretGlow = assets.Load<TextureRegion>("Textures/TurretAtlas.json:TurretGlow");
+    private readonly TextureRegion _turretGlow = assets.Load<TextureRegion>(
+        "Textures/TurretAtlas.json:TurretGlow"
+    );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, TurretDescription desc)
     {
         // 设置天体基本信息
-        _celestialBodyApplier.Apply(commandBuffer, entity, new CelestialBodyDescription()
-        {
-            Shape = _turretShape,
-            Texture = _turretTexture,
-            ReferenceRadius = _referenceRadius,
-            Transform = desc.Transform,
-            Party = desc.Party,
-            Volume = _volume,
-        });
+        _celestialBodyApplier.Apply(
+            commandBuffer,
+            entity,
+            new CelestialBodyDescription()
+            {
+                Shape = _turretShape,
+                Texture = _turretTexture,
+                ReferenceRadius = _referenceRadius,
+                Transform = desc.Transform,
+                Party = desc.Party,
+                Volume = _volume,
+            }
+        );
 
         // 配置炮塔属性
         commandBuffer.Set(in entity, new AttackRange { Range = desc.AttackRange });

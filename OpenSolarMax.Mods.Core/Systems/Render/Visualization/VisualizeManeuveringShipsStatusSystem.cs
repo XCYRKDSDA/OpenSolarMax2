@@ -15,19 +15,30 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-public delegate bool? CheckLocationReachabilityCallback(World world,
-                                                        Entity departure, in AbsoluteTransform departurePose,
-                                                        in Vector3 destinationPose);
+public delegate bool? CheckLocationReachabilityCallback(
+    World world,
+    Entity departure,
+    in AbsoluteTransform departurePose,
+    in Vector3 destinationPose
+);
 
 [RenderSystem, AfterStructuralChanges]
 [Priority((int)GraphicsLayer.Interface)]
-[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform))]
-[ReadCurr(typeof(ReferenceSize)), ReadCurr(typeof(ManeuvaringShipsStatus))]
+[
+    ReadCurr(typeof(Camera)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(ReferenceSize)),
+    ReadCurr(typeof(ManeuvaringShipsStatus))
+]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
-    World world, GraphicsDevice graphicsDevice,
-    [Section("systems:visualization:maneuvering_ships_status")] IConfiguration configs) : ICalcSystem
+    World world,
+    GraphicsDevice graphicsDevice,
+    [Section("systems:visualization:maneuvering_ships_status")] IConfiguration configs
+) : ICalcSystem
 {
-    private readonly float _ringRadiusFactor = configs.RequireValue<float>("ring:radius_multiplier");
+    private readonly float _ringRadiusFactor = configs.RequireValue<float>(
+        "ring:radius_multiplier"
+    );
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
     private readonly Color _hoveredRingColor = configs.RequireValue<Color>("ring:hovered:color");
     private readonly Color _blockedRingColor = configs.RequireValue<Color>("ring:blocked:color");
@@ -50,8 +61,13 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
 
     public void Update() => DrawSelectionQuery(world);
 
-    private void DrawSelected(in ReferenceSize refSize, in AbsoluteTransform pose, in Matrix worldToCanvas,
-                              Color ringColor, float ringThickness)
+    private void DrawSelected(
+        in ReferenceSize refSize,
+        in AbsoluteTransform pose,
+        in Matrix worldToCanvas,
+        Color ringColor,
+        float ringThickness
+    )
     {
         // 计算选择环的尺寸
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToCanvas);
@@ -59,29 +75,44 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
 
         // 计算选择环的位置
-        var ringInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToCanvas));
+        var ringInCanvas = TransformProjection.To2D(
+            Vector3.Transform(pose.Translation, worldToCanvas)
+        );
 
         // 绘制选择环
         _circleRenderer.DrawCircle(ringInCanvas, ringRadius, ringColor, ringThickness);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(Entity selected, in Matrix worldToCanvas, Color ringColor, float ringThickness)
+    private void DrawSelected(
+        Entity selected,
+        in Matrix worldToCanvas,
+        Color ringColor,
+        float ringThickness
+    )
     {
         var compos = selected.Get<ReferenceSize, AbsoluteTransform>();
         DrawSelected(in compos.t0, in compos.t1, in worldToCanvas, ringColor, ringThickness);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawSelected(IEnumerable<Entity> selecteds, in Matrix worldToCanvas,
-                              IEnumerable<Color> ringColors, float ringThickness)
+    private void DrawSelected(
+        IEnumerable<Entity> selecteds,
+        in Matrix worldToCanvas,
+        IEnumerable<Color> ringColors,
+        float ringThickness
+    )
     {
         foreach (var (selected, color) in Enumerable.Zip(selecteds, ringColors))
             DrawSelected(selected, in worldToCanvas, color, ringThickness);
     }
 
-    private void DrawLines(IEnumerable<Entity> sources, Entity target, in Matrix worldToViewport,
-                           IEnumerable<Color> colors)
+    private void DrawLines(
+        IEnumerable<Entity> sources,
+        Entity target,
+        in Matrix worldToViewport,
+        IEnumerable<Color> colors
+    )
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
@@ -91,7 +122,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var targetCompos = target.Get<ReferenceSize, AbsoluteTransform>();
         ref readonly var targetRefSize = ref targetCompos.t0;
         ref readonly var targetPose = ref targetCompos.t1;
-        var targetInCanvas = TransformProjection.To2D(Vector3.Transform(targetPose.Translation, worldToViewport));
+        var targetInCanvas = TransformProjection.To2D(
+            Vector3.Transform(targetPose.Translation, worldToViewport)
+        );
         var targetRingRadius = targetRefSize.Radius * _ringRadiusFactor * scale;
 
         foreach (var (source, color) in Enumerable.Zip(sources, colors))
@@ -101,7 +134,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             ref readonly var pose = ref compos.t1;
 
             // 计算起点位置和半径
-            var sourceInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToViewport));
+            var sourceInCanvas = TransformProjection.To2D(
+                Vector3.Transform(pose.Translation, worldToViewport)
+            );
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
@@ -110,12 +145,22 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
             var tailInCanvas = targetInCanvas - unitDirection * targetRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, color, _lineThickness, _lineRound);
+            _segmentRenderer.DrawSegment(
+                headInCanvas,
+                tailInCanvas,
+                color,
+                _lineThickness,
+                _lineRound
+            );
         }
     }
 
-    private void DrawLines(IEnumerable<Entity> sources, Vector2 tailInCanvas, in Matrix worldToViewport,
-                           IEnumerable<Color> colors)
+    private void DrawLines(
+        IEnumerable<Entity> sources,
+        Vector2 tailInCanvas,
+        in Matrix worldToViewport,
+        IEnumerable<Color> colors
+    )
     {
         // 计算投影矩阵的缩放
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToViewport);
@@ -128,7 +173,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             ref readonly var pose = ref compos.t1;
 
             // 计算起点位置和半径
-            var sourceInCanvas = TransformProjection.To2D(Vector3.Transform(pose.Translation, worldToViewport));
+            var sourceInCanvas = TransformProjection.To2D(
+                Vector3.Transform(pose.Translation, worldToViewport)
+            );
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
@@ -136,7 +183,13 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             unitDirection.Normalize();
             var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
 
-            _segmentRenderer.DrawSegment(headInCanvas, tailInCanvas, color, _lineThickness, _lineRound);
+            _segmentRenderer.DrawSegment(
+                headInCanvas,
+                tailInCanvas,
+                color,
+                _lineThickness,
+                _lineRound
+            );
         }
     }
 
@@ -145,42 +198,67 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         foreach (var @delegate in CheckReachabilityDelegate?.GetInvocationList() ?? [])
         {
             var checker = (CheckLocationReachabilityCallback)@delegate;
-            var result = checker.Invoke(world, departure, in departure.Get<AbsoluteTransform>(), in destination);
+            var result = checker.Invoke(
+                world,
+                departure,
+                in departure.Get<AbsoluteTransform>(),
+                in destination
+            );
             if (result is not null)
                 return result.Value;
         }
 
-        return !ManeuveringUtils.CheckBarriersBlocking(world, departure.Get<AbsoluteTransform>().Translation,
-                                                       destination);
+        return !ManeuveringUtils.CheckBarriersBlocking(
+            world,
+            departure.Get<AbsoluteTransform>().Translation,
+            destination
+        );
     }
 
     private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Entity destination)
     {
         return departures.Select(departure =>
-                                     !CheckReachability(departure,
-                                                        destination.Get<AbsoluteTransform>().Translation)
+            !CheckReachability(departure, destination.Get<AbsoluteTransform>().Translation)
         );
     }
 
-    private IEnumerable<bool> CalculateBlocking(IEnumerable<Entity> departures, Vector2 tailInCanvas,
-                                                in Matrix canvasToWorld)
+    private IEnumerable<bool> CalculateBlocking(
+        IEnumerable<Entity> departures,
+        Vector2 tailInCanvas,
+        in Matrix canvasToWorld
+    )
     {
         var tailLocation = Vector3.Transform(new Vector3(tailInCanvas, 0), canvasToWorld);
-        return departures.Select(departure => !CheckReachability(departure, tailLocation)
-        );
+        return departures.Select(departure => !CheckReachability(departure, tailLocation));
     }
 
     [Query]
     [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus>]
-    private void DrawSelection(in Camera camera, in AbsoluteTransform pose, in ManeuvaringShipsStatus status)
+    private void DrawSelection(
+        in Camera camera,
+        in AbsoluteTransform pose,
+        in ManeuvaringShipsStatus status
+    )
     {
         var mouse = Mouse.GetState();
 
         // 根据相机和视口状态计算变换矩阵
         var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(camera.Width, camera.Height, camera.ZNear, camera.ZFar);
+        var projectionMatrix = Matrix.CreateOrthographic(
+            camera.Width,
+            camera.Height,
+            camera.ZNear,
+            camera.ZFar
+        );
         var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(0, canvas.Width, canvas.Height, 0, 0, -1);
+        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
+            0,
+            canvas.Width,
+            canvas.Height,
+            0,
+            0,
+            -1
+        );
         var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
 
         // 设置绘图区域
@@ -195,7 +273,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
 
         // 设置着色器坐标变换参数
         _circleRenderer.Effect.Projection =
-            _boxRenderer.Effect.Projection = _segmentRenderer.Effect.Projection = canvasToNdc;
+            _boxRenderer.Effect.Projection =
+            _segmentRenderer.Effect.Projection =
+                canvasToNdc;
 
         ref readonly var selection = ref status.Selection;
 
@@ -208,34 +288,53 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             if (mouse.LeftButton != ButtonState.Pressed)
             {
                 if (selection.SimpleSelecting.PointingPlanet != Entity.Null)
-                    DrawSelected(selection.SimpleSelecting.PointingPlanet, in worldToCanvas,
-                                 _hoveredRingColor, _ringThickness);
+                    DrawSelected(
+                        selection.SimpleSelecting.PointingPlanet,
+                        in worldToCanvas,
+                        _hoveredRingColor,
+                        _ringThickness
+                    );
             }
 
             // 绘制所有选中的星球
             // TappingSource已经包含在SelectedSources中了，故不重复绘制
-            DrawSelected(selection.SimpleSelecting.SelectedSources, in worldToCanvas,
-                         Enumerable.Repeat(_selectedRingColor, int.MaxValue), _ringThickness);
+            DrawSelected(
+                selection.SimpleSelecting.SelectedSources,
+                in worldToCanvas,
+                Enumerable.Repeat(_selectedRingColor, int.MaxValue),
+                _ringThickness
+            );
 
             // 绘制目标星球
             if (selection.SimpleSelecting.TappingDestination != Entity.Null)
-                DrawSelected(selection.SimpleSelecting.TappingDestination, in worldToCanvas,
-                             _selectedRingColor, _ringThickness);
+                DrawSelected(
+                    selection.SimpleSelecting.TappingDestination,
+                    in worldToCanvas,
+                    _selectedRingColor,
+                    _ringThickness
+                );
         }
-
         // 当处于框选状态时，还需要绘制选框和选框内的星球
         else if (selection.State == ShipsSelection_State.BoxSelectingSources)
         {
             // 绘制所有选中的星球
             DrawSelected(
-                Enumerable.Concat(selection.BoxSelectingSources.OtherSelectedPlanets,
-                                  selection.BoxSelectingSources.PlanetsInBox),
-                in worldToCanvas, Enumerable.Repeat(_selectedRingColor, int.MaxValue), _ringThickness);
+                Enumerable.Concat(
+                    selection.BoxSelectingSources.OtherSelectedPlanets,
+                    selection.BoxSelectingSources.PlanetsInBox
+                ),
+                in worldToCanvas,
+                Enumerable.Repeat(_selectedRingColor, int.MaxValue),
+                _ringThickness
+            );
 
             // 绘制选框
-            _boxRenderer.DrawBox(selection.BoxSelectingSources.BoxInViewport, _boxColor, _boxThickness);
+            _boxRenderer.DrawBox(
+                selection.BoxSelectingSources.BoxInViewport,
+                _boxColor,
+                _boxThickness
+            );
         }
-
         // 当处于拖拽状态时，还需要绘制起点到目标的线段
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
@@ -244,27 +343,50 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
 
             var blockStates =
                 selection.DraggingToDestination.CandidateDestination == Entity.Null
-                    ? CalculateBlocking(selection.DraggingToDestination.SelectedSources,
-                                        mouseInCanvas.ToVector2(), Matrix.Invert(worldToCanvas)).ToArray()
-                    : CalculateBlocking(selection.DraggingToDestination.SelectedSources,
-                                        selection.DraggingToDestination.CandidateDestination).ToArray();
+                    ? CalculateBlocking(
+                            selection.DraggingToDestination.SelectedSources,
+                            mouseInCanvas.ToVector2(),
+                            Matrix.Invert(worldToCanvas)
+                        )
+                        .ToArray()
+                    : CalculateBlocking(
+                            selection.DraggingToDestination.SelectedSources,
+                            selection.DraggingToDestination.CandidateDestination
+                        )
+                        .ToArray();
 
             var sourceColors = blockStates.Select(b => b ? _blockedRingColor : _selectedRingColor);
-            DrawSelected(selection.DraggingToDestination.SelectedSources, in worldToCanvas,
-                         sourceColors, _ringThickness);
+            DrawSelected(
+                selection.DraggingToDestination.SelectedSources,
+                in worldToCanvas,
+                sourceColors,
+                _ringThickness
+            );
 
             var edgeColors = blockStates.Select(b => b ? _blockedLineColor : _lineColor);
             if (selection.DraggingToDestination.CandidateDestination == Entity.Null)
-                DrawLines(selection.DraggingToDestination.SelectedSources,
-                          mouseInCanvas.ToVector2(), worldToCanvas, edgeColors);
+                DrawLines(
+                    selection.DraggingToDestination.SelectedSources,
+                    mouseInCanvas.ToVector2(),
+                    worldToCanvas,
+                    edgeColors
+                );
             else
             {
-                DrawLines(selection.DraggingToDestination.SelectedSources,
-                          selection.DraggingToDestination.CandidateDestination, worldToCanvas, edgeColors);
+                DrawLines(
+                    selection.DraggingToDestination.SelectedSources,
+                    selection.DraggingToDestination.CandidateDestination,
+                    worldToCanvas,
+                    edgeColors
+                );
 
                 var targetColor = blockStates.All(b => b) ? _blockedRingColor : _selectedRingColor;
-                DrawSelected(selection.DraggingToDestination.CandidateDestination, in worldToCanvas,
-                             targetColor, _ringThickness);
+                DrawSelected(
+                    selection.DraggingToDestination.CandidateDestination,
+                    in worldToCanvas,
+                    targetColor,
+                    _ringThickness
+                );
             }
         }
 
