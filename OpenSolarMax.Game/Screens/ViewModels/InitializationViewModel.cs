@@ -18,27 +18,27 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
 
     public event EventHandler<MainMenuViewModel>? OnMenuViewModelLoaded;
 
-    private readonly Task<MainMenuViewModel> _menuLoadTask;
+    private Task<MainMenuViewModel>? _menuLoadTask;
 
     public InitializationViewModel(SolarMax game)
         : base(game)
     {
-        _menuLoadTask = new Task<MainMenuViewModel>( //
-            () =>
-            new MainMenuViewModel(game, new Progress<float>(v => Progress = v))
-        );
-
         _startLoadingCommand = new RelayCommand(OnStartLoading);
     }
 
     private void OnStartLoading()
     {
-        _menuLoadTask.Start();
+        _menuLoadTask = Task.Factory.StartNew(
+            () => new MainMenuViewModel(Game, new Progress<float>(v => Progress = v)),
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            Game.BackgroundScheduler
+        );
     }
 
-    public void Update(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
-        if (_menuLoadTask.IsCompleted)
+        if (_menuLoadTask is not null && _menuLoadTask.IsCompleted)
         {
             LoadCompleted = true;
             OnMenuViewModelLoaded?.Invoke(this, _menuLoadTask.Result);
