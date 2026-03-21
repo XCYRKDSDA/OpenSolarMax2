@@ -38,7 +38,7 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
 
     public override void Update(GameTime gameTime)
     {
-        if (_menuLoadTask is not null && _menuLoadTask.IsCompleted)
+        if (!LoadCompleted && _menuLoadTask is not null && _menuLoadTask.IsCompleted)
         {
             LoadCompleted = true;
             OnMenuViewModelLoaded?.Invoke(this, _menuLoadTask.Result);
