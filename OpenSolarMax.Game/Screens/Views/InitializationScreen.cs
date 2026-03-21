@@ -2,13 +2,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Animations;
-using Nine.Assets;
-using OpenSolarMax.Game.Screens.Transitions;
+using OpenSolarMax.game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 
 namespace OpenSolarMax.Game.Screens.Views;
@@ -117,12 +115,14 @@ internal class InitializationScreen : ScreenBase
         Debug.Assert(ReferenceEquals(sender, _viewModel));
         Debug.Assert(ReferenceEquals(Game.ScreenManager.ActiveScreen, this));
         var v = new MenuLikeScreen(e, Game);
-        var tr = new ExposureTransition(this, v, Game)
-        {
-            Duration = TimeSpan.FromSeconds(8),
-            Center = new Vector2(0, 1080),
-            Curve = new Smooth(),
-        };
+        var tr = new ExposureTransitionScreen(
+            this,
+            v,
+            Game,
+            TimeSpan.FromSeconds(8),
+            new Vector2(0, 1080),
+            new Smooth()
+        );
         Game.ScreenManager.ActiveScreen = tr;
     }
 

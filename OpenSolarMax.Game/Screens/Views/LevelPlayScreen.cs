@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -360,79 +359,79 @@ internal class LevelPlayScreen : ScreenBase
         _desktop.Render();
     }
 
-    protected override void OnStartTransitIn(object? context)
-    {
-        // 只在从菜单切换过来时播放世界过渡动画
-        if (context is not MenuNavigationContext ctx)
-            return;
+    // protected override void OnStartTransitIn(object? context)
+    // {
+    //     // 只在从菜单切换过来时播放世界过渡动画
+    //     if (context is not MenuNavigationContext ctx)
+    //         return;
 
-        // 记录动画结束时的目标预览位置
-        ctx.TargetPreviewLocation = new Rectangle(
-            _embeddingWorldView.ToGlobal(Point.Zero),
-            _embeddingWorldView.ActualBounds.Size
-        );
+    //     // 记录动画结束时的目标预览位置
+    //     ctx.TargetPreviewLocation = new Rectangle(
+    //         _embeddingWorldView.ToGlobal(Point.Zero),
+    //         _embeddingWorldView.ActualBounds.Size
+    //     );
 
-        // 创建悬浮世界视图控件
-        _floatingWorldView = new Widget();
-        _rootPanel.Widgets.Add(_floatingWorldView);
+    //     // 创建悬浮世界视图控件
+    //     _floatingWorldView = new Widget();
+    //     _rootPanel.Widgets.Add(_floatingWorldView);
 
-        // 世界更新速度归零
-        _viewModel.SimulateSpeed = 0;
-    }
+    //     // 世界更新速度归零
+    //     _viewModel.SimulateSpeed = 0;
+    // }
 
-    public override void OnTransitIn(object? context, float progress)
-    {
-        // 只在从菜单切换过来时播放世界过渡动画
-        if (context is not MenuNavigationContext ctx)
-            return;
+    // public override void OnTransitIn(object? context, float progress)
+    // {
+    //     // 只在从菜单切换过来时播放世界过渡动画
+    //     if (context is not MenuNavigationContext ctx)
+    //         return;
 
-        // 更新目标位置
-        ctx.TargetPreviewLocation = new Rectangle(
-            _embeddingWorldView.ToGlobal(Point.Zero),
-            _embeddingWorldView.ActualBounds.Size
-        );
+    //     // 更新目标位置
+    //     ctx.TargetPreviewLocation = new Rectangle(
+    //         _embeddingWorldView.ToGlobal(Point.Zero),
+    //         _embeddingWorldView.ActualBounds.Size
+    //     );
 
-        // 计算当前位置
-        Debug.Assert(_floatingWorldView is not null);
-        _floatingWorldView.Left = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Left,
-                ctx.TargetPreviewLocation.Left,
-                progress
-            );
-        _floatingWorldView.Top = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Top,
-                ctx.TargetPreviewLocation.Top,
-                progress
-            );
-        _floatingWorldView.Width = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Width,
-                ctx.TargetPreviewLocation.Width,
-                progress
-            );
-        _floatingWorldView.Height = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Height,
-                ctx.TargetPreviewLocation.Height,
-                progress
-            );
+    //     // 计算当前位置
+    //     Debug.Assert(_floatingWorldView is not null);
+    //     _floatingWorldView.Left = (int)
+    //         MathHelper.Lerp(
+    //             ctx.OriginalPreviewLocation.Left,
+    //             ctx.TargetPreviewLocation.Left,
+    //             progress
+    //         );
+    //     _floatingWorldView.Top = (int)
+    //         MathHelper.Lerp(
+    //             ctx.OriginalPreviewLocation.Top,
+    //             ctx.TargetPreviewLocation.Top,
+    //             progress
+    //         );
+    //     _floatingWorldView.Width = (int)
+    //         MathHelper.Lerp(
+    //             ctx.OriginalPreviewLocation.Width,
+    //             ctx.TargetPreviewLocation.Width,
+    //             progress
+    //         );
+    //     _floatingWorldView.Height = (int)
+    //         MathHelper.Lerp(
+    //             ctx.OriginalPreviewLocation.Height,
+    //             ctx.TargetPreviewLocation.Height,
+    //             progress
+    //         );
 
-        // 逐渐加速世界模拟
-        _viewModel.SimulateSpeed = progress;
-    }
+    //     // 逐渐加速世界模拟
+    //     _viewModel.SimulateSpeed = progress;
+    // }
 
-    protected override void OnFinishTransitIn(object? context)
-    {
-        if (context is not MenuNavigationContext)
-            return;
+    // protected override void OnFinishTransitIn(object? context)
+    // {
+    //     if (context is not MenuNavigationContext)
+    //         return;
 
-        // 正常化世界模拟速度
-        _viewModel.SimulateSpeed = 1;
+    //     // 正常化世界模拟速度
+    //     _viewModel.SimulateSpeed = 1;
 
-        // 移除悬浮控件，恢复默认状态
-        _rootPanel.Widgets.Remove(_floatingWorldView);
-        _floatingWorldView = null;
-    }
+    //     // 移除悬浮控件，恢复默认状态
+    //     _rootPanel.Widgets.Remove(_floatingWorldView);
+    //     _floatingWorldView = null;
+    // }
 }
