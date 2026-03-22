@@ -34,7 +34,10 @@ public class FadableImage : Widget
 
     protected override Point InternalMeasure(Point availableSize)
     {
-        return _image?.Size ?? Point.Zero;
+        var size = _image?.Size ?? Point.Zero;
+        if (size.X < 0 || size.Y < 0)
+            size = availableSize;
+        return size;
     }
 
     public override void InternalRender(RenderContext context)
@@ -44,7 +47,10 @@ public class FadableImage : Widget
 
         var bounds = ActualBounds;
 
-        if (Stretch is ImageStretch.Uniform or ImageStretch.UniformToFill)
+        if (
+            (_image!.Size.X > 0 && _image!.Size.Y > 0)
+            && Stretch is ImageStretch.Uniform or ImageStretch.UniformToFill
+        )
         {
             var aspect = (float)Renderable.Size.X / Renderable.Size.Y;
             var actualAspect = (float)ActualBounds.Width / ActualBounds.Height;

@@ -12,18 +12,14 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
 {
     private const float _alpha = 0.5f;
 
-    // 按照全屏分辨率渲染以避免放大时模糊
+    // 按照全屏分辨率创建画布以避免频繁调整
     private readonly RenderTarget2D _renderTarget = new(
         graphicsDevice,
         graphicsDevice.PresentationParameters.BackBufferWidth,
         graphicsDevice.PresentationParameters.BackBufferHeight
     );
 
-    public Point Size =>
-        new(
-            graphicsDevice.PresentationParameters.BackBufferWidth,
-            graphicsDevice.PresentationParameters.BackBufferHeight
-        );
+    public Point Size => new(-1); // 尽量放大
 
     public void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn)
     {
@@ -31,12 +27,16 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
         var renderTargetsCache = graphicsDevice.GetRenderTargets();
         graphicsDevice.SetRenderTarget(_renderTarget);
 
+        // 计算画布中的绘制位置
+        var sourceRectangle = new Rectangle(Point.Zero, dest.Size);
+
+        // 绘制世界
         graphicsDevice.Clear(Color.Transparent);
         world.Query(
             new QueryDescription().WithAll<Viewport, RenderSettings>(),
             (ref Viewport viewport, ref RenderSettings renderSettings) =>
             {
-                viewport = graphicsDevice.Viewport;
+                viewport = new Viewport(sourceRectangle);
                 renderSettings.SpriteScaling = fadeIn;
             }
         );
@@ -45,6 +45,6 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
         graphicsDevice.SetRenderTargets(renderTargetsCache);
 
         // 绘制到 UI
-        context.Draw(_renderTarget, dest, color * _alpha * fadeIn);
+        context.Draw(_renderTarget, dest, sourceRectangle, color * _alpha * fadeIn);
     }
 }

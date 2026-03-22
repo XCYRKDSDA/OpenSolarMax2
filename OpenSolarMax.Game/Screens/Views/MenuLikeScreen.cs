@@ -26,7 +26,7 @@ internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTran
     private readonly FadableImage _primaryPreview,
         _secondaryPreview;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
-    private Image2? _floatingPreview;
+    private FadableImage? _floatingPreview;
 
     private readonly IMenuLikeViewModel _viewModel;
     private float _actualBackgroundLeft = 0;
@@ -321,7 +321,11 @@ internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTran
         _scrollViewer.Enabled = false;
 
         // 将预览内容交给悬浮预览控件
-        _floatingPreview = new Image2() { Renderable = _primaryPreview.Renderable };
+        _floatingPreview = new FadableImage()
+        {
+            Renderable = _primaryPreview.Renderable,
+            FadeIn = 1,
+        };
         _rootPanel.Widgets.Add(_floatingPreview);
 
         // 关闭嵌入的自带控件的渲染
