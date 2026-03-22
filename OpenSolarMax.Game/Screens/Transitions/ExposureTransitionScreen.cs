@@ -2,10 +2,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Animations;
 using Nine.Screens;
-using OpenSolarMax.Game;
 using OpenSolarMax.Game.Graphics;
 
-namespace OpenSolarMax.game.Screens.Transitions;
+namespace OpenSolarMax.Game.Screens.Transitions;
 
 public class ExposureTransitionScreen(
     IScreen prevScreen,
