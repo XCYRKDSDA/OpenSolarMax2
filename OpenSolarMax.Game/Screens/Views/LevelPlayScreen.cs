@@ -6,13 +6,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
+using Nine.Screens;
 using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class LevelPlayScreen : ScreenBase
+internal class LevelPlayScreen : ScreenBase, ITransitionTargetScreen<GamePlayTransitionState>
 {
     private readonly HorizontalScrollingBackground _background;
 
@@ -359,79 +361,48 @@ internal class LevelPlayScreen : ScreenBase
         _desktop.Render();
     }
 
-    // protected override void OnStartTransitIn(object? context)
-    // {
-    //     // 只在从菜单切换过来时播放世界过渡动画
-    //     if (context is not MenuNavigationContext ctx)
-    //         return;
+    #region GamePlayTransition In
 
-    //     // 记录动画结束时的目标预览位置
-    //     ctx.TargetPreviewLocation = new Rectangle(
-    //         _embeddingWorldView.ToGlobal(Point.Zero),
-    //         _embeddingWorldView.ActualBounds.Size
-    //     );
+    void ITransitionTarget<GamePlayTransitionState>.OnStartTransition()
+    {
+        // 创建悬浮世界视图控件
+        _floatingWorldView = new Widget();
+        _rootPanel.Widgets.Add(_floatingWorldView);
 
-    //     // 创建悬浮世界视图控件
-    //     _floatingWorldView = new Widget();
-    //     _rootPanel.Widgets.Add(_floatingWorldView);
+        // 世界更新速度归零
+        _viewModel.SimulateSpeed = 0;
+    }
 
-    //     // 世界更新速度归零
-    //     _viewModel.SimulateSpeed = 0;
-    // }
+    void ITransitionTarget<GamePlayTransitionState>.OnFinishTransition()
+    {
+        // 世界更新速度正常化
+        _viewModel.SimulateSpeed = 1;
 
-    // public override void OnTransitIn(object? context, float progress)
-    // {
-    //     // 只在从菜单切换过来时播放世界过渡动画
-    //     if (context is not MenuNavigationContext ctx)
-    //         return;
+        // 移除悬浮视图控件
+        _rootPanel.Widgets.Remove(_floatingWorldView);
+        _floatingWorldView = null;
+    }
 
-    //     // 更新目标位置
-    //     ctx.TargetPreviewLocation = new Rectangle(
-    //         _embeddingWorldView.ToGlobal(Point.Zero),
-    //         _embeddingWorldView.ActualBounds.Size
-    //     );
+    GamePlayTransitionState ITransitionTarget<GamePlayTransitionState>.GetTargetTransitionState()
+    {
+        var targetPreviewLocation = new Rectangle(
+            _embeddingWorldView.ToGlobal(Point.Zero),
+            _embeddingWorldView.ActualBounds.Size
+        );
+        return new GamePlayTransitionState(targetPreviewLocation, 1);
+    }
 
-    //     // 计算当前位置
-    //     Debug.Assert(_floatingWorldView is not null);
-    //     _floatingWorldView.Left = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Left,
-    //             ctx.TargetPreviewLocation.Left,
-    //             progress
-    //         );
-    //     _floatingWorldView.Top = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Top,
-    //             ctx.TargetPreviewLocation.Top,
-    //             progress
-    //         );
-    //     _floatingWorldView.Width = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Width,
-    //             ctx.TargetPreviewLocation.Width,
-    //             progress
-    //         );
-    //     _floatingWorldView.Height = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Height,
-    //             ctx.TargetPreviewLocation.Height,
-    //             progress
-    //         );
+    void IConfigurable<GamePlayTransitionState>.ApplyState(in GamePlayTransitionState state)
+    {
+        // 设置悬浮视图控件的位置
+        _floatingWorldView!.Left = state.WorldRenderRegion.Left;
+        _floatingWorldView!.Top = state.WorldRenderRegion.Top;
+        _floatingWorldView!.Width = state.WorldRenderRegion.Width;
+        _floatingWorldView!.Height = state.WorldRenderRegion.Height;
 
-    //     // 逐渐加速世界模拟
-    //     _viewModel.SimulateSpeed = progress;
-    // }
+        // 设置世界仿真速度
+        _viewModel.SimulateSpeed = state.WorldSpeed;
+    }
 
-    // protected override void OnFinishTransitIn(object? context)
-    // {
-    //     if (context is not MenuNavigationContext)
-    //         return;
-
-    //     // 正常化世界模拟速度
-    //     _viewModel.SimulateSpeed = 1;
-
-    //     // 移除悬浮控件，恢复默认状态
-    //     _rootPanel.Widgets.Remove(_floatingWorldView);
-    //     _floatingWorldView = null;
-    // }
+    #endregion
 }

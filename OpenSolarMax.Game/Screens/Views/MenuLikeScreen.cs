@@ -8,12 +8,13 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen : ScreenBase
+internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTransitionState>
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
@@ -183,12 +184,11 @@ internal class MenuLikeScreen : ScreenBase
         }
         else if (e is LevelPlayViewModel levelPlayViewModel)
         {
-            Game.ScreenManager.ActiveScreen = new TimedFadeInTransitionScreen(
-                Game.GraphicsDevice,
-                Game.ScreenManager,
+            Game.ScreenManager.ActiveScreen = new GamePlayTransitionScreen(
                 this,
                 // TODO: 修复选择共享的背景的逻辑
                 new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
+                Game,
                 TimeSpan.FromSeconds(1)
             );
         }
@@ -313,85 +313,53 @@ internal class MenuLikeScreen : ScreenBase
         _desktop.Render();
     }
 
-    // protected override void OnStartTransitOut(object? context)
-    // {
-    //     if (context is not MenuNavigationContext ctx)
-    //         return;
+    #region GamePlayTransition Out
 
-    //     // 记录动画开始时的预览位置
-    //     ctx.OriginalPreviewLocation = new Rectangle(
-    //         _primaryPreview.ToGlobal(Point.Zero),
-    //         _primaryPreview.ActualBounds.Size
-    //     );
+    void ITransitionSource<GamePlayTransitionState>.OnStartTransition()
+    {
+        // 关闭 ScrollViewer 的输入
+        _scrollViewer.Enabled = false;
 
-    //     // 关闭 ScrollViewer 的输入
-    //     _scrollViewer.Enabled = false;
+        // 将预览内容交给悬浮预览控件
+        _floatingPreview = new Image2() { Renderable = _primaryPreview.Renderable };
+        _rootPanel.Widgets.Add(_floatingPreview);
 
-    //     // 将预览内容交给悬浮预览控件
-    //     _floatingPreview = new Image2()
-    //     {
-    //         Left = ctx.OriginalPreviewLocation.Left,
-    //         Top = ctx.OriginalPreviewLocation.Top,
-    //         Width = ctx.OriginalPreviewLocation.Width,
-    //         Height = ctx.OriginalPreviewLocation.Height,
-    //         Renderable = _primaryPreview.Renderable,
-    //     };
-    //     _rootPanel.Widgets.Add(_floatingPreview);
+        // 关闭嵌入的自带控件的渲染
+        _primaryPreview.Visible = false;
+        _secondaryPreview.Visible = false;
+    }
 
-    //     // 关闭嵌入的自带控件的渲染
-    //     _primaryPreview.Visible = false;
-    //     _secondaryPreview.Visible = false;
-    // }
+    void ITransitionSource<GamePlayTransitionState>.OnFinishTransition()
+    {
+        // 开启嵌入的自带控件的渲染
+        _secondaryPreview.Visible = true;
+        _primaryPreview.Visible = true;
 
-    // public override void OnTransitOut(object? context, float progress)
-    // {
-    //     if (context is not MenuNavigationContext ctx)
-    //         return;
+        // 移除悬浮预览控件
+        _rootPanel.Widgets.Remove(_floatingPreview);
+        _floatingPreview = null;
 
-    //     // 计算当前位置
-    //     Debug.Assert(_floatingPreview is not null);
-    //     _floatingPreview.Left = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Left,
-    //             ctx.TargetPreviewLocation.Left,
-    //             progress
-    //         );
-    //     _floatingPreview.Top = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Top,
-    //             ctx.TargetPreviewLocation.Top,
-    //             progress
-    //         );
-    //     _floatingPreview.Width = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Width,
-    //             ctx.TargetPreviewLocation.Width,
-    //             progress
-    //         );
-    //     _floatingPreview.Height = (int)
-    //         MathHelper.Lerp(
-    //             ctx.OriginalPreviewLocation.Height,
-    //             ctx.TargetPreviewLocation.Height,
-    //             progress
-    //         );
-    // }
+        // 恢复 ScrollViewer 输入
+        _scrollViewer.Enabled = true;
+    }
 
-    // protected override void OnFinishTransitOut(object? context)
-    // {
-    //     if (context is not MenuNavigationContext)
-    //         return;
+    GamePlayTransitionState ITransitionSource<GamePlayTransitionState>.GetSourceTransitionState()
+    {
+        var sourcePreviewLocation = new Rectangle(
+            _primaryPreview.ToGlobal(Point.Zero),
+            _primaryPreview.ActualBounds.Size
+        );
+        return new GamePlayTransitionState(sourcePreviewLocation, 0);
+    }
 
-    //     // 恢复默认状态
+    void IConfigurable<GamePlayTransitionState>.ApplyState(in GamePlayTransitionState state)
+    {
+        // 设置悬浮视图控件的位置
+        _floatingPreview!.Left = state.WorldRenderRegion.Left;
+        _floatingPreview!.Top = state.WorldRenderRegion.Top;
+        _floatingPreview!.Width = state.WorldRenderRegion.Width;
+        _floatingPreview!.Height = state.WorldRenderRegion.Height;
+    }
 
-    //     // 开启嵌入的自带控件的渲染
-    //     _secondaryPreview.Visible = true;
-    //     _primaryPreview.Visible = true;
-
-    //     // 移除悬浮预览控件
-    //     _rootPanel.Widgets.Remove(_floatingPreview);
-    //     _floatingPreview = null;
-
-    //     // 恢复 ScrollViewer 输入
-    //     _scrollViewer.Enabled = true;
-    // }
+    #endregion
 }
