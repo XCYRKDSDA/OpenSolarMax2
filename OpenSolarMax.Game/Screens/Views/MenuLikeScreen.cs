@@ -14,7 +14,9 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTransitionState>
+internal class MenuLikeScreen
+    : ScreenBase,
+        ITransitionSourceScreen<GamePlayTransition, GamePlayTransitionSourceState>
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
@@ -315,7 +317,7 @@ internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTran
 
     #region GamePlayTransition Out
 
-    void ITransitionSource<GamePlayTransitionState>.OnStartTransition()
+    void ITransitionHandler<GamePlayTransition>.OnStartTransition()
     {
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
@@ -333,7 +335,7 @@ internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTran
         _secondaryPreview.Visible = false;
     }
 
-    void ITransitionSource<GamePlayTransitionState>.OnFinishTransition()
+    void ITransitionHandler<GamePlayTransition>.OnFinishTransition()
     {
         // 开启嵌入的自带控件的渲染
         _secondaryPreview.Visible = true;
@@ -347,22 +349,24 @@ internal class MenuLikeScreen : ScreenBase, ITransitionSourceScreen<GamePlayTran
         _scrollViewer.Enabled = true;
     }
 
-    GamePlayTransitionState ITransitionSource<GamePlayTransitionState>.GetSourceTransitionState()
+    GamePlayTransitionSourceState ITransitionSourceConstrained<GamePlayTransitionSourceState>.GetTransitionSourceConstraint()
     {
         var sourcePreviewLocation = new Rectangle(
             _primaryPreview.ToGlobal(Point.Zero),
             _primaryPreview.ActualBounds.Size
         );
-        return new GamePlayTransitionState(sourcePreviewLocation, 0);
+        return new GamePlayTransitionSourceState(sourcePreviewLocation);
     }
 
-    void IConfigurable<GamePlayTransitionState>.ApplyState(in GamePlayTransitionState state)
+    void IConfigurable<GamePlayTransitionSourceState>.ApplyState(
+        in GamePlayTransitionSourceState state
+    )
     {
         // 设置悬浮视图控件的位置
-        _floatingPreview!.Left = state.WorldRenderRegion.Left;
-        _floatingPreview!.Top = state.WorldRenderRegion.Top;
-        _floatingPreview!.Width = state.WorldRenderRegion.Width;
-        _floatingPreview!.Height = state.WorldRenderRegion.Height;
+        _floatingPreview!.Left = state.WorldPreviewRegion.Left;
+        _floatingPreview!.Top = state.WorldPreviewRegion.Top;
+        _floatingPreview!.Width = state.WorldPreviewRegion.Width;
+        _floatingPreview!.Height = state.WorldPreviewRegion.Height;
     }
 
     #endregion

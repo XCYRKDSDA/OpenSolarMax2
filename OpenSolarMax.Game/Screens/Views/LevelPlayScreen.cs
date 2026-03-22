@@ -14,7 +14,9 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class LevelPlayScreen : ScreenBase, ITransitionTargetScreen<GamePlayTransitionState>
+internal class LevelPlayScreen
+    : ScreenBase,
+        ITransitionTargetScreen<GamePlayTransition, GamePlayTransitionTargetState>
 {
     private readonly HorizontalScrollingBackground _background;
 
@@ -363,7 +365,7 @@ internal class LevelPlayScreen : ScreenBase, ITransitionTargetScreen<GamePlayTra
 
     #region GamePlayTransition In
 
-    void ITransitionTarget<GamePlayTransitionState>.OnStartTransition()
+    void ITransitionHandler<GamePlayTransition>.OnStartTransition()
     {
         // 创建悬浮世界视图控件
         _floatingWorldView = new Widget();
@@ -373,7 +375,7 @@ internal class LevelPlayScreen : ScreenBase, ITransitionTargetScreen<GamePlayTra
         _viewModel.SimulateSpeed = 0;
     }
 
-    void ITransitionTarget<GamePlayTransitionState>.OnFinishTransition()
+    void ITransitionHandler<GamePlayTransition>.OnFinishTransition()
     {
         // 世界更新速度正常化
         _viewModel.SimulateSpeed = 1;
@@ -383,16 +385,18 @@ internal class LevelPlayScreen : ScreenBase, ITransitionTargetScreen<GamePlayTra
         _floatingWorldView = null;
     }
 
-    GamePlayTransitionState ITransitionTarget<GamePlayTransitionState>.GetTargetTransitionState()
+    GamePlayTransitionTargetState ITransitionTargetConstrained<GamePlayTransitionTargetState>.GetTransitionTargetConstraint()
     {
         var targetPreviewLocation = new Rectangle(
             _embeddingWorldView.ToGlobal(Point.Zero),
             _embeddingWorldView.ActualBounds.Size
         );
-        return new GamePlayTransitionState(targetPreviewLocation, 1);
+        return new GamePlayTransitionTargetState(targetPreviewLocation, 1);
     }
 
-    void IConfigurable<GamePlayTransitionState>.ApplyState(in GamePlayTransitionState state)
+    void IConfigurable<GamePlayTransitionTargetState>.ApplyState(
+        in GamePlayTransitionTargetState state
+    )
     {
         // 设置悬浮视图控件的位置
         _floatingWorldView!.Left = state.WorldRenderRegion.Left;
