@@ -31,18 +31,17 @@ internal class ChapterTransitionScreen(
     protected override (
         ChapterTransitionSourceState SourceState,
         ChapterTransitionTargetState TargetState
-    ) InterpolateVisualState(
+    ) UpdateVisualState(
         ChapterTransitionSourceState? sourceDefaultState,
-        ChapterTransitionTargetState? targetDefaultState,
-        float progress
+        ChapterTransitionTargetState? targetDefaultState
     )
     {
         Debug.Assert(sourceDefaultState is null);
         Debug.Assert(targetDefaultState is null);
 
-        var prevPreviewScaling = 1 + progress * progress;
-        var prevPreviewAlpha = 1 - progress;
-        var nextPreviewFadeIn = progress;
+        var prevPreviewScaling = 1 + Progress * Progress;
+        var prevPreviewAlpha = 1 - Progress;
+        var nextPreviewFadeIn = Progress;
 
         return (
             new ChapterTransitionSourceState(prevPreviewScaling, prevPreviewAlpha),

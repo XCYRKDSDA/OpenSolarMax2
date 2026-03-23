@@ -34,10 +34,9 @@ internal class GamePlayTransitionScreen(
     protected override (
         GamePlayTransitionSourceState,
         GamePlayTransitionTargetState
-    ) InterpolateVisualState(
+    ) UpdateVisualState(
         GamePlayTransitionSourceState? sourceDefaultState,
-        GamePlayTransitionTargetState? targetDefaultState,
-        float progress
+        GamePlayTransitionTargetState? targetDefaultState
     )
     {
         Debug.Assert(sourceDefaultState is not null);
@@ -47,18 +46,18 @@ internal class GamePlayTransitionScreen(
             .Lerp(
                 sourceDefaultState.WorldPreviewRegion.Location.ToVector2(),
                 targetDefaultState.WorldRenderRegion.Location.ToVector2(),
-                progress
+                Progress
             )
             .ToPoint();
         var size = Vector2
             .Lerp(
                 sourceDefaultState.WorldPreviewRegion.Size.ToVector2(),
                 targetDefaultState.WorldRenderRegion.Size.ToVector2(),
-                progress
+                Progress
             )
             .ToPoint();
 
-        var simulateSpeed = MathHelper.Lerp(0, targetDefaultState.WorldSpeed, progress);
+        var simulateSpeed = MathHelper.Lerp(0, targetDefaultState.WorldSpeed, Progress);
 
         return (
             new GamePlayTransitionSourceState(new Rectangle(location, size)),
