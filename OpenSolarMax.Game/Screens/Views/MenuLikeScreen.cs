@@ -16,7 +16,9 @@ namespace OpenSolarMax.Game.Screens.Views;
 
 internal class MenuLikeScreen
     : ScreenBase,
-        ITransitionSourceScreen<GamePlayTransition, GamePlayTransitionSourceState>
+        ITransitionSourceScreen<GamePlayTransition, GamePlayTransitionSourceState>,
+        ITransitionSourceScreen<ChapterTransition, ChapterTransitionSourceState>,
+        ITransitionTargetScreen<ChapterTransition, ChapterTransitionTargetState>
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
@@ -176,12 +178,11 @@ internal class MenuLikeScreen
     {
         if (e is LevelsViewModel levelsViewModel)
         {
-            Game.ScreenManager.ActiveScreen = new TimedFadeInTransitionScreen(
-                MyraEnvironment.GraphicsDevice,
-                Game.ScreenManager,
+            Game.ScreenManager.ActiveScreen = new ChapterTransitionScreen(
                 this,
                 new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
-                TimeSpan.FromSeconds(0.5)
+                Game,
+                TimeSpan.FromSeconds(0.75)
             );
         }
         else if (e is LevelPlayViewModel levelPlayViewModel)
@@ -367,6 +368,43 @@ internal class MenuLikeScreen
         _floatingPreview!.Top = state.WorldPreviewRegion.Top;
         _floatingPreview!.Width = state.WorldPreviewRegion.Width;
         _floatingPreview!.Height = state.WorldPreviewRegion.Height;
+    }
+
+    #endregion
+
+    #region ChapterTransition
+
+    void ITransitionHandler<ChapterTransition>.OnStartTransition()
+    {
+        // 关闭 ScrollViewer 的输入
+        _scrollViewer.Enabled = false;
+
+        // 关闭第二预览
+        _secondaryPreview.Visible = false;
+    }
+
+    void ITransitionHandler<ChapterTransition>.OnFinishTransition()
+    {
+        // 恢复第二预览
+        _secondaryPreview.Visible = true;
+
+        // 恢复 ScrollViewer 输入
+        _scrollViewer.Enabled = true;
+    }
+
+    void IConfigurable<ChapterTransitionSourceState>.ApplyState(
+        in ChapterTransitionSourceState state
+    )
+    {
+        _primaryPreview.Scale = new(state.PreviewScaling);
+        _primaryPreview.Color = Color.White * state.PreviewAlpha;
+    }
+
+    void IConfigurable<ChapterTransitionTargetState>.ApplyState(
+        in ChapterTransitionTargetState state
+    )
+    {
+        _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
     }
 
     #endregion
