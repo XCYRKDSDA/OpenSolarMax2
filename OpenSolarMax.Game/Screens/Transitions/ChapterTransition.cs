@@ -4,11 +4,6 @@ using Nine.Screens;
 namespace OpenSolarMax.Game.Screens.Transitions;
 
 /// <summary>
-/// 主界面到选关界面, 或者选关界面内部过渡的标签类型
-/// </summary>
-internal abstract class ChapterTransition;
-
-/// <summary>
 /// 从主界面到选关界面或者选关界面内部过渡时, 前一个界面的视觉状态
 /// </summary>
 /// <param name="PreviewScaling">预览区域的放缩</param>
@@ -23,13 +18,12 @@ internal record ChapterTransitionSourceState(float PreviewScaling, float Preview
 internal record ChapterTransitionTargetState(float PreviewCustomFadeIn);
 
 internal class ChapterTransitionScreen(
-    ITransitionSourceScreen<ChapterTransition, ChapterTransitionSourceState> prevScreen,
-    ITransitionTargetScreen<ChapterTransition, ChapterTransitionTargetState> nextScreen,
+    IVisualConfigurableScreen<ChapterTransitionSourceState> prevScreen,
+    IVisualConfigurableScreen<ChapterTransitionTargetState> nextScreen,
     SolarMax game,
     TimeSpan duration
 )
     : StatefulTimedFadeInTransitionScreen<
-        ChapterTransition,
         ChapterTransitionSourceState,
         ChapterTransitionTargetState
     >(game.GraphicsDevice, game.ScreenManager, prevScreen, nextScreen, duration)
@@ -37,14 +31,14 @@ internal class ChapterTransitionScreen(
     protected override (
         ChapterTransitionSourceState SourceState,
         ChapterTransitionTargetState TargetState
-    ) InterpolateTransitionState(
-        ChapterTransitionSourceState? sourceConstraint,
-        ChapterTransitionTargetState? targetConstraint,
+    ) InterpolateVisualState(
+        ChapterTransitionSourceState? sourceDefaultState,
+        ChapterTransitionTargetState? targetDefaultState,
         float progress
     )
     {
-        Debug.Assert(sourceConstraint is null);
-        Debug.Assert(targetConstraint is null);
+        Debug.Assert(sourceDefaultState is null);
+        Debug.Assert(targetDefaultState is null);
 
         var prevPreviewScaling = 1 + progress * progress;
         var prevPreviewAlpha = 1 - progress;

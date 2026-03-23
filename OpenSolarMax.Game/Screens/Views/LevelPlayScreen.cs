@@ -16,7 +16,7 @@ namespace OpenSolarMax.Game.Screens.Views;
 
 internal class LevelPlayScreen
     : ScreenBase,
-        ITransitionTargetScreen<GamePlayTransition, GamePlayTransitionTargetState>
+        IVisualConfigurableScreen<GamePlayTransitionTargetState>
 {
     private readonly HorizontalScrollingBackground _background;
 
@@ -363,9 +363,9 @@ internal class LevelPlayScreen
         _desktop.Render();
     }
 
-    #region GamePlayTransition In
+    #region GamePlayTransitionTargetState
 
-    void ITransitionHandler<GamePlayTransition>.OnStartTransition()
+    void IVisualConfigurable<GamePlayTransitionTargetState>.EnterConfigurationMode()
     {
         // 创建悬浮世界视图控件
         _floatingWorldView = new Widget();
@@ -375,7 +375,7 @@ internal class LevelPlayScreen
         _viewModel.SimulateSpeed = 0;
     }
 
-    void ITransitionHandler<GamePlayTransition>.OnFinishTransition()
+    void IVisualConfigurable<GamePlayTransitionTargetState>.ExitConfigurationMode()
     {
         // 世界更新速度正常化
         _viewModel.SimulateSpeed = 1;
@@ -385,7 +385,7 @@ internal class LevelPlayScreen
         _floatingWorldView = null;
     }
 
-    GamePlayTransitionTargetState ITransitionTargetConstrained<GamePlayTransitionTargetState>.GetTransitionTargetConstraint()
+    GamePlayTransitionTargetState IVisualConfigurable<GamePlayTransitionTargetState>.GetDefaultVisualState()
     {
         var targetPreviewLocation = new Rectangle(
             _embeddingWorldView.ToGlobal(Point.Zero),
@@ -394,8 +394,8 @@ internal class LevelPlayScreen
         return new GamePlayTransitionTargetState(targetPreviewLocation, 1);
     }
 
-    void IConfigurable<GamePlayTransitionTargetState>.ApplyState(
-        in GamePlayTransitionTargetState state
+    void IVisualConfigurable<GamePlayTransitionTargetState>.ApplyVisualState(
+        GamePlayTransitionTargetState state
     )
     {
         // 设置悬浮视图控件的位置

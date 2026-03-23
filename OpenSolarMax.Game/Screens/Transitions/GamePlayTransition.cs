@@ -5,11 +5,6 @@ using Nine.Screens;
 namespace OpenSolarMax.Game.Screens.Transitions;
 
 /// <summary>
-/// 选关界面和游玩界面之间过渡的标签类型
-/// </summary>
-internal abstract class GamePlayTransition;
-
-/// <summary>
 /// 在选关界面和游玩界面之间过渡时, 源界面 (选关界面) 的视觉状态
 /// </summary>
 /// <param name="WorldPreviewRegion">关卡世界预览区域</param>
@@ -26,13 +21,12 @@ internal record GamePlayTransitionTargetState(Rectangle WorldRenderRegion, float
 /// 保证世界渲染区域无缝连续过渡的定时过渡界面
 /// </summary>
 internal class GamePlayTransitionScreen(
-    ITransitionSourceScreen<GamePlayTransition, GamePlayTransitionSourceState> prevScreen,
-    ITransitionTargetScreen<GamePlayTransition, GamePlayTransitionTargetState> nextScreen,
+    IVisualConfigurableScreen<GamePlayTransitionSourceState> prevScreen,
+    IVisualConfigurableScreen<GamePlayTransitionTargetState> nextScreen,
     SolarMax game,
     TimeSpan duration
 )
     : StatefulTimedFadeInTransitionScreen<
-        GamePlayTransition,
         GamePlayTransitionSourceState,
         GamePlayTransitionTargetState
     >(game.GraphicsDevice, game.ScreenManager, prevScreen, nextScreen, duration)
@@ -40,31 +34,31 @@ internal class GamePlayTransitionScreen(
     protected override (
         GamePlayTransitionSourceState,
         GamePlayTransitionTargetState
-    ) InterpolateTransitionState(
-        GamePlayTransitionSourceState? source,
-        GamePlayTransitionTargetState? target,
+    ) InterpolateVisualState(
+        GamePlayTransitionSourceState? sourceDefaultState,
+        GamePlayTransitionTargetState? targetDefaultState,
         float progress
     )
     {
-        Debug.Assert(source is not null);
-        Debug.Assert(target is not null);
+        Debug.Assert(sourceDefaultState is not null);
+        Debug.Assert(targetDefaultState is not null);
 
         var location = Vector2
             .Lerp(
-                source.WorldPreviewRegion.Location.ToVector2(),
-                target.WorldRenderRegion.Location.ToVector2(),
+                sourceDefaultState.WorldPreviewRegion.Location.ToVector2(),
+                targetDefaultState.WorldRenderRegion.Location.ToVector2(),
                 progress
             )
             .ToPoint();
         var size = Vector2
             .Lerp(
-                source.WorldPreviewRegion.Size.ToVector2(),
-                target.WorldRenderRegion.Size.ToVector2(),
+                sourceDefaultState.WorldPreviewRegion.Size.ToVector2(),
+                targetDefaultState.WorldRenderRegion.Size.ToVector2(),
                 progress
             )
             .ToPoint();
 
-        var simulateSpeed = MathHelper.Lerp(0, target.WorldSpeed, progress);
+        var simulateSpeed = MathHelper.Lerp(0, targetDefaultState.WorldSpeed, progress);
 
         return (
             new GamePlayTransitionSourceState(new Rectangle(location, size)),

@@ -16,9 +16,9 @@ namespace OpenSolarMax.Game.Screens.Views;
 
 internal class MenuLikeScreen
     : ScreenBase,
-        ITransitionSourceScreen<GamePlayTransition, GamePlayTransitionSourceState>,
-        ITransitionSourceScreen<ChapterTransition, ChapterTransitionSourceState>,
-        ITransitionTargetScreen<ChapterTransition, ChapterTransitionTargetState>
+        IVisualConfigurableScreen<GamePlayTransitionSourceState>,
+        IVisualConfigurableScreen<ChapterTransitionSourceState>,
+        IVisualConfigurableScreen<ChapterTransitionTargetState>
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
@@ -316,9 +316,9 @@ internal class MenuLikeScreen
         _desktop.Render();
     }
 
-    #region GamePlayTransition Out
+    #region GamePlayTransitionSourceState
 
-    void ITransitionHandler<GamePlayTransition>.OnStartTransition()
+    void IVisualConfigurable<GamePlayTransitionSourceState>.EnterConfigurationMode()
     {
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
@@ -336,7 +336,7 @@ internal class MenuLikeScreen
         _secondaryPreview.Visible = false;
     }
 
-    void ITransitionHandler<GamePlayTransition>.OnFinishTransition()
+    void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
     {
         // 开启嵌入的自带控件的渲染
         _secondaryPreview.Visible = true;
@@ -350,7 +350,7 @@ internal class MenuLikeScreen
         _scrollViewer.Enabled = true;
     }
 
-    GamePlayTransitionSourceState ITransitionSourceConstrained<GamePlayTransitionSourceState>.GetTransitionSourceConstraint()
+    GamePlayTransitionSourceState IVisualConfigurable<GamePlayTransitionSourceState>.GetDefaultVisualState()
     {
         var sourcePreviewLocation = new Rectangle(
             _primaryPreview.ToGlobal(Point.Zero),
@@ -359,8 +359,8 @@ internal class MenuLikeScreen
         return new GamePlayTransitionSourceState(sourcePreviewLocation);
     }
 
-    void IConfigurable<GamePlayTransitionSourceState>.ApplyState(
-        in GamePlayTransitionSourceState state
+    void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
+        GamePlayTransitionSourceState state
     )
     {
         // 设置悬浮视图控件的位置
@@ -372,9 +372,9 @@ internal class MenuLikeScreen
 
     #endregion
 
-    #region ChapterTransition
+    #region ChapterTransitionSourceState
 
-    void ITransitionHandler<ChapterTransition>.OnStartTransition()
+    void IVisualConfigurable<ChapterTransitionSourceState>.EnterConfigurationMode()
     {
         // 关闭 ScrollViewer 的输入
         _scrollViewer.Enabled = false;
@@ -383,7 +383,7 @@ internal class MenuLikeScreen
         _secondaryPreview.Visible = false;
     }
 
-    void ITransitionHandler<ChapterTransition>.OnFinishTransition()
+    void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
     {
         // 恢复第二预览
         _secondaryPreview.Visible = true;
@@ -392,16 +392,38 @@ internal class MenuLikeScreen
         _scrollViewer.Enabled = true;
     }
 
-    void IConfigurable<ChapterTransitionSourceState>.ApplyState(
-        in ChapterTransitionSourceState state
+    void IVisualConfigurable<ChapterTransitionSourceState>.ApplyVisualState(
+        ChapterTransitionSourceState state
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
         _primaryPreview.Color = Color.White * state.PreviewAlpha;
     }
 
-    void IConfigurable<ChapterTransitionTargetState>.ApplyState(
-        in ChapterTransitionTargetState state
+    #endregion
+
+    #region ChapterTransitionTargetState
+
+    void IVisualConfigurable<ChapterTransitionTargetState>.EnterConfigurationMode()
+    {
+        // 关闭 ScrollViewer 的输入
+        _scrollViewer.Enabled = false;
+
+        // 关闭第二预览
+        _secondaryPreview.Visible = false;
+    }
+
+    void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
+    {
+        // 恢复第二预览
+        _secondaryPreview.Visible = true;
+
+        // 恢复 ScrollViewer 输入
+        _scrollViewer.Enabled = true;
+    }
+
+    void IVisualConfigurable<ChapterTransitionTargetState>.ApplyVisualState(
+        ChapterTransitionTargetState state
     )
     {
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
