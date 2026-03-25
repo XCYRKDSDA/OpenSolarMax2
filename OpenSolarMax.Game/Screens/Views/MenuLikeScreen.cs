@@ -181,8 +181,8 @@ internal class MenuLikeScreen
             Game.ScreenManager.ActiveScreen = new ChapterTransitionScreen(
                 this,
                 new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
-                Game,
-                TimeSpan.FromSeconds(0.75)
+                _primaryBackground,
+                Game
             );
         }
         else if (e is LevelPlayViewModel levelPlayViewModel)
@@ -397,7 +397,6 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
-        _primaryPreview.Color = Color.White * state.PreviewAlpha;
     }
 
     #endregion
