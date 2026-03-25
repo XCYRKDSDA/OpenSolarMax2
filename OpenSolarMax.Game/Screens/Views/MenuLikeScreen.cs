@@ -320,9 +320,6 @@ internal class MenuLikeScreen
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.EnterConfigurationMode()
     {
-        // 关闭 ScrollViewer 的输入
-        _scrollViewer.Enabled = false;
-
         // 将预览内容交给悬浮预览控件
         _floatingPreview = new FadableImage()
         {
@@ -345,9 +342,6 @@ internal class MenuLikeScreen
         // 移除悬浮预览控件
         _rootPanel.Widgets.Remove(_floatingPreview);
         _floatingPreview = null;
-
-        // 恢复 ScrollViewer 输入
-        _scrollViewer.Enabled = true;
     }
 
     GamePlayTransitionSourceState IVisualConfigurable<GamePlayTransitionSourceState>.GetDefaultVisualState()
@@ -376,9 +370,6 @@ internal class MenuLikeScreen
 
     void IVisualConfigurable<ChapterTransitionSourceState>.EnterConfigurationMode()
     {
-        // 关闭 ScrollViewer 的输入
-        _scrollViewer.Enabled = false;
-
         // 关闭第二预览
         _secondaryPreview.Visible = false;
     }
@@ -387,9 +378,6 @@ internal class MenuLikeScreen
     {
         // 恢复第二预览
         _secondaryPreview.Visible = true;
-
-        // 恢复 ScrollViewer 输入
-        _scrollViewer.Enabled = true;
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ApplyVisualState(
@@ -405,9 +393,6 @@ internal class MenuLikeScreen
 
     void IVisualConfigurable<ChapterTransitionTargetState>.EnterConfigurationMode()
     {
-        // 关闭 ScrollViewer 的输入
-        _scrollViewer.Enabled = false;
-
         // 关闭第二预览
         _secondaryPreview.Visible = false;
     }
@@ -416,9 +401,6 @@ internal class MenuLikeScreen
     {
         // 恢复第二预览
         _secondaryPreview.Visible = true;
-
-        // 恢复 ScrollViewer 输入
-        _scrollViewer.Enabled = true;
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ApplyVisualState(
