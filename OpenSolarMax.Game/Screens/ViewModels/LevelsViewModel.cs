@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Level;
@@ -27,6 +28,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     private readonly List<IFadableImage> _previews;
     private readonly List<AggregateSystem> _previewSystems;
     private readonly List<World> _worlds;
+
+    private readonly int _warmupLevelIndex;
+    private readonly Task<LevelPlayViewModel> _warmupLevelPlayLoadTask;
+
+    private Task<LevelPlayViewModel>? _levelPlayLoadTask;
 
     [ObservableProperty]
     private ObservableCollection<string> _items;
@@ -171,6 +177,15 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _secondaryItemIndex = null;
         _secondaryItemPreview = null;
         _secondaryItemBackground = null;
+
+        // 使用当前第一个显示的章节做启动预热
+        _warmupLevelIndex = _primaryItemIndex;
+        _warmupLevelPlayLoadTask = Task.Factory.StartNew(
+            () => new LevelPlayViewModel(_levels[_warmupLevelIndex], _levelModContext, Game),
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            Game.BackgroundScheduler
+        );
     }
 
     public event EventHandler<IViewModel>? NavigateIn;
@@ -197,7 +212,25 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnSelectItem(int idx)
     {
-        var levelPlayViewModel = new LevelPlayViewModel(_levels[idx], _levelModContext, Game);
-        NavigateIn?.Invoke(this, levelPlayViewModel);
+        _levelPlayLoadTask =
+            idx == _warmupLevelIndex
+                ? _warmupLevelPlayLoadTask
+                : Task.Factory.StartNew(
+                    () => new LevelPlayViewModel(_levels[idx], _levelModContext, Game),
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    Game.BackgroundScheduler
+                );
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        base.Update(gameTime);
+
+        if (_levelPlayLoadTask is not null && _levelPlayLoadTask.IsCompleted)
+        {
+            NavigateIn?.Invoke(this, _levelPlayLoadTask.Result);
+            _levelPlayLoadTask = null;
+        }
     }
 }

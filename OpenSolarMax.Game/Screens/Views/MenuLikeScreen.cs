@@ -1,6 +1,5 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
@@ -8,13 +7,18 @@ using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
-using Nine.Screens.Transitions;
+using Nine.Screens;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen : ScreenBase
+internal class MenuLikeScreen
+    : ScreenBase,
+        IVisualConfigurableScreen<GamePlayTransitionSourceState>,
+        IVisualConfigurableScreen<ChapterTransitionSourceState>,
+        IVisualConfigurableScreen<ChapterTransitionTargetState>
 {
     private static readonly Color _gray = new(0, 0, 0, 0x55);
 
@@ -26,7 +30,7 @@ internal class MenuLikeScreen : ScreenBase
     private readonly FadableImage _primaryPreview,
         _secondaryPreview;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
-    private Image2? _floatingPreview;
+    private FadableImage? _floatingPreview;
 
     private readonly IMenuLikeViewModel _viewModel;
     private float _actualBackgroundLeft = 0;
@@ -174,24 +178,21 @@ internal class MenuLikeScreen : ScreenBase
     {
         if (e is LevelsViewModel levelsViewModel)
         {
-            Game.ScreenManager.ActiveScreen = new CustomFadeInTransition(
-                MyraEnvironment.GraphicsDevice,
-                Game.ScreenManager,
+            Game.ScreenManager.ActiveScreen = new ChapterTransitionScreen(
                 this,
                 new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
-                TimeSpan.FromSeconds(0.5)
+                _primaryBackground,
+                Game
             );
         }
         else if (e is LevelPlayViewModel levelPlayViewModel)
         {
-            Game.ScreenManager.ActiveScreen = new CustomFadeInTransition(
-                Game.GraphicsDevice,
-                Game.ScreenManager,
+            Game.ScreenManager.ActiveScreen = new GamePlayTransitionScreen(
                 this,
                 // TODO: 修复选择共享的背景的逻辑
                 new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
-                TimeSpan.FromSeconds(1),
-                new MenuNavigationContext()
+                Game,
+                TimeSpan.FromSeconds(1)
             );
         }
         else
@@ -315,28 +316,15 @@ internal class MenuLikeScreen : ScreenBase
         _desktop.Render();
     }
 
-    protected override void OnStartTransitOut(object? context)
+    #region GamePlayTransitionSourceState
+
+    void IVisualConfigurable<GamePlayTransitionSourceState>.EnterConfigurationMode()
     {
-        if (context is not MenuNavigationContext ctx)
-            return;
-
-        // 记录动画开始时的预览位置
-        ctx.OriginalPreviewLocation = new Rectangle(
-            _primaryPreview.ToGlobal(Point.Zero),
-            _primaryPreview.ActualBounds.Size
-        );
-
-        // 关闭 ScrollViewer 的输入
-        _scrollViewer.Enabled = false;
-
         // 将预览内容交给悬浮预览控件
-        _floatingPreview = new Image2()
+        _floatingPreview = new FadableImage()
         {
-            Left = ctx.OriginalPreviewLocation.Left,
-            Top = ctx.OriginalPreviewLocation.Top,
-            Width = ctx.OriginalPreviewLocation.Width,
-            Height = ctx.OriginalPreviewLocation.Height,
             Renderable = _primaryPreview.Renderable,
+            FadeIn = 1,
         };
         _rootPanel.Widgets.Add(_floatingPreview);
 
@@ -345,46 +333,8 @@ internal class MenuLikeScreen : ScreenBase
         _secondaryPreview.Visible = false;
     }
 
-    public override void OnTransitOut(object? context, float progress)
+    void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
     {
-        if (context is not MenuNavigationContext ctx)
-            return;
-
-        // 计算当前位置
-        Debug.Assert(_floatingPreview is not null);
-        _floatingPreview.Left = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Left,
-                ctx.TargetPreviewLocation.Left,
-                progress
-            );
-        _floatingPreview.Top = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Top,
-                ctx.TargetPreviewLocation.Top,
-                progress
-            );
-        _floatingPreview.Width = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Width,
-                ctx.TargetPreviewLocation.Width,
-                progress
-            );
-        _floatingPreview.Height = (int)
-            MathHelper.Lerp(
-                ctx.OriginalPreviewLocation.Height,
-                ctx.TargetPreviewLocation.Height,
-                progress
-            );
-    }
-
-    protected override void OnFinishTransitOut(object? context)
-    {
-        if (context is not MenuNavigationContext)
-            return;
-
-        // 恢复默认状态
-
         // 开启嵌入的自带控件的渲染
         _secondaryPreview.Visible = true;
         _primaryPreview.Visible = true;
@@ -392,8 +342,73 @@ internal class MenuLikeScreen : ScreenBase
         // 移除悬浮预览控件
         _rootPanel.Widgets.Remove(_floatingPreview);
         _floatingPreview = null;
-
-        // 恢复 ScrollViewer 输入
-        _scrollViewer.Enabled = true;
     }
+
+    GamePlayTransitionSourceState IVisualConfigurable<GamePlayTransitionSourceState>.GetDefaultVisualState()
+    {
+        var sourcePreviewLocation = new Rectangle(
+            _primaryPreview.ToGlobal(Point.Zero),
+            _primaryPreview.ActualBounds.Size
+        );
+        return new GamePlayTransitionSourceState(sourcePreviewLocation);
+    }
+
+    void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
+        GamePlayTransitionSourceState state
+    )
+    {
+        // 设置悬浮视图控件的位置
+        _floatingPreview!.Left = state.WorldPreviewRegion.Left;
+        _floatingPreview!.Top = state.WorldPreviewRegion.Top;
+        _floatingPreview!.Width = state.WorldPreviewRegion.Width;
+        _floatingPreview!.Height = state.WorldPreviewRegion.Height;
+    }
+
+    #endregion
+
+    #region ChapterTransitionSourceState
+
+    void IVisualConfigurable<ChapterTransitionSourceState>.EnterConfigurationMode()
+    {
+        // 关闭第二预览
+        _secondaryPreview.Visible = false;
+    }
+
+    void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
+    {
+        // 恢复第二预览
+        _secondaryPreview.Visible = true;
+    }
+
+    void IVisualConfigurable<ChapterTransitionSourceState>.ApplyVisualState(
+        ChapterTransitionSourceState state
+    )
+    {
+        _primaryPreview.Scale = new(state.PreviewScaling);
+    }
+
+    #endregion
+
+    #region ChapterTransitionTargetState
+
+    void IVisualConfigurable<ChapterTransitionTargetState>.EnterConfigurationMode()
+    {
+        // 关闭第二预览
+        _secondaryPreview.Visible = false;
+    }
+
+    void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
+    {
+        // 恢复第二预览
+        _secondaryPreview.Visible = true;
+    }
+
+    void IVisualConfigurable<ChapterTransitionTargetState>.ApplyVisualState(
+        ChapterTransitionTargetState state
+    )
+    {
+        _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
+    }
+
+    #endregion
 }

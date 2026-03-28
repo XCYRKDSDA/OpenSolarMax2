@@ -25,6 +25,8 @@ public class SolarMax : XNAGame
     private RenderTarget2D _renderTarget;
     private SpriteBatch _spriteBatch;
 
+    private TaskScheduler _loadingTaskScheduler;
+
     public SolarMax()
     {
         _graphics = new GraphicsDeviceManager(this)
@@ -48,6 +50,8 @@ public class SolarMax : XNAGame
         );
     }
 
+    public TaskScheduler BackgroundScheduler => _loadingTaskScheduler;
+
     public FmodStudioSystem FmodSystem => _globalFmodSystem;
 
     public AssetsManager Assets => _globalAssets;
@@ -61,6 +65,11 @@ public class SolarMax : XNAGame
 
     protected override void Initialize()
     {
+        // 创建串行式后台加载调度器
+        var pair = new ConcurrentExclusiveSchedulerPair();
+        _loadingTaskScheduler = pair.ExclusiveScheduler;
+
+        // 创建渲染相关内容
         _renderTarget = new RenderTarget2D(
             GraphicsDevice,
             GraphicsDevice.PresentationParameters.BackBufferWidth,
