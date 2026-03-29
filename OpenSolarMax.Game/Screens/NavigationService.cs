@@ -3,11 +3,8 @@ using Nine.Screens;
 
 namespace OpenSolarMax.Game.Screens;
 
-internal class NavigationService(
-    ScreenManager screenManager,
-    IScreenFactory screenFactory,
-    TaskScheduler taskScheduler
-) : INavigationService
+internal class NavigationService(ScreenManager screenManager, IScreenFactory screenFactory)
+    : INavigationService
 {
     public void Navigate(
         Type screenType,
@@ -22,18 +19,13 @@ internal class NavigationService(
         var currentScreen = screenManager.ActiveScreen!;
         var currentScreenType = currentScreen.GetType();
 
-        // 异步创建下一个界面
-        var targetScreenTask = Task.Factory.StartNew(
-            () => screenFactory.CreateScreen(screenType, context),
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            taskScheduler
-        );
+        // 创建下一个界面
+        var targetScreen = screenFactory.CreateScreen(screenType, context);
 
         if (transitionScreenType is null)
         {
             // 若无须过渡, 则直接切换到下一个界面
-            screenManager.ActiveScreen = targetScreenTask.Result;
+            screenManager.ActiveScreen = targetScreen;
         }
         else
         {
@@ -42,7 +34,7 @@ internal class NavigationService(
             var transitionScreen = screenFactory.CreateTransitionScreen(
                 transitionScreenType,
                 currentScreen,
-                targetScreenTask,
+                targetScreen,
                 transitionArguments
             );
             transitionScreen.TransitionDone += OnTransitionDone;

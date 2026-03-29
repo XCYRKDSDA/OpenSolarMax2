@@ -9,7 +9,7 @@ internal interface IScreenFactory
     ITransitionScreen CreateTransitionScreen(
         Type transitionScreenType,
         IScreen prevScreen,
-        Task<IScreen> nextScreenTask,
+        IScreen nextScreen,
         object? arguments = null
     );
 }
