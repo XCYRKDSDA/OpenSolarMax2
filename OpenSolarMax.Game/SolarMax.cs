@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Nine.Assets;
 using Nine.Screens;
+using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.Screens.Views;
 using OpenSolarMax.Game.Utils;
@@ -22,6 +23,7 @@ public class SolarMax : XNAGame
     private FmodStudioSystem _globalFmodSystem;
 
     private ScreenManager _globalScreenManager;
+    private NavigationService _globalNavigationService;
     private RenderTarget2D _renderTarget;
     private SpriteBatch _spriteBatch;
 
@@ -56,7 +58,7 @@ public class SolarMax : XNAGame
 
     public AssetsManager Assets => _globalAssets;
 
-    public ScreenManager ScreenManager => _globalScreenManager;
+    internal INavigationService NavigationService => _globalNavigationService;
 
     private void PreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
     {
@@ -104,6 +106,13 @@ public class SolarMax : XNAGame
         // 初始化全局界面管理器
         _globalScreenManager = new ScreenManager(this);
         Components.Add(_globalScreenManager);
+
+        // 初始化全局导航服务
+        _globalNavigationService = new NavigationService(
+            _globalScreenManager,
+            new ScreenFactory(this),
+            _loadingTaskScheduler
+        );
 
         base.Initialize();
     }
