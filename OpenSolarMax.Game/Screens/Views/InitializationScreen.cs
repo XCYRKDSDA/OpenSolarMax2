@@ -5,8 +5,6 @@ using Microsoft.Xna.Framework;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
-using Nine.Animations;
-using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 
 namespace OpenSolarMax.Game.Screens.Views;
@@ -86,10 +84,6 @@ internal class InitializationScreen : ScreenBase
         // 监听属性
 
         _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
-
-        // 监听事件
-
-        _viewModel.OnMenuViewModelLoaded += ViewModelOnOnMenuViewModelLoaded;
     }
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -97,33 +91,6 @@ internal class InitializationScreen : ScreenBase
         Debug.Assert(ReferenceEquals(sender, _viewModel));
         if (e.PropertyName == nameof(InitializationViewModel.Progress))
             _progressBar.Value = _viewModel.Progress;
-    }
-
-    private class Smooth : ICurve<float>
-    {
-        public float Evaluate(float x) =>
-            x switch
-            {
-                < 0 => 0,
-                > 1 => 1,
-                _ => x * x,
-            };
-    }
-
-    private void ViewModelOnOnMenuViewModelLoaded(object? sender, MainMenuViewModel e)
-    {
-        Debug.Assert(ReferenceEquals(sender, _viewModel));
-        Debug.Assert(ReferenceEquals(Game.ScreenManager.ActiveScreen, this));
-        var v = new MenuLikeScreen(e, Game);
-        var tr = new ExposureTransitionScreen(
-            this,
-            v,
-            Game,
-            TimeSpan.FromSeconds(8),
-            new Vector2(0, 1080),
-            new Smooth()
-        );
-        Game.ScreenManager.ActiveScreen = tr;
     }
 
     public override void OnActivated()

@@ -24,6 +24,4 @@ internal interface IMenuLikeViewModel : IViewModel
     Texture2D PageBackground { get; }
 
     ICommand SelectItemCommand { get; }
-
-    event EventHandler<IViewModel>? NavigateIn;
 }

@@ -58,7 +58,7 @@ public class SolarMax : XNAGame
 
     public AssetsManager Assets => _globalAssets;
 
-    internal INavigationService NavigationService => _globalNavigationService;
+    internal NavigationService NavigationService => _globalNavigationService;
 
     private void PreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
     {
@@ -110,8 +110,7 @@ public class SolarMax : XNAGame
         // 初始化全局导航服务
         _globalNavigationService = new NavigationService(
             _globalScreenManager,
-            new ScreenFactory(this),
-            _loadingTaskScheduler
+            new ScreenFactory(this)
         );
 
         base.Initialize();

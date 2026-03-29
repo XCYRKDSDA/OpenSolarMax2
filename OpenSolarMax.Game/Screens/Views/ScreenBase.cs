@@ -1,12 +1,17 @@
+using Microsoft.Xna.Framework;
+using Nine.Screens;
+
 namespace OpenSolarMax.Game.Screens.Views;
 
-public abstract class ScreenBase : Nine.Screens.ScreenBase
+internal abstract class ScreenBase(SolarMax game) : IScreen
 {
-    public SolarMax Game { get; }
+    public SolarMax Game { get; } = game;
 
-    protected ScreenBase(SolarMax game)
-        : base(game.ScreenManager)
-    {
-        Game = game;
-    }
+    public virtual void OnActivated() { }
+
+    public virtual void OnDeactivated() { }
+
+    public abstract void Update(GameTime gameTime);
+
+    public abstract void Draw(GameTime gameTime);
 }

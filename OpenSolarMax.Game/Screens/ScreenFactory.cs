@@ -9,7 +9,7 @@ internal class ScreenFactory(SolarMax game) : IScreenFactory
         if (args is null)
             return (IScreen)Activator.CreateInstance(screenType, game)!;
         else
-            return (IScreen)Activator.CreateInstance(screenType, game, args)!;
+            return (IScreen)Activator.CreateInstance(screenType, args, game)!;
     }
 
     public ITransitionScreen CreateTransitionScreen(
@@ -27,7 +27,7 @@ internal class ScreenFactory(SolarMax game) : IScreenFactory
         else
         {
             return (ITransitionScreen)
-                Activator.CreateInstance(screenType, prevScreen, nextScreen, game, args)!;
+                Activator.CreateInstance(screenType, prevScreen, nextScreen, args, game)!;
         }
     }
 }
