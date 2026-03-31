@@ -100,7 +100,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         );
 
         // 移动到默认位置
-        _primaryItemIndex = _builtinPreviews.Count;
+        _primaryItemIndex = _builtinPreviews.Count - 1;
         _primaryItemPreview = _builtinPreviews[^1];
         _primaryItemBackground = null;
         _secondaryItemIndex = null;
@@ -112,14 +112,14 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     {
         if (index < _builtinPreviews.Count)
         {
-            _primaryItemPreview = _builtinPreviews[index];
-            _primaryItemBackground = null;
+            PrimaryItemPreview = _builtinPreviews[index];
+            PrimaryItemBackground = null;
         }
         else
         {
             index -= _builtinPreviews.Count;
-            _primaryItemPreview = _levelMods[index].Preview;
-            _primaryItemBackground = _levelMods[index].Background;
+            PrimaryItemPreview = _levelMods[index].Preview;
+            PrimaryItemBackground = _levelMods[index].Background;
         }
     }
 
@@ -129,20 +129,20 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         {
             if (index < _builtinPreviews.Count)
             {
-                _secondaryItemPreview = _builtinPreviews[index];
-                _secondaryItemBackground = null;
+                SecondaryItemPreview = _builtinPreviews[index];
+                SecondaryItemBackground = null;
             }
             else
             {
                 index -= _builtinPreviews.Count;
-                _secondaryItemPreview = _levelMods[index].Preview;
-                _secondaryItemBackground = _levelMods[index].Background;
+                SecondaryItemPreview = _levelMods[index].Preview;
+                SecondaryItemBackground = _levelMods[index].Background;
             }
         }
         else
         {
-            _secondaryItemPreview = null;
-            _secondaryItemBackground = null;
+            SecondaryItemPreview = null;
+            SecondaryItemBackground = null;
         }
     }
 
