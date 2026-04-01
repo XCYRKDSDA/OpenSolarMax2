@@ -6,7 +6,11 @@ using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Animations;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Screens.Models;
+using OpenSolarMax.Game.Screens.Pages;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
@@ -26,8 +30,6 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private readonly List<PreviewableLevelMod> _levelMods;
 
     #endregion
-
-    private Task<LevelsViewModel>? _chaptersViewModelLoadTask = null;
 
     [ObservableProperty]
     private ObservableCollection<string> _items;
@@ -148,14 +150,42 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
 
     private void OnSelectItem(int idx)
     {
-        // if (idx < 3)
-        //     return;
-        // var chaptersViewModel = new LevelsViewModel(_levelModInfos[idx - 3], Game, null);
-        // NavigateIn?.Invoke(this, chaptersViewModel);
+        if (idx < _builtinPreviews.Count)
+            return;
+        Game.NavigationService.Navigate2(
+            typeof(ChapterPage),
+            Task<object?>.Factory.StartNew(
+                () => Load(_levelMods[idx - _builtinPreviews.Count].Info, Game),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                Game.BackgroundScheduler
+            ),
+            typeof(ChapterTransitionScreen)
+        );
     }
 
     private class Smooth : ICurve<float>
     {
         public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
+    }
+
+    private static ChapterPageContext Load(LevelModInfo levelModInfo, SolarMax game)
+    {
+        var levelModContext = new LevelModContext(levelModInfo, game);
+        var levelLoader = new LevelLoader(levelModContext.DeclarationSchemaInfos);
+        var levelPreviewLoader = new LevelRuntimeLoader(
+            levelModContext,
+            GameplayOrPreview.Preview,
+            game
+        );
+        var levelPreviews = levelModInfo
+            .Levels.EnumerateFiles("*.json")
+            .Select(f =>
+            {
+                var level = levelLoader.Load(f.FileSystem, levelModContext.LocalAssets, f.Path);
+                return (f.NameWithoutExtension, levelPreviewLoader.LoadLevel(level));
+            })
+            .ToList();
+        return new ChapterPageContext(levelModContext, levelPreviews);
     }
 }

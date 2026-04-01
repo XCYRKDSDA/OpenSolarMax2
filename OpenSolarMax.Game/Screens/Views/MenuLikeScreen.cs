@@ -8,6 +8,7 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
 
@@ -15,7 +16,7 @@ namespace OpenSolarMax.Game.Screens.Views;
 
 internal class MenuLikeScreen
     : ScreenBase,
-        IVisualConfigurableScreen<GamePlayTransitionSourceState>,
+        // IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionTargetState>
 {
@@ -364,49 +365,49 @@ internal class MenuLikeScreen
 
     // #endregion
 
-    // #region ChapterTransitionSourceState
+    #region ChapterTransitionSourceState
 
-    // void IVisualConfigurable<ChapterTransitionSourceState>.EnterConfigurationMode()
-    // {
-    //     // 关闭第二预览
-    //     _secondaryPreview.Visible = false;
-    // }
+    void IVisualConfigurable<ChapterTransitionSourceState>.EnterConfigurationMode()
+    {
+        // 关闭第二预览
+        _secondaryPreview.Visible = false;
+    }
 
-    // void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
-    // {
-    //     // 恢复第二预览
-    //     _secondaryPreview.Visible = true;
-    // }
+    void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
+    {
+        // 恢复第二预览
+        _secondaryPreview.Visible = true;
+    }
 
-    // void IVisualConfigurable<ChapterTransitionSourceState>.ApplyVisualState(
-    //     ChapterTransitionSourceState state
-    // )
-    // {
-    //     _primaryPreview.Scale = new(state.PreviewScaling);
-    // }
+    void IVisualConfigurable<ChapterTransitionSourceState>.ApplyVisualState(
+        ChapterTransitionSourceState state
+    )
+    {
+        _primaryPreview.Scale = new(state.PreviewScaling);
+    }
 
-    // #endregion
+    #endregion
 
-    // #region ChapterTransitionTargetState
+    #region ChapterTransitionTargetState
 
-    // void IVisualConfigurable<ChapterTransitionTargetState>.EnterConfigurationMode()
-    // {
-    //     // 关闭第二预览
-    //     _secondaryPreview.Visible = false;
-    // }
+    void IVisualConfigurable<ChapterTransitionTargetState>.EnterConfigurationMode()
+    {
+        // 关闭第二预览
+        _secondaryPreview.Visible = false;
+    }
 
-    // void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
-    // {
-    //     // 恢复第二预览
-    //     _secondaryPreview.Visible = true;
-    // }
+    void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
+    {
+        // 恢复第二预览
+        _secondaryPreview.Visible = true;
+    }
 
-    // void IVisualConfigurable<ChapterTransitionTargetState>.ApplyVisualState(
-    //     ChapterTransitionTargetState state
-    // )
-    // {
-    //     _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
-    // }
+    void IVisualConfigurable<ChapterTransitionTargetState>.ApplyVisualState(
+        ChapterTransitionTargetState state
+    )
+    {
+        _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
+    }
 
-    // #endregion
+    #endregion
 }
