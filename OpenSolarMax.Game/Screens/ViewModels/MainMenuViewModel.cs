@@ -155,12 +155,13 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         Game.NavigationService.Navigate2(
             typeof(ChapterPage),
             Task<object?>.Factory.StartNew(
-                () => Load(_levelMods[idx - _builtinPreviews.Count].Info, Game),
+                () => Load(_levelMods[idx - _builtinPreviews.Count], Game),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 Game.BackgroundScheduler
             ),
-            typeof(ChapterTransitionScreen)
+            typeof(ChapterTransitionScreen),
+            new ChapterTransitionContext(_levelMods[idx - _builtinPreviews.Count].Background!)
         );
     }
 
@@ -169,8 +170,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
     }
 
-    private static ChapterPageContext Load(LevelModInfo levelModInfo, SolarMax game)
+    private static ChapterPageContext Load(PreviewableLevelMod previewableLevelMod, SolarMax game)
     {
+        var levelModInfo = previewableLevelMod.Info;
         var levelModContext = new LevelModContext(levelModInfo, game);
         var levelLoader = new LevelLoader(levelModContext.DeclarationSchemaInfos);
         var levelPreviewLoader = new LevelRuntimeLoader(
@@ -186,6 +188,10 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 return (f.NameWithoutExtension, levelPreviewLoader.LoadLevel(level));
             })
             .ToList();
-        return new ChapterPageContext(levelModContext, levelPreviews);
+        return new ChapterPageContext(
+            levelModContext,
+            levelPreviews,
+            previewableLevelMod.Background!
+        );
     }
 }

@@ -32,6 +32,8 @@ internal class MenuLikeScreen
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private FadableImage? _floatingPreview;
 
+    private bool _controlBackground = true;
+
     private readonly IMenuLikeViewModel _viewModel;
     private float _actualBackgroundLeft = 0;
     private float _commonBackgroundAlpha = 1;
@@ -288,7 +290,7 @@ internal class MenuLikeScreen
         _scrollViewer.Update(gameTime);
 
         // 计算背景偏移
-        if (_lastThumbnailsOffset is not null)
+        if (_controlBackground && _lastThumbnailsOffset is not null)
         {
             var delta = _scrollViewer.ThumbnailsOffset - _lastThumbnailsOffset.Value;
             _targetBackgroundLeft += delta * 2;
@@ -371,10 +373,21 @@ internal class MenuLikeScreen
     {
         // 关闭第二预览
         _secondaryPreview.Visible = false;
+
+        // 关闭背景控制
+        _controlBackground = false;
+    }
+
+    ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
+    {
+        return new ChapterTransitionSourceState(float.NaN, _primaryBackground.Left);
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
     {
+        // 恢复背景控制
+        _controlBackground = true;
+
         // 恢复第二预览
         _secondaryPreview.Visible = true;
     }
@@ -384,6 +397,7 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
+        _primaryBackground.Left = state.BackgroundOffset;
     }
 
     #endregion
@@ -394,10 +408,16 @@ internal class MenuLikeScreen
     {
         // 关闭第二预览
         _secondaryPreview.Visible = false;
+
+        // 关闭背景控制
+        _controlBackground = false;
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
     {
+        // 恢复背景控制
+        _controlBackground = true;
+
         // 恢复第二预览
         _secondaryPreview.Visible = true;
     }
@@ -407,6 +427,7 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
+        _primaryBackground.Left = state.BackgroundOffset;
     }
 
     #endregion

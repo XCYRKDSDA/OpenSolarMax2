@@ -50,6 +50,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     public LevelsViewModel(
         LevelModContext levelModContext,
         List<(string, LevelRuntime)> levelPreviews,
+        Texture2D background,
         SolarMax game
     )
         : base(game)
@@ -59,6 +60,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         // 接受 Models 参数
         _levelModContext = levelModContext;
         _loadedLevelPreviews = levelPreviews;
+        _pageBackground = background;
 
         // 生成小字
         _items = [.. _loadedLevelPreviews.Select(p => p.Name)];

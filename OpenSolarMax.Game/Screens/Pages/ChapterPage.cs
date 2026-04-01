@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Models;
 using OpenSolarMax.Game.Screens.ViewModels;
@@ -7,8 +8,12 @@ namespace OpenSolarMax.Game.Screens.Pages;
 
 internal record ChapterPageContext(
     LevelModContext LevelModContext,
-    List<(string, LevelRuntime)> LevelPreviews
+    List<(string, LevelRuntime)> LevelPreviews,
+    Texture2D Background
 );
 
 internal class ChapterPage(ChapterPageContext ctx, SolarMax game)
-    : MenuLikeScreen(new LevelsViewModel(ctx.LevelModContext, ctx.LevelPreviews, game), game);
+    : MenuLikeScreen(
+        new LevelsViewModel(ctx.LevelModContext, ctx.LevelPreviews, ctx.Background, game),
+        game
+    );

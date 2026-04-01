@@ -9,18 +9,23 @@ namespace OpenSolarMax.Game.Screens.Transitions;
 /// 从主界面到选关界面或者选关界面内部过渡时, 前一个界面的视觉状态
 /// </summary>
 /// <param name="PreviewScaling">预览区域的放缩</param>
-internal record ChapterTransitionSourceState(float PreviewScaling);
+/// <param name="BackgroundOffset">滚动背景的偏移</param>
+internal record ChapterTransitionSourceState(float PreviewScaling, float BackgroundOffset);
 
 /// <summary>
 /// 从主界面到选关界面或者选关界面内部过渡时, 后一个界面的视觉状态
 /// </summary>
 /// <param name="PreviewCustomFadeIn">预览区域的内置淡化程度</param>
+/// <param name="BackgroundOffset">滚动背景的偏移</param>
 /// <returns></returns>
-internal record ChapterTransitionTargetState(float PreviewCustomFadeIn);
+internal record ChapterTransitionTargetState(float PreviewCustomFadeIn, float BackgroundOffset);
+
+internal record ChapterTransitionContext(Texture2D Background);
 
 internal class ChapterTransitionScreen(
     IVisualConfigurableScreen<ChapterTransitionSourceState> prevScreen,
     ITaskLike<IVisualConfigurableScreen<ChapterTransitionTargetState>> nextScreenTask,
+    ChapterTransitionContext ctx,
     SolarMax game
 ) : AsyncTransitionScreenBase(prevScreen, nextScreenTask)
 {
@@ -31,6 +36,8 @@ internal class ChapterTransitionScreen(
 
     private const float _firstStageDurationMs = 0.5f;
     private const float _secondStageDurationMs = 0.5f;
+
+    private ChapterTransitionSourceState? _sourceDefaultState = null;
 
     private readonly TimeSpan _firstStageDuration = TimeSpan.FromSeconds(_firstStageDurationMs);
     private readonly TimeSpan _secondStageDuration = TimeSpan.FromSeconds(_secondStageDurationMs);
@@ -48,6 +55,11 @@ internal class ChapterTransitionScreen(
 
     private readonly SpriteBatch _spriteBatch = new(game.GraphicsDevice, 1);
 
+    private readonly HorizontalScrollingBackground _background = new(game.GraphicsDevice)
+    {
+        Texture = ctx.Background,
+    };
+
     private enum Stage
     {
         Start,
@@ -57,7 +69,7 @@ internal class ChapterTransitionScreen(
         Stop,
     }
 
-    private Stage _stage = Stage.First;
+    private Stage _stage = Stage.Start;
 
     private TimeSpan _duration = TimeSpan.Zero;
 
@@ -83,6 +95,8 @@ internal class ChapterTransitionScreen(
             _stage = Stage.First;
             _duration = TimeSpan.Zero;
             prevScreen.EnterConfigurationMode();
+            _sourceDefaultState = prevScreen.GetDefaultVisualState()!;
+            _background.Left = _sourceDefaultState.BackgroundOffset;
         }
         if (_stage == Stage.First && _duration >= _firstStageDuration)
         {
@@ -114,33 +128,41 @@ internal class ChapterTransitionScreen(
 
         float? alpha = null;
 
-        // 按阶段绘制
+        // 按阶段绘制叠加层
+        game.GraphicsDevice.SetRenderTarget(_renderCache);
+        game.GraphicsDevice.Clear(Color.Transparent);
         if (_stage == Stage.First)
         {
             var progress = (float)(_duration / _firstStageDuration);
 
             // 更新前一个界面的视觉效果
             var prevPreviewScaling = 1 + progress * progress;
-            prevScreen.ApplyVisualState(new ChapterTransitionSourceState(prevPreviewScaling));
+            prevScreen.ApplyVisualState(
+                new ChapterTransitionSourceState(
+                    prevPreviewScaling,
+                    _sourceDefaultState!.BackgroundOffset
+                )
+            );
 
             // 绘制前一个界面
-            game.GraphicsDevice.SetRenderTarget(_renderCache);
-            game.GraphicsDevice.Clear(Color.Black);
             prevScreen.Draw(gameTime);
             alpha = 1 - progress;
         }
-        else if (_stage == Stage.Second)
+        else if (_stage is Stage.Second or Stage.Stop)
         {
             var nextScreen = NextScreen;
-            var progress = (float)(_duration / _secondStageDuration);
+            var progress = _stage is Stage.Stop ? 1 : (float)(_duration / _secondStageDuration);
 
             // 更新后一个界面的视觉效果
             var nextPreviewFadeIn = progress;
-            nextScreen!.ApplyVisualState(new ChapterTransitionTargetState(nextPreviewFadeIn));
+            nextScreen!.ApplyVisualState(
+                new ChapterTransitionTargetState(
+                    nextPreviewFadeIn,
+                    _sourceDefaultState!.BackgroundOffset
+                )
+            );
 
             // 绘制后一个界面
-            game.GraphicsDevice.SetRenderTarget(_renderCache);
-            game.GraphicsDevice.Clear(Color.Black);
             nextScreen.Draw(gameTime);
             alpha = progress;
         }
@@ -148,7 +170,7 @@ internal class ChapterTransitionScreen(
         // 画背景
         game.GraphicsDevice.SetRenderTargets(originalRenderTargets);
         game.GraphicsDevice.Clear(Color.Black);
-        // ctx.Background.Draw();
+        _background.Draw();
 
         // 叠加界面
         if (alpha is null)
