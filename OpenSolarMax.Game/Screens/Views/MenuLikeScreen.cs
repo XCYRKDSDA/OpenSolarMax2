@@ -397,7 +397,18 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
+
+        // 渐出时, 以第一预览偏移为准
+        _actualBackgroundLeft =
+            state.BackgroundOffset - _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        _targetBackgroundLeft = _actualBackgroundLeft;
+        _pageBackground.Left = _actualBackgroundLeft;
         _primaryBackground.Left = state.BackgroundOffset;
+        if (_viewModel.SecondaryItemIndex is { } secondaryItemIndex)
+        {
+            _secondaryBackground.Left =
+                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        }
     }
 
     #endregion
@@ -427,7 +438,18 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
-        _primaryBackground.Left = state.BackgroundOffset;
+
+        // 渐入时, 以背景预览偏移为准
+        _actualBackgroundLeft = state.BackgroundOffset;
+        _targetBackgroundLeft = _actualBackgroundLeft;
+        _pageBackground.Left = _actualBackgroundLeft;
+        _primaryBackground.Left =
+            _actualBackgroundLeft + _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        if (_viewModel.SecondaryItemIndex is { } secondaryItemIndex)
+        {
+            _secondaryBackground.Left =
+                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        }
     }
 
     #endregion
