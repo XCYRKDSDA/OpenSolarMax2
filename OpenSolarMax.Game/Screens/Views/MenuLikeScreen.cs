@@ -16,7 +16,7 @@ namespace OpenSolarMax.Game.Screens.Views;
 
 internal class MenuLikeScreen
     : ScreenBase,
-        // IVisualConfigurableScreen<GamePlayTransitionSourceState>,
+        IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionTargetState>
 {
@@ -317,55 +317,65 @@ internal class MenuLikeScreen
         _desktop.Render();
     }
 
-    // #region GamePlayTransitionSourceState
+    #region GamePlayTransitionSourceState
 
-    // void IVisualConfigurable<GamePlayTransitionSourceState>.EnterConfigurationMode()
-    // {
-    //     // 将预览内容交给悬浮预览控件
-    //     _floatingPreview = new FadableImage()
-    //     {
-    //         Renderable = _primaryPreview.Renderable,
-    //         FadeIn = 1,
-    //     };
-    //     _rootPanel.Widgets.Add(_floatingPreview);
+    void IVisualConfigurable<GamePlayTransitionSourceState>.EnterConfigurationMode()
+    {
+        // 将预览内容交给悬浮预览控件
+        _floatingPreview = new FadableImage()
+        {
+            Renderable = _primaryPreview.Renderable,
+            FadeIn = 1,
+        };
+        _rootPanel.Widgets.Add(_floatingPreview);
 
-    //     // 关闭嵌入的自带控件的渲染
-    //     _primaryPreview.Visible = false;
-    //     _secondaryPreview.Visible = false;
-    // }
+        // 关闭嵌入的自带控件的渲染
+        _primaryPreview.Visible = false;
+        _secondaryPreview.Visible = false;
 
-    // void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
-    // {
-    //     // 开启嵌入的自带控件的渲染
-    //     _secondaryPreview.Visible = true;
-    //     _primaryPreview.Visible = true;
+        // 关闭背景控制
+        _controlBackground = false;
+    }
 
-    //     // 移除悬浮预览控件
-    //     _rootPanel.Widgets.Remove(_floatingPreview);
-    //     _floatingPreview = null;
-    // }
+    void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
+    {
+        // 恢复背景控制
+        _controlBackground = true;
 
-    // GamePlayTransitionSourceState IVisualConfigurable<GamePlayTransitionSourceState>.GetDefaultVisualState()
-    // {
-    //     var sourcePreviewLocation = new Rectangle(
-    //         _primaryPreview.ToGlobal(Point.Zero),
-    //         _primaryPreview.ActualBounds.Size
-    //     );
-    //     return new GamePlayTransitionSourceState(sourcePreviewLocation);
-    // }
+        // 开启嵌入的自带控件的渲染
+        _secondaryPreview.Visible = true;
+        _primaryPreview.Visible = true;
 
-    // void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
-    //     GamePlayTransitionSourceState state
-    // )
-    // {
-    //     // 设置悬浮视图控件的位置
-    //     _floatingPreview!.Left = state.WorldPreviewRegion.Left;
-    //     _floatingPreview!.Top = state.WorldPreviewRegion.Top;
-    //     _floatingPreview!.Width = state.WorldPreviewRegion.Width;
-    //     _floatingPreview!.Height = state.WorldPreviewRegion.Height;
-    // }
+        // 移除悬浮预览控件
+        _rootPanel.Widgets.Remove(_floatingPreview);
+        _floatingPreview = null;
+    }
 
-    // #endregion
+    GamePlayTransitionSourceState IVisualConfigurable<GamePlayTransitionSourceState>.GetDefaultVisualState()
+    {
+        var sourcePreviewLocation = new Rectangle(
+            _primaryPreview.ToGlobal(Point.Zero),
+            _primaryPreview.ActualBounds.Size
+        );
+        return new GamePlayTransitionSourceState(sourcePreviewLocation, _primaryBackground.Left);
+    }
+
+    void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
+        GamePlayTransitionSourceState state
+    )
+    {
+        // 设置悬浮视图控件的位置
+        _floatingPreview!.Left = state.WorldPreviewRegion.Left;
+        _floatingPreview!.Top = state.WorldPreviewRegion.Top;
+        _floatingPreview!.Width = state.WorldPreviewRegion.Width;
+        _floatingPreview!.Height = state.WorldPreviewRegion.Height;
+
+        // 渐出时, 以第一预览偏移为准
+        _targetBackgroundLeft = _actualBackgroundLeft =
+            state.BackgroundOffset - _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+    }
+
+    #endregion
 
     #region ChapterTransitionSourceState
 

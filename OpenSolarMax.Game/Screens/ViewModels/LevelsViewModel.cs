@@ -4,8 +4,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Models;
+using OpenSolarMax.Game.Screens.Pages;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
@@ -16,7 +19,17 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private readonly LevelModContext _levelModContext;
 
-    private readonly List<(string Name, LevelRuntime Context)> _loadedLevelPreviews;
+    private readonly List<(
+        string Name,
+        LevelFile Level,
+        LevelRuntime Context
+    )> _loadedLevelPreviews;
+
+    private readonly LevelRuntimeLoader _gameplayRuntimeLoader;
+    private readonly int _warmupLevelIndex;
+    private readonly Task<LevelRuntime> _warmupLevelRuntimeLoadTask;
+
+    private Task<LevelRuntime>? _levelRuntimeLoadTask;
 
     #endregion
 
@@ -49,7 +62,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     public LevelsViewModel(
         LevelModContext levelModContext,
-        List<(string, LevelRuntime)> levelPreviews,
+        List<(string, LevelFile, LevelRuntime)> levelPreviews,
         Texture2D background,
         SolarMax game
     )
@@ -61,6 +74,13 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _levelModContext = levelModContext;
         _loadedLevelPreviews = levelPreviews;
         _pageBackground = background;
+
+        // 生成游戏运行时加载器
+        _gameplayRuntimeLoader = new LevelRuntimeLoader(
+            _levelModContext,
+            GameplayOrPreview.Gameplay,
+            game
+        );
 
         // 生成小字
         _items = [.. _loadedLevelPreviews.Select(p => p.Name)];
@@ -76,6 +96,15 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _secondaryItemIndex = null;
         _secondaryItemPreview = null;
         _secondaryItemBackground = null;
+
+        // 使用当前第一个显示的章节做启动预热
+        _warmupLevelIndex = _primaryItemIndex;
+        _warmupLevelRuntimeLoadTask = Task.Factory.StartNew(
+            () => _gameplayRuntimeLoader.LoadLevel(_loadedLevelPreviews[_warmupLevelIndex].Level),
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            game.BackgroundScheduler
+        );
     }
 
     public event EventHandler<IViewModel>? NavigateIn;
@@ -102,7 +131,16 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnSelectItem(int idx)
     {
-        // TODO
+        var levelRuntime =
+            idx == _warmupLevelIndex
+                ? _warmupLevelRuntimeLoadTask.Result
+                : _gameplayRuntimeLoader.LoadLevel(_loadedLevelPreviews[idx].Level);
+
+        Game.NavigationService.Navigate(
+            typeof(LevelPlayPage),
+            new LevelPlayPageContext(levelRuntime, PageBackground),
+            typeof(GamePlayTransitionScreen)
+        );
     }
 
     public override void Update(GameTime gameTime)

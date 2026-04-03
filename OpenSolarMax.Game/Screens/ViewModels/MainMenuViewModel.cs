@@ -185,7 +185,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
             .Select(f =>
             {
                 var level = levelLoader.Load(f.FileSystem, levelModContext.LocalAssets, f.Path);
-                return (f.NameWithoutExtension, levelPreviewLoader.LoadLevel(level));
+                return (f.NameWithoutExtension, level, levelPreviewLoader.LoadLevel(level));
             })
             .ToList();
         return new ChapterPageContext(

@@ -27,21 +27,14 @@ internal class LevelPlayScreen
     private readonly Widget _embeddingWorldView;
     private Widget? _floatingWorldView;
 
-    public LevelPlayScreen(
-        LevelPlayViewModel viewModel,
-        HorizontalScrollingBackground sharedBackground,
-        SolarMax game
-    )
+    public LevelPlayScreen(LevelPlayViewModel viewModel, SolarMax game)
         : base(game)
     {
         _viewModel = viewModel;
 
-        // 默认继承共享背景
-        _background = new HorizontalScrollingBackground(sharedBackground.Texture!.GraphicsDevice)
+        _background = new HorizontalScrollingBackground(game.GraphicsDevice)
         {
-            Alpha = sharedBackground.Alpha,
-            Left = sharedBackground.Left,
-            Texture = sharedBackground.Texture,
+            Texture = viewModel.Background,
         };
 
         #region 初始化 UI
@@ -391,7 +384,7 @@ internal class LevelPlayScreen
             _embeddingWorldView.ToGlobal(Point.Zero),
             _embeddingWorldView.ActualBounds.Size
         );
-        return new GamePlayTransitionTargetState(targetPreviewLocation, 1);
+        return new GamePlayTransitionTargetState(targetPreviewLocation, 1, float.NaN);
     }
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.ApplyVisualState(
@@ -406,6 +399,9 @@ internal class LevelPlayScreen
 
         // 设置世界仿真速度
         _viewModel.SimulateSpeed = state.WorldSpeed;
+
+        // 设置背景偏移
+        _background.Left = state.BackgroundOffset;
     }
 
     #endregion
