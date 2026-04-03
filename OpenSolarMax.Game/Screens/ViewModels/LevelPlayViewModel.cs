@@ -3,9 +3,9 @@ using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
-using OpenSolarMax.Game.Screens.Models;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 

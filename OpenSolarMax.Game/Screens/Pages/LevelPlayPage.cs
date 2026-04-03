@@ -1,5 +1,5 @@
 using Microsoft.Xna.Framework.Graphics;
-using OpenSolarMax.Game.Screens.Models;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.Screens.Views;
 

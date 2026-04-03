@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Nine.Animations;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Screens.Models;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.UI;

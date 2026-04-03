@@ -4,13 +4,12 @@ using Arch.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
-using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Modding.ECS;
 
-namespace OpenSolarMax.Game.Screens.Models;
+namespace OpenSolarMax.Game.Level;
 
 internal record LevelRuntime(
     World World,
