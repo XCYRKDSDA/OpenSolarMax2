@@ -14,22 +14,21 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class LevelPlayView : ViewBase, IVisualConfigurableScreen<GamePlayTransitionTargetState>
+internal class LevelPlayView
+    : ViewBase<LevelPlayViewModel>,
+        IVisualConfigurableScreen<GamePlayTransitionTargetState>
 {
     private readonly HorizontalScrollingBackground _background;
 
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
     private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
-    private readonly LevelPlayViewModel _viewModel;
     private readonly Widget _embeddingWorldView;
     private Widget? _floatingWorldView;
 
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
-        : base(game)
+        : base(viewModel, game)
     {
-        _viewModel = viewModel;
-
         _background = new HorizontalScrollingBackground(game.GraphicsDevice)
         {
             Texture = viewModel.Background,
@@ -323,12 +322,7 @@ internal class LevelPlayView : ViewBase, IVisualConfigurableScreen<GamePlayTrans
         }
 
         // 通知 ViewModel
-        _viewModel.SimulateSpeed = _speedButtonsMap[theButton];
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        _viewModel.Update(gameTime);
+        ViewModel.SimulateSpeed = _speedButtonsMap[theButton];
     }
 
     public override void Draw(GameTime gameTime)
@@ -341,14 +335,14 @@ internal class LevelPlayView : ViewBase, IVisualConfigurableScreen<GamePlayTrans
         var viewport = new Viewport(
             new Rectangle(worldView.ToGlobal(Point.Zero), worldView.ActualBounds.Size)
         );
-        _viewModel.World.Query(
+        ViewModel.World.Query(
             new QueryDescription().WithAll<Viewport>(),
             (ref Viewport viewport2) =>
             {
                 viewport2 = viewport;
             }
         );
-        _viewModel.RenderSystem.Update(gameTime);
+        ViewModel.RenderSystem.Update(gameTime);
 
         // 再画 UI
         _desktop.Render();
@@ -363,13 +357,13 @@ internal class LevelPlayView : ViewBase, IVisualConfigurableScreen<GamePlayTrans
         _rootPanel.Widgets.Add(_floatingWorldView);
 
         // 世界更新速度归零
-        _viewModel.SimulateSpeed = 0;
+        ViewModel.SimulateSpeed = 0;
     }
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.ExitConfigurationMode()
     {
         // 世界更新速度正常化
-        _viewModel.SimulateSpeed = 1;
+        ViewModel.SimulateSpeed = 1;
 
         // 移除悬浮视图控件
         _rootPanel.Widgets.Remove(_floatingWorldView);
@@ -396,7 +390,7 @@ internal class LevelPlayView : ViewBase, IVisualConfigurableScreen<GamePlayTrans
         _floatingWorldView!.Height = state.WorldRenderRegion.Height;
 
         // 设置世界仿真速度
-        _viewModel.SimulateSpeed = state.WorldSpeed;
+        ViewModel.SimulateSpeed = state.WorldSpeed;
 
         // 设置背景偏移
         _background.Left = state.BackgroundOffset;

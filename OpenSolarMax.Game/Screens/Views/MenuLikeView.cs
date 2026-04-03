@@ -15,7 +15,7 @@ using OpenSolarMax.Game.UI;
 namespace OpenSolarMax.Game.Screens.Views;
 
 internal class MenuLikeView
-    : ViewBase,
+    : ViewBase<IMenuLikeViewModel>,
         IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionTargetState>
@@ -34,7 +34,6 @@ internal class MenuLikeView
 
     private bool _controlBackground = true;
 
-    private readonly IMenuLikeViewModel _viewModel;
     private float _actualBackgroundLeft = 0;
     private float _commonBackgroundAlpha = 1;
 
@@ -42,9 +41,8 @@ internal class MenuLikeView
     private float _targetBackgroundLeft = 0;
 
     public MenuLikeView(IMenuLikeViewModel viewModel, SolarMax game)
-        : base(game)
+        : base(viewModel, game)
     {
-        _viewModel = viewModel;
         _desktop = new Desktop();
         _rootPanel = new Panel();
         _desktop.Root = _rootPanel;
@@ -159,19 +157,19 @@ internal class MenuLikeView
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemBackground))
-            _primaryBackground.Texture = _viewModel.PrimaryItemBackground;
+            _primaryBackground.Texture = ViewModel.PrimaryItemBackground;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.SecondaryItemBackground))
-            _secondaryBackground.Texture = _viewModel.SecondaryItemBackground;
+            _secondaryBackground.Texture = ViewModel.SecondaryItemBackground;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemPreview))
-            _primaryPreview.Renderable = _viewModel.PrimaryItemPreview;
+            _primaryPreview.Renderable = ViewModel.PrimaryItemPreview;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.SecondaryItemPreview))
-            _secondaryPreview.Renderable = _viewModel.SecondaryItemPreview;
+            _secondaryPreview.Renderable = ViewModel.SecondaryItemPreview;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.Items))
         {
             _scrollViewer.Widgets.Clear();
-            foreach (var name in _viewModel.Items)
+            foreach (var name in ViewModel.Items)
                 _scrollViewer.Widgets.Add(GenerateLabel(name));
-            _viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
+            ViewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         }
     }
 
@@ -224,7 +222,7 @@ internal class MenuLikeView
                 break;
             case NotifyCollectionChangedAction.Reset:
                 _scrollViewer.Widgets.Clear();
-                foreach (var name in _viewModel.Items)
+                foreach (var name in ViewModel.Items)
                     _scrollViewer.Widgets.Add(GenerateLabel(name));
                 break;
             default:
@@ -242,8 +240,8 @@ internal class MenuLikeView
                 && _scrollViewer.Offset > 0
             );
 
-        _viewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
-        _viewModel.SecondaryItemIndex = primaryOnly
+        ViewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
+        ViewModel.SecondaryItemIndex = primaryOnly
             ? null
             : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
 
@@ -277,12 +275,7 @@ internal class MenuLikeView
 
     private void ScrollViewerOnItemTapped(object? sender, int idx)
     {
-        _viewModel.SelectItemCommand.Execute(idx);
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        _viewModel.Update(gameTime);
+        ViewModel.SelectItemCommand.Execute(idx);
     }
 
     public override void Draw(GameTime gameTime)
@@ -304,8 +297,8 @@ internal class MenuLikeView
         // 应用背景偏移
         _pageBackground.Left = _actualBackgroundLeft;
         _primaryBackground.Left =
-            _actualBackgroundLeft + _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
-        if (_viewModel.SecondaryItemIndex is { } secondaryItemIndex)
+            _actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
         {
             _secondaryBackground.Left =
                 _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
@@ -372,7 +365,7 @@ internal class MenuLikeView
 
         // 渐出时, 以第一预览偏移为准
         _targetBackgroundLeft = _actualBackgroundLeft =
-            state.BackgroundOffset - _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
     }
 
     #endregion
@@ -410,7 +403,7 @@ internal class MenuLikeView
 
         // 渐出时, 以第一预览偏移为准
         _targetBackgroundLeft = _actualBackgroundLeft =
-            state.BackgroundOffset - _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
     }
 
     #endregion

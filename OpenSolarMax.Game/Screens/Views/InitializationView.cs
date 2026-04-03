@@ -9,14 +9,12 @@ using OpenSolarMax.Game.Screens.ViewModels;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class InitializationView : ViewBase
+internal class InitializationView : ViewBase<InitializationViewModel>
 {
     private const int _textSize = 80;
     private const string _logoText = "O  P  E  N    S  O  L  A  R  M  A  X";
     private static readonly Color _gray = new(0, 0, 0, 0x55);
     private static readonly Color _lightGray = new(0, 0, 0, 0x11);
-
-    private readonly InitializationViewModel _viewModel;
 
     private readonly Desktop _desktop;
 
@@ -24,10 +22,8 @@ internal class InitializationView : ViewBase
     private readonly HorizontalProgressBar _progressBar;
 
     public InitializationView(InitializationViewModel viewModel, SolarMax game)
-        : base(game)
+        : base(viewModel, game)
     {
-        _viewModel = viewModel;
-
         // 构建 UI
 
         var font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(_textSize);
@@ -83,24 +79,19 @@ internal class InitializationView : ViewBase
 
         // 监听属性
 
-        _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
+        ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
     }
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        Debug.Assert(ReferenceEquals(sender, _viewModel));
+        Debug.Assert(ReferenceEquals(sender, ViewModel));
         if (e.PropertyName == nameof(InitializationViewModel.Progress))
-            _progressBar.Value = _viewModel.Progress;
+            _progressBar.Value = ViewModel.Progress;
     }
 
     public override void OnActivated()
     {
-        _viewModel.StartLoadingCommand.Execute(null);
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        _viewModel.Update(gameTime);
+        ViewModel.StartLoadingCommand.Execute(null);
     }
 
     public override void Draw(GameTime gameTime)
