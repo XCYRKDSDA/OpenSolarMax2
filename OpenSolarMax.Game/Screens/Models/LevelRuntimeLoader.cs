@@ -24,7 +24,7 @@ internal class LevelRuntimeLoader
 {
     private readonly LevelModContext _levelModContext;
 
-    private readonly GameplayOrPreview _stage;
+    private readonly BakedBehaviorsInfo _behaviors;
 
     private readonly SolarMax _game;
 
@@ -41,10 +41,9 @@ internal class LevelRuntimeLoader
     )
     {
         _levelModContext = levelModContext;
-        _stage = stage;
         _game = game;
 
-        var behaviors = stage switch
+        _behaviors = stage switch
         {
             GameplayOrPreview.Gameplay => levelModContext.GameplayBehaviors,
             GameplayOrPreview.Preview => levelModContext.PreviewBehaviors,
@@ -52,7 +51,7 @@ internal class LevelRuntimeLoader
         };
 
         _factory = new ConceptFactory(
-            behaviors.ConceptInfos.Values,
+            _behaviors.ConceptInfos.Values,
             new Dictionary<Type, object>()
             {
                 [typeof(GraphicsDevice)] = game.GraphicsDevice,
@@ -61,7 +60,7 @@ internal class LevelRuntimeLoader
             }
         );
 
-        _translators = new TranslatorsRegistry(behaviors.TranslatorTypes);
+        _translators = new TranslatorsRegistry(_behaviors.TranslatorTypes);
 
         _worldLoader = new WorldLoader(_factory, _translators);
     }
@@ -72,56 +71,56 @@ internal class LevelRuntimeLoader
         var world = World.Create();
         var inputSystem = new AggregateSystem(
             world,
-            _levelModContext.GameplayBehaviors.SystemTypes.Input.Sorted,
+            _behaviors.SystemTypes.Input.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = _factory,
                 [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
             },
-            _levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+            _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value as IReadOnlyList<MethodInfo>
             )
         );
         var aiSystem = new AggregateSystem(
             world,
-            _levelModContext.GameplayBehaviors.SystemTypes.Ai.Sorted,
+            _behaviors.SystemTypes.Ai.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = _factory,
                 [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
             },
-            _levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+            _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value as IReadOnlyList<MethodInfo>
             )
         );
         var simulateSystem = new AggregateSystem(
             world,
-            _levelModContext.GameplayBehaviors.SystemTypes.Simulate.Sorted,
+            _behaviors.SystemTypes.Simulate.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = _factory,
                 [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
             },
-            _levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+            _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value as IReadOnlyList<MethodInfo>
             )
         );
         var renderSystem = new AggregateSystem(
             world,
-            _levelModContext.GameplayBehaviors.SystemTypes.Render.Sorted,
+            _behaviors.SystemTypes.Render.Sorted,
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = _game.GraphicsDevice,
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
             },
-            _levelModContext.GameplayBehaviors.HookImplMethods.ToDictionary(
+            _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value as IReadOnlyList<MethodInfo>
             )
