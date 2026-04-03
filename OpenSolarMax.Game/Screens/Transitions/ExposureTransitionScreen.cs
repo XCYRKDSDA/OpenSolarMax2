@@ -6,14 +6,18 @@ using OpenSolarMax.Game.Graphics;
 
 namespace OpenSolarMax.Game.Screens.Transitions;
 
+public record ExposureTransitionContext(
+    TimeSpan Duration,
+    Vector2 ExposureCenter,
+    ICurve<float>? ExposureCurve = null
+);
+
 public class ExposureTransitionScreen(
     IScreen prevScreen,
     IScreen nextScreen,
-    SolarMax game,
-    TimeSpan duration,
-    Vector2 exposureCenter,
-    ICurve<float>? exposureCurve = null
-) : TimedTransitionScreenBase(game.ScreenManager, prevScreen, nextScreen, duration)
+    ExposureTransitionContext ctx,
+    SolarMax game
+) : TimedTransitionScreenBase(prevScreen, nextScreen, ctx.Duration)
 {
     private readonly RenderTarget2D _renderTarget = new(
         game.GraphicsDevice,
@@ -40,7 +44,7 @@ public class ExposureTransitionScreen(
             _renderTarget.Width * _renderTarget.Width + _renderTarget.Height * _renderTarget.Height
         );
         var ratio = (float)(1 - ElapsedTime / Duration);
-        var exposure = (exposureCurve?.Evaluate(ratio) ?? ratio) * 2;
-        _exposureRenderer.DrawExposure(_renderTarget, exposureCenter, halfLife, exposure);
+        var exposure = (ctx.ExposureCurve?.Evaluate(ratio) ?? ratio) * 2;
+        _exposureRenderer.DrawExposure(_renderTarget, ctx.ExposureCenter, halfLife, exposure);
     }
 }

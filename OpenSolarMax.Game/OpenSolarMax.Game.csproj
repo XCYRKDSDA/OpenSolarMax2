@@ -48,9 +48,6 @@
     <None Update="Content\UIs\IconsAtlas.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Levels\Demo.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Content\Animations\TitleScreen\PrefixAnimation.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

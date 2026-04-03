@@ -5,24 +5,30 @@ using CommunityToolkit.Mvvm.Input;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework.Graphics;
-using Myra;
-using Myra.Graphics2D;
-using Myra.Graphics2D.TextureAtlases;
 using Nine.Animations;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Screens.Pages;
+using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.UI;
-using Svg;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
+internal record PreviewableLevelMod(
+    LevelModInfo Info,
+    IFadableImage Preview,
+    Texture2D? Background
+);
+
+internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IViewModel
 {
-    private readonly List<Texture2D?> _backgrounds;
+    #region Models
 
-    private readonly List<LevelModInfo> _levelModInfos;
-    private readonly List<IFadableImage> _previews;
+    private readonly List<IFadableImage> _builtinPreviews = [];
 
-    private Task<LevelsViewModel>? _chaptersViewModelLoadTask = null;
+    private readonly List<PreviewableLevelMod> _levelMods;
+
+    #endregion
 
     [ObservableProperty]
     private ObservableCollection<string> _items;
@@ -51,25 +57,19 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
-    public MainMenuViewModel(SolarMax game, IProgress<float> progress)
+    public MainMenuViewModel(List<PreviewableLevelMod> levelMods, SolarMax game)
         : base(game)
     {
-        progress.Report(0);
+        _levelMods = levelMods;
 
-        // 设置基础内容。该步骤占 10%
+        _items = ["Editor", "Mods", "OS", .. _levelMods.Select(m => m.Info.ShortName)];
 
-        _items = [];
-        _previews = [];
-        _backgrounds = [];
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
         _pageBackground = game.Assets.Load<Texture2D>("Background.png");
 
-        progress.Report(0.1f);
+        // 加载 默认、模组、编辑器 的预览
 
-        // 加载 默认、模组、编辑器 的预览。该步骤占 20%
-
-        _items.Add("Editor");
-        _previews.Add(
+        _builtinPreviews.Add(
             new FadableRichText(
                 new RichTextLayout()
                 {
@@ -78,11 +78,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
                 }
             )
         );
-        _backgrounds.Add(null);
-        progress.Report(0.1f + 0.2f * 1 / 3f);
 
-        _items.Add("Mods");
-        _previews.Add(
+        _builtinPreviews.Add(
             new FadableRichText(
                 new RichTextLayout()
                 {
@@ -91,11 +88,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
                 }
             )
         );
-        _backgrounds.Add(null);
-        progress.Report(0.1f + 0.2f * 2 / 3f);
 
-        _items.Add("OS");
-        _previews.Add(
+        _builtinPreviews.Add(
             new FadableRichText(
                 new RichTextLayout()
                 {
@@ -105,100 +99,98 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel
                 new Smooth()
             )
         );
-        _backgrounds.Add(null);
-        progress.Report(0.1f + 0.2f * 3 / 3f);
-
-        // 列出所有关卡模组信息。该步骤占 10%
-
-        _levelModInfos = Modding.Modding.ListLevelMods();
-        progress.Report(0.4f);
-
-        // 加载所有关卡的预览。该步骤总共占 50%
-
-        for (var i = 0; i < _levelModInfos.Count; ++i)
-        {
-            _items.Add(_levelModInfos[i].ShortName);
-
-            // TODO: 若未指定预览文件则加载缺省图片
-
-            // 加载预览
-            using var previewStream = _levelModInfos[i]
-                .Preview!.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-            var previewExtension = _levelModInfos[i].Preview!.ExtensionWithDot;
-            IImage preview = previewExtension switch
-            {
-                ".png" => new TextureRegion(
-                    Texture2D.FromStream(
-                        MyraEnvironment.GraphicsDevice,
-                        previewStream,
-                        DefaultColorProcessors.PremultiplyAlpha
-                    )
-                ),
-                ".svg" => new SvgMyraImage(
-                    MyraEnvironment.GraphicsDevice,
-                    SvgDocument.Open<SvgDocument>(previewStream)
-                ),
-                _ => throw new ArgumentOutOfRangeException(nameof(previewExtension)),
-            };
-            _previews.Add(new FadableWrapper(preview));
-
-            // 加载背景
-            if (_levelModInfos[i].Background is { } backgroundFile)
-            {
-                using var backgroundStream = backgroundFile.Open(
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read
-                );
-                _backgrounds.Add(
-                    Texture2D.FromStream(
-                        MyraEnvironment.GraphicsDevice,
-                        backgroundStream,
-                        DefaultColorProcessors.PremultiplyAlpha
-                    )
-                );
-            }
-            else
-                _backgrounds.Add(null);
-
-            progress.Report(0.4f + 0.5f * i / _levelModInfos.Count);
-        }
 
         // 移动到默认位置
-        _primaryItemIndex = 2;
-        _primaryItemPreview = _previews[2];
-        _primaryItemBackground = _backgrounds[2];
+        _primaryItemIndex = _builtinPreviews.Count - 1;
+        _primaryItemPreview = _builtinPreviews[^1];
+        _primaryItemBackground = null;
         _secondaryItemIndex = null;
         _secondaryItemPreview = null;
         _secondaryItemBackground = null;
-
-        progress.Report(1);
     }
 
-    public event EventHandler<IViewModel>? NavigateIn;
-
-    partial void OnPrimaryItemIndexChanged(int value)
+    partial void OnPrimaryItemIndexChanged(int index)
     {
-        PrimaryItemPreview = _previews[value];
-        PrimaryItemBackground = _backgrounds[value];
+        if (index < _builtinPreviews.Count)
+        {
+            PrimaryItemPreview = _builtinPreviews[index];
+            PrimaryItemBackground = null;
+        }
+        else
+        {
+            index -= _builtinPreviews.Count;
+            PrimaryItemPreview = _levelMods[index].Preview;
+            PrimaryItemBackground = _levelMods[index].Background;
+        }
     }
 
-    partial void OnSecondaryItemIndexChanged(int? value)
+    partial void OnSecondaryItemIndexChanged(int? nullableIndex)
     {
-        SecondaryItemPreview = value is null ? null : _previews[value.Value];
-        SecondaryItemBackground = value is null ? null : _backgrounds[value.Value];
+        if (nullableIndex is int index)
+        {
+            if (index < _builtinPreviews.Count)
+            {
+                SecondaryItemPreview = _builtinPreviews[index];
+                SecondaryItemBackground = null;
+            }
+            else
+            {
+                index -= _builtinPreviews.Count;
+                SecondaryItemPreview = _levelMods[index].Preview;
+                SecondaryItemBackground = _levelMods[index].Background;
+            }
+        }
+        else
+        {
+            SecondaryItemPreview = null;
+            SecondaryItemBackground = null;
+        }
     }
 
     private void OnSelectItem(int idx)
     {
-        if (idx < 3)
+        if (idx < _builtinPreviews.Count)
             return;
-        var chaptersViewModel = new LevelsViewModel(_levelModInfos[idx - 3], Game, null);
-        NavigateIn?.Invoke(this, chaptersViewModel);
+        Game.NavigationService.Navigate2(
+            typeof(ChapterPage),
+            Task<object?>.Factory.StartNew(
+                () => Load(_levelMods[idx - _builtinPreviews.Count], Game),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                Game.BackgroundScheduler
+            ),
+            typeof(ChapterTransitionScreen),
+            new ChapterTransitionContext(_levelMods[idx - _builtinPreviews.Count].Background!)
+        );
     }
 
     private class Smooth : ICurve<float>
     {
         public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
+    }
+
+    private static ChapterPageContext Load(PreviewableLevelMod previewableLevelMod, SolarMax game)
+    {
+        var levelModInfo = previewableLevelMod.Info;
+        var levelModContext = new LevelModContext(levelModInfo, game);
+        var levelLoader = new LevelLoader(levelModContext.DeclarationSchemaInfos);
+        var levelPreviewLoader = new LevelRuntimeLoader(
+            levelModContext,
+            GameplayOrPreview.Preview,
+            game
+        );
+        var levelPreviews = levelModInfo
+            .Levels.EnumerateFiles("*.json")
+            .Select(f =>
+            {
+                var level = levelLoader.Load(f.FileSystem, levelModContext.LocalAssets, f.Path);
+                return (f.NameWithoutExtension, level, levelPreviewLoader.LoadLevel(level));
+            })
+            .ToList();
+        return new ChapterPageContext(
+            levelModContext,
+            levelPreviews,
+            previewableLevelMod.Background!
+        );
     }
 }

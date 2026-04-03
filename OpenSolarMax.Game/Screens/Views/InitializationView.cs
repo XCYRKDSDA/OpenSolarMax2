@@ -5,31 +5,25 @@ using Microsoft.Xna.Framework;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
-using Nine.Animations;
-using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class InitializationScreen : ScreenBase
+internal class InitializationView : ViewBase<InitializationViewModel>
 {
     private const int _textSize = 80;
     private const string _logoText = "O  P  E  N    S  O  L  A  R  M  A  X";
     private static readonly Color _gray = new(0, 0, 0, 0x55);
     private static readonly Color _lightGray = new(0, 0, 0, 0x11);
 
-    private readonly InitializationViewModel _viewModel;
-
     private readonly Desktop _desktop;
 
     private readonly Label _logoLabel;
     private readonly HorizontalProgressBar _progressBar;
 
-    public InitializationScreen(InitializationViewModel viewModel, SolarMax game)
-        : base(game)
+    public InitializationView(InitializationViewModel viewModel, SolarMax game)
+        : base(viewModel, game)
     {
-        _viewModel = viewModel;
-
         // 构建 UI
 
         var font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(_textSize);
@@ -85,55 +79,19 @@ internal class InitializationScreen : ScreenBase
 
         // 监听属性
 
-        _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
-
-        // 监听事件
-
-        _viewModel.OnMenuViewModelLoaded += ViewModelOnOnMenuViewModelLoaded;
+        ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
     }
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        Debug.Assert(ReferenceEquals(sender, _viewModel));
+        Debug.Assert(ReferenceEquals(sender, ViewModel));
         if (e.PropertyName == nameof(InitializationViewModel.Progress))
-            _progressBar.Value = _viewModel.Progress;
-    }
-
-    private class Smooth : ICurve<float>
-    {
-        public float Evaluate(float x) =>
-            x switch
-            {
-                < 0 => 0,
-                > 1 => 1,
-                _ => x * x,
-            };
-    }
-
-    private void ViewModelOnOnMenuViewModelLoaded(object? sender, MainMenuViewModel e)
-    {
-        Debug.Assert(ReferenceEquals(sender, _viewModel));
-        Debug.Assert(ReferenceEquals(Game.ScreenManager.ActiveScreen, this));
-        var v = new MenuLikeScreen(e, Game);
-        var tr = new ExposureTransitionScreen(
-            this,
-            v,
-            Game,
-            TimeSpan.FromSeconds(8),
-            new Vector2(0, 1080),
-            new Smooth()
-        );
-        Game.ScreenManager.ActiveScreen = tr;
+            _progressBar.Value = ViewModel.Progress;
     }
 
     public override void OnActivated()
     {
-        _viewModel.StartLoadingCommand.Execute(null);
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        _viewModel.Update(gameTime);
+        ViewModel.StartLoadingCommand.Execute(null);
     }
 
     public override void Draw(GameTime gameTime)

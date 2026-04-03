@@ -14,8 +14,8 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen
-    : ScreenBase,
+internal class MenuLikeView
+    : ViewBase<IMenuLikeViewModel>,
         IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionTargetState>
@@ -32,17 +32,17 @@ internal class MenuLikeScreen
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private FadableImage? _floatingPreview;
 
-    private readonly IMenuLikeViewModel _viewModel;
+    private bool _controlBackground = true;
+
     private float _actualBackgroundLeft = 0;
     private float _commonBackgroundAlpha = 1;
 
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
 
-    public MenuLikeScreen(IMenuLikeViewModel viewModel, SolarMax game)
-        : base(game)
+    public MenuLikeView(IMenuLikeViewModel viewModel, SolarMax game)
+        : base(viewModel, game)
     {
-        _viewModel = viewModel;
         _desktop = new Desktop();
         _rootPanel = new Panel();
         _desktop.Root = _rootPanel;
@@ -121,13 +121,12 @@ internal class MenuLikeScreen
 
         viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         viewModel.PropertyChanged += ViewModelOnPropertyChanged;
-        viewModel.NavigateIn += ViewModelOnNavigateIn;
 
         _desktop.UpdateLayout();
         _scrollViewer.ConvergeImmediately();
     }
 
-    public MenuLikeScreen(
+    public MenuLikeView(
         IMenuLikeViewModel viewModel,
         HorizontalScrollingBackground sharedBackground,
         SolarMax game
@@ -158,46 +157,46 @@ internal class MenuLikeScreen
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemBackground))
-            _primaryBackground.Texture = _viewModel.PrimaryItemBackground;
+            _primaryBackground.Texture = ViewModel.PrimaryItemBackground;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.SecondaryItemBackground))
-            _secondaryBackground.Texture = _viewModel.SecondaryItemBackground;
+            _secondaryBackground.Texture = ViewModel.SecondaryItemBackground;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.PrimaryItemPreview))
-            _primaryPreview.Renderable = _viewModel.PrimaryItemPreview;
+            _primaryPreview.Renderable = ViewModel.PrimaryItemPreview;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.SecondaryItemPreview))
-            _secondaryPreview.Renderable = _viewModel.SecondaryItemPreview;
+            _secondaryPreview.Renderable = ViewModel.SecondaryItemPreview;
         else if (e.PropertyName == nameof(IMenuLikeViewModel.Items))
         {
             _scrollViewer.Widgets.Clear();
-            foreach (var name in _viewModel.Items)
+            foreach (var name in ViewModel.Items)
                 _scrollViewer.Widgets.Add(GenerateLabel(name));
-            _viewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
+            ViewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         }
     }
 
-    private void ViewModelOnNavigateIn(object? sender, IViewModel e)
-    {
-        if (e is LevelsViewModel levelsViewModel)
-        {
-            Game.ScreenManager.ActiveScreen = new ChapterTransitionScreen(
-                this,
-                new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
-                _primaryBackground,
-                Game
-            );
-        }
-        else if (e is LevelPlayViewModel levelPlayViewModel)
-        {
-            Game.ScreenManager.ActiveScreen = new GamePlayTransitionScreen(
-                this,
-                // TODO: 修复选择共享的背景的逻辑
-                new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
-                Game,
-                TimeSpan.FromSeconds(1)
-            );
-        }
-        else
-            throw new NotImplementedException();
-    }
+    // private void ViewModelOnNavigateIn(object? sender, IViewModel e)
+    // {
+    //     if (e is LevelsViewModel levelsViewModel)
+    //     {
+    //         Game.ScreenManager.ActiveScreen = new ChapterTransitionScreen(
+    //             this,
+    //             new MenuLikeScreen(levelsViewModel, _primaryBackground, Game),
+    //             _primaryBackground,
+    //             Game
+    //         );
+    //     }
+    //     else if (e is LevelPlayViewModel levelPlayViewModel)
+    //     {
+    //         Game.ScreenManager.ActiveScreen = new GamePlayTransitionScreen(
+    //             this,
+    //             // TODO: 修复选择共享的背景的逻辑
+    //             new LevelPlayScreen(levelPlayViewModel, _pageBackground, Game),
+    //             Game,
+    //             TimeSpan.FromSeconds(1)
+    //         );
+    //     }
+    //     else
+    //         throw new NotImplementedException();
+    // }
 
     private void ViewModelItemsOnCollectionChanged(
         object? sender,
@@ -223,7 +222,7 @@ internal class MenuLikeScreen
                 break;
             case NotifyCollectionChangedAction.Reset:
                 _scrollViewer.Widgets.Clear();
-                foreach (var name in _viewModel.Items)
+                foreach (var name in ViewModel.Items)
                     _scrollViewer.Widgets.Add(GenerateLabel(name));
                 break;
             default:
@@ -241,8 +240,8 @@ internal class MenuLikeScreen
                 && _scrollViewer.Offset > 0
             );
 
-        _viewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
-        _viewModel.SecondaryItemIndex = primaryOnly
+        ViewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
+        ViewModel.SecondaryItemIndex = primaryOnly
             ? null
             : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
 
@@ -276,12 +275,7 @@ internal class MenuLikeScreen
 
     private void ScrollViewerOnItemTapped(object? sender, int idx)
     {
-        _viewModel.SelectItemCommand.Execute(idx);
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        _viewModel.Update(gameTime);
+        ViewModel.SelectItemCommand.Execute(idx);
     }
 
     public override void Draw(GameTime gameTime)
@@ -289,7 +283,7 @@ internal class MenuLikeScreen
         _scrollViewer.Update(gameTime);
 
         // 计算背景偏移
-        if (_lastThumbnailsOffset is not null)
+        if (_controlBackground && _lastThumbnailsOffset is not null)
         {
             var delta = _scrollViewer.ThumbnailsOffset - _lastThumbnailsOffset.Value;
             _targetBackgroundLeft += delta * 2;
@@ -297,18 +291,18 @@ internal class MenuLikeScreen
             var velocity = error * 5;
             var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
             _actualBackgroundLeft += movement;
-
-            _pageBackground.Left = _actualBackgroundLeft;
-            _primaryBackground.Left =
-                _actualBackgroundLeft
-                + _viewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
-            if (_viewModel.SecondaryItemIndex is { } secondaryItemIndex)
-            {
-                _secondaryBackground.Left =
-                    _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
-            }
         }
         _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
+
+        // 应用背景偏移
+        _pageBackground.Left = _actualBackgroundLeft;
+        _primaryBackground.Left =
+            _actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
+        {
+            _secondaryBackground.Left =
+                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        }
 
         _pageBackground.Draw();
         _secondaryBackground.Draw();
@@ -331,10 +325,16 @@ internal class MenuLikeScreen
         // 关闭嵌入的自带控件的渲染
         _primaryPreview.Visible = false;
         _secondaryPreview.Visible = false;
+
+        // 关闭背景控制
+        _controlBackground = false;
     }
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
     {
+        // 恢复背景控制
+        _controlBackground = true;
+
         // 开启嵌入的自带控件的渲染
         _secondaryPreview.Visible = true;
         _primaryPreview.Visible = true;
@@ -350,7 +350,7 @@ internal class MenuLikeScreen
             _primaryPreview.ToGlobal(Point.Zero),
             _primaryPreview.ActualBounds.Size
         );
-        return new GamePlayTransitionSourceState(sourcePreviewLocation);
+        return new GamePlayTransitionSourceState(sourcePreviewLocation, _primaryBackground.Left);
     }
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
@@ -362,6 +362,10 @@ internal class MenuLikeScreen
         _floatingPreview!.Top = state.WorldPreviewRegion.Top;
         _floatingPreview!.Width = state.WorldPreviewRegion.Width;
         _floatingPreview!.Height = state.WorldPreviewRegion.Height;
+
+        // 渐出时, 以第一预览偏移为准
+        _targetBackgroundLeft = _actualBackgroundLeft =
+            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
     }
 
     #endregion
@@ -372,10 +376,21 @@ internal class MenuLikeScreen
     {
         // 关闭第二预览
         _secondaryPreview.Visible = false;
+
+        // 关闭背景控制
+        _controlBackground = false;
+    }
+
+    ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
+    {
+        return new ChapterTransitionSourceState(float.NaN, _primaryBackground.Left);
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
     {
+        // 恢复背景控制
+        _controlBackground = true;
+
         // 恢复第二预览
         _secondaryPreview.Visible = true;
     }
@@ -385,6 +400,10 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
+
+        // 渐出时, 以第一预览偏移为准
+        _targetBackgroundLeft = _actualBackgroundLeft =
+            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
     }
 
     #endregion
@@ -395,10 +414,16 @@ internal class MenuLikeScreen
     {
         // 关闭第二预览
         _secondaryPreview.Visible = false;
+
+        // 关闭背景控制
+        _controlBackground = false;
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
     {
+        // 恢复背景控制
+        _controlBackground = true;
+
         // 恢复第二预览
         _secondaryPreview.Visible = true;
     }
@@ -408,6 +433,9 @@ internal class MenuLikeScreen
     )
     {
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
+
+        // 渐入时, 以背景预览偏移为准
+        _targetBackgroundLeft = _actualBackgroundLeft = state.BackgroundOffset;
     }
 
     #endregion
