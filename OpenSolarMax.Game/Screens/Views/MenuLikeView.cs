@@ -14,8 +14,8 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class MenuLikeScreen
-    : ScreenBase,
+internal class MenuLikeView
+    : ViewBase,
         IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionTargetState>
@@ -41,7 +41,7 @@ internal class MenuLikeScreen
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
 
-    public MenuLikeScreen(IMenuLikeViewModel viewModel, SolarMax game)
+    public MenuLikeView(IMenuLikeViewModel viewModel, SolarMax game)
         : base(game)
     {
         _viewModel = viewModel;
@@ -128,7 +128,7 @@ internal class MenuLikeScreen
         _scrollViewer.ConvergeImmediately();
     }
 
-    public MenuLikeScreen(
+    public MenuLikeView(
         IMenuLikeViewModel viewModel,
         HorizontalScrollingBackground sharedBackground,
         SolarMax game

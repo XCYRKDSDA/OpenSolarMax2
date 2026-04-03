@@ -14,9 +14,7 @@ using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class LevelPlayScreen
-    : ScreenBase,
-        IVisualConfigurableScreen<GamePlayTransitionTargetState>
+internal class LevelPlayView : ViewBase, IVisualConfigurableScreen<GamePlayTransitionTargetState>
 {
     private readonly HorizontalScrollingBackground _background;
 
@@ -27,7 +25,7 @@ internal class LevelPlayScreen
     private readonly Widget _embeddingWorldView;
     private Widget? _floatingWorldView;
 
-    public LevelPlayScreen(LevelPlayViewModel viewModel, SolarMax game)
+    public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(game)
     {
         _viewModel = viewModel;

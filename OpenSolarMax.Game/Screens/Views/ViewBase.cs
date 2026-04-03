@@ -3,7 +3,7 @@ using Nine.Screens;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal abstract class ScreenBase(SolarMax game) : IScreen
+internal abstract class ViewBase(SolarMax game) : IScreen
 {
     public SolarMax Game { get; } = game;
 

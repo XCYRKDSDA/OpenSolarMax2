@@ -119,7 +119,7 @@ public class SolarMax : XNAGame
     protected override void LoadContent()
     {
         var initializationViewModel = new InitializationViewModel(this);
-        var initializationScreen = new InitializationScreen(initializationViewModel, this);
+        var initializationScreen = new InitializationView(initializationViewModel, this);
         _globalScreenManager.ActiveScreen = initializationScreen;
     }
 

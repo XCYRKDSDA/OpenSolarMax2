@@ -9,7 +9,7 @@ using OpenSolarMax.Game.Screens.ViewModels;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal class InitializationScreen : ScreenBase
+internal class InitializationView : ViewBase
 {
     private const int _textSize = 80;
     private const string _logoText = "O  P  E  N    S  O  L  A  R  M  A  X";
@@ -23,7 +23,7 @@ internal class InitializationScreen : ScreenBase
     private readonly Label _logoLabel;
     private readonly HorizontalProgressBar _progressBar;
 
-    public InitializationScreen(InitializationViewModel viewModel, SolarMax game)
+    public InitializationView(InitializationViewModel viewModel, SolarMax game)
         : base(game)
     {
         _viewModel = viewModel;
