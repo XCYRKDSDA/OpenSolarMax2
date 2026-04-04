@@ -268,22 +268,29 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         if (_firstTouchPos == _lastTouchPos)
         {
-            if (
-                _thumbnailContainer.Bounds.Contains(
-                    _thumbnailContainer.ToLocal(_firstTouchPos.Value)
-                )
-            )
+            // 如果是单击
+            var inThumbnailContainer = _thumbnailContainer.Bounds.Contains(
+                _thumbnailContainer.ToLocal(_firstTouchPos.Value)
+            );
+            if (inThumbnailContainer)
             {
+                // 如果单击发生在缩略图容器中, 计算最接近的项目, 设置为目标预览项目
                 _targetIndex = BinarySearchNearest(
                     GetRelativeCenters(),
                     _thumbnailContainer.ToLocal(_firstTouchPos.Value).X
                 );
             }
             else
+            {
+                // 否则, 识别为选择当前项目
                 ItemTapped?.Invoke(this, _nearestIndex);
+            }
         }
         else
+        {
+            // 如果发生了拖动然后松开, 则将最近的项目设置为目标预览项目
             _targetIndex = _nearestIndex;
+        }
 
         _firstTouchPos = _lastTouchPos = null;
     }
