@@ -434,7 +434,7 @@ internal class MenuLikeView
 
     ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionSourceState(float.NaN, _primaryBackground.Left);
+        return new ChapterTransitionSourceState(1, _primaryBackground.Left);
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
@@ -468,6 +468,11 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+    }
+
+    ChapterTransitionTargetState? IVisualConfigurable<ChapterTransitionTargetState>.GetDefaultVisualState()
+    {
+        return new ChapterTransitionTargetState(1, _pageBackground.Left);
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
