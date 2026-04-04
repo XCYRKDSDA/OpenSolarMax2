@@ -40,6 +40,10 @@ public static partial class Content
             public static string SliderBar => $"{_base}:SliderBar";
 
             public static string SliderBtn => $"{_base}:SliderBtn";
+
+            public static string BackBtn_Idle => $"{_base}:BackBtn_Idle";
+
+            public static string BackBtn_Pressed => $"{_base}:BackBtn_Pressed";
         }
     }
 }
