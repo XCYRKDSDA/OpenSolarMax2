@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
 using OpenSolarMax.Game.Screens.Transitions;
@@ -76,7 +77,37 @@ internal class MenuLikeView
             VerticalAlignment = VerticalAlignment.Bottom,
         };
 
-        _scrollViewer = new CustomHorizontalScrollViewer() { Margin = new Thickness(40) };
+        // 顶栏
+        var topPanel = new Panel()
+        {
+            Margin = new Thickness(20, 20, 20, 0),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+        var backwardButton = new Button(null)
+        {
+            Content = new Image()
+            {
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Idle)
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Pressed)
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Pressed)
+                ),
+            },
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        topPanel.Widgets.Add(backwardButton);
+
+        // 查看器
+        _scrollViewer = new CustomHorizontalScrollViewer()
+        {
+            Margin = new Thickness(20, 0, 20, 20),
+        };
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
         _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
 
@@ -98,12 +129,15 @@ internal class MenuLikeView
 
         var grid = new Grid();
         grid.RowsProportions.Add(Proportion.Auto);
+        grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
         grid.RowsProportions.Add(Proportion.Auto);
         Grid.SetRow(band1, 0);
-        Grid.SetRow(_scrollViewer, 1);
-        Grid.SetRow(band2, 2);
+        Grid.SetRow(topPanel, 1);
+        Grid.SetRow(_scrollViewer, 2);
+        Grid.SetRow(band2, 3);
         grid.Widgets.Add(band1);
+        grid.Widgets.Add(topPanel);
         grid.Widgets.Add(_scrollViewer);
         grid.Widgets.Add(band2);
 
@@ -144,6 +178,9 @@ internal class MenuLikeView
         _targetBackgroundLeft = sharedBackground.Left;
         _actualBackgroundLeft = sharedBackground.Left;
     }
+
+    private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
+        new(region.Texture, region.Bounds);
 
     private Label GenerateLabel(string name) =>
         new()
