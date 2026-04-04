@@ -57,6 +57,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
+    // 主菜单界面没有回退命令
+    public ICommand? BackwardCommand => null;
+
     public MainMenuViewModel(List<PreviewableLevelMod> levelMods, SolarMax game)
         : base(game)
     {

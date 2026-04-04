@@ -24,4 +24,6 @@ internal interface IMenuLikeViewModel : IViewModel
     Texture2D PageBackground { get; }
 
     ICommand SelectItemCommand { get; }
+
+    ICommand? BackwardCommand { get; }
 }

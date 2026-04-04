@@ -57,6 +57,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
+    [ObservableProperty]
+    private ICommand? _backwardCommand;
+
     public LevelsViewModel(
         LevelModContext levelModContext,
         List<(string, LevelFile, LevelRuntime)> levelPreviews,
@@ -66,6 +69,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         : base(game)
     {
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
+        _backwardCommand = new RelayCommand(OnBackward);
 
         // 接受 Models 参数
         _levelModContext = levelModContext;
@@ -144,6 +148,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             new LevelPlayPageContext(levelRuntime, PageBackground),
             typeof(GamePlayTransitionScreen)
         );
+    }
+
+    private void OnBackward()
+    {
+        Game.NavigationService.Backward();
     }
 
     public override void Update(GameTime gameTime)

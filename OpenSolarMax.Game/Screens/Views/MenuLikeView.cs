@@ -30,6 +30,7 @@ internal class MenuLikeView
         _secondaryBackground;
     private readonly FadableImage _primaryPreview,
         _secondaryPreview;
+    private readonly Button _backwardButton;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private FadableImage? _floatingPreview;
 
@@ -84,7 +85,7 @@ internal class MenuLikeView
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Top,
         };
-        var backwardButton = new Button(null)
+        _backwardButton = new Button(null)
         {
             Content = new Image()
             {
@@ -100,8 +101,11 @@ internal class MenuLikeView
             },
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center,
+            Visible = viewModel.BackwardCommand is not null,
+            Enabled = viewModel.BackwardCommand is not null,
         };
-        topPanel.Widgets.Add(backwardButton);
+        _backwardButton.Click += OnBackwardButtonClicked;
+        topPanel.Widgets.Add(_backwardButton);
 
         // 查看器
         _scrollViewer = new CustomHorizontalScrollViewer()
@@ -208,6 +212,11 @@ internal class MenuLikeView
                 _scrollViewer.Widgets.Add(GenerateLabel(name));
             ViewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
         }
+        else if (e.PropertyName == nameof(IMenuLikeViewModel.BackwardCommand))
+        {
+            _backwardButton.Visible = _backwardButton.Enabled =
+                ViewModel.BackwardCommand is not null;
+        }
     }
 
     // private void ViewModelOnNavigateIn(object? sender, IViewModel e)
@@ -313,6 +322,11 @@ internal class MenuLikeView
     private void ScrollViewerOnItemTapped(object? sender, int idx)
     {
         ViewModel.SelectItemCommand.Execute(idx);
+    }
+
+    private void OnBackwardButtonClicked(object? sender, EventArgs e)
+    {
+        ViewModel.BackwardCommand!.Execute(null);
     }
 
     public override void Draw(GameTime gameTime)
