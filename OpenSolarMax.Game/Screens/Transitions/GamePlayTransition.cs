@@ -77,3 +77,57 @@ internal class GamePlayTransitionScreen(
         );
     }
 }
+
+internal class BackwardGamePlayTransitionScreen(
+    IVisualConfigurableScreen<GamePlayTransitionTargetState> prevScreen,
+    IVisualConfigurableScreen<GamePlayTransitionSourceState> nextScreen,
+    SolarMax game
+)
+    : StatefulTimedFadeInTransitionScreen<
+        GamePlayTransitionTargetState,
+        GamePlayTransitionSourceState
+    >(game.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
+{
+    private const float _durationS = 1;
+
+    protected override (
+        GamePlayTransitionTargetState,
+        GamePlayTransitionSourceState
+    ) UpdateVisualState(
+        GamePlayTransitionTargetState? sourceDefaultState,
+        GamePlayTransitionSourceState? targetDefaultState
+    )
+    {
+        Debug.Assert(sourceDefaultState is not null);
+        Debug.Assert(targetDefaultState is not null);
+
+        var location = Vector2
+            .Lerp(
+                sourceDefaultState.WorldRenderRegion.Location.ToVector2(),
+                targetDefaultState.WorldPreviewRegion.Location.ToVector2(),
+                Progress
+            )
+            .ToPoint();
+        var size = Vector2
+            .Lerp(
+                sourceDefaultState.WorldRenderRegion.Size.ToVector2(),
+                targetDefaultState.WorldPreviewRegion.Size.ToVector2(),
+                Progress
+            )
+            .ToPoint();
+
+        var simulateSpeed = MathHelper.Lerp(sourceDefaultState.WorldSpeed, 0, Progress);
+
+        return (
+            new GamePlayTransitionTargetState(
+                new Rectangle(location, size),
+                simulateSpeed,
+                sourceDefaultState.BackgroundOffset
+            ),
+            new GamePlayTransitionSourceState(
+                new Rectangle(location, size),
+                sourceDefaultState.BackgroundOffset
+            )
+        );
+    }
+}

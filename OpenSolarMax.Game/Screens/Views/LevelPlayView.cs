@@ -86,7 +86,7 @@ internal class LevelPlayView
                 ),
             },
         };
-        //exitButton.Click += OnExitButtonClicked;
+        exitButton.Click += OnExitButtonClicked;
         var pauseButton = new Button(null)
         {
             Content = new Image()
@@ -306,6 +306,11 @@ internal class LevelPlayView
     private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
         new(region.Texture, region.Bounds);
 
+    private void OnExitButtonClicked(object? sender, EventArgs e)
+    {
+        ViewModel.ExitCommand.Execute(null);
+    }
+
     private void OnSpeedOptionChanged(object? sender, EventArgs e)
     {
         if (sender is not ToggleButton theButton)
@@ -331,6 +336,7 @@ internal class LevelPlayView
         _background.Draw();
 
         // 再画世界
+        _desktop.UpdateLayout(); // 强行排版一次
         var worldView = _floatingWorldView ?? _embeddingWorldView; // 优先选用悬浮的世界视图控件以应用动画
         var viewport = new Viewport(
             new Rectangle(worldView.ToGlobal(Point.Zero), worldView.ActualBounds.Size)
@@ -376,7 +382,7 @@ internal class LevelPlayView
             _embeddingWorldView.ToGlobal(Point.Zero),
             _embeddingWorldView.ActualBounds.Size
         );
-        return new GamePlayTransitionTargetState(targetPreviewLocation, 1, float.NaN);
+        return new GamePlayTransitionTargetState(targetPreviewLocation, 1, _background.Left);
     }
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.ApplyVisualState(
