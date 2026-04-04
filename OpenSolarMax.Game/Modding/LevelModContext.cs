@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Runtime.Loader;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -118,9 +119,10 @@ internal class LevelModContext
 
         // 加载行为模组
         var behaviorMods = new List<BehaviorMod>();
-        var sharedAssemblies = AppDomain
-            .CurrentDomain.GetAssemblies()
-            .ToDictionary(a => a.FullName!, a => a);
+        var sharedAssemblies = AssemblyLoadContext.Default.Assemblies.ToDictionary(
+            a => a.FullName!,
+            a => a
+        );
         foreach (var behaviorModInfo in behaviorModInfos)
         {
             var behaviorMod = new BehaviorMod(behaviorModInfo, sharedAssemblies);
