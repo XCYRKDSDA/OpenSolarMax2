@@ -75,18 +75,19 @@ internal class ChapterTransitionScreen(
 
     public override void Update(GameTime gameTime)
     {
-        // 检查下一个界面是否加载完毕
-        var nextScreen = NextScreen;
-
-        // 前后界面各自照常更新
-        prevScreen.Update(gameTime);
-        nextScreen?.Update(gameTime);
-
         // 执行状态下更新
         if (_stage == Stage.First || _stage == Stage.Second)
         {
             _duration += gameTime.ElapsedGameTime;
         }
+        (
+            _stage switch
+            {
+                Stage.First => prevScreen as IScreen,
+                Stage.Second => nextScreenTask.Result,
+                _ => null,
+            }
+        )?.Update(gameTime);
 
         // 切换内部状态
         if (_stage == Stage.Start)
@@ -105,19 +106,19 @@ internal class ChapterTransitionScreen(
             _duration = TimeSpan.Zero;
             prevScreen.ExitConfigurationMode();
         }
-        else if (_stage == Stage.Wait && nextScreen is not null)
+        else if (_stage == Stage.Wait && nextScreenTask.IsCompleted)
         {
             // 处于等待阶段且下一个界面加载完成时, 进入第二阶段
             _stage = Stage.Second;
             _duration = TimeSpan.Zero;
-            nextScreen!.EnterConfigurationMode();
+            nextScreenTask.Result.EnterConfigurationMode();
         }
         else if (_stage == Stage.Second && _duration >= _secondStageDuration)
         {
             // 处于第二阶段且时间足够时, 结束过渡
             _stage = Stage.Stop;
             _duration = TimeSpan.Zero;
-            nextScreen!.ExitConfigurationMode();
+            nextScreenTask.Result.ExitConfigurationMode();
             OnTransitionDone();
         }
     }
@@ -150,7 +151,7 @@ internal class ChapterTransitionScreen(
         }
         else if (_stage is Stage.Second or Stage.Stop)
         {
-            var nextScreen = NextScreen;
+            var nextScreen = nextScreenTask.Result;
             var progress = _stage is Stage.Stop ? 1 : (float)(_duration / _secondStageDuration);
 
             // 更新后一个界面的视觉效果
