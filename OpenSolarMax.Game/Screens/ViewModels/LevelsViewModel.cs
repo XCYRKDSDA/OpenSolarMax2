@@ -24,11 +24,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         LevelRuntime Context
     )> _loadedLevelPreviews;
 
-    private readonly LevelRuntimeLoader _gameplayRuntimeLoader;
+    private readonly Task<LevelRuntimeLoader> _gameplayRuntimeLoaderTask;
     private readonly int _warmupLevelIndex;
     private readonly Task<LevelRuntime> _warmupLevelRuntimeLoadTask;
-
-    private Task<LevelRuntime>? _levelRuntimeLoadTask;
 
     #endregion
 
@@ -75,10 +73,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _pageBackground = background;
 
         // 生成游戏运行时加载器
-        _gameplayRuntimeLoader = new LevelRuntimeLoader(
-            _levelModContext,
-            GameplayOrPreview.Gameplay,
-            game
+        _gameplayRuntimeLoaderTask = Task.Factory.StartNew(
+            () => new LevelRuntimeLoader(_levelModContext, GameplayOrPreview.Gameplay, game),
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            game.BackgroundScheduler
         );
 
         // 生成小字
@@ -98,12 +97,17 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         // 使用当前第一个显示的章节做启动预热
         _warmupLevelIndex = _primaryItemIndex;
-        _warmupLevelRuntimeLoadTask = Task.Factory.StartNew(
-            () => _gameplayRuntimeLoader.LoadLevel(_loadedLevelPreviews[_warmupLevelIndex].Level),
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            game.BackgroundScheduler
-        );
+        _warmupLevelRuntimeLoadTask = Task
+            .Factory.StartNew(
+                async () =>
+                    (await _gameplayRuntimeLoaderTask).LoadLevel(
+                        _loadedLevelPreviews[_warmupLevelIndex].Level
+                    ),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                game.BackgroundScheduler
+            )
+            .Unwrap();
     }
 
     public event EventHandler<IViewModel>? NavigateIn;
@@ -133,7 +137,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         var levelRuntime =
             idx == _warmupLevelIndex
                 ? _warmupLevelRuntimeLoadTask.Result
-                : _gameplayRuntimeLoader.LoadLevel(_loadedLevelPreviews[idx].Level);
+                : _gameplayRuntimeLoaderTask.Result.LoadLevel(_loadedLevelPreviews[idx].Level);
 
         Game.NavigationService.Navigate(
             typeof(LevelPlayPage),
