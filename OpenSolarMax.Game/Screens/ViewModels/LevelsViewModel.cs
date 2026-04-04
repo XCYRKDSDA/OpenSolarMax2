@@ -139,7 +139,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 ? _warmupLevelRuntimeLoadTask.Result
                 : _gameplayRuntimeLoaderTask.Result.LoadLevel(_loadedLevelPreviews[idx].Level);
 
-        Game.NavigationService.Navigate(
+        Game.NavigationService.Forward(
             typeof(LevelPlayPage),
             new LevelPlayPageContext(levelRuntime, PageBackground),
             typeof(GamePlayTransitionScreen)

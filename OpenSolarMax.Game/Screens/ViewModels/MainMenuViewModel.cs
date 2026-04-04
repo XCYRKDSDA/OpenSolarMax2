@@ -151,7 +151,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     {
         if (idx < _builtinPreviews.Count)
             return;
-        Game.NavigationService.Navigate2(
+        Game.NavigationService.Forward2(
             typeof(ChapterPage),
             Task<object?>.Factory.StartNew(
                 () => Load(_levelMods[idx - _builtinPreviews.Count], Game),

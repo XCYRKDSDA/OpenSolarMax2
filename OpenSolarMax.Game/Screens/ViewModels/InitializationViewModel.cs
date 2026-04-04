@@ -115,7 +115,7 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
         )
         {
             LoadCompleted = true;
-            Game.NavigationService.Navigate(
+            Game.NavigationService.Forward(
                 typeof(MainMenuPage),
                 _levelPreviewsLoadTask.Result,
                 typeof(ExposureTransitionScreen),
