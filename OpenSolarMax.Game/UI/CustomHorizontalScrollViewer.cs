@@ -28,7 +28,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     #region UI 框架
 
     // 基础框架
-    private readonly Panel _headerPanel;
     private readonly Panel _previewPanel;
     private readonly Panel _thumbnailsPanel;
 
@@ -62,8 +61,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     #region 公开属性
 
     public override ObservableCollection<Widget> Widgets => _thumbnails;
-
-    public Panel HeaderPanel => _headerPanel;
 
     public Panel PreviewPanel => _previewPanel;
 
@@ -365,7 +362,6 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         // 构建框架
 
-        _headerPanel = new Panel();
         _previewPanel = new Panel();
         _thumbnailsPanel = new Panel();
 
@@ -393,16 +389,13 @@ public sealed class CustomHorizontalScrollViewer : Container
         _thumbnailsPanel.Widgets.Add(_circleImage);
 
         var gridLayout = new GridLayout();
-        gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         gridLayout.RowsProportions.Add(Proportion.Fill);
         gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         ChildrenLayout = gridLayout;
 
-        Grid.SetRow(_headerPanel, 0);
-        Grid.SetRow(_previewPanel, 1);
-        Grid.SetRow(_thumbnailsPanel, 2);
+        Grid.SetRow(_previewPanel, 0);
+        Grid.SetRow(_thumbnailsPanel, 1);
         Children.Add(_previewPanel);
-        Children.Add(_headerPanel);
         Children.Add(_thumbnailsPanel);
 
         Widgets.CollectionChanged += WidgetsOnCollectionChanged;
