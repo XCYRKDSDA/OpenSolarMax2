@@ -85,8 +85,7 @@ internal class MenuLikeView
         {
             // 创建曝光渲染工具
             _exposureSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
-            _exposureWhiteBase = new Texture2D(game.GraphicsDevice, 1, 1);
-            _exposureWhiteBase.SetData([Color.White]);
+            _exposureWhiteBase = game.Assets.Load<Texture2D>("Textures/Pixel.bmp");
         }
 
         var band1 = new Widget()
