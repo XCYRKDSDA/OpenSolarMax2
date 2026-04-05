@@ -323,6 +323,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     public void ConvergeImmediately()
     {
         _thumbnailContainer.Left = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
+        UpdateScrolling();
     }
 
     public void Update(GameTime gameTime)
