@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -14,14 +15,14 @@ public static partial class ConceptNames
     public const string Drawable = "Drawable";
 }
 
-[Define(ConceptNames.Drawable)]
+[Define(ConceptNames.Drawable), BothForGameplayAndPreview]
 public abstract class Drawable : IDefinition
 {
     public static Signature Signature { get; } =
         TransformableDefinition.Signature + new Signature(typeof(Sprite));
 }
 
-[Describe(ConceptNames.Drawable)]
+[Describe(ConceptNames.Drawable), BothForGameplayAndPreview]
 public class DrawableDescription : IDescription
 {
     /// <summary>
@@ -79,7 +80,7 @@ public class DrawableDescription : IDescription
     public bool Billboard { get; set; } = true;
 }
 
-[Apply(ConceptNames.Drawable)]
+[Apply(ConceptNames.Drawable), BothForGameplayAndPreview]
 public class DrawableApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<DrawableDescription>
 {

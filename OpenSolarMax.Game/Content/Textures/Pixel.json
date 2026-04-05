@@ -1,0 +1,6 @@
+{
+    "image": "Pixel.bmp",
+    "regions": {
+        "AtCenter": { "x": 0, "y": 0, "w": 1, "h": 1, "anchor": [ 0.5, 0.5 ] }
+    }
+}

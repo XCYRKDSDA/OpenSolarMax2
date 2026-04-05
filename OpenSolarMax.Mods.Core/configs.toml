@@ -5,7 +5,7 @@ charging_duration = 0.5
 landing_duration = 0.5
 fading_in_duration = 0.1
 fading_out_duration = 0.25
-arrival_time_offset = 0.5 # 抵达时间的绝对偏差（半边）
+arrival_time_offset = 0.5           # 抵达时间的绝对偏差（半边）
 arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间的最大比例
 
 # 输入系统相关
@@ -77,3 +77,4 @@ node.size = { x = 27, y = 27 }
 edge.space = 8
 edge.color = "#ff4444"
 edge.size = { x = 13.5, y = 27 }
+edge.preview.width = 6

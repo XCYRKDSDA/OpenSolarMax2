@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -31,6 +32,28 @@ public class BarrierDeclarationTranslator
             throw new NullReferenceException();
 
         var desc = new InfiniteZBarrierDescription()
+        {
+            Head = declaration.Head.Value,
+            Tail = declaration.Tail.Value,
+        };
+
+        return desc;
+    }
+}
+
+[Translate("barrier", ConceptNames.BarrierPreview), OnlyForPreview]
+public class BarrierPreviewDeclarationTranslator
+    : ITranslator<BarrierDeclaration, BarrierPreviewDescription>
+{
+    public BarrierPreviewDescription ToDescription(
+        BarrierDeclaration declaration,
+        IReadOnlyDictionary<string, Entity> otherEntities
+    )
+    {
+        if (declaration.Head is null || declaration.Tail is null)
+            throw new NullReferenceException();
+
+        var desc = new BarrierPreviewDescription()
         {
             Head = declaration.Head.Value,
             Tail = declaration.Tail.Value,
