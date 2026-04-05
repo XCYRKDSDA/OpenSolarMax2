@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
@@ -10,7 +11,6 @@ using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
-using OpenSolarMax.Game.Graphics;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
@@ -46,14 +46,15 @@ internal class MenuLikeView
 
     #region 曝光相关
 
-    private ExposureRenderer? _exposureRenderer;
+    private SpriteBatch? _exposureSpriteBatch;
+    private Texture2D? _exposureWhiteBase;
 
-    // 默认曝光量, 最开始为 2, 代表着半衰期位置也是全白, 即全屏全白. 随着时间衰减到 0
-    private float _exposure = 2;
+    // 默认曝光量, 最开始为 1, 即全屏全白. 随着时间衰减到 0
+    private float _exposure = 1;
 
-    // 曝光量下降速度, 默认为 0.25, 即 8 秒完成曝光动画; 快的速度是慢的的 6 倍
-    private const float _exposureFadeSpeedSlow = 2f / 8;
-    private const float _exposureFadeSpeedFast = 12f / 8;
+    // 曝光量下降速度, 默认为 0.125, 即 8 秒完成曝光动画; 快的速度是慢的的 6 倍
+    private const float _exposureFadeSpeedSlow = 1f / 8;
+    private const float _exposureFadeSpeedFast = 6f / 8;
 
     private readonly Vector2 _exposureCenter = Vector2.Zero;
 
@@ -83,7 +84,9 @@ internal class MenuLikeView
         if (enableExposure)
         {
             // 创建曝光渲染工具
-            _exposureRenderer = new ExposureRenderer(game.GraphicsDevice);
+            _exposureSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
+            _exposureWhiteBase = new Texture2D(game.GraphicsDevice, 1, 1);
+            _exposureWhiteBase.SetData([Color.White]);
         }
 
         var band1 = new Widget()
@@ -365,8 +368,9 @@ internal class MenuLikeView
         _desktop.Render();
 
         // 叠加曝光
-        if (_exposureRenderer is not null)
+        if (_exposureSpriteBatch is not null)
         {
+            Debug.Assert(_exposureWhiteBase is not null);
             var exposureFadeSpeed =
                 _scrollViewer.NearestIndex == ViewModel.InitializeIndex
                     ? _exposureFadeSpeedSlow
@@ -377,13 +381,26 @@ internal class MenuLikeView
                     + MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferHeight, 2)
             );
 
-            var blendStateCache = Game.GraphicsDevice.BlendState;
-            Game.GraphicsDevice.BlendState = BlendState.Additive;
-            _exposureRenderer.DrawExposure(_exposureCenter, halfLife, MathF.Max(_exposure, 0));
-            Game.GraphicsDevice.BlendState = blendStateCache;
+            _exposureSpriteBatch.Begin(blendState: BlendState.Additive);
+            _exposureSpriteBatch.Draw(
+                _exposureWhiteBase,
+                new Rectangle(
+                    0,
+                    0,
+                    Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                    Game.GraphicsDevice.PresentationParameters.BackBufferHeight
+                ),
+                Color.White * _exposure
+            );
+            _exposureSpriteBatch.End();
 
             if (_exposure <= 0)
-                _exposureRenderer = null;
+            {
+                _exposureSpriteBatch.Dispose();
+                _exposureSpriteBatch = null;
+                _exposureWhiteBase.Dispose();
+                _exposureWhiteBase = null;
+            }
         }
     }
 
