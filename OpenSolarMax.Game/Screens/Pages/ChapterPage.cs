@@ -15,5 +15,6 @@ internal record ChapterPageContext(
 internal class ChapterPage(ChapterPageContext ctx, SolarMax game)
     : MenuLikeView(
         new LevelsViewModel(ctx.LevelModContext, ctx.LevelPreviews, ctx.Background, game),
+        false,
         game
     );

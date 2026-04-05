@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Effect Include="Graphics\Exposure.fx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Arch" Version="2.1.0" />
     <PackageReference Include="Arch.System" Version="1.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

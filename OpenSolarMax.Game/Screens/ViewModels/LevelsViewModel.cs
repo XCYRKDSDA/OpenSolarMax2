@@ -57,6 +57,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
+    [ObservableProperty]
+    private ICommand? _backwardCommand;
+
+    public int InitializeIndex { get; }
+
     public LevelsViewModel(
         LevelModContext levelModContext,
         List<(string, LevelFile, LevelRuntime)> levelPreviews,
@@ -66,6 +71,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         : base(game)
     {
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
+        _backwardCommand = new RelayCommand(OnBackward);
 
         // 接受 Models 参数
         _levelModContext = levelModContext;
@@ -84,6 +90,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _items = [.. _loadedLevelPreviews.Select(p => p.Name)];
 
         // 移动到默认位置
+        InitializeIndex = 0;
         _primaryItemIndex = 0;
         _primaryItemPreview = new WorldRenderer(
             _loadedLevelPreviews[0].Context.World,
@@ -139,10 +146,18 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
                 ? _warmupLevelRuntimeLoadTask.Result
                 : _gameplayRuntimeLoaderTask.Result.LoadLevel(_loadedLevelPreviews[idx].Level);
 
-        Game.NavigationService.Navigate(
+        Game.NavigationService.Forward(
             typeof(LevelPlayPage),
             new LevelPlayPageContext(levelRuntime, PageBackground),
             typeof(GamePlayTransitionScreen)
+        );
+    }
+
+    private void OnBackward()
+    {
+        Game.NavigationService.Backward(
+            typeof(BackwardChapterTransitionScreen),
+            new ChapterTransitionContext(PageBackground)
         );
     }
 

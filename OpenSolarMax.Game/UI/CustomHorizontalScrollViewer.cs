@@ -28,7 +28,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     #region UI 框架
 
     // 基础框架
-    private readonly Panel _headerPanel;
     private readonly Panel _previewPanel;
     private readonly Panel _thumbnailsPanel;
 
@@ -62,8 +61,6 @@ public sealed class CustomHorizontalScrollViewer : Container
     #region 公开属性
 
     public override ObservableCollection<Widget> Widgets => _thumbnails;
-
-    public Panel HeaderPanel => _headerPanel;
 
     public Panel PreviewPanel => _previewPanel;
 
@@ -268,22 +265,29 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         if (_firstTouchPos == _lastTouchPos)
         {
-            if (
-                _thumbnailContainer.Bounds.Contains(
-                    _thumbnailContainer.ToLocal(_firstTouchPos.Value)
-                )
-            )
+            // 如果是单击
+            var inThumbnailContainer = _thumbnailContainer.Bounds.Contains(
+                _thumbnailContainer.ToLocal(_firstTouchPos.Value)
+            );
+            if (inThumbnailContainer)
             {
+                // 如果单击发生在缩略图容器中, 计算最接近的项目, 设置为目标预览项目
                 _targetIndex = BinarySearchNearest(
                     GetRelativeCenters(),
                     _thumbnailContainer.ToLocal(_firstTouchPos.Value).X
                 );
             }
             else
+            {
+                // 否则, 识别为选择当前项目
                 ItemTapped?.Invoke(this, _nearestIndex);
+            }
         }
         else
+        {
+            // 如果发生了拖动然后松开, 则将最近的项目设置为目标预览项目
             _targetIndex = _nearestIndex;
+        }
 
         _firstTouchPos = _lastTouchPos = null;
     }
@@ -319,6 +323,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     public void ConvergeImmediately()
     {
         _thumbnailContainer.Left = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
+        UpdateScrolling();
     }
 
     public void Update(GameTime gameTime)
@@ -358,7 +363,6 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         // 构建框架
 
-        _headerPanel = new Panel();
         _previewPanel = new Panel();
         _thumbnailsPanel = new Panel();
 
@@ -386,16 +390,13 @@ public sealed class CustomHorizontalScrollViewer : Container
         _thumbnailsPanel.Widgets.Add(_circleImage);
 
         var gridLayout = new GridLayout();
-        gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         gridLayout.RowsProportions.Add(Proportion.Fill);
         gridLayout.RowsProportions.Add(new Proportion(ProportionType.Pixels, _thumbnailsHeight));
         ChildrenLayout = gridLayout;
 
-        Grid.SetRow(_headerPanel, 0);
-        Grid.SetRow(_previewPanel, 1);
-        Grid.SetRow(_thumbnailsPanel, 2);
+        Grid.SetRow(_previewPanel, 0);
+        Grid.SetRow(_thumbnailsPanel, 1);
         Children.Add(_previewPanel);
-        Children.Add(_headerPanel);
         Children.Add(_thumbnailsPanel);
 
         Widgets.CollectionChanged += WidgetsOnCollectionChanged;

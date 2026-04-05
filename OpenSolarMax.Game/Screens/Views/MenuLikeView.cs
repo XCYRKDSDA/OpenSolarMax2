@@ -1,11 +1,14 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
 using OpenSolarMax.Game.Screens.Transitions;
@@ -29,6 +32,7 @@ internal class MenuLikeView
         _secondaryBackground;
     private readonly FadableImage _primaryPreview,
         _secondaryPreview;
+    private readonly Button _backwardButton;
     private readonly CustomHorizontalScrollViewer _scrollViewer;
     private FadableImage? _floatingPreview;
 
@@ -40,7 +44,23 @@ internal class MenuLikeView
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
 
-    public MenuLikeView(IMenuLikeViewModel viewModel, SolarMax game)
+    #region 曝光相关
+
+    private SpriteBatch? _exposureSpriteBatch;
+    private Texture2D? _exposureWhiteBase;
+
+    // 默认曝光量, 最开始为 1, 即全屏全白. 随着时间衰减到 0
+    private float _exposure = 1;
+
+    // 曝光量下降速度, 默认为 0.125, 即 8 秒完成曝光动画; 快的速度是慢的的 6 倍
+    private const float _exposureFadeSpeedSlow = 1f / 8;
+    private const float _exposureFadeSpeedFast = 6f / 8;
+
+    private readonly Vector2 _exposureCenter = Vector2.Zero;
+
+    #endregion
+
+    public MenuLikeView(IMenuLikeViewModel viewModel, bool enableExposure, SolarMax game)
         : base(viewModel, game)
     {
         _desktop = new Desktop();
@@ -61,6 +81,14 @@ internal class MenuLikeView
             Texture = viewModel.SecondaryItemBackground,
         };
 
+        if (enableExposure)
+        {
+            // 创建曝光渲染工具
+            _exposureSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
+            _exposureWhiteBase = new Texture2D(game.GraphicsDevice, 1, 1);
+            _exposureWhiteBase.SetData([Color.White]);
+        }
+
         var band1 = new Widget()
         {
             Background = new SolidBrush(_gray),
@@ -76,7 +104,40 @@ internal class MenuLikeView
             VerticalAlignment = VerticalAlignment.Bottom,
         };
 
-        _scrollViewer = new CustomHorizontalScrollViewer() { Margin = new Thickness(40) };
+        // 顶栏
+        var topPanel = new Panel()
+        {
+            Margin = new Thickness(20, 20, 20, 0),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+        _backwardButton = new Button(null)
+        {
+            Content = new Image()
+            {
+                Renderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Idle)
+                ),
+                OverRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Pressed)
+                ),
+                PressedRenderable = ToMyra(
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Pressed)
+                ),
+            },
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
+            Visible = viewModel.BackwardCommand is not null,
+            Enabled = viewModel.BackwardCommand is not null,
+        };
+        _backwardButton.Click += OnBackwardButtonClicked;
+        topPanel.Widgets.Add(_backwardButton);
+
+        // 查看器
+        _scrollViewer = new CustomHorizontalScrollViewer()
+        {
+            Margin = new Thickness(20, 0, 20, 20),
+        };
         _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
         _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
 
@@ -98,12 +159,15 @@ internal class MenuLikeView
 
         var grid = new Grid();
         grid.RowsProportions.Add(Proportion.Auto);
+        grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
         grid.RowsProportions.Add(Proportion.Auto);
         Grid.SetRow(band1, 0);
-        Grid.SetRow(_scrollViewer, 1);
-        Grid.SetRow(band2, 2);
+        Grid.SetRow(topPanel, 1);
+        Grid.SetRow(_scrollViewer, 2);
+        Grid.SetRow(band2, 3);
         grid.Widgets.Add(band1);
+        grid.Widgets.Add(topPanel);
         grid.Widgets.Add(_scrollViewer);
         grid.Widgets.Add(band2);
 
@@ -126,24 +190,8 @@ internal class MenuLikeView
         _scrollViewer.ConvergeImmediately();
     }
 
-    public MenuLikeView(
-        IMenuLikeViewModel viewModel,
-        HorizontalScrollingBackground sharedBackground,
-        SolarMax game
-    )
-        : this(viewModel, game)
-    {
-        _pageBackground = new HorizontalScrollingBackground(
-            sharedBackground.Texture!.GraphicsDevice
-        )
-        {
-            Alpha = sharedBackground.Alpha,
-            Left = sharedBackground.Left,
-            Texture = sharedBackground.Texture,
-        };
-        _targetBackgroundLeft = sharedBackground.Left;
-        _actualBackgroundLeft = sharedBackground.Left;
-    }
+    private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
+        new(region.Texture, region.Bounds);
 
     private Label GenerateLabel(string name) =>
         new()
@@ -170,6 +218,11 @@ internal class MenuLikeView
             foreach (var name in ViewModel.Items)
                 _scrollViewer.Widgets.Add(GenerateLabel(name));
             ViewModel.Items.CollectionChanged += ViewModelItemsOnCollectionChanged;
+        }
+        else if (e.PropertyName == nameof(IMenuLikeViewModel.BackwardCommand))
+        {
+            _backwardButton.Visible = _backwardButton.Enabled =
+                ViewModel.BackwardCommand is not null;
         }
     }
 
@@ -278,6 +331,11 @@ internal class MenuLikeView
         ViewModel.SelectItemCommand.Execute(idx);
     }
 
+    private void OnBackwardButtonClicked(object? sender, EventArgs e)
+    {
+        ViewModel.BackwardCommand!.Execute(null);
+    }
+
     public override void Draw(GameTime gameTime)
     {
         _scrollViewer.Update(gameTime);
@@ -308,6 +366,42 @@ internal class MenuLikeView
         _secondaryBackground.Draw();
         _primaryBackground.Draw();
         _desktop.Render();
+
+        // 叠加曝光
+        if (_exposureSpriteBatch is not null)
+        {
+            Debug.Assert(_exposureWhiteBase is not null);
+            var exposureFadeSpeed =
+                _scrollViewer.NearestIndex == ViewModel.InitializeIndex
+                    ? _exposureFadeSpeedSlow
+                    : _exposureFadeSpeedFast;
+            _exposure -= exposureFadeSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            var halfLife = MathF.Sqrt(
+                MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferWidth, 2)
+                    + MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferHeight, 2)
+            );
+
+            _exposureSpriteBatch.Begin(blendState: BlendState.Additive);
+            _exposureSpriteBatch.Draw(
+                _exposureWhiteBase,
+                new Rectangle(
+                    0,
+                    0,
+                    Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                    Game.GraphicsDevice.PresentationParameters.BackBufferHeight
+                ),
+                Color.White * _exposure
+            );
+            _exposureSpriteBatch.End();
+
+            if (_exposure <= 0)
+            {
+                _exposureSpriteBatch.Dispose();
+                _exposureSpriteBatch = null;
+                _exposureWhiteBase.Dispose();
+                _exposureWhiteBase = null;
+            }
+        }
     }
 
     #region GamePlayTransitionSourceState
@@ -383,7 +477,7 @@ internal class MenuLikeView
 
     ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionSourceState(float.NaN, _primaryBackground.Left);
+        return new ChapterTransitionSourceState(1, _primaryBackground.Left);
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
@@ -417,6 +511,11 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+    }
+
+    ChapterTransitionTargetState? IVisualConfigurable<ChapterTransitionTargetState>.GetDefaultVisualState()
+    {
+        return new ChapterTransitionTargetState(1, _pageBackground.Left);
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()

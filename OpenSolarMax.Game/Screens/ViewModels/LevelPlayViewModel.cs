@@ -1,11 +1,14 @@
 using System.Runtime.InteropServices;
+using System.Windows.Input;
 using Arch.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Game.Screens.Transitions;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
@@ -24,6 +27,9 @@ internal partial class LevelPlayViewModel : ViewModelBase
     [ObservableProperty]
     private Texture2D _background;
 
+    [ObservableProperty]
+    private ICommand _exitCommand;
+
     public World World => _runtime.World;
 
     public AggregateSystem RenderSystem => _runtime.RenderSystems;
@@ -36,6 +42,8 @@ internal partial class LevelPlayViewModel : ViewModelBase
         // 记录运行时
         _runtime = levelRuntime;
         _background = background;
+
+        _exitCommand = new RelayCommand(OnExit);
 
         // 查找相机
         var viewDesc = new QueryDescription().WithAll<ViewTag>();
@@ -51,6 +59,11 @@ internal partial class LevelPlayViewModel : ViewModelBase
             new QueryDescription().WithAll<FMOD.Studio.System>(),
             (ref FMOD.Studio.System fmodSystem) => fmodSystem = game.FmodSystem
         );
+    }
+
+    private void OnExit()
+    {
+        Game.NavigationService.Backward(typeof(BackwardGamePlayTransitionScreen));
     }
 
     public override void Update(GameTime gameTime)
