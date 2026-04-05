@@ -3,12 +3,14 @@ using System.ComponentModel;
 using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
+using OpenSolarMax.Game.Graphics;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
@@ -42,7 +44,22 @@ internal class MenuLikeView
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
 
-    public MenuLikeView(IMenuLikeViewModel viewModel, SolarMax game)
+    #region 曝光相关
+
+    private ExposureRenderer? _exposureRenderer;
+
+    // 默认曝光量, 最开始为 2, 代表着半衰期位置也是全白, 即全屏全白. 随着时间衰减到 0
+    private float _exposure = 2;
+
+    // 曝光量下降速度, 默认为 0.25, 即 8 秒完成曝光动画; 快的速度是慢的的 6 倍
+    private const float _exposureFadeSpeedSlow = 2f / 8;
+    private const float _exposureFadeSpeedFast = 12f / 8;
+
+    private readonly Vector2 _exposureCenter = Vector2.Zero;
+
+    #endregion
+
+    public MenuLikeView(IMenuLikeViewModel viewModel, bool enableExposure, SolarMax game)
         : base(viewModel, game)
     {
         _desktop = new Desktop();
@@ -62,6 +79,12 @@ internal class MenuLikeView
         {
             Texture = viewModel.SecondaryItemBackground,
         };
+
+        if (enableExposure)
+        {
+            // 创建曝光渲染工具
+            _exposureRenderer = new ExposureRenderer(game.GraphicsDevice);
+        }
 
         var band1 = new Widget()
         {
@@ -162,25 +185,6 @@ internal class MenuLikeView
 
         _desktop.UpdateLayout();
         _scrollViewer.ConvergeImmediately();
-    }
-
-    public MenuLikeView(
-        IMenuLikeViewModel viewModel,
-        HorizontalScrollingBackground sharedBackground,
-        SolarMax game
-    )
-        : this(viewModel, game)
-    {
-        _pageBackground = new HorizontalScrollingBackground(
-            sharedBackground.Texture!.GraphicsDevice
-        )
-        {
-            Alpha = sharedBackground.Alpha,
-            Left = sharedBackground.Left,
-            Texture = sharedBackground.Texture,
-        };
-        _targetBackgroundLeft = sharedBackground.Left;
-        _actualBackgroundLeft = sharedBackground.Left;
     }
 
     private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
@@ -359,6 +363,28 @@ internal class MenuLikeView
         _secondaryBackground.Draw();
         _primaryBackground.Draw();
         _desktop.Render();
+
+        // 叠加曝光
+        if (_exposureRenderer is not null)
+        {
+            var exposureFadeSpeed =
+                _scrollViewer.NearestIndex == ViewModel.InitializeIndex
+                    ? _exposureFadeSpeedSlow
+                    : _exposureFadeSpeedFast;
+            _exposure -= exposureFadeSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            var halfLife = MathF.Sqrt(
+                MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferWidth, 2)
+                    + MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferHeight, 2)
+            );
+
+            var blendStateCache = Game.GraphicsDevice.BlendState;
+            Game.GraphicsDevice.BlendState = BlendState.Additive;
+            _exposureRenderer.DrawExposure(_exposureCenter, halfLife, MathF.Max(_exposure, 0));
+            Game.GraphicsDevice.BlendState = blendStateCache;
+
+            if (_exposure <= 0)
+                _exposureRenderer = null;
+        }
     }
 
     #region GamePlayTransitionSourceState

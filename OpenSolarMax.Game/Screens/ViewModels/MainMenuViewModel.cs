@@ -60,6 +60,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     // 主菜单界面没有回退命令
     public ICommand? BackwardCommand => null;
 
+    public int InitializeIndex { get; }
+
     public MainMenuViewModel(List<PreviewableLevelMod> levelMods, SolarMax game)
         : base(game)
     {
@@ -104,6 +106,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         );
 
         // 移动到默认位置
+        InitializeIndex = _builtinPreviews.Count - 1;
         _primaryItemIndex = _builtinPreviews.Count - 1;
         _primaryItemPreview = _builtinPreviews[^1];
         _primaryItemBackground = null;

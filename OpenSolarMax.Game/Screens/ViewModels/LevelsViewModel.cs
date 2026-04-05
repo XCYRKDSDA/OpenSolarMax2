@@ -60,6 +60,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     [ObservableProperty]
     private ICommand? _backwardCommand;
 
+    public int InitializeIndex { get; }
+
     public LevelsViewModel(
         LevelModContext levelModContext,
         List<(string, LevelFile, LevelRuntime)> levelPreviews,
@@ -88,6 +90,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _items = [.. _loadedLevelPreviews.Select(p => p.Name)];
 
         // 移动到默认位置
+        InitializeIndex = 0;
         _primaryItemIndex = 0;
         _primaryItemPreview = new WorldRenderer(
             _loadedLevelPreviews[0].Context.World,

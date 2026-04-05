@@ -1,17 +1,16 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Game.Graphics;
 
 internal class ExposureRenderer(GraphicsDevice graphicsDevice)
 {
-    private readonly VertexPositionTexture[] _vertices =
+    private readonly VertexPosition[] _vertices =
     [
-        new(new Vector3(-1, 1, 0), new Vector2(0, 0)),
-        new(new Vector3(1, 1, 0), new Vector2(1, 0)),
-        new(new Vector3(-1, -1, 0), new Vector2(0, 1)),
-        new(new Vector3(1, -1, 0), new Vector2(1, 1)),
+        new(new Vector3(-1, 1, 0)),
+        new(new Vector3(1, 1, 0)),
+        new(new Vector3(-1, -1, 0)),
+        new(new Vector3(1, -1, 0)),
     ];
 
     private static readonly int[] _indices = [0, 1, 2, 3];
@@ -20,9 +19,8 @@ internal class ExposureRenderer(GraphicsDevice graphicsDevice)
 
     public GraphicsDevice GraphicsDevice => graphicsDevice;
 
-    public void DrawExposure(RenderTarget2D screen, Vector2 center, float halfLife, float amount)
+    public void DrawExposure(Vector2 center, float halfLife, float amount)
     {
-        Effect.Texture = screen;
         Effect.Center = center;
         Effect.HalfLife = halfLife;
         Effect.Amount = amount;

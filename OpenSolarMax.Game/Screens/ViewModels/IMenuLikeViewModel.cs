@@ -7,6 +7,8 @@ namespace OpenSolarMax.Game.Screens.ViewModels;
 
 internal interface IMenuLikeViewModel : IViewModel
 {
+    int InitializeIndex { get; }
+
     ObservableCollection<string> Items { get; }
 
     int PrimaryItemIndex { get; set; }

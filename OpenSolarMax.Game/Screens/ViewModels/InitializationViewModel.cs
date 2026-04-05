@@ -115,16 +115,7 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
         )
         {
             LoadCompleted = true;
-            Game.NavigationService.Forward(
-                typeof(MainMenuPage),
-                _levelPreviewsLoadTask.Result,
-                typeof(ExposureTransitionScreen),
-                new ExposureTransitionContext(
-                    TimeSpan.FromSeconds(8),
-                    new Vector2(0, 1080),
-                    new Smooth()
-                )
-            );
+            Game.NavigationService.Forward(typeof(MainMenuPage), _levelPreviewsLoadTask.Result);
         }
     }
 }

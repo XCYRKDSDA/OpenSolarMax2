@@ -1,15 +1,11 @@
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
 
 namespace OpenSolarMax.Game.Graphics;
 
 internal class ExposureEffect : Effect
 {
     #region Effect Parameters
-
-    private readonly EffectParameter _textureParam;
 
     private readonly EffectParameter _centerParam;
     private readonly EffectParameter _halfLifeParam;
@@ -19,8 +15,6 @@ internal class ExposureEffect : Effect
 
     #region Fields
 
-    private Texture? _texture = null;
-
     private Vector2 _center = Vector2.Zero;
     private float _halfLife = 0;
     private float _amount = 0;
@@ -29,10 +23,9 @@ internal class ExposureEffect : Effect
     private enum DirtyFlags
     {
         None = 0,
-        Texture = 1 << 1,
-        Center = 1 << 2,
-        HalfLife = 1 << 3,
-        Amount = 1 << 4,
+        Center = 1 << 1,
+        HalfLife = 1 << 2,
+        Amount = 1 << 3,
         All = -1,
     }
 
@@ -41,16 +34,6 @@ internal class ExposureEffect : Effect
     #endregion
 
     #region Properties
-
-    public Texture? Texture
-    {
-        get => _texture;
-        set
-        {
-            _texture = value;
-            _dirtyFlags |= DirtyFlags.Texture;
-        }
-    }
 
     public Vector2 Center
     {
@@ -87,7 +70,6 @@ internal class ExposureEffect : Effect
     public ExposureEffect(GraphicsDevice graphicsDevice)
         : base(graphicsDevice, EffectResource.ExposureEffect.Bytecode)
     {
-        _textureParam = Parameters["tex_sampler+tex"];
         _centerParam = Parameters["center"];
         _halfLifeParam = Parameters["half_life"];
         _amountParam = Parameters["amount"];
@@ -95,9 +77,6 @@ internal class ExposureEffect : Effect
 
     protected override void OnApply()
     {
-        if ((_dirtyFlags & DirtyFlags.Texture) != DirtyFlags.None)
-            _textureParam.SetValue(_texture);
-
         if ((_dirtyFlags & DirtyFlags.Center) != DirtyFlags.None)
             _centerParam.SetValue(_center);
 
