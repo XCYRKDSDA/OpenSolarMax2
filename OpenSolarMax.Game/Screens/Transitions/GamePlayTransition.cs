@@ -34,7 +34,21 @@ internal class GamePlayTransitionScreen(
         GamePlayTransitionTargetState
     >(game.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
 {
-    private const float _durationS = 1;
+    private const float _durationS = 0.8f;
+
+    private float EaseInOut(float x)
+    {
+        if (x < 0.5)
+            return MathF.Pow(x * 2, 3) / 2;
+        else
+            return MathF.Pow(x * 2 - 2, 3) / 2 + 1;
+    }
+
+    protected override (float, float) UpdateAlpha()
+    {
+        var ratio = EaseInOut(Progress);
+        return (1 - ratio, ratio);
+    }
 
     protected override (
         GamePlayTransitionSourceState,
@@ -47,22 +61,24 @@ internal class GamePlayTransitionScreen(
         Debug.Assert(sourceDefaultState is not null);
         Debug.Assert(targetDefaultState is not null);
 
+        var ratio = EaseInOut(Progress);
+
         var location = Vector2
             .Lerp(
                 sourceDefaultState.WorldPreviewRegion.Location.ToVector2(),
                 targetDefaultState.WorldRenderRegion.Location.ToVector2(),
-                Progress
+                ratio
             )
             .ToPoint();
         var size = Vector2
             .Lerp(
                 sourceDefaultState.WorldPreviewRegion.Size.ToVector2(),
                 targetDefaultState.WorldRenderRegion.Size.ToVector2(),
-                Progress
+                ratio
             )
             .ToPoint();
 
-        var simulateSpeed = MathHelper.Lerp(0, targetDefaultState.WorldSpeed, Progress);
+        var simulateSpeed = MathHelper.Lerp(0, targetDefaultState.WorldSpeed, ratio);
 
         return (
             new GamePlayTransitionSourceState(
@@ -88,7 +104,21 @@ internal class BackwardGamePlayTransitionScreen(
         GamePlayTransitionSourceState
     >(game.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
 {
-    private const float _durationS = 1;
+    private const float _durationS = 0.8f;
+
+    private float EaseInOut(float x)
+    {
+        if (x < 0.5)
+            return MathF.Pow(x * 2, 3) / 2;
+        else
+            return MathF.Pow(x * 2 - 2, 3) / 2 + 1;
+    }
+
+    protected override (float, float) UpdateAlpha()
+    {
+        var ratio = EaseInOut(Progress);
+        return (1 - ratio, ratio);
+    }
 
     protected override (
         GamePlayTransitionTargetState,
@@ -101,22 +131,24 @@ internal class BackwardGamePlayTransitionScreen(
         Debug.Assert(sourceDefaultState is not null);
         Debug.Assert(targetDefaultState is not null);
 
+        var ratio = EaseInOut(Progress);
+
         var location = Vector2
             .Lerp(
                 sourceDefaultState.WorldRenderRegion.Location.ToVector2(),
                 targetDefaultState.WorldPreviewRegion.Location.ToVector2(),
-                Progress
+                ratio
             )
             .ToPoint();
         var size = Vector2
             .Lerp(
                 sourceDefaultState.WorldRenderRegion.Size.ToVector2(),
                 targetDefaultState.WorldPreviewRegion.Size.ToVector2(),
-                Progress
+                ratio
             )
             .ToPoint();
 
-        var simulateSpeed = MathHelper.Lerp(sourceDefaultState.WorldSpeed, 0, Progress);
+        var simulateSpeed = MathHelper.Lerp(sourceDefaultState.WorldSpeed, 0, ratio);
 
         return (
             new GamePlayTransitionTargetState(
