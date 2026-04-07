@@ -52,6 +52,15 @@ public sealed class CustomHorizontalScrollViewer : Container
     private Point? _firstTouchPos = null;
     private Point? _lastTouchPos = null;
 
+    // 上一次松开手时的容器位置
+    private float? _containerLeftAtLastTouchUp;
+
+    // 自上一次松开手起经过的时间
+    private TimeSpan? _durationSinceLastTouchUp;
+
+    // 从任何位置松手到收敛都耗时半秒
+    private static readonly TimeSpan _targetDuration = TimeSpan.FromSeconds(0.5);
+
     private int _targetIndex = 0;
     private int _nearestIndex = 0;
     private int _offset = 0;
@@ -263,6 +272,10 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (!_lastTouchPos.HasValue || Desktop is null)
             return;
 
+        // 记录此次抬起, 进入自动控制阶段
+        _containerLeftAtLastTouchUp = _thumbnailContainer.Left;
+        _durationSinceLastTouchUp = TimeSpan.Zero;
+
         if (_firstTouchPos == _lastTouchPos)
         {
             // 如果是单击
@@ -331,26 +344,27 @@ public sealed class CustomHorizontalScrollViewer : Container
         if (_lastTouchPos is not null)
             return;
 
-        // 计算当前偏差
-        var target = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
-        var error = target - _thumbnailContainer.Left;
-        if (error == 0)
+        if (_containerLeftAtLastTouchUp is null)
             return;
 
-        // 以线性控制率将选中元素拉向中心
-        const float kp = 10;
-        var velocity = error * kp;
-        var movementF = velocity * gameTime.ElapsedGameTime.TotalSeconds;
-        var movement = movementF switch
+        var target = ActualBounds.Width / 2 - GetRelativeCenters()[_targetIndex];
+
+        _durationSinceLastTouchUp += gameTime.ElapsedGameTime;
+        if (_durationSinceLastTouchUp >= _targetDuration)
         {
-            < 0 and > -1 => -1,
-            > 0 and < 1 => 1,
-            _ => (int)movementF,
-        };
-        if (MathF.Abs(movement) > MathF.Abs(error))
+            // 时间超过, 直接抵达目标位置
             _thumbnailContainer.Left = target;
+            _containerLeftAtLastTouchUp = null;
+            _durationSinceLastTouchUp = null;
+        }
         else
-            _thumbnailContainer.Left += movement;
+        {
+            // 时间未抵达, 进行插值
+            var x = (float)(_durationSinceLastTouchUp! / _targetDuration);
+            var y = MathF.Pow(x - 1, 3) + 1;
+            _thumbnailContainer.Left = (int)
+                MathHelper.Lerp(_containerLeftAtLastTouchUp.Value, target, MathF.Min(y, 1));
+        }
 
         UpdateScrolling();
     }
