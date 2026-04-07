@@ -34,8 +34,8 @@ internal class ChapterTransitionScreen(
     public new IVisualConfigurableScreen<ChapterTransitionTargetState>? NextScreen =>
         nextScreenTask.IsCompletedSuccessfully ? nextScreenTask.Result : null;
 
-    private const float _firstStageDurationMs = 0.5f;
-    private const float _secondStageDurationMs = 0.5f;
+    private const float _firstStageDurationMs = 0.75f;
+    private const float _secondStageDurationMs = 0.75f;
 
     private ChapterTransitionSourceState? _sourceDefaultState = null;
 
@@ -137,7 +137,7 @@ internal class ChapterTransitionScreen(
             var progress = (float)(_duration / _firstStageDuration);
 
             // 更新前一个界面的视觉效果
-            var prevPreviewScaling = 1 + progress * progress;
+            var prevPreviewScaling = 1 + MathF.Pow(progress, 3);
             prevScreen.ApplyVisualState(
                 new ChapterTransitionSourceState(
                     prevPreviewScaling,
@@ -147,7 +147,7 @@ internal class ChapterTransitionScreen(
 
             // 绘制前一个界面
             prevScreen.Draw(gameTime);
-            alpha = 1 - progress;
+            alpha = 1 - MathF.Pow(progress, 3);
         }
         else if (_stage is Stage.Second or Stage.Stop)
         {
@@ -155,7 +155,7 @@ internal class ChapterTransitionScreen(
             var progress = _stage is Stage.Stop ? 1 : (float)(_duration / _secondStageDuration);
 
             // 更新后一个界面的视觉效果
-            var nextPreviewFadeIn = progress;
+            var nextPreviewFadeIn = MathF.Pow(progress - 1, 3) + 1;
             nextScreen!.ApplyVisualState(
                 new ChapterTransitionTargetState(
                     nextPreviewFadeIn,
@@ -165,7 +165,7 @@ internal class ChapterTransitionScreen(
 
             // 绘制后一个界面
             nextScreen.Draw(gameTime);
-            alpha = progress;
+            alpha = MathF.Pow(progress - 1, 3) + 1;
         }
 
         // 画背景
@@ -193,8 +193,8 @@ internal class BackwardChapterTransitionScreen(
 
     public new IVisualConfigurableScreen<ChapterTransitionSourceState> NextScreen => nextScreen;
 
-    private const float _firstStageDurationMs = 0.5f;
-    private const float _secondStageDurationMs = 0.5f;
+    private const float _firstStageDurationMs = 0.75f;
+    private const float _secondStageDurationMs = 0.75f;
 
     private ChapterTransitionTargetState? _sourceDefaultState = null;
 
@@ -293,7 +293,7 @@ internal class BackwardChapterTransitionScreen(
             var progress = (float)(_duration / _firstStageDuration);
 
             // 更新前一个界面的视觉效果
-            var prevPreviewFadeIn = 1 - progress;
+            var prevPreviewFadeIn = 1 - MathF.Pow(progress, 3);
             prevScreen!.ApplyVisualState(
                 new ChapterTransitionTargetState(
                     prevPreviewFadeIn,
@@ -303,14 +303,14 @@ internal class BackwardChapterTransitionScreen(
 
             // 绘制前一个界面
             prevScreen.Draw(gameTime);
-            alpha = 1 - progress;
+            alpha = 1 - MathF.Pow(progress, 3);
         }
         else if (_stage is Stage.Second or Stage.Stop)
         {
             var progress = _stage is Stage.Stop ? 1 : (float)(_duration / _secondStageDuration);
 
             // 更新后一个界面的视觉效果
-            var nextPreviewScaling = 2 - progress * progress;
+            var nextPreviewScaling = 1 - MathF.Pow(progress - 1, 3);
             nextScreen.ApplyVisualState(
                 new ChapterTransitionSourceState(
                     nextPreviewScaling,
@@ -320,7 +320,7 @@ internal class BackwardChapterTransitionScreen(
 
             // 绘制后一个界面
             nextScreen.Draw(gameTime);
-            alpha = progress;
+            alpha = 1 + MathF.Pow(progress - 1, 3);
         }
 
         // 画背景
