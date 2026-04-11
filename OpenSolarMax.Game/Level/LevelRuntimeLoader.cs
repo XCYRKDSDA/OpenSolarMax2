@@ -11,13 +11,23 @@ using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Level;
 
-internal record LevelRuntime(
+internal sealed record LevelRuntime(
     World World,
     AggregateSystem InputSystems,
     AggregateSystem AiSystems,
     AggregateSystem SimulateSystems,
     AggregateSystem RenderSystems
-);
+) : IDisposable
+{
+    public void Dispose()
+    {
+        World.Dispose();
+        InputSystems.Dispose();
+        AiSystems.Dispose();
+        SimulateSystems.Dispose();
+        RenderSystems.Dispose();
+    }
+}
 
 internal class LevelRuntimeLoader
 {

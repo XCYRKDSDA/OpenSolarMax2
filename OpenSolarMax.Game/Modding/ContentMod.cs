@@ -4,7 +4,7 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class ContentMod
+internal class ContentMod : IDisposable
 {
     public ContentModInfo Metadata { get; }
 
@@ -18,6 +18,16 @@ internal class ContentMod
         Metadata = info;
 
         // 加载资产文件系统
-        ContentFileSystems = [new SubFileSystem(info.Content.FileSystem, info.Content.Path)];
+        ContentFileSystems =
+        [
+            new SubFileSystem(info.Content.FileSystem, info.Content.Path, owned: false),
+        ];
+    }
+
+    public void Dispose()
+    {
+        // 释放资产文件系统
+        foreach (var fs in ContentFileSystems)
+            fs.Dispose();
     }
 }

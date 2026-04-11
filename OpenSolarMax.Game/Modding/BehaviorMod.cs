@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Runtime.Loader;
 using CsToml.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Nine.Assets;
@@ -12,7 +13,7 @@ namespace OpenSolarMax.Game.Modding;
 
 internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? Applier);
 
-internal class BehaviorMod
+internal class BehaviorMod : IDisposable
 {
     public BehaviorModInfo Metadata { get; }
 
@@ -71,7 +72,11 @@ internal class BehaviorMod
         // 加载资产文件系统
         List<IFileSystem> contentFileSystems = [new ResourceFileSystem(Assembly)];
         if (info.Content is not null)
-            contentFileSystems.Add(new SubFileSystem(info.Content.FileSystem, info.Content.Path));
+        {
+            contentFileSystems.Add(
+                new SubFileSystem(info.Content.FileSystem, info.Content.Path, owned: false)
+            );
+        }
         ContentFileSystems = contentFileSystems.ToImmutableArray();
 
         // 加载配置文件
@@ -124,5 +129,22 @@ internal class BehaviorMod
                 .FindHookImplementations(Assembly, GameplayOrPreview.Preview)
                 .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
         );
+    }
+
+    private bool _disposed = false;
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        // 启动 ALC 卸载
+        AssemblyLoadContext.GetLoadContext(Assembly)!.Unload();
+
+        // 释放资产文件系统
+        foreach (var fs in ContentFileSystems)
+            fs.Dispose();
+
+        _disposed = true;
     }
 }

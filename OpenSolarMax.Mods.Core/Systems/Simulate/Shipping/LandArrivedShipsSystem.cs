@@ -8,7 +8,6 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -35,9 +34,8 @@ public sealed partial class LandArrivedShipsSystem(
 {
     private readonly List<Entity> _arrivedEntities = [];
 
-    private FmodEventDescription _travelDoneSoundEvent = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/ShipDone"
-    );
+    private readonly SafeFmodEventDescription _travelDoneSoundEvent =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipDone");
 
     [Query]
     [All<ShippingStatus>]
@@ -96,7 +94,7 @@ public sealed partial class LandArrivedShipsSystem(
         commandBuffer.Destroy(ship.Get<TrailOf.AsShip>().Relationship!.Value.Copy.Trail);
 
         // 播放音效
-        _travelDoneSoundEvent.createInstance(out var instance);
+        _travelDoneSoundEvent.Native.createInstance(out var instance);
         soundEffect.EventInstance = instance;
         instance.start();
     }

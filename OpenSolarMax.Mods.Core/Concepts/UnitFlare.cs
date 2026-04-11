@@ -6,7 +6,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -50,9 +49,8 @@ public class UnitFlareApplier(IAssetsManager assets) : IApplier<UnitFlareDescrip
         "Animations/UnitFlare.json"
     );
 
-    private FmodEventDescription _destroyedSoundEvent = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/UnitDestroyed"
-    );
+    private readonly SafeFmodEventDescription _destroyedSoundEvent =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/UnitDestroyed");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, UnitFlareDescription desc)
     {
@@ -85,7 +83,7 @@ public class UnitFlareApplier(IAssetsManager assets) : IApplier<UnitFlareDescrip
         );
 
         // 设置音效
-        _destroyedSoundEvent.createInstance(out var eventInstance);
+        _destroyedSoundEvent.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
     }

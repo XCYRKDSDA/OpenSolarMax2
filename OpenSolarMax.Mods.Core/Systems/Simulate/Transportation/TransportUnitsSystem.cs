@@ -11,7 +11,6 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
@@ -134,9 +133,8 @@ public partial class TransportUnitsSystem(
     IConceptFactory factory
 ) : ICalcSystemWithStructuralChanges
 {
-    private readonly FmodEventDescription _warpingSoundEffect = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/Warping"
-    );
+    private readonly SafeFmodEventDescription _warpingSoundEffect =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/Warping");
 
     [Query]
     [All<

@@ -8,7 +8,6 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -54,9 +53,8 @@ public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory)
         "Animations/LaserBeam.json"
     );
 
-    private readonly FmodEventDescription _laserSoundEffect = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/LaserShoot"
-    );
+    private readonly SafeFmodEventDescription _laserSoundEffect =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/LaserShoot");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserBeamDescription desc)
     {
@@ -105,7 +103,7 @@ public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory)
         );
 
         // 设置音效
-        _laserSoundEffect.createInstance(out var eventInstance);
+        _laserSoundEffect.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
     }

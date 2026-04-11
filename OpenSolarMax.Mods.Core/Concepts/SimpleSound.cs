@@ -4,7 +4,6 @@ using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -30,7 +29,7 @@ public abstract class SimpleSoundDefinition : IDefinition
 [Describe(ConceptNames.SimpleSound)]
 public class SimpleSoundDescription : IDescription
 {
-    public required OneOf<string, FmodEventDescription> SoundEffect { get; set; }
+    public required OneOf<string, SafeFmodEventDescription> SoundEffect { get; set; }
 
     public OneOf<
         AbsoluteTransformOptions,
@@ -56,10 +55,10 @@ public class SimpleSoundApplier(IAssetsManager assets, IConceptFactory factory)
 
         // 创建音频实例
         var soundEffect = desc.SoundEffect.Match(
-            path => assets.Load<FmodEventDescription>(path),
+            path => assets.Load<SafeFmodEventDescription>(path),
             fx => fx
         );
-        soundEffect.createInstance(out var eventInstance);
+        soundEffect.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
     }

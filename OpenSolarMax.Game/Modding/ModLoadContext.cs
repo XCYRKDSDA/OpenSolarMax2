@@ -8,7 +8,7 @@ namespace OpenSolarMax.Game.Modding;
 internal class ModLoadContext(
     FileEntry file,
     IReadOnlyDictionary<string, Assembly> sharedAssemblies
-) : AssemblyLoadContext
+) : AssemblyLoadContext(isCollectible: true)
 {
     private static string GetPhysicalPath(FileEntry fileEntry)
     {
