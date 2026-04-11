@@ -165,10 +165,4 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     {
         base.Update(gameTime);
     }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        _levelModContext.Dispose();
-    }
 }

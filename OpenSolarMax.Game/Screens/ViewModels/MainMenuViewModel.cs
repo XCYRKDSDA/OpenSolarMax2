@@ -28,6 +28,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
 
     private readonly List<PreviewableLevelMod> _levelMods;
 
+    private Tuple<int, Task<object?>>? _previousChapterPageContextPair = null;
+
     #endregion
 
     [ObservableProperty]
@@ -157,16 +159,36 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     {
         if (idx < _builtinPreviews.Count)
             return;
-        Game.NavigationService.Forward2(
-            typeof(ChapterPage),
-            Task<object?>.Factory.StartNew(
-                () => Load(_levelMods[idx - _builtinPreviews.Count], Game),
+        var levelModIndex = idx - _builtinPreviews.Count;
+        var contextLoadTask = _previousChapterPageContextPair switch
+        {
+            { } prev when prev?.Item1 == levelModIndex => prev.Item2,
+            { } prev => Task
+                .Factory.StartNew(
+                    async () =>
+                    {
+                        var previousChapterPageContext = (ChapterPageContext)(await prev.Item2)!;
+                        previousChapterPageContext.LevelModContext.Dispose();
+                        return (object?)Load(_levelMods[levelModIndex], Game);
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    Game.BackgroundScheduler
+                )
+                .Unwrap(),
+            null => Task<object?>.Factory.StartNew(
+                () => Load(_levelMods[levelModIndex], Game),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 Game.BackgroundScheduler
             ),
+        };
+        _previousChapterPageContextPair = new(levelModIndex, contextLoadTask);
+        Game.NavigationService.Forward2(
+            typeof(ChapterPage),
+            contextLoadTask,
             typeof(ChapterTransitionScreen),
-            new ChapterTransitionContext(_levelMods[idx - _builtinPreviews.Count].Background!)
+            new ChapterTransitionContext(_levelMods[levelModIndex].Background!)
         );
     }
 
