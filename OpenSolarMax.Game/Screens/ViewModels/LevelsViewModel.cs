@@ -25,8 +25,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     )> _loadedLevelPreviews;
 
     private readonly Task<LevelRuntimeLoader> _gameplayRuntimeLoaderTask;
-    private readonly int _warmupLevelIndex;
-    private readonly Task<LevelRuntime> _warmupLevelRuntimeLoadTask;
+    private Task<LevelRuntime>? _warmupLevelRuntimeLoadTask;
 
     #endregion
 
@@ -103,12 +102,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _secondaryItemBackground = null;
 
         // 使用当前第一个显示的章节做启动预热
-        _warmupLevelIndex = _primaryItemIndex;
         _warmupLevelRuntimeLoadTask = Task
             .Factory.StartNew(
                 async () =>
                     (await _gameplayRuntimeLoaderTask).LoadLevel(
-                        _loadedLevelPreviews[_warmupLevelIndex].Level
+                        _loadedLevelPreviews[_primaryItemIndex].Level
                     ),
                 CancellationToken.None,
                 TaskCreationOptions.None,
@@ -141,10 +139,18 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnSelectItem(int idx)
     {
-        var levelRuntime =
-            idx == _warmupLevelIndex
-                ? _warmupLevelRuntimeLoadTask.Result
-                : _gameplayRuntimeLoaderTask.Result.LoadLevel(_loadedLevelPreviews[idx].Level);
+        if (_warmupLevelRuntimeLoadTask is not null)
+        {
+            // 如果存在预热任务, 则等待预热任务完成
+            _warmupLevelRuntimeLoadTask.Wait();
+            _warmupLevelRuntimeLoadTask.Dispose();
+            _warmupLevelRuntimeLoadTask = null;
+        }
+
+        // 不复用预热结果, 每次都重新加载新的运行时
+        var levelRuntime = _gameplayRuntimeLoaderTask.Result.LoadLevel(
+            _loadedLevelPreviews[idx].Level
+        );
 
         Game.NavigationService.Forward(
             typeof(LevelPlayPage),

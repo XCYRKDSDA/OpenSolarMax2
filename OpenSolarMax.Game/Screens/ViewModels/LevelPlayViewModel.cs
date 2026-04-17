@@ -81,4 +81,10 @@ internal partial class LevelPlayViewModel : ViewModelBase
         _runtime.AiSystems.Update(_playTime);
         _runtime.SimulateSystems.Update(_playTime);
     }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        _runtime.Dispose();
+    }
 }
