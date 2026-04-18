@@ -152,7 +152,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             _loadedLevelPreviews[idx].Level
         );
 
-        Game.NavigationService.Forward(
+        Game.ScreenManager.Forward(
             typeof(LevelPlayPage),
             new LevelPlayPageContext(levelRuntime, PageBackground),
             typeof(GamePlayTransitionScreen)
@@ -161,7 +161,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnBackward()
     {
-        Game.NavigationService.Backward(
+        Game.ScreenManager.Backward(
             typeof(BackwardChapterTransitionScreen),
             new ChapterTransitionContext(PageBackground)
         );

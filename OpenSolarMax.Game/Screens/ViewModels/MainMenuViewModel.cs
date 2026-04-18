@@ -184,7 +184,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
             ),
         };
         _previousChapterPageContextPair = new(levelModIndex, contextLoadTask);
-        Game.NavigationService.Forward2(
+        Game.ScreenManager.Forward2(
             typeof(ChapterPage),
             contextLoadTask,
             typeof(ChapterTransitionScreen),

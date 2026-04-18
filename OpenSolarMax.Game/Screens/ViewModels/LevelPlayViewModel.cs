@@ -63,7 +63,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     private void OnExit()
     {
-        Game.NavigationService.Backward(typeof(BackwardGamePlayTransitionScreen));
+        Game.ScreenManager.Backward(typeof(BackwardGamePlayTransitionScreen));
     }
 
     public override void Update(GameTime gameTime)
