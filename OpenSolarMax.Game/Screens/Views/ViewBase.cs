@@ -22,5 +22,8 @@ internal abstract class ViewBase<T>(T viewModel, SolarMax game) : IScreen
 
     public abstract void Draw(GameTime gameTime);
 
-    public virtual void Dispose() { }
+    public virtual void Dispose()
+    {
+        viewModel.Dispose();
+    }
 }

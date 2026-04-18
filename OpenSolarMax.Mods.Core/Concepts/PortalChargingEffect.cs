@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -40,9 +39,8 @@ public class PortalChargingEffectDescription : IDescription
 public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<PortalChargingEffectDescription>
 {
-    private FmodEventDescription _warpChargingSoundEffect = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/WarpCharging"
-    );
+    private readonly SafeFmodEventDescription _warpChargingSoundEffect =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/WarpCharging");
 
     public void Apply(
         CommandBuffer commandBuffer,
@@ -124,7 +122,7 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
             }
         );
 
-        _warpChargingSoundEffect.createInstance(out var eventInstance);
+        _warpChargingSoundEffect.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
     }

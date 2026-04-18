@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Game.Modding.ECS;
 
-internal class AggregateSystem
+internal class AggregateSystem : IDisposable
 {
     private static void RegisterHook(
         IEnumerable<object> systems,
@@ -111,5 +111,22 @@ internal class AggregateSystem
     {
         Debug.Assert(_commandBuffer.Size == 0);
         LateUpdateImpl();
+    }
+
+    public void Dispose()
+    {
+        // 释放 CommandBuffer
+        _commandBuffer.Dispose();
+
+        // 释放所有内部系统
+        foreach (
+            var sys in _beforeStructuralChangesSystems
+                .Concat(_reactToStructuralChangeSystems)
+                .Concat(_afterStructuralChangesSystems)
+        )
+        {
+            if (sys is IDisposable disposable)
+                disposable.Dispose();
+        }
     }
 }

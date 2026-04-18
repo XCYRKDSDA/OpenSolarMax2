@@ -6,7 +6,6 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Core.Components;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Concepts;
 
@@ -52,9 +51,8 @@ public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosio
         "Animations/HaloExplosion.json"
     );
 
-    private FmodEventDescription _colonizedSoundEvent = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/PlanetColonized"
-    );
+    private readonly SafeFmodEventDescription _colonizedSoundEvent =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, HaloExplosionDescription desc)
     {
@@ -90,7 +88,7 @@ public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosio
         );
 
         // 设置音效
-        _colonizedSoundEvent.createInstance(out var eventInstance);
+        _colonizedSoundEvent.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
     }

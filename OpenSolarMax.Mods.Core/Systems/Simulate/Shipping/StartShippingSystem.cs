@@ -13,7 +13,6 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -49,9 +48,8 @@ public sealed partial class StartShippingSystem(
     [Section("systems:simulate:shipping")] IConfiguration configs
 ) : ICalcSystemWithStructuralChanges
 {
-    private FmodEventDescription _chargingSoundEvent = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/ShipCharging"
-    );
+    private readonly SafeFmodEventDescription _chargingSoundEvent =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipCharging");
 
     private readonly float _offsetTime = configs.RequireValue<float>("arrival_time_offset");
     private readonly float _maxOffsetRatio = configs.RequireValue<float>(
@@ -157,7 +155,7 @@ public sealed partial class StartShippingSystem(
             );
 
             // 发出声音
-            _chargingSoundEvent.createInstance(out var instance);
+            _chargingSoundEvent.Native.createInstance(out var instance);
             ship.Get<SoundEffect>().EventInstance = instance;
             instance.start();
 

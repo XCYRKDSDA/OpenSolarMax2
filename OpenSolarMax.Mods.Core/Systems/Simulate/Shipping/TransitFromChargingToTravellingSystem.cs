@@ -6,7 +6,6 @@ using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using FmodEventDescription = FMOD.Studio.EventDescription;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
@@ -26,9 +25,8 @@ public sealed partial class TransitFromChargingToTravellingSystem(
 {
     private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
 
-    private FmodEventDescription _travelBegunSoundEvent = assets.Load<FmodEventDescription>(
-        "Sounds/Master.bank:/ShipBegun"
-    );
+    private readonly SafeFmodEventDescription _travelBegunSoundEvent =
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipBegun");
 
     [Query]
     [All<ShippingStatus, SoundEffect>]
@@ -47,7 +45,7 @@ public sealed partial class TransitFromChargingToTravellingSystem(
                 ElapsedTime = 0,
             };
 
-            _travelBegunSoundEvent.createInstance(out var instance);
+            _travelBegunSoundEvent.Native.createInstance(out var instance);
             soundEffect.EventInstance = instance;
             instance.start();
         }

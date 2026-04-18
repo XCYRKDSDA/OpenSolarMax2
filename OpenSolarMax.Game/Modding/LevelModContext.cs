@@ -13,7 +13,7 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class LevelModContext
+internal class LevelModContext : IDisposable
 {
     public LevelModInfo Metadata { get; }
 
@@ -102,6 +102,18 @@ internal class LevelModContext
         );
     }
 
+    public void Dispose()
+    {
+        // 释放资产缓存
+        LocalAssets.Dispose();
+
+        // 释放模组自身信息
+        foreach (var mod in BehaviorMods)
+            mod.Dispose();
+        foreach (var mod in ContentMods)
+            mod.Dispose();
+    }
+
     public LevelModContext(LevelModInfo info, SolarMax game)
     {
         Metadata = info;
@@ -158,7 +170,7 @@ internal class LevelModContext
         #region 构建局部资产
 
         // 构造局部资产层叠文件系统
-        var localFileSystem = new AggregateFileSystem();
+        var localFileSystem = new AggregateFileSystem(owned: false); // 局部资产不持有模组的文件系统所有权
         // 全局资产位于最底层
         localFileSystem.AddFileSystem(Folders.Content);
         // 逐个添加资产文件系统

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-public interface IViewModel : INotifyPropertyChanged, INotifyPropertyChanging
+public interface IViewModel : INotifyPropertyChanged, INotifyPropertyChanging, IDisposable
 {
     void Update(GameTime gameTime);
 }
