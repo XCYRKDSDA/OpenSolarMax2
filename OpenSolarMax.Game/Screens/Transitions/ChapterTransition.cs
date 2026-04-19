@@ -80,6 +80,8 @@ internal class ChapterTransitionScreen(
         {
             _duration += gameTime.ElapsedGameTime;
         }
+
+        // 按阶段更新前后界面
         (
             _stage switch
             {
@@ -88,6 +90,8 @@ internal class ChapterTransitionScreen(
                 _ => null,
             }
         )?.Update(gameTime);
+
+        TransitionState = TransitionState.InProgress;
 
         // 切换内部状态
         if (_stage == Stage.Start)
@@ -99,7 +103,7 @@ internal class ChapterTransitionScreen(
             _sourceDefaultState = prevScreen.GetDefaultVisualState()!;
             _background.Left = _sourceDefaultState.BackgroundOffset;
         }
-        if (_stage == Stage.First && _duration >= _firstStageDuration)
+        else if (_stage == Stage.First && _duration >= _firstStageDuration)
         {
             // 处于第一阶段且时间足够时, 进入等待阶段
             _stage = Stage.Wait;
@@ -119,7 +123,53 @@ internal class ChapterTransitionScreen(
             _stage = Stage.Stop;
             _duration = TimeSpan.Zero;
             nextScreenTask.Result.ExitConfigurationMode();
-            OnTransitionDone();
+            TransitionState = TransitionState.Completed;
+        }
+    }
+
+    public override void UpdateBackward(GameTime gameTime)
+    {
+        // 执行状态下更新
+        if (_stage == Stage.First || _stage == Stage.Second)
+        {
+            _duration -= gameTime.ElapsedGameTime;
+        }
+
+        // 按阶段更新前后界面
+        (
+            _stage switch
+            {
+                Stage.First => prevScreen as IScreen,
+                Stage.Second => nextScreenTask.Result,
+                _ => null,
+            }
+        )?.Update(gameTime);
+
+        TransitionState = TransitionState.InProgress;
+
+        // 切换内部状态
+        if (_stage == Stage.Stop)
+        {
+            // 自动回到第二阶段
+            _stage = Stage.Second;
+            _duration = _secondStageDuration;
+            nextScreenTask.Result.EnterConfigurationMode();
+        }
+        else if (_stage == Stage.Second && _duration <= TimeSpan.Zero)
+        {
+            // 处于第二阶段且时间归零, 跳过等待, 自动回到第一阶段
+            _stage = Stage.First;
+            _duration = _firstStageDuration;
+            nextScreenTask.Result.ExitConfigurationMode();
+            prevScreen.EnterConfigurationMode();
+        }
+        else if (_stage == Stage.First && _duration <= TimeSpan.Zero)
+        {
+            // 处于第一阶段且时间归零, 回到开始阶段
+            _stage = Stage.Start;
+            _duration = TimeSpan.Zero;
+            prevScreen.ExitConfigurationMode();
+            TransitionState = TransitionState.Pending;
         }
     }
 
@@ -132,7 +182,7 @@ internal class ChapterTransitionScreen(
         // 按阶段绘制叠加层
         game.GraphicsDevice.SetRenderTarget(_renderCache);
         game.GraphicsDevice.Clear(Color.Transparent);
-        if (_stage == Stage.First)
+        if (_stage is Stage.Start or Stage.First)
         {
             var progress = (float)(_duration / _firstStageDuration);
 
@@ -166,161 +216,6 @@ internal class ChapterTransitionScreen(
             // 绘制后一个界面
             nextScreen.Draw(gameTime);
             alpha = MathF.Pow(progress - 1, 3) + 1;
-        }
-
-        // 画背景
-        game.GraphicsDevice.SetRenderTargets(originalRenderTargets);
-        game.GraphicsDevice.Clear(Color.Black);
-        _background.Draw();
-
-        // 叠加界面
-        if (alpha is null)
-            return;
-        _spriteBatch.Begin();
-        _spriteBatch.Draw(_renderCache, Vector2.Zero, Color.White * alpha.Value);
-        _spriteBatch.End();
-    }
-}
-
-internal class BackwardChapterTransitionScreen(
-    IVisualConfigurableScreen<ChapterTransitionTargetState> prevScreen,
-    IVisualConfigurableScreen<ChapterTransitionSourceState> nextScreen,
-    ChapterTransitionContext ctx,
-    SolarMax game
-) : TransitionScreenBase(prevScreen, nextScreen)
-{
-    public new IVisualConfigurableScreen<ChapterTransitionTargetState> PrevScreen => prevScreen;
-
-    public new IVisualConfigurableScreen<ChapterTransitionSourceState> NextScreen => nextScreen;
-
-    private const float _firstStageDurationMs = 0.75f;
-    private const float _secondStageDurationMs = 0.75f;
-
-    private ChapterTransitionTargetState? _sourceDefaultState = null;
-
-    private static readonly TimeSpan _firstStageDuration = TimeSpan.FromSeconds(
-        _firstStageDurationMs
-    );
-    private static readonly TimeSpan _secondStageDuration = TimeSpan.FromSeconds(
-        _secondStageDurationMs
-    );
-
-    private readonly RenderTarget2D _renderCache = new(
-        game.GraphicsDevice,
-        game.GraphicsDevice.PresentationParameters.BackBufferWidth,
-        game.GraphicsDevice.PresentationParameters.BackBufferHeight,
-        false,
-        SurfaceFormat.Color,
-        DepthFormat.None,
-        0,
-        RenderTargetUsage.PreserveContents
-    );
-
-    private readonly SpriteBatch _spriteBatch = new(game.GraphicsDevice, 1);
-
-    private readonly HorizontalScrollingBackground _background = new(game.GraphicsDevice)
-    {
-        Texture = ctx.Background,
-    };
-
-    private enum Stage
-    {
-        Start,
-        First,
-        Second,
-        Stop,
-    }
-
-    private Stage _stage = Stage.Start;
-
-    private TimeSpan _duration = TimeSpan.Zero;
-
-    public override void Update(GameTime gameTime)
-    {
-        // 执行状态下更新
-        if (_stage == Stage.First || _stage == Stage.Second)
-        {
-            _duration += gameTime.ElapsedGameTime;
-        }
-        (
-            _stage switch
-            {
-                Stage.First => prevScreen as IScreen,
-                Stage.Second => NextScreen as IScreen,
-                _ => null,
-            }
-        )?.Update(gameTime);
-
-        // 切换内部状态
-        if (_stage == Stage.Start)
-        {
-            // 自动进入第一阶段
-            _stage = Stage.First;
-            _duration = TimeSpan.Zero;
-            prevScreen.EnterConfigurationMode();
-            _sourceDefaultState = prevScreen.GetDefaultVisualState()!;
-            _background.Left = _sourceDefaultState.BackgroundOffset;
-        }
-        if (_stage == Stage.First && _duration >= _firstStageDuration)
-        {
-            // 处于第一阶段且时间足够时, 进入第二阶段
-            _stage = Stage.Second;
-            _duration = TimeSpan.Zero;
-            prevScreen.ExitConfigurationMode();
-            nextScreen.EnterConfigurationMode();
-        }
-        else if (_stage == Stage.Second && _duration >= _secondStageDuration)
-        {
-            // 处于第二阶段且时间足够时, 结束过渡
-            _stage = Stage.Stop;
-            _duration = TimeSpan.Zero;
-            nextScreen.ExitConfigurationMode();
-            OnTransitionDone();
-        }
-    }
-
-    public override void Draw(GameTime gameTime)
-    {
-        var originalRenderTargets = game.GraphicsDevice.GetRenderTargets();
-
-        float? alpha = null;
-
-        // 按阶段绘制叠加层
-        game.GraphicsDevice.SetRenderTarget(_renderCache);
-        game.GraphicsDevice.Clear(Color.Transparent);
-        if (_stage == Stage.First)
-        {
-            var progress = (float)(_duration / _firstStageDuration);
-
-            // 更新前一个界面的视觉效果
-            var prevPreviewFadeIn = 1 - MathF.Pow(progress, 3);
-            prevScreen!.ApplyVisualState(
-                new ChapterTransitionTargetState(
-                    prevPreviewFadeIn,
-                    _sourceDefaultState!.BackgroundOffset
-                )
-            );
-
-            // 绘制前一个界面
-            prevScreen.Draw(gameTime);
-            alpha = 1 - MathF.Pow(progress, 3);
-        }
-        else if (_stage is Stage.Second or Stage.Stop)
-        {
-            var progress = _stage is Stage.Stop ? 1 : (float)(_duration / _secondStageDuration);
-
-            // 更新后一个界面的视觉效果
-            var nextPreviewScaling = 1 - MathF.Pow(progress - 1, 3);
-            nextScreen.ApplyVisualState(
-                new ChapterTransitionSourceState(
-                    nextPreviewScaling,
-                    _sourceDefaultState!.BackgroundOffset
-                )
-            );
-
-            // 绘制后一个界面
-            nextScreen.Draw(gameTime);
-            alpha = 1 + MathF.Pow(progress - 1, 3);
         }
 
         // 画背景

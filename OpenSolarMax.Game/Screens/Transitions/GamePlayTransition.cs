@@ -44,7 +44,7 @@ internal class GamePlayTransitionScreen(
             return MathF.Pow(x * 2 - 2, 3) / 2 + 1;
     }
 
-    protected override (float, float) UpdateAlpha()
+    protected override (float, float) CalculateAlpha()
     {
         var ratio = EaseInOut(Progress);
         return (1 - ratio, ratio);
@@ -88,76 +88,6 @@ internal class GamePlayTransitionScreen(
             new GamePlayTransitionTargetState(
                 new Rectangle(location, size),
                 simulateSpeed,
-                sourceDefaultState.BackgroundOffset
-            )
-        );
-    }
-}
-
-internal class BackwardGamePlayTransitionScreen(
-    IVisualConfigurableScreen<GamePlayTransitionTargetState> prevScreen,
-    IVisualConfigurableScreen<GamePlayTransitionSourceState> nextScreen,
-    SolarMax game
-)
-    : StatefulTimedFadeInTransitionScreen<
-        GamePlayTransitionTargetState,
-        GamePlayTransitionSourceState
-    >(game.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
-{
-    private const float _durationS = 0.8f;
-
-    private float EaseInOut(float x)
-    {
-        if (x < 0.5)
-            return MathF.Pow(x * 2, 3) / 2;
-        else
-            return MathF.Pow(x * 2 - 2, 3) / 2 + 1;
-    }
-
-    protected override (float, float) UpdateAlpha()
-    {
-        var ratio = EaseInOut(Progress);
-        return (1 - ratio, ratio);
-    }
-
-    protected override (
-        GamePlayTransitionTargetState,
-        GamePlayTransitionSourceState
-    ) UpdateVisualState(
-        GamePlayTransitionTargetState? sourceDefaultState,
-        GamePlayTransitionSourceState? targetDefaultState
-    )
-    {
-        Debug.Assert(sourceDefaultState is not null);
-        Debug.Assert(targetDefaultState is not null);
-
-        var ratio = EaseInOut(Progress);
-
-        var location = Vector2
-            .Lerp(
-                sourceDefaultState.WorldRenderRegion.Location.ToVector2(),
-                targetDefaultState.WorldPreviewRegion.Location.ToVector2(),
-                ratio
-            )
-            .ToPoint();
-        var size = Vector2
-            .Lerp(
-                sourceDefaultState.WorldRenderRegion.Size.ToVector2(),
-                targetDefaultState.WorldPreviewRegion.Size.ToVector2(),
-                ratio
-            )
-            .ToPoint();
-
-        var simulateSpeed = MathHelper.Lerp(sourceDefaultState.WorldSpeed, 0, ratio);
-
-        return (
-            new GamePlayTransitionTargetState(
-                new Rectangle(location, size),
-                simulateSpeed,
-                sourceDefaultState.BackgroundOffset
-            ),
-            new GamePlayTransitionSourceState(
-                new Rectangle(location, size),
                 sourceDefaultState.BackgroundOffset
             )
         );
