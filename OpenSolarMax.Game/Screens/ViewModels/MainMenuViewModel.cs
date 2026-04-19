@@ -157,6 +157,10 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
 
     private void OnSelectItem(int idx)
     {
+        // 避免在正在过渡时触发过渡
+        if (Game.ScreenManager.Transitioning)
+            return;
+
         if (idx < _builtinPreviews.Count)
             return;
         var levelModIndex = idx - _builtinPreviews.Count;
