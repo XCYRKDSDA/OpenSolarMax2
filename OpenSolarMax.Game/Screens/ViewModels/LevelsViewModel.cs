@@ -139,6 +139,10 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnSelectItem(int idx)
     {
+        // 避免在正在过渡时触发过渡
+        if (Game.ScreenManager.Transitioning)
+            return;
+
         if (_warmupLevelRuntimeLoadTask is not null)
         {
             // 如果存在预热任务, 则等待预热任务完成
@@ -161,6 +165,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnBackward()
     {
+        // 避免在正在过渡时触发过渡
+        if (Game.ScreenManager.Transitioning)
+            return;
         Game.ScreenManager.Backward();
     }
 

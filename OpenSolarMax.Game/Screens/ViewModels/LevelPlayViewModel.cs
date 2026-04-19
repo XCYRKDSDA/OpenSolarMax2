@@ -63,6 +63,9 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     private void OnExit()
     {
+        // 避免在正在过渡时触发过渡
+        if (Game.ScreenManager.Transitioning)
+            return;
         Game.ScreenManager.Backward();
     }
 

@@ -335,10 +335,14 @@ internal class MenuLikeView
         ViewModel.BackwardCommand!.Execute(null);
     }
 
+    public override void Update(GameTime gameTime)
+    {
+        base.Update(gameTime);
+        _scrollViewer.Update(gameTime);
+    }
+
     public override void Draw(GameTime gameTime)
     {
-        _scrollViewer.Update(gameTime);
-
         // 计算背景偏移
         if (_controlBackground && _lastThumbnailsOffset is not null)
         {
