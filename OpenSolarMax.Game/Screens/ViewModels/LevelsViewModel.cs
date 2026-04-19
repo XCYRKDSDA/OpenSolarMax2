@@ -161,10 +161,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     private void OnBackward()
     {
-        Game.ScreenManager.Backward(
-            typeof(BackwardChapterTransitionScreen),
-            new ChapterTransitionContext(PageBackground)
-        );
+        Game.ScreenManager.Backward();
     }
 
     public override void Update(GameTime gameTime)
