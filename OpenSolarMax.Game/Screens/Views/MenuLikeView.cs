@@ -447,7 +447,7 @@ internal class MenuLikeView
             _primaryPreview.ToGlobal(Point.Zero),
             _primaryPreview.ActualBounds.Size
         );
-        return new GamePlayTransitionSourceState(sourcePreviewLocation, _primaryBackground.Left);
+        return new GamePlayTransitionSourceState(sourcePreviewLocation, _pageBackground.Left);
     }
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
@@ -460,9 +460,8 @@ internal class MenuLikeView
         _floatingPreview!.Width = state.WorldPreviewRegion.Width;
         _floatingPreview!.Height = state.WorldPreviewRegion.Height;
 
-        // 渐出时, 以第一预览偏移为准
-        _targetBackgroundLeft = _actualBackgroundLeft =
-            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        // 渐出时, 以背景预览偏移为准
+        _targetBackgroundLeft = _actualBackgroundLeft = state.BackgroundOffset;
     }
 
     #endregion
