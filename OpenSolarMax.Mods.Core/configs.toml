@@ -65,11 +65,11 @@ orbit.roll.min.deg = 0
 orbit.roll.max.deg = 7.5
 
 [applier.portal]
-reference_radius = 24
+reference_radius = 25.6 # 128 / 2 * 0.4 : 以 1024px 等级纹理为基础, 乘上固定系数 0.4
 volume = 400
 
 [applier.turret]
-reference_radius = 19.5
+reference_radius = 19.2 # 128 / 2 * 0.3 : 以 1024px 等级纹理为基础, 乘上固定系数 0.3
 volume = 600
 
 [applier.barrier]

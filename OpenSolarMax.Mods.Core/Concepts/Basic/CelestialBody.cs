@@ -85,6 +85,11 @@ public class CelestialBodyDescription : IDescription
     /// 天体的体量
     /// </summary>
     public required int Volume { get; set; }
+
+    /// <summary>
+    /// 天体光晕贴图的资产路径
+    /// </summary>
+    public required OneOf<string, TextureRegion> GlowTexture { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -180,5 +185,27 @@ public class CelestialBodyApplier(
                 }
             );
         }
+
+        // 创建光晕子实体
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.Drawable,
+            new DrawableDescription
+            {
+                Transform = new RelativeTransformOptions
+                {
+                    Parent = entity,
+                    Translation = new Vector3(0, 0, 0.1f),
+                },
+                Texture = desc.GlowTexture.Match(
+                    path => assets.Load<TextureRegion>(path),
+                    tex => tex
+                ),
+                Size = new Vector2(desc.ReferenceRadius * 2),
+                Color = Color.White,
+                Blend = SpriteBlend.Additive,
+            }
+        );
     }
 }

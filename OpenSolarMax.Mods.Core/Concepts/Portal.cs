@@ -55,12 +55,16 @@ public class PortalApplier(
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
     private readonly int _volume = configs.RequireValue<int>("volume");
 
-    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>(
-        "/Textures/PortalAtlas.json:Shape"
+    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>(
+        "/Textures/SolarMax2.Atlas.json:Portal"
     );
 
-    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>(
-        "/Textures/PortalAtlas.json:Portal"
+    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>(
+        "/Textures/SolarMax2.Atlas.json:PortalShape"
+    );
+
+    private readonly TextureRegion _portalGlow = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:PortalGlow"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
@@ -79,6 +83,7 @@ public class PortalApplier(
                 Transform = desc.Transform,
                 Party = desc.Party,
                 Volume = _volume,
+                GlowTexture = _portalGlow,
             }
         );
 

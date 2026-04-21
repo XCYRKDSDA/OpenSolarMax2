@@ -50,7 +50,7 @@ public class TurretPreviewApplier(
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
 
     private readonly TextureRegion _turretShape = assets.Load<TextureRegion>(
-        "Textures/TurretAtlas.json:Shape"
+        "Textures/SolarMax2.Atlas.json:TurretShape"
     );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);

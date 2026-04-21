@@ -83,6 +83,10 @@ public class PlanetApplier(
         .Textures.DefaultPlanetTextures.Select(k => assets.Load<TextureRegion>(k))
         .ToArray();
 
+    private readonly TextureRegion _defaultPlanetGlowTexture = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:Halo"
+    );
+
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PlanetDescription desc)
@@ -100,6 +104,7 @@ public class PlanetApplier(
                 Transform = desc.Transform,
                 Party = desc.Party,
                 Volume = desc.Volume,
+                GlowTexture = _defaultPlanetGlowTexture,
             }
         );
 
