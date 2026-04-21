@@ -130,7 +130,13 @@ public sealed partial class DrawSpritesSystem(
         graphicsDevice.BlendState = sprite.Blend switch
         {
             SpriteBlend.Alpha => BlendState.AlphaBlend,
-            SpriteBlend.Additive => BlendState.Additive,
+            SpriteBlend.Additive => new BlendState()
+            {
+                ColorSourceBlend = Blend.One,
+                AlphaSourceBlend = Blend.One,
+                ColorDestinationBlend = Blend.One,
+                AlphaDestinationBlend = Blend.One,
+            },
             SpriteBlend.Opaque => BlendState.Opaque,
             SpriteBlend.NonPremultiplied => BlendState.NonPremultiplied,
             _ => throw new ArgumentOutOfRangeException(),
