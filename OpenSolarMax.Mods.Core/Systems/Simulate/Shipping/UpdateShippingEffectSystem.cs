@@ -20,6 +20,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyPartyColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))] // 如果一个单位刚出生就移动，则用移动动画覆盖其出生动画
+[ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed partial class UpdateShippingEffectSystem(
     World world,
     IAssetsManager assets,

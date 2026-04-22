@@ -10,7 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [SimulateSystem, AfterStructuralChanges]
 [ReadCurr(typeof(InParty.AsAffiliate)), ReadCurr(typeof(PartyReferenceColor)), Write(typeof(Shape))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem)), ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed class ApplyPartyColorToShapeSystem(World world)
     : ApplyPartyReferenceSystemBase<Shape, PartyReferenceColor>(world)
 {

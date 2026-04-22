@@ -44,6 +44,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(InParty.AsAffiliate), // 可以隶属于某个阵营
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
+            typeof(TreeRelationship<ColorSync>.AsParent), // 颜色同步关系父方
             // AI 相关
             typeof(PlanetAiTimers) // AI 操作计时器
         );
@@ -190,9 +191,9 @@ public class CelestialBodyApplier(
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Drawable,
-            new DrawableDescription
+            new ColorSyncableDrawableDescription
             {
+                ColorSource = entity,
                 Transform = new RelativeTransformOptions
                 {
                     Parent = entity,

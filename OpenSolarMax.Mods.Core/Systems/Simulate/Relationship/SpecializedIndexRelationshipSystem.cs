@@ -46,3 +46,13 @@ public sealed class IndexTransformTreeSystem(World world)
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTrailAffiliationSystem(World world)
     : IndexRelationshipSystemBase<TrailOf>(world) { }
+
+[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[
+    ReadCurr(typeof(TreeRelationship<ColorSync>)),
+    Write(typeof(TreeRelationship<ColorSync>.AsParent)),
+    Write(typeof(TreeRelationship<ColorSync>.AsChild))
+]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed class IndexColorSyncTreeSystem(World world)
+    : IndexRelationshipSystemBase<TreeRelationship<ColorSync>>(world) { }
