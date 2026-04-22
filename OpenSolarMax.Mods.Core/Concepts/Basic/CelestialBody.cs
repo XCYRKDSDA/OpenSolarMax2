@@ -26,7 +26,6 @@ public abstract class CelestialBodyDefinition : IDefinition
         + new Signature(
             // 效果
             typeof(Sprite),
-            typeof(Shape),
             // 动画
             typeof(Animation),
             //
@@ -131,17 +130,6 @@ public class CelestialBodyApplier(
                 Rotation = 0,
                 Scale = Vector2.One,
                 Blend = SpriteBlend.Alpha,
-            }
-        );
-        commandBuffer.Set(
-            in entity,
-            new Shape()
-            {
-                Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
-                Size = new Vector2(desc.ReferenceRadius * 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
             }
         );
 
