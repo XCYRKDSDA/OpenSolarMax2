@@ -78,3 +78,6 @@ edge.space = 8
 edge.color = "#ff4444"
 edge.size = { x = 13.5, y = 27 }
 edge.preview.width = 6
+
+[applier.laser_beam]
+width = 2 # 4 / 2

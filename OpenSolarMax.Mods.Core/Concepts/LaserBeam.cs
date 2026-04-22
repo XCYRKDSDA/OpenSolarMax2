@@ -1,11 +1,13 @@
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Utils;
 
@@ -42,11 +44,16 @@ public class LaserBeamDescription : IDescription
 }
 
 [Apply(ConceptNames.LaserBeam)]
-public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<LaserBeamDescription>
+public class LaserBeamApplier(
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:laser_beam")] IConfiguration configs
+) : IApplier<LaserBeamDescription>
 {
+    private readonly float _beamWidth = configs.RequireValue<float>("width");
+
     private readonly TextureRegion _beamTexture = assets.Load<TextureRegion>(
-        "Textures/TurretAtlas.json:Beam"
+        "Textures/SolarMax2.Atlas.json:Quad_16x4Glow"
     );
 
     private readonly AnimationClip<Entity> _beamAnimation = assets.Load<AnimationClip<Entity>>(
@@ -84,7 +91,7 @@ public class LaserBeamApplier(IAssetsManager assets, IConceptFactory factory)
                 Texture = _beamTexture,
                 Color = desc.Color,
                 Alpha = 1,
-                Size = _beamTexture.LogicalSize with { X = vector.Length() },
+                Size = new Vector2(vector.Length(), _beamWidth),
                 Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
