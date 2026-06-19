@@ -53,11 +53,11 @@ public class InfiniteZBarrierApplier(
     );
 
     private readonly TextureRegion _barrierNodeTexture = assets.Load<TextureRegion>(
-        "/Textures/BarrierAtlas2.json:Node"
+        "/Textures/SolarMax2.Atlas.json:BarrierNode"
     );
 
     private readonly TextureRegion _barrierEdgeTexture = assets.Load<TextureRegion>(
-        "/Textures/BarrierLine.json:Line"
+        "/Textures/SolarMax2.Atlas.json:BarrierLine"
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, InfiniteZBarrierDescription desc)
