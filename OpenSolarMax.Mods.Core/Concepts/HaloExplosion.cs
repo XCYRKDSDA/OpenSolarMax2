@@ -44,7 +44,7 @@ public class HaloExplosionDescription : IDescription
 public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosionDescription>
 {
     private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>(
-        "Textures/Halo.json:Halo"
+        "Textures/SolarMax2.Atlas.json:Halo"
     );
 
     private readonly AnimationClip<Entity> _explosionAnimation = assets.Load<AnimationClip<Entity>>(
