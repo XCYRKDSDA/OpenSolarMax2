@@ -120,11 +120,10 @@ public sealed partial class DrawSpritesSystem(
         );
 
         // 设置四个顶点的颜色
-        _vertices[0].Color =
-            _vertices[1].Color =
-            _vertices[2].Color =
-            _vertices[3].Color =
-                sprite.Color * sprite.Alpha;
+        _vertices[0].Color = sprite.Color * sprite.Gradient.LeftTop * sprite.Alpha;
+        _vertices[1].Color = sprite.Color * sprite.Gradient.RightTop * sprite.Alpha;
+        _vertices[2].Color = sprite.Color * sprite.Gradient.LeftBottom * sprite.Alpha;
+        _vertices[3].Color = sprite.Color * sprite.Gradient.RightBottom * sprite.Alpha;
 
         // 设置混合模式
         graphicsDevice.BlendState = sprite.Blend switch
