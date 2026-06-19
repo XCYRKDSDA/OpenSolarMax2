@@ -19,6 +19,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ExecuteAfter(typeof(UpdateShippingEffectSystem)),
     ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))
 ]
+// 在颜色同步系统之前执行, 这样子实体也能共享染色
+[ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets)
     : ICalcSystem
 {

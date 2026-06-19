@@ -26,7 +26,6 @@ public abstract class CelestialBodyDefinition : IDefinition
         + new Signature(
             // 效果
             typeof(Sprite),
-            typeof(Shape),
             // 动画
             typeof(Animation),
             //
@@ -44,6 +43,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(InParty.AsAffiliate), // 可以隶属于某个阵营
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
+            typeof(TreeRelationship<ColorSync>.AsParent), // 颜色同步关系父方
             // AI 相关
             typeof(PlanetAiTimers) // AI 操作计时器
         );
@@ -85,6 +85,11 @@ public class CelestialBodyDescription : IDescription
     /// 天体的体量
     /// </summary>
     public required int Volume { get; set; }
+
+    /// <summary>
+    /// 天体光晕贴图的资产路径
+    /// </summary>
+    public required OneOf<string, TextureRegion> GlowTexture { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -125,17 +130,6 @@ public class CelestialBodyApplier(
                 Rotation = 0,
                 Scale = Vector2.One,
                 Blend = SpriteBlend.Alpha,
-            }
-        );
-        commandBuffer.Set(
-            in entity,
-            new Shape()
-            {
-                Texture = desc.Shape.Match(path => assets.Load<TextureRegion>(path), tex => tex),
-                Size = new Vector2(desc.ReferenceRadius * 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
             }
         );
 
@@ -180,5 +174,27 @@ public class CelestialBodyApplier(
                 }
             );
         }
+
+        // 创建光晕子实体
+        factory.Make(
+            world,
+            commandBuffer,
+            new ColorSyncableDrawableDescription
+            {
+                ColorSource = entity,
+                Transform = new RelativeTransformOptions
+                {
+                    Parent = entity,
+                    Translation = new Vector3(0, 0, 0.1f),
+                },
+                Texture = desc.GlowTexture.Match(
+                    path => assets.Load<TextureRegion>(path),
+                    tex => tex
+                ),
+                Size = new Vector2(desc.ReferenceRadius * 2),
+                Color = Color.White,
+                Blend = SpriteBlend.Additive,
+            }
+        );
     }
 }

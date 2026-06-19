@@ -50,7 +50,7 @@ public class PortalPreviewApplier(
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
 
     private readonly TextureRegion _defaultPortalShape = assets.Load<TextureRegion>(
-        "/Textures/PortalAtlas.json:Shape"
+        "/Textures/SolarMax2.Atlas.json:PortalShape"
     );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);

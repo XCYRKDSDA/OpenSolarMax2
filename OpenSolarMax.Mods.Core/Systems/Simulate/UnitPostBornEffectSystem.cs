@@ -57,7 +57,7 @@ public partial class RemoveUnitPostBornEffectSystem(World world) : ICalcSystemWi
 [SimulateSystem, AfterStructuralChanges]
 [ReadCurr(typeof(UnitPostBornEffect)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-[FineWith(typeof(ApplyPartyColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
+[FineWith(typeof(ApplyPartyColorSystem)), FineWith(typeof(SynchronizeColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
 public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     /// <summary>

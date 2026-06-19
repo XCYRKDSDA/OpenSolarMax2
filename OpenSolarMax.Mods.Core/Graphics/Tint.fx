@@ -61,14 +61,7 @@ struct PixelInput
 float4 ps_main(PixelInput p) : SV_TARGET
 {
     float4 tex_rgba = tex.Sample(tex_sampler, p.coord_in_uv.xy);
-
-    float color_avg = (p.color_in_uv.r + p.color_in_uv.g + p.color_in_uv.b) / 3;
-
-    float4 mixed_rgba = tex_rgba;
-    mixed_rgba.rgb *= p.color_in_uv.rgb / color_avg;
-    mixed_rgba *= p.color_in_uv.a;
-
-    return mixed_rgba;
+    return p.color_in_uv * tex_rgba;
 }
 
 

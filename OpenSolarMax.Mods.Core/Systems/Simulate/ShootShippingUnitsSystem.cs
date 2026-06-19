@@ -81,7 +81,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
             }
         );
 
-        if (turret.GlowTexture is not null)
+        if (turret.FlareTexture is not null)
         {
             factory.Make(
                 world,
@@ -90,7 +90,7 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
                 {
                     Turret = entity,
                     Color = Color.White,
-                    Texture = turret.GlowTexture,
+                    Texture = turret.FlareTexture,
                 }
             );
         }

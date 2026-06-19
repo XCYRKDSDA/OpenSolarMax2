@@ -42,7 +42,7 @@ public class UnitFlareDescription : IDescription
 public class UnitFlareApplier(IAssetsManager assets) : IApplier<UnitFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
-        "Textures/ShipAtlas.json:ShipFlare"
+        "Textures/SolarMax2.Atlas.json:ShipFlare"
     );
 
     private readonly AnimationClip<Entity> _flareAnimation = assets.Load<AnimationClip<Entity>>(
@@ -65,7 +65,7 @@ public class UnitFlareApplier(IAssetsManager assets) : IApplier<UnitFlareDescrip
                 Texture = _flareTexture,
                 Color = desc.Color,
                 Alpha = 1,
-                Size = _flareTexture.LogicalSize,
+                Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
             }

@@ -46,7 +46,7 @@ public class TransportationTrailApplier(IAssetsManager assets)
     : IApplier<TransportationTrailDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
-        "/Textures/ShipAtlas.json:ShipTrail"
+        "/Textures/SolarMax2.Atlas.json:WarpGlare"
     );
 
     private readonly AnimationClip<Entity> _trailFadeOutAnimationClip = assets.Load<
@@ -69,8 +69,8 @@ public class TransportationTrailApplier(IAssetsManager assets)
             {
                 Texture = _defaultTexture,
                 Color = desc.Color,
-                Alpha = 1,
-                Size = _defaultTexture.LogicalSize with { X = length },
+                Alpha = 0.25f,
+                Size = new(length * 0.7f, 2),
                 Position = Vector2.Zero,
                 Rotation = 0,
                 Scale = Vector2.One,
@@ -84,7 +84,7 @@ public class TransportationTrailApplier(IAssetsManager assets)
             in entity,
             new AbsoluteTransform
             {
-                Translation = desc.Tail,
+                Translation = (desc.Head + desc.Tail) / 2,
                 Rotation = TransformProjection.UprightAim(vector),
             }
         );

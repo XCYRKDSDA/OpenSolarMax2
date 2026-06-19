@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(PartyReferenceColor)),
     Write(typeof(Sprite))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem)), ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed class ApplyPartyColorSystem(World world)
     : ApplyPartyReferenceSystemBase<Sprite, PartyReferenceColor>(world)
 {

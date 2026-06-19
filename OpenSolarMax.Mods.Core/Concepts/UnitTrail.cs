@@ -40,7 +40,7 @@ public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<UnitTrailDescription>
 {
     private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>(
-        "Textures/ShipAtlas.json:ShipTrail"
+        "Textures/SolarMax2.Atlas.json:Quad8x4"
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, UnitTrailDescription desc)
@@ -53,9 +53,16 @@ public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory)
             new Sprite
             {
                 Texture = _trailTexture,
+                Gradient = new()
+                {
+                    LeftTop = 0,
+                    LeftBottom = 0,
+                    RightTop = 1,
+                    RightBottom = 1,
+                },
                 Color = Color.White,
                 Alpha = 0.5f,
-                Size = _trailTexture.Bounds.Size.ToVector2(),
+                Size = new(4, 2),
                 Scale = new Vector2(0, 1),
                 Blend = SpriteBlend.Additive,
             }

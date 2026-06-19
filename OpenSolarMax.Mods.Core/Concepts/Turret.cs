@@ -72,15 +72,19 @@ public class TurretApplier(
     private readonly int _volume = configs.RequireValue<int>("volume");
 
     private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>(
-        "/Textures/TurretAtlas.json:Turret"
+        "/Textures/SolarMax2.Atlas.json:Turret"
     );
 
     private readonly TextureRegion _turretShape = assets.Load<TextureRegion>(
-        "Textures/TurretAtlas.json:Shape"
+        "Textures/SolarMax2.Atlas.json:TurretShape"
+    );
+
+    private readonly TextureRegion _turretFlare = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:TurretShape"
     );
 
     private readonly TextureRegion _turretGlow = assets.Load<TextureRegion>(
-        "Textures/TurretAtlas.json:TurretGlow"
+        "Textures/SolarMax2.Atlas.json:TurretGlow"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
@@ -99,12 +103,13 @@ public class TurretApplier(
                 Transform = desc.Transform,
                 Party = desc.Party,
                 Volume = _volume,
+                GlowTexture = _turretGlow,
             }
         );
 
         // 配置炮塔属性
         commandBuffer.Set(in entity, new AttackRange { Range = desc.AttackRange });
         commandBuffer.Set(in entity, new AttackCooldown { Duration = desc.CooldownTime });
-        commandBuffer.Set(in entity, new Turret { GlowTexture = _turretGlow });
+        commandBuffer.Set(in entity, new Turret { FlareTexture = _turretFlare });
     }
 }

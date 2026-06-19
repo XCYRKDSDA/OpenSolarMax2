@@ -12,6 +12,34 @@ public enum SpriteBlend
     NonPremultiplied,
 }
 
+public struct TextureUV<T>
+{
+    public T LeftTop;
+    public T RightTop;
+    public T LeftBottom;
+    public T RightBottom;
+
+    public static implicit operator TextureUV<T>(T color) =>
+        new()
+        {
+            LeftTop = color,
+            RightTop = color,
+            LeftBottom = color,
+            RightBottom = color,
+        };
+
+    public static implicit operator T(TextureUV<T> uv)
+    {
+        if (
+            EqualityComparer<T>.Default.Equals(uv.LeftTop, uv.RightTop)
+            && EqualityComparer<T>.Default.Equals(uv.LeftTop, uv.LeftBottom)
+            && EqualityComparer<T>.Default.Equals(uv.LeftTop, uv.RightBottom)
+        )
+            return uv.LeftTop;
+        throw new InvalidCastException("UV 四个角点的值不同, 无法转换为单一值");
+    }
+}
+
 /// <summary>
 /// 实体纹理组件
 /// </summary>
@@ -22,6 +50,11 @@ public struct Sprite()
     /// 精灵纹理
     /// </summary>
     public TextureRegion? Texture = null;
+
+    /// <summary>
+    /// 纹理的过渡
+    /// </summary>
+    public TextureUV<float> Gradient = 1.0f;
 
     /// <summary>
     /// 精灵的掩膜颜色

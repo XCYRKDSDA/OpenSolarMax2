@@ -39,7 +39,7 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 // 与普通运输系统完全不相干
 [FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateShippingEffectSystem))]
 // 动画不会设置颜色，因此和阵营颜色应用系统不相干
-[FineWith(typeof(ApplyPartyColorSystem))]
+[FineWith(typeof(ApplyPartyColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
 // 覆盖新生单位动画
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
 public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets)

@@ -8,7 +8,7 @@ public static partial class Content
 
         public static readonly string[] DefaultPlanetTextures;
 
-        public const string DefaultPlanetShape = $"{_base}/PlanetsAtlas.json:PlanetShape";
+        public const string DefaultPlanetShape = $"{_base}/SolarMax2.Atlas.json:PlanetShape";
 
         private static readonly string[] _defaultPlanetTextureIds =
         {
@@ -23,13 +23,13 @@ public static partial class Content
             "Planet09",
         };
 
-        public const string DefaultShip = $"{_base}/ShipAtlas.json:Ship";
+        public const string DefaultShip = $"{_base}/SolarMax2.Atlas.json:Ship";
 
         static Textures()
         {
             DefaultPlanetTextures = (
                 from string id in _defaultPlanetTextureIds
-                select $"{_base}/PlanetsAtlas.json:{id}"
+                select $"{_base}/SolarMax2.Atlas.json:{id}"
             ).ToArray();
         }
     }

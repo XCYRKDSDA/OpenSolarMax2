@@ -1,7 +1,7 @@
 {
     "duration": 0.458,
     "curves": {
-        "Sprite::Alpha": [
+        "Sprite::Scale.Y": [
             { "time": 0, "value": 0 },
             { "time": 0.125, "value": 1 },
             { "time": 0.458, "value": 0 }
