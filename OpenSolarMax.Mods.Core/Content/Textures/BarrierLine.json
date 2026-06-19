@@ -1,6 +1,0 @@
-{
-    "image": "BarrierLine.png",
-    "regions": {
-        "Line": { "x": 0, "y": 0, "w": 31, "h": 62, "anchor": [ 15.5, 31 ] }
-    }
-}
