@@ -42,7 +42,7 @@ public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory
     : IApplier<UnitBornPulseDescription>
 {
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
-        "Textures/ShipAtlas.json:ShipPulse"
+        "Textures/SolarMax2.Atlas.json:ShipPulse"
     );
 
     private readonly AnimationClip<Entity> _bornPulseAnimationClip = assets.Load<
@@ -61,7 +61,7 @@ public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory
                 Texture = _pulseTexture,
                 Color = desc.Color,
                 Alpha = 1,
-                Size = _pulseTexture.Bounds.Size.ToVector2(),
+                Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
             }

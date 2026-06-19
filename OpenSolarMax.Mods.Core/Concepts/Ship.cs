@@ -74,7 +74,7 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
                 Texture = _defaultTexture,
                 Color = Color.White,
                 Alpha = 1,
-                Size = _defaultTexture.LogicalSize,
+                Size = new(4, 4),
                 Position = Vector2.Zero,
                 Rotation = 0,
                 Scale = Vector2.One,

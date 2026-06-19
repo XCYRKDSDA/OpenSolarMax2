@@ -41,7 +41,7 @@ public class UnitPulseDescription : IDescription
 public class UnitPulseApplier(IAssetsManager assets) : IApplier<UnitPulseDescription>
 {
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
-        "Textures/ShipAtlas.json:ShipPulse"
+        "Textures/SolarMax2.Atlas.json:ShipPulse"
     );
 
     private readonly AnimationClip<Entity> _pulseAnimation = assets.Load<AnimationClip<Entity>>(
@@ -61,7 +61,7 @@ public class UnitPulseApplier(IAssetsManager assets) : IApplier<UnitPulseDescrip
                 Texture = _pulseTexture,
                 Color = desc.Color,
                 Alpha = 1,
-                Size = _pulseTexture.LogicalSize,
+                Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
             }

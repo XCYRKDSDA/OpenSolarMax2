@@ -23,7 +23,7 @@ public static partial class Content
             "Planet09",
         };
 
-        public const string DefaultShip = $"{_base}/ShipAtlas.json:Ship";
+        public const string DefaultShip = $"{_base}/SolarMax2.Atlas.json:Ship";
 
         static Textures()
         {
