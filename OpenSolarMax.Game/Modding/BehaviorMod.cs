@@ -55,7 +55,7 @@ internal record BehaviorMod(
         _disposed = true;
     }
 
-    public static BehaviorMod Load(
+    public static BehaviorMod LoadFrom(
         BehaviorModInfo info,
         IReadOnlyDictionary<string, Assembly> sharedAssemblies
     )

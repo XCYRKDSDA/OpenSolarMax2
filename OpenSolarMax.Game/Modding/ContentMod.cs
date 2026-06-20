@@ -15,7 +15,7 @@ internal record ContentMod(ContentModInfo Metadata, ImmutableArray<IFileSystem> 
             fs.Dispose();
     }
 
-    public static ContentMod Load(ContentModInfo info)
+    public static ContentMod LoadFrom(ContentModInfo info)
     {
         // 加载资产文件系统
         return new ContentMod(

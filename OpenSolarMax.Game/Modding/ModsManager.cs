@@ -14,7 +14,7 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
-public class ModsManager
+internal class ModsManager
 {
     private static readonly JsonSerializerOptions ManifestJsonOptions = new()
     {
@@ -30,11 +30,11 @@ public class ModsManager
     public const string DefaultConfigsFile = "configs.toml";
     public const string DefaultLevelsDir = "Levels";
 
-    internal IReadOnlyList<BehaviorModInfo> BehaviorMods { get; private set; }
+    public IReadOnlyList<BehaviorModInfo> BehaviorMods { get; private set; }
 
-    internal IReadOnlyList<ContentModInfo> ContentMods { get; private set; }
+    public IReadOnlyList<ContentModInfo> ContentMods { get; private set; }
 
-    internal IReadOnlyList<LevelModInfo> LevelMods { get; private set; }
+    public IReadOnlyList<LevelModInfo> LevelMods { get; private set; }
 
     public ModsManager(IFileSystem behaviorsFs, IFileSystem levelsFs)
     {
@@ -151,7 +151,7 @@ public class ModsManager
 
     #region 创建关卡模组上下文
 
-    internal LevelModContext CreateLevelModContext(LevelModInfo info, SolarMax game)
+    public LevelModContext CreateLevelModContext(LevelModInfo info, SolarMax game)
     {
         // 依赖解析
         // 列出所有行为模组和资产模组
@@ -170,14 +170,14 @@ public class ModsManager
         );
         foreach (var behaviorModInfo in behaviorModInfos)
         {
-            var behaviorMod = BehaviorMod.Load(behaviorModInfo, sharedAssemblies);
+            var behaviorMod = BehaviorMod.LoadFrom(behaviorModInfo, sharedAssemblies);
             sharedAssemblies.Add(behaviorMod.Assembly.FullName!, behaviorMod.Assembly);
             behaviorMods.Add(behaviorMod);
         }
         var behaviorModsArray = behaviorMods.ToImmutableArray();
 
         // 加载资产模组
-        var contentModsArray = contentModInfos.Select(ContentMod.Load).ToImmutableArray();
+        var contentModsArray = contentModInfos.Select(ContentMod.LoadFrom).ToImmutableArray();
 
         // 合并行为插件信息
         // 合并组件类型。直接拼接列表即可

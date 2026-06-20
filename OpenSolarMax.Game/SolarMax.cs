@@ -61,7 +61,7 @@ public class SolarMax : XNAGame
 
     public AssetsManager Assets => _globalAssets;
 
-    public ModsManager Mods => _mods;
+    internal ModsManager Mods => _mods;
 
     internal ScreenManager ScreenManager => _globalScreenManager;
 
