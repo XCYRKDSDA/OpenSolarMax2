@@ -204,7 +204,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private static ChapterPageContext Load(PreviewableLevelMod previewableLevelMod, SolarMax game)
     {
         var levelModInfo = previewableLevelMod.Info;
-        var levelModContext = new LevelModContext(levelModInfo, game);
+        var levelModContext = game.Mods.CreateLevelModContext(levelModInfo, game);
         var levelLoader = new LevelLoader(levelModContext.DeclarationSchemaInfos);
         var levelPreviewLoader = new LevelRuntimeLoader(
             levelModContext,
