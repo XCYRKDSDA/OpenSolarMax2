@@ -36,16 +36,16 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
     private void OnStartLoading()
     {
         _levelPreviewsLoadTask = Task.Factory.StartNew(
-            () => Load(new Progress<float>(v => Progress = v)),
+            () => Load(new Progress<float>(v => Progress = v), Game),
             CancellationToken.None,
             TaskCreationOptions.None,
             Game.BackgroundScheduler
         );
     }
 
-    private static MainMenuPageContext Load(IProgress<float> progress)
+    private static MainMenuPageContext Load(IProgress<float> progress, SolarMax game)
     {
-        var levelModInfos = Modding.Modding.ListLevelMods();
+        var levelModInfos = game.Mods.LevelMods;
         var previewableLevelMods = levelModInfos.Select(info =>
         {
             // TODO: 若未指定预览文件则加载缺省图片

@@ -121,8 +121,8 @@ internal class LevelModContext : IDisposable
         #region 依赖解析
 
         // 列出所有行为模组和资产模组
-        var allBehaviorModInfos = Modding.ListBehaviorMods().ToDictionary(m => m.FullName, m => m);
-        var allContentModInfos = Modding.ListContentMods().ToDictionary(m => m.FullName, m => m);
+        var allBehaviorModInfos = game.Mods.BehaviorMods.ToDictionary(m => m.FullName, m => m);
+        var allContentModInfos = game.Mods.ContentMods.ToDictionary(m => m.FullName, m => m);
 
         // 查找依赖
         var behaviorModInfos = info.BehaviorDeps.Select(d => allBehaviorModInfos[d]).ToArray();

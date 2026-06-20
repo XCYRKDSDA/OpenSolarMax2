@@ -1,8 +1,6 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using CsToml.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Myra.Graphics2D.UI;
@@ -18,85 +16,7 @@ namespace OpenSolarMax.Game.Modding;
 
 internal static partial class Modding
 {
-    public static string DefaultPreviewPattern => "preview.*";
-
-    public static string DefaultBackgroundPattern => "background.*";
-
-    public static string DefaultAssemblyFormat => "{}.dll";
-
-    public static string DefaultContentDir => "Content";
-
-    public static string DefaultConfigsFile => "configs.toml";
-
-    public static string DefaultLevelsDir => "Levels";
-
     #region 工厂方法
-
-    internal static BehaviorModInfo CreateBehaviorModInfo(DirectoryEntry dir, ModManifest manifest)
-    {
-        return new BehaviorModInfo
-        {
-            Directory = dir,
-            FullName = manifest.FullName,
-            ShortName = manifest.ShortName,
-            Preview = dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern)
-                .FirstOrDefault(),
-            Background = dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern)
-                .FirstOrDefault(),
-            Author = manifest.Author,
-            Version = manifest.Version,
-            Description = manifest.Description,
-            Link = manifest.Link,
-            Assembly = dir.EnumerateFiles(
-                    manifest.Assembly ?? string.Format(DefaultAssemblyFormat, manifest.FullName)
-                )
-                .First(),
-            Content = dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir)
-                .FirstOrDefault(),
-            Dependencies = manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
-            Configs = dir.EnumerateFiles(manifest.Configs ?? DefaultConfigsFile).FirstOrDefault(),
-        };
-    }
-
-    internal static ContentModInfo CreateContentModInfo(DirectoryEntry dir, ModManifest manifest)
-    {
-        return new ContentModInfo
-        {
-            Directory = dir,
-            FullName = manifest.FullName,
-            ShortName = manifest.ShortName,
-            Preview = dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern)
-                .FirstOrDefault(),
-            Background = dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern)
-                .FirstOrDefault(),
-            Author = manifest.Author,
-            Version = manifest.Version,
-            Description = manifest.Description,
-            Link = manifest.Link,
-            Content = dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).First(),
-        };
-    }
-
-    internal static LevelModInfo CreateLevelModInfo(DirectoryEntry dir, ModManifest manifest)
-    {
-        return new LevelModInfo
-        {
-            Directory = dir,
-            FullName = manifest.FullName,
-            ShortName = manifest.ShortName,
-            Preview = dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern)
-                .FirstOrDefault(),
-            Background = dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern)
-                .FirstOrDefault(),
-            Author = manifest.Author,
-            Version = manifest.Version,
-            Description = manifest.Description,
-            Link = manifest.Link,
-            Levels = dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
-            BehaviorDeps = manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
-            ContentDeps = manifest.Dependencies?.Content?.ToImmutableArray() ?? [],
-        };
-    }
 
     internal static BehaviorMod LoadBehaviorMod(
         BehaviorModInfo info,
@@ -183,62 +103,6 @@ internal static partial class Modding
                 new SubFileSystem(info.Content.FileSystem, info.Content.Path, owned: false),
             ],
         };
-    }
-
-    #endregion
-
-    #region 发现
-
-    private static List<(DirectoryEntry, ModManifest)> FindAllModManifests(
-        DirectoryEntry dir,
-        ModType type
-    )
-    {
-        var result = new List<(DirectoryEntry, ModManifest)>();
-        var options = new JsonSerializerOptions()
-        {
-            PropertyNameCaseInsensitive = true,
-            IncludeFields = true,
-        };
-        options.Converters.Add(new JsonStringEnumConverter());
-        foreach (var subDir in dir.EnumerateDirectories())
-        {
-            var manifestFile = subDir.EnumerateFiles("manifest.json").FirstOrDefault();
-            if (manifestFile is null)
-                continue;
-
-            using var stream = manifestFile.Open(FileMode.Open, FileAccess.Read);
-            var manifest =
-                JsonSerializer.Deserialize<ModManifest>(stream, options)
-                ?? throw new JsonException();
-            if (manifest.Type != type)
-                continue;
-
-            result.Add((subDir, manifest));
-        }
-
-        return result;
-    }
-
-    public static List<BehaviorModInfo> ListBehaviorMods()
-    {
-        return FindAllModManifests(Folders.Mods.Behaviors.GetDirectoryEntry("/"), ModType.Behavior)
-            .Select(pair => CreateBehaviorModInfo(pair.Item1, pair.Item2))
-            .ToList();
-    }
-
-    public static List<ContentModInfo> ListContentMods()
-    {
-        return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Content)
-            .Select(pair => CreateContentModInfo(pair.Item1, pair.Item2))
-            .ToList();
-    }
-
-    public static List<LevelModInfo> ListLevelMods()
-    {
-        return FindAllModManifests(Folders.Mods.Levels.GetDirectoryEntry("/"), ModType.Levels)
-            .Select(pair => CreateLevelModInfo(pair.Item1, pair.Item2))
-            .ToList();
     }
 
     #endregion
