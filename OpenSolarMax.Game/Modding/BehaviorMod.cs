@@ -14,11 +14,7 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record ConceptRelatedTypes(
-    ImmutableArray<Type> DefinitionTypes,
-    Type? DescriptionType,
-    ImmutableArray<Type> ApplierTypes
-);
+internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? Applier);
 
 /// <param name="ContentFileSystems">模组中提供资产的所有文件系统</param>
 /// <param name="Configs">模组中提供的参数配置文件</param>
@@ -247,9 +243,9 @@ internal record BehaviorMod(
         return allConceptNames.ToDictionary(
             k => k,
             k => new ConceptRelatedTypes(
-                definitionTypes.TryGetValue(k, out var d) ? [d] : [],
+                definitionTypes.TryGetValue(k, out var d) ? d : null,
                 descriptionTypes.GetValueOrDefault(k),
-                applierTypes.TryGetValue(k, out var a) ? [a] : []
+                applierTypes.TryGetValue(k, out var a) ? a : null
             )
         );
     }

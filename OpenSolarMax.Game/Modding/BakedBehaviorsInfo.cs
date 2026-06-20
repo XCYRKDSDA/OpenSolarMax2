@@ -35,23 +35,23 @@ internal record BakedBehaviorsInfo(
             {
                 if (conceptInfos.TryGetValue(key, out var conceptInfo))
                 {
-                    if (relatedTypes.DescriptionType is not null)
+                    if (relatedTypes.Description is not null)
                         throw new Exception("Concept description cannot be extended!");
                     var extendedConcept = conceptInfo.Extend(
-                        relatedTypes.DefinitionTypes.FirstOrDefault(),
-                        relatedTypes.ApplierTypes.FirstOrDefault()
+                        relatedTypes.Definition,
+                        relatedTypes.Applier
                     );
                     conceptInfos[key] = extendedConcept;
                 }
                 else
                 {
-                    if (relatedTypes.DefinitionTypes.IsEmpty)
+                    if (relatedTypes.Definition is null)
                         throw new Exception("A new concept must be provided a definition!");
                     var newConcept = ConceptInfo.Define(
                         key,
-                        relatedTypes.DefinitionTypes[0],
-                        relatedTypes.DescriptionType,
-                        relatedTypes.ApplierTypes.FirstOrDefault()
+                        relatedTypes.Definition,
+                        relatedTypes.Description,
+                        relatedTypes.Applier
                     );
                     conceptInfos.Add(key, newConcept);
                 }
