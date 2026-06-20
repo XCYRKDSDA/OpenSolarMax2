@@ -137,14 +137,14 @@ internal class LevelModContext : IDisposable
         );
         foreach (var behaviorModInfo in behaviorModInfos)
         {
-            var behaviorMod = new BehaviorMod(behaviorModInfo, sharedAssemblies);
+            var behaviorMod = Modding.LoadBehaviorMod(behaviorModInfo, sharedAssemblies);
             sharedAssemblies.Add(behaviorMod.Assembly.FullName!, behaviorMod.Assembly);
             behaviorMods.Add(behaviorMod);
         }
         BehaviorMods = behaviorMods.ToImmutableArray();
 
         // 加载资产模组
-        ContentMods = contentModInfos.Select(i => new ContentMod(i)).ToImmutableArray();
+        ContentMods = contentModInfos.Select(Modding.LoadContentMod).ToImmutableArray();
 
         #endregion
 

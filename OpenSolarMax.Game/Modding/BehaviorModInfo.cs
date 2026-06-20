@@ -3,21 +3,13 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class BehaviorModInfo(DirectoryEntry dir, ModManifest manifest)
-    : CommonModInfo(dir, manifest)
+internal record BehaviorModInfo : CommonModInfo
 {
-    public FileEntry Assembly { get; } =
-        dir.EnumerateFiles(
-                manifest.Assembly ?? string.Format(Modding.DefaultAssemblyFormat, manifest.FullName)
-            )
-            .First();
+    public required FileEntry Assembly { get; init; }
 
-    public DirectoryEntry? Content { get; } =
-        dir.EnumerateDirectories(manifest.Content ?? Modding.DefaultContentDir).FirstOrDefault();
+    public DirectoryEntry? Content { get; init; }
 
-    public ImmutableArray<string> Dependencies { get; } =
-        manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [];
+    public ImmutableArray<string> Dependencies { get; init; } = [];
 
-    public FileEntry? Configs { get; } =
-        dir.EnumerateFiles(manifest.Configs ?? Modding.DefaultConfigsFile).FirstOrDefault();
+    public FileEntry? Configs { get; init; }
 }

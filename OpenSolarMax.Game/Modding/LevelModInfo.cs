@@ -3,14 +3,11 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class LevelModInfo(DirectoryEntry dir, ModManifest manifest) : CommonModInfo(dir, manifest)
+internal record LevelModInfo : CommonModInfo
 {
-    public DirectoryEntry Levels { get; } =
-        dir.EnumerateDirectories(manifest.Levels ?? Modding.DefaultLevelsDir).First();
+    public required DirectoryEntry Levels { get; init; }
 
-    public ImmutableArray<string> BehaviorDeps { get; } =
-        manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [];
+    public ImmutableArray<string> BehaviorDeps { get; init; } = [];
 
-    public ImmutableArray<string> ContentDeps { get; } =
-        manifest.Dependencies?.Content?.ToImmutableArray() ?? [];
+    public ImmutableArray<string> ContentDeps { get; init; } = [];
 }
