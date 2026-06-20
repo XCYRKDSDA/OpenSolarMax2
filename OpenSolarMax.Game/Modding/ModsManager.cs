@@ -36,10 +36,10 @@ internal class ModsManager
 
     public IReadOnlyList<LevelModInfo> LevelMods { get; private set; }
 
-    public ModsManager(IFileSystem behaviorsFs, IFileSystem levelsFs)
+    public ModsManager(IFileSystem behaviorsFs, IFileSystem contentFs, IFileSystem levelsFs)
     {
         BehaviorMods = ScanBehaviorMods(behaviorsFs);
-        ContentMods = ScanContentMods(levelsFs);
+        ContentMods = ScanContentMods(contentFs);
         LevelMods = ScanLevelMods(levelsFs);
     }
 

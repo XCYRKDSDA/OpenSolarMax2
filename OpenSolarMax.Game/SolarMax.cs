@@ -77,7 +77,7 @@ public class SolarMax : XNAGame
         _loadingTaskScheduler = pair.ExclusiveScheduler;
 
         // 初始化模组管理器
-        _mods = new ModsManager(Folders.Mods.Behaviors, Folders.Mods.Levels);
+        _mods = new ModsManager(Folders.Mods.Behaviors, Folders.Mods.Content, Folders.Mods.Levels);
 
         // 创建渲染相关内容
         _renderTarget = new RenderTarget2D(

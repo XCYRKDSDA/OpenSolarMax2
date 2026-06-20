@@ -43,4 +43,6 @@ internal static class Paths
     public static UPath Behaviors => "Behaviors";
 
     public static UPath Levels => "Levels";
+
+    public static UPath ContentMods => "Content";
 }
