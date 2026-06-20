@@ -126,9 +126,9 @@ internal static partial class Modding
         return allConceptNames.ToDictionary(
             k => k,
             k => new ConceptRelatedTypes(
-                definitionTypes.GetValueOrDefault(k),
+                definitionTypes.TryGetValue(k, out var d) ? [d] : [],
                 descriptionTypes.GetValueOrDefault(k),
-                applierTypes.GetValueOrDefault(k)
+                applierTypes.TryGetValue(k, out var a) ? [a] : []
             )
         );
     }

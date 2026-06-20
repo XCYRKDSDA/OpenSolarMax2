@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Zio;
+using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
@@ -17,5 +18,18 @@ internal record ContentMod : IDisposable
         // 释放资产文件系统
         foreach (var fs in ContentFileSystems)
             fs.Dispose();
+    }
+
+    public static ContentMod Load(ContentModInfo info)
+    {
+        return new ContentMod
+        {
+            Metadata = info,
+            // 加载资产文件系统
+            ContentFileSystems =
+            [
+                new SubFileSystem(info.Content.FileSystem, info.Content.Path, owned: false),
+            ],
+        };
     }
 }

@@ -3,16 +3,12 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using CsToml.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Assets.Animation;
 using Nine.Assets.Serialization;
 using OpenSolarMax.Game.Assets;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Declaration;
-using OpenSolarMax.Game.Modding.ECS;
 using Zio;
 using Zio.FileSystems;
 
@@ -163,178 +159,6 @@ public class ModsManager
 
     #endregion
 
-    #region 模组加载
-
-    private static BehaviorMod LoadBehaviorMod(
-        BehaviorModInfo info,
-        IReadOnlyDictionary<string, Assembly> sharedAssemblies
-    )
-    {
-        // 加载程序集
-        var ctx = new ModLoadContext(info.Assembly, sharedAssemblies);
-        using var dllStream = info.Assembly.Open(FileMode.Open, FileAccess.Read);
-#if DEBUG
-        var pdb = info
-            .Assembly.Directory.EnumerateFiles($"{info.Assembly.NameWithoutExtension}.pdb")
-            .FirstOrDefault();
-        using var pdbStream = pdb?.Open(FileMode.Open, FileAccess.Read);
-        var assembly = ctx.LoadFromStream(dllStream, pdbStream);
-#else
-        var assembly = ctx.LoadFromStream(dllStream);
-#endif
-
-        // 加载资产文件系统
-        List<IFileSystem> contentFileSystems = [new ResourceFileSystem(assembly)];
-        if (info.Content is not null)
-        {
-            contentFileSystems.Add(
-                new SubFileSystem(info.Content.FileSystem, info.Content.Path, owned: false)
-            );
-        }
-
-        // 加载配置文件
-        IConfigurationRoot? configs = null;
-        if (info.Configs is not null)
-        {
-            var configsBuilder = new ConfigurationBuilder();
-            using var tomlStream = info.Configs.Open(
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.Read
-            );
-            configsBuilder.AddTomlStream(tomlStream);
-            configs = configsBuilder.Build();
-        }
-
-        return new BehaviorMod
-        {
-            Metadata = info,
-            Assembly = assembly,
-            ContentFileSystems = contentFileSystems.ToImmutableArray(),
-            Configs = configs,
-            // 查找组件类型
-            ComponentTypes = assembly
-                .ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
-                .ToImmutableArray(),
-            // 查找关卡文件声明类型
-            DeclarationSchemaInfos = Modding.FindDeclarationTypes(assembly).ToImmutableDictionary(),
-            // 查找游玩场景行为相关类型
-            GameplayBehaviorsInfo = new BehaviorsInfo(
-                Modding
-                    .FindTranslatorTypes(assembly, GameplayOrPreview.Gameplay)
-                    .ToImmutableDictionary(),
-                Modding
-                    .FindConceptRelatedTypes(assembly, GameplayOrPreview.Gameplay)
-                    .ToImmutableDictionary(),
-                Modding.FindSystemTypes(assembly, GameplayOrPreview.Gameplay),
-                Modding
-                    .FindHookImplementations(assembly, GameplayOrPreview.Gameplay)
-                    .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
-            ),
-            // 查找预览场景行为相关类型
-            PreviewBehaviorsInfo = new BehaviorsInfo(
-                Modding
-                    .FindTranslatorTypes(assembly, GameplayOrPreview.Preview)
-                    .ToImmutableDictionary(),
-                Modding
-                    .FindConceptRelatedTypes(assembly, GameplayOrPreview.Preview)
-                    .ToImmutableDictionary(),
-                Modding.FindSystemTypes(assembly, GameplayOrPreview.Preview),
-                Modding
-                    .FindHookImplementations(assembly, GameplayOrPreview.Preview)
-                    .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
-            ),
-        };
-    }
-
-    private static ContentMod LoadContentMod(ContentModInfo info)
-    {
-        return new ContentMod
-        {
-            Metadata = info,
-            // 加载资产文件系统
-            ContentFileSystems =
-            [
-                new SubFileSystem(info.Content.FileSystem, info.Content.Path, owned: false),
-            ],
-        };
-    }
-
-    #endregion
-
-    #region 行为合并
-
-    private static ImmutableSortedSystemTypes BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
-    {
-        var orders = SystemsTopology.ExtractExecutionOrders(systemTypes);
-        var sorted = SystemsTopology.TopologicalSortSystems(systemTypes, orders);
-        return new ImmutableSortedSystemTypes([.. systemTypes], [.. orders], [.. sorted]);
-    }
-
-    private static BakedBehaviorsInfo MergeBehaviorsInfo(params BehaviorsInfo[] layers)
-    {
-        // 合并声明翻译器
-        var mergedTranslatorTypes = layers
-            .SelectMany(l => l.DeclarationTranslatorTypes)
-            .ToImmutableDictionary();
-
-        // 合并概念
-        var conceptInfos = new Dictionary<string, ConceptInfo>();
-        foreach (var layer in layers)
-        {
-            foreach (var (key, relatedTypes) in layer.ConceptTypes)
-            {
-                if (conceptInfos.TryGetValue(key, out var conceptInfo))
-                {
-                    if (relatedTypes.Description is not null)
-                        throw new Exception("Concept description cannot be extended!");
-                    var extendedConcept = conceptInfo.Extend(
-                        relatedTypes.Definition,
-                        relatedTypes.Applier
-                    );
-                    conceptInfos[key] = extendedConcept;
-                }
-                else
-                {
-                    if (relatedTypes.Definition is null)
-                        throw new Exception("A new concept must be provided a definition!");
-                    var newConcept = ConceptInfo.Define(
-                        key,
-                        relatedTypes.Definition,
-                        relatedTypes.Description,
-                        relatedTypes.Applier
-                    );
-                    conceptInfos.Add(key, newConcept);
-                }
-            }
-        }
-        var mergedConceptInfos = conceptInfos.ToImmutableDictionary();
-
-        // 合并系统类型。合并后完成拓扑排序
-        var mergedSystemTypes = new ImmutableSortedSystemTypeCollection(
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Input).ToHashSet()),
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Ai).ToHashSet()),
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Simulate).ToHashSet()),
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Render).ToHashSet())
-        );
-
-        // 合并钩子函数
-        var mergedImplMethods = layers
-            .SelectMany(l => l.HookImplMethods)
-            .SelectMany(kv => kv.Value, (kv, i) => (kv.Key, Info: i))
-            .GroupBy(p => p.Key)
-            .ToImmutableDictionary(g => g.Key, g => g.Select(p => p.Info).ToImmutableArray());
-
-        return new BakedBehaviorsInfo(
-            mergedTranslatorTypes,
-            mergedConceptInfos,
-            mergedSystemTypes,
-            mergedImplMethods
-        );
-    }
-
-    #endregion
-
     #region 创建关卡模组上下文
 
     internal LevelModContext CreateLevelModContext(LevelModInfo info, SolarMax game)
@@ -356,14 +180,14 @@ public class ModsManager
         );
         foreach (var behaviorModInfo in behaviorModInfos)
         {
-            var behaviorMod = LoadBehaviorMod(behaviorModInfo, sharedAssemblies);
+            var behaviorMod = BehaviorMod.Load(behaviorModInfo, sharedAssemblies);
             sharedAssemblies.Add(behaviorMod.Assembly.FullName!, behaviorMod.Assembly);
             behaviorMods.Add(behaviorMod);
         }
         var behaviorModsArray = behaviorMods.ToImmutableArray();
 
         // 加载资产模组
-        var contentModsArray = contentModInfos.Select(LoadContentMod).ToImmutableArray();
+        var contentModsArray = contentModInfos.Select(ContentMod.Load).ToImmutableArray();
 
         // 合并行为插件信息
         // 合并组件类型。直接拼接列表即可
@@ -372,10 +196,10 @@ public class ModsManager
         var declarationSchemaInfos = behaviorModsArray
             .SelectMany(l => l.DeclarationSchemaInfos)
             .ToImmutableDictionary();
-        var gameplayBehaviors = MergeBehaviorsInfo(
+        var gameplayBehaviors = BakedBehaviorsInfo.Bake(
             behaviorModsArray.Select(m => m.GameplayBehaviorsInfo).ToArray()
         );
-        var previewBehaviors = MergeBehaviorsInfo(
+        var previewBehaviors = BakedBehaviorsInfo.Bake(
             behaviorModsArray.Select(m => m.PreviewBehaviorsInfo).ToArray()
         );
 
