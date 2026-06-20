@@ -3,11 +3,17 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record LevelModInfo : CommonModInfo
-{
-    public required DirectoryEntry Levels { get; init; }
-
-    public ImmutableArray<string> BehaviorDeps { get; init; } = [];
-
-    public ImmutableArray<string> ContentDeps { get; init; } = [];
-}
+internal record LevelModInfo(
+    DirectoryEntry Directory,
+    string FullName,
+    string ShortName,
+    FileEntry? Preview,
+    FileEntry? Background,
+    string Author,
+    string Version,
+    string Description,
+    string Link,
+    DirectoryEntry Levels,
+    ImmutableArray<string> BehaviorDeps = default,
+    ImmutableArray<string> ContentDeps = default
+) : ICommonModInfo;

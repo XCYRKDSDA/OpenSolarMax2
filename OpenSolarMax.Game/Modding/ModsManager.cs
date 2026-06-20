@@ -93,68 +93,58 @@ public class ModsManager
 
     private static BehaviorModInfo CreateBehaviorModInfo(DirectoryEntry dir, ModManifest manifest)
     {
-        return new BehaviorModInfo
-        {
-            Directory = dir,
-            FullName = manifest.FullName,
-            ShortName = manifest.ShortName,
-            Preview = dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern)
-                .FirstOrDefault(),
-            Background = dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern)
-                .FirstOrDefault(),
-            Author = manifest.Author,
-            Version = manifest.Version,
-            Description = manifest.Description,
-            Link = manifest.Link,
-            Assembly = dir.EnumerateFiles(
+        return new BehaviorModInfo(
+            dir,
+            manifest.FullName,
+            manifest.ShortName,
+            dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern).FirstOrDefault(),
+            dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern).FirstOrDefault(),
+            manifest.Author,
+            manifest.Version,
+            manifest.Description,
+            manifest.Link,
+            dir.EnumerateFiles(
                     manifest.Assembly ?? string.Format(DefaultAssemblyFormat, manifest.FullName)
                 )
                 .First(),
-            Content = dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir)
-                .FirstOrDefault(),
-            Dependencies = manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
-            Configs = dir.EnumerateFiles(manifest.Configs ?? DefaultConfigsFile).FirstOrDefault(),
-        };
+            dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).FirstOrDefault(),
+            manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
+            dir.EnumerateFiles(manifest.Configs ?? DefaultConfigsFile).FirstOrDefault()
+        );
     }
 
     private static ContentModInfo CreateContentModInfo(DirectoryEntry dir, ModManifest manifest)
     {
-        return new ContentModInfo
-        {
-            Directory = dir,
-            FullName = manifest.FullName,
-            ShortName = manifest.ShortName,
-            Preview = dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern)
-                .FirstOrDefault(),
-            Background = dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern)
-                .FirstOrDefault(),
-            Author = manifest.Author,
-            Version = manifest.Version,
-            Description = manifest.Description,
-            Link = manifest.Link,
-            Content = dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).First(),
-        };
+        return new ContentModInfo(
+            dir,
+            manifest.FullName,
+            manifest.ShortName,
+            dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern).FirstOrDefault(),
+            dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern).FirstOrDefault(),
+            manifest.Author,
+            manifest.Version,
+            manifest.Description,
+            manifest.Link,
+            dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).First()
+        );
     }
 
     private static LevelModInfo CreateLevelModInfo(DirectoryEntry dir, ModManifest manifest)
     {
-        return new LevelModInfo
-        {
-            Directory = dir,
-            FullName = manifest.FullName,
-            ShortName = manifest.ShortName,
-            Preview = dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern)
-                .FirstOrDefault(),
-            Background = dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern)
-                .FirstOrDefault(),
-            Author = manifest.Author,
-            Version = manifest.Version,
-            Description = manifest.Description,
-            Link = manifest.Link,
-            Levels = dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
-            BehaviorDeps = manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
-            ContentDeps = manifest.Dependencies?.Content?.ToImmutableArray() ?? [],
-        };
+        return new LevelModInfo(
+            dir,
+            manifest.FullName,
+            manifest.ShortName,
+            dir.EnumerateFiles(manifest.Preview ?? DefaultPreviewPattern).FirstOrDefault(),
+            dir.EnumerateFiles(manifest.Background ?? DefaultBackgroundPattern).FirstOrDefault(),
+            manifest.Author,
+            manifest.Version,
+            manifest.Description,
+            manifest.Link,
+            dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
+            manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
+            manifest.Dependencies?.Content?.ToImmutableArray() ?? []
+        );
     }
 
     #endregion
@@ -293,18 +283,17 @@ public class ModsManager
             localConfigsBuilder.AddConfiguration(mod.Configs!);
         var localConfigs = localConfigsBuilder.Build();
 
-        return new LevelModContext
-        {
-            Metadata = info,
-            BehaviorMods = behaviorModsArray,
-            ContentMods = contentModsArray,
-            LocalAssets = localAssets,
-            LocalConfigs = localConfigs,
-            ComponentTypes = componentTypes,
-            DeclarationSchemaInfos = declarationSchemaInfos,
-            GameplayBehaviors = gameplayBehaviors,
-            PreviewBehaviors = previewBehaviors,
-        };
+        return new LevelModContext(
+            info,
+            behaviorModsArray,
+            contentModsArray,
+            localAssets,
+            localConfigs,
+            componentTypes,
+            declarationSchemaInfos,
+            gameplayBehaviors,
+            previewBehaviors
+        );
     }
 
     #endregion

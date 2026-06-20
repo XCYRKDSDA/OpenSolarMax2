@@ -20,48 +20,24 @@ internal record ConceptRelatedTypes(
     ImmutableArray<Type> ApplierTypes
 );
 
-internal record BehaviorMod : IDisposable
+/// <param name="ContentFileSystems">模组中提供资产的所有文件系统</param>
+/// <param name="Configs">模组中提供的参数配置文件</param>
+/// <param name="Assembly">模组的入口程序集</param>
+/// <param name="ComponentTypes">模组提供的所有组件类型</param>
+/// <param name="DeclarationSchemaInfos">模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引</param>
+/// <param name="GameplayBehaviorsInfo">游玩时的行为信息</param>
+/// <param name="PreviewBehaviorsInfo">预览时的行为信息</param>
+internal record BehaviorMod(
+    BehaviorModInfo Metadata,
+    ImmutableArray<IFileSystem> ContentFileSystems,
+    IConfigurationRoot? Configs,
+    Assembly Assembly,
+    ImmutableArray<Type> ComponentTypes,
+    ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos,
+    BehaviorsInfo GameplayBehaviorsInfo,
+    BehaviorsInfo PreviewBehaviorsInfo
+) : IDisposable
 {
-    public required BehaviorModInfo Metadata { get; init; }
-
-    /// <summary>
-    /// 模组中提供资产的所有文件系统
-    /// </summary>
-    public required ImmutableArray<IFileSystem> ContentFileSystems { get; init; }
-
-    /// <summary>
-    /// 模组中提供的参数配置文件
-    /// </summary>
-    public IConfigurationRoot? Configs { get; init; }
-
-    /// <summary>
-    /// 模组的入口程序集
-    /// </summary>
-    public required Assembly Assembly { get; init; }
-
-    /// <summary>
-    /// 模组提供的所有组件类型
-    /// </summary>
-    public required ImmutableArray<Type> ComponentTypes { get; init; }
-
-    /// <summary>
-    /// 模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引
-    /// </summary>
-    public required ImmutableDictionary<
-        string,
-        DeclarationSchemaInfo
-    > DeclarationSchemaInfos { get; init; }
-
-    /// <summary>
-    /// 游玩时的行为信息
-    /// </summary>
-    public required BehaviorsInfo GameplayBehaviorsInfo { get; init; }
-
-    /// <summary>
-    /// 预览时的行为信息
-    /// </summary>
-    public required BehaviorsInfo PreviewBehaviorsInfo { get; init; }
-
     private bool _disposed = false;
 
     public void Dispose()
@@ -120,37 +96,39 @@ internal record BehaviorMod : IDisposable
             configs = configsBuilder.Build();
         }
 
-        return new BehaviorMod
-        {
-            Metadata = info,
-            Assembly = assembly,
-            ContentFileSystems = contentFileSystems.ToImmutableArray(),
-            Configs = configs,
-            // 查找组件类型
-            ComponentTypes = assembly
-                .ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
-                .ToImmutableArray(),
-            // 查找关卡文件声明类型
-            DeclarationSchemaInfos = FindDeclarationTypes(assembly).ToImmutableDictionary(),
-            // 查找游玩场景行为相关类型
-            GameplayBehaviorsInfo = new BehaviorsInfo(
-                FindTranslatorTypes(assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
-                FindConceptRelatedTypes(assembly, GameplayOrPreview.Gameplay)
-                    .ToImmutableDictionary(),
-                FindSystemTypes(assembly, GameplayOrPreview.Gameplay),
-                FindHookImplementations(assembly, GameplayOrPreview.Gameplay)
-                    .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
-            ),
-            // 查找预览场景行为相关类型
-            PreviewBehaviorsInfo = new BehaviorsInfo(
-                FindTranslatorTypes(assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
-                FindConceptRelatedTypes(assembly, GameplayOrPreview.Preview)
-                    .ToImmutableDictionary(),
-                FindSystemTypes(assembly, GameplayOrPreview.Preview),
-                FindHookImplementations(assembly, GameplayOrPreview.Preview)
-                    .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
-            ),
-        };
+        // 查找组件类型
+        var componentTypes = assembly
+            .ExportedTypes.Where(t => t.GetCustomAttribute<ComponentAttribute>() is not null)
+            .ToImmutableArray();
+        // 查找关卡文件声明类型
+        var declarationSchemaInfos = FindDeclarationTypes(assembly).ToImmutableDictionary();
+        // 查找游玩场景行为相关类型
+        var gameplayBehaviorsInfo = new BehaviorsInfo(
+            FindTranslatorTypes(assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
+            FindConceptRelatedTypes(assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
+            FindSystemTypes(assembly, GameplayOrPreview.Gameplay),
+            FindHookImplementations(assembly, GameplayOrPreview.Gameplay)
+                .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
+        );
+        // 查找预览场景行为相关类型
+        var previewBehaviorsInfo = new BehaviorsInfo(
+            FindTranslatorTypes(assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
+            FindConceptRelatedTypes(assembly, GameplayOrPreview.Preview).ToImmutableDictionary(),
+            FindSystemTypes(assembly, GameplayOrPreview.Preview),
+            FindHookImplementations(assembly, GameplayOrPreview.Preview)
+                .ToImmutableDictionary(g => g.Key, g => g.ToImmutableArray())
+        );
+
+        return new BehaviorMod(
+            info,
+            contentFileSystems.ToImmutableArray(),
+            configs,
+            assembly,
+            componentTypes,
+            declarationSchemaInfos,
+            gameplayBehaviorsInfo,
+            previewBehaviorsInfo
+        );
     }
 
     #region 反射扫描

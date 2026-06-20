@@ -6,23 +6,13 @@ using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal class BakedBehaviorsInfo(
-    ImmutableDictionary<string, DeclarationTranslatorInfo> translatorTypes,
-    ImmutableDictionary<string, ConceptInfo> conceptInfos,
-    ImmutableSortedSystemTypeCollection systemTypes,
-    ImmutableDictionary<string, ImmutableArray<MethodInfo>> hookImplMethods
+internal record BakedBehaviorsInfo(
+    ImmutableDictionary<string, DeclarationTranslatorInfo> TranslatorTypes,
+    ImmutableDictionary<string, ConceptInfo> ConceptInfos,
+    ImmutableSortedSystemTypeCollection SystemTypes,
+    ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods
 )
 {
-    public ImmutableDictionary<string, DeclarationTranslatorInfo> TranslatorTypes { get; } =
-        translatorTypes;
-
-    public ImmutableDictionary<string, ConceptInfo> ConceptInfos { get; } = conceptInfos;
-
-    public ImmutableSortedSystemTypeCollection SystemTypes { get; } = systemTypes;
-
-    public ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods { get; } =
-        hookImplMethods;
-
     private static ImmutableSortedSystemTypes BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
     {
         var orders = SystemsTopology.ExtractExecutionOrders(systemTypes);

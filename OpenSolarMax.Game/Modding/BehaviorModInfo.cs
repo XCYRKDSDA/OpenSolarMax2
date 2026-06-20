@@ -3,13 +3,18 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record BehaviorModInfo : CommonModInfo
-{
-    public required FileEntry Assembly { get; init; }
-
-    public DirectoryEntry? Content { get; init; }
-
-    public ImmutableArray<string> Dependencies { get; init; } = [];
-
-    public FileEntry? Configs { get; init; }
-}
+internal record BehaviorModInfo(
+    DirectoryEntry Directory,
+    string FullName,
+    string ShortName,
+    FileEntry? Preview,
+    FileEntry? Background,
+    string Author,
+    string Version,
+    string Description,
+    string Link,
+    FileEntry Assembly,
+    DirectoryEntry? Content = null,
+    ImmutableArray<string> Dependencies = default,
+    FileEntry? Configs = null
+) : ICommonModInfo;
