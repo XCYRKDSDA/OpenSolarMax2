@@ -160,12 +160,14 @@ internal record BehaviorMod(
 
         foreach (var type in assembly.GetExportedTypes())
         {
-            if (!type.GetInterfaces().Contains(typeof(IDeclaration)))
+            var schemaNameAttr = type.GetCustomAttribute<SchemaNameAttribute>();
+            if (schemaNameAttr is null)
                 continue;
 
-            var schemaNameAttr =
-                type.GetCustomAttribute<SchemaNameAttribute>()
-                ?? throw new Exception($"Can't find attribute `SchemaName` in type {type.Name}");
+            if (!type.GetInterfaces().Contains(typeof(IDeclaration)))
+                throw new Exception(
+                    $"Type {type.Name} has [SchemaName] but does not implement IDeclaration"
+                );
 
             configurationTypes.Add(
                 schemaNameAttr.Name,
@@ -185,15 +187,18 @@ internal record BehaviorMod(
 
         foreach (var type in assembly.GetExportedTypes())
         {
-            if (!type.GetInterfaces().Contains(typeof(ITranslator)))
+            var translateAttr = type.GetCustomAttribute<TranslateAttribute>();
+            if (translateAttr is null)
                 continue;
 
             if ((GetBehaviorTypeScene(type) & scene) == 0)
                 continue;
 
-            var translateAttr =
-                type.GetCustomAttribute<TranslateAttribute>()
-                ?? throw new Exception($"Can't find attribute `Translate` in type {type.Name}");
+            if (!type.GetInterfaces().Contains(typeof(ITranslator)))
+                throw new Exception(
+                    $"Type {type.Name} has [Translate] but does not implement ITranslator"
+                );
+
             translators.Add(
                 translateAttr.SchemaName,
                 new DeclarationTranslatorInfo(
@@ -221,24 +226,35 @@ internal record BehaviorMod(
             if ((GetBehaviorTypeScene(type) & scene) == 0)
                 continue;
 
-            if (type.GetInterfaces().Contains(typeof(IDefinition)))
+            if (type.GetCustomAttribute<DefineAttribute>() is { } defineAttr)
             {
-                var name = type.GetCustomAttribute<DefineAttribute>()!.Key;
-                definitionTypes.Add(name, type);
+                if (!type.GetInterfaces().Contains(typeof(IDefinition)))
+                    throw new Exception(
+                        $"Type {type.Name} has [Define] but does not implement IDefinition"
+                    );
+                definitionTypes.Add(defineAttr.Key, type);
             }
-            else if (type.GetInterfaces().Contains(typeof(IDescription)))
+            else if (type.GetCustomAttribute<DescribeAttribute>() is { } describeAttr)
             {
-                var name = type.GetCustomAttribute<DescribeAttribute>()!.Key;
-                descriptionTypes.Add(name, type);
+                if (!type.GetInterfaces().Contains(typeof(IDescription)))
+                    throw new Exception(
+                        $"Type {type.Name} has [Describe] but does not implement IDescription"
+                    );
+                descriptionTypes.Add(describeAttr.Key, type);
             }
-            else if (
-                type.GetInterfaces().Contains(typeof(IApplier))
-                || type.GetInterfaces()
-                    .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IApplier<>))
-            )
+            else if (type.GetCustomAttribute<ApplyAttribute>() is { } applyAttr)
             {
-                var name = type.GetCustomAttribute<ApplyAttribute>()!.Key;
-                applierTypes.Add(name, type);
+                if (
+                    !type.GetInterfaces().Contains(typeof(IApplier))
+                    && !type.GetInterfaces()
+                        .Any(i =>
+                            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IApplier<>)
+                        )
+                )
+                    throw new Exception(
+                        $"Type {type.Name} has [Apply] but does not implement IApplier or IApplier<>"
+                    );
+                applierTypes.Add(applyAttr.Key, type);
             }
         }
 
@@ -275,17 +291,12 @@ internal record BehaviorMod(
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters)
                 continue;
 
-            // 筛选系统类型
-            if (
-                !type.GetInterfaces()
-                    .Intersect([
-                        typeof(ITickSystem),
-                        typeof(ITickSystemWithStructuralChanges),
-                        typeof(ICalcSystem),
-                        typeof(ICalcSystemWithStructuralChanges),
-                    ])
-                    .Any()
-            )
+            // 筛选系统类型：先检查阶段属性
+            var isSimulate = type.GetCustomAttribute<SimulateSystemAttribute>() is not null;
+            var isInput = type.GetCustomAttribute<InputSystemAttribute>() is not null;
+            var isAi = type.GetCustomAttribute<AiSystemAttribute>() is not null;
+            var isRender = type.GetCustomAttribute<RenderSystemAttribute>() is not null;
+            if (!isSimulate && !isInput && !isAi && !isRender)
                 continue;
 
             // 排除禁用的系统
@@ -296,16 +307,28 @@ internal record BehaviorMod(
             if ((GetBehaviorTypeScene(type) & scene) == 0)
                 continue;
 
-            if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
+            // 验证实现了 ISystem 接口
+            if (
+                !type.GetInterfaces()
+                    .Intersect([
+                        typeof(ITickSystem),
+                        typeof(ITickSystemWithStructuralChanges),
+                        typeof(ICalcSystem),
+                        typeof(ICalcSystemWithStructuralChanges),
+                    ])
+                    .Any()
+            )
+                throw new Exception(
+                    $"Type {type.Name} has phase attribute but does not implement ISystem"
+                );
+
+            if (isSimulate)
                 systemTypes.Simulate.Add(type);
-
-            if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
+            if (isInput)
                 systemTypes.Input.Add(type);
-
-            if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
+            if (isAi)
                 systemTypes.Ai.Add(type);
-
-            if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
+            if (isRender)
                 systemTypes.Render.Add(type);
         }
 
