@@ -1,6 +1,6 @@
 # 仿真系统相关
 
-[systems.simulate.shipping]
+[systems.simulate.jumping]
 charging_duration = 0.5
 landing_duration = 0.5
 fading_in_duration = 0.1

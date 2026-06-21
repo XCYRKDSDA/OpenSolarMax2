@@ -12,11 +12,11 @@ using OpenSolarMax.Mods.Core.Concepts;
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 /// <summary>
-/// 处理<see cref="StartShippingRequest"/>使传送门上单位开始传送的系统
+/// 处理<see cref="StartJumpingRequest"/>使传送门上单位开始传送的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
-    ReadPrev(typeof(StartShippingRequest)),
+    ReadPrev(typeof(StartJumpingRequest)),
     ReadPrev(typeof(AnchoredShipsRegistry)),
     ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild)),
     ReadPrev(typeof(RevolutionOrbit)),
@@ -38,10 +38,10 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
     : ICalcSystemWithStructuralChanges
 {
     [Query]
-    [All<StartShippingRequest>]
+    [All<StartJumpingRequest>]
     private void StartTransporting(
         Entity requestEntity,
-        in StartShippingRequest request,
+        in StartJumpingRequest request,
         [Data] CommandBuffer commandBuffer
     )
     {

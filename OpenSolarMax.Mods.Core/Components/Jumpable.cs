@@ -3,7 +3,7 @@ namespace OpenSolarMax.Mods.Core.Components;
 /// <summary>
 /// 可运输组件。描述阵营的移动能力
 /// </summary>
-public struct Shippable
+public struct Jumpable
 {
     /// <summary>
     /// 移动速度

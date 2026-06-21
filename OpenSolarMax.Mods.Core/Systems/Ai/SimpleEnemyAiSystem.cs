@@ -44,7 +44,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         ProductionCondition,
         Colonizable,
         AnchoredShipsRegistry,
-        ShippingUnitsRegistry,
+        JumpingUnitsRegistry,
         AbsoluteTransform,
         PlanetAiTimers
     >]
@@ -55,7 +55,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         in ProductionCondition productionCondition,
         in Colonizable colonizable,
         in AnchoredShipsRegistry anchoredShipsRegistry,
-        in ShippingUnitsRegistry shippingUnitsRegistry,
+        in JumpingUnitsRegistry jumpingUnitsRegistry,
         in AbsoluteTransform absoluteTransform,
         in PlanetAiTimers planetAiTimers,
         [Data] Entity team,
@@ -80,13 +80,13 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 ActualFriendUnits = anchoredShipsRegistry.Ships[team].Count(),
                 PredictedFriendUnits =
                     anchoredShipsRegistry.Ships[team].Count()
-                    + shippingUnitsRegistry.IncomingUnits[team].Count(),
+                    + jumpingUnitsRegistry.IncomingUnits[team].Count(),
                 ActualEnemyUnits = anchoredShipsRegistry
                     .Ships.Where(g => g.Key != team)
                     .Sum(g => g.Count()),
                 PredictedEnemyUnits =
                     anchoredShipsRegistry.Ships.Where(g => g.Key != team).Sum(g => g.Count())
-                    + shippingUnitsRegistry
+                    + jumpingUnitsRegistry
                         .IncomingUnits.Where(g => g.Key != team)
                         .Sum(g => g.Count()),
                 Battle = battlefield.FrontlineDamage.Count > 0,
@@ -217,7 +217,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 factory.Make(
                     world,
                     commandBuffer,
-                    new ShippingRequestDescription()
+                    new JumpingRequestDescription()
                     {
                         Departure = sender.Entity,
                         Destination = target.Entity,
@@ -327,7 +327,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 factory.Make(
                     world,
                     commandBuffer,
-                    new ShippingRequestDescription()
+                    new JumpingRequestDescription()
                     {
                         Departure = sender.Entity,
                         Destination = target.Entity,
@@ -409,7 +409,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 factory.Make(
                     world,
                     commandBuffer,
-                    new ShippingRequestDescription()
+                    new JumpingRequestDescription()
                     {
                         Departure = sender.Entity,
                         Destination = target.Entity,

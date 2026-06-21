@@ -6,7 +6,7 @@ namespace OpenSolarMax.Mods.Core.Components;
 /// <summary>
 /// 运输任务组件。描述某个单位参与的运输任务
 /// </summary>
-public struct ShippingTask
+public struct JumpingTask
 {
     /// <summary>
     /// 当前运输的目标星球
@@ -39,7 +39,7 @@ public struct ShippingTask
     public RevolutionState ExpectedRevolutionState;
 }
 
-public struct ShippingStatus_Charging
+public struct JumpingStatus_Charging
 {
     /// <summary>
     /// 已充能的时间
@@ -47,7 +47,7 @@ public struct ShippingStatus_Charging
     public float ElapsedTime;
 }
 
-public struct ShippingStatus_Travelling
+public struct JumpingStatus_Travelling
 {
     /// <summary>
     /// 由于充能耽搁的时间
@@ -60,32 +60,32 @@ public struct ShippingStatus_Travelling
     public float ElapsedTime;
 }
 
-public enum ShippingState
+public enum JumpingState
 {
     Idle,
     Charging,
     Travelling,
 }
 
-public struct ShippingStatus
+public struct JumpingStatus
 {
     /// <summary>
     /// 当前飞行状态机状态
     /// </summary>
-    public ShippingState State;
+    public JumpingState State;
 
     /// <summary>
     /// 当前飞行任务
     /// </summary>
-    public ShippingTask Task;
+    public JumpingTask Task;
 
     /// <summary>
-    /// 处于<see cref="ShippingState.Charging"/>状态时的具体状态
+    /// 处于<see cref="JumpingState.Charging"/>状态时的具体状态
     /// </summary>
-    public ShippingStatus_Charging Charging;
+    public JumpingStatus_Charging Charging;
 
     /// <summary>
-    /// 处于<see cref="ShippingState.Travelling"/>状态时的具体状态
+    /// 处于<see cref="JumpingState.Travelling"/>状态时的具体状态
     /// </summary>
-    public ShippingStatus_Travelling Travelling;
+    public JumpingStatus_Travelling Travelling;
 }

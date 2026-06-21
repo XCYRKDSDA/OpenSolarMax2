@@ -67,7 +67,7 @@ public static class Signatures
             typeof(TeamReferenceColor),
             typeof(Producible),
             typeof(Combatable),
-            typeof(Shippable),
+            typeof(Jumpable),
             typeof(InTeam.AsTeam),
             typeof(TeamPopulationRegistry),
             typeof(ColonizationAbility)

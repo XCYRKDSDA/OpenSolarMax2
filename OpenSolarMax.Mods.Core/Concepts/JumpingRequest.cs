@@ -7,18 +7,18 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string ShippingRequest = "ShippingRequest";
+    public const string JumpingRequest = "JumpingRequest";
 }
 
-[Define(ConceptNames.ShippingRequest)]
-public abstract class ShippingRequestDefinition : IDefinition
+[Define(ConceptNames.JumpingRequest)]
+public abstract class JumpingRequestDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(typeof(InputEvent), typeof(StartShippingRequest));
+        new(typeof(InputEvent), typeof(StartJumpingRequest));
 }
 
-[Describe(ConceptNames.ShippingRequest)]
-public class ShippingRequestDescription : IDescription
+[Describe(ConceptNames.JumpingRequest)]
+public class JumpingRequestDescription : IDescription
 {
     public required Entity Departure { get; set; }
 
@@ -29,14 +29,14 @@ public class ShippingRequestDescription : IDescription
     public required int ExpectedNum { get; set; }
 }
 
-[Apply(ConceptNames.ShippingRequest)]
-public class ShippingRequestApplier : IApplier<ShippingRequestDescription>
+[Apply(ConceptNames.JumpingRequest)]
+public class JumpingRequestApplier : IApplier<JumpingRequestDescription>
 {
-    public void Apply(CommandBuffer commandBuffer, Entity entity, ShippingRequestDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, JumpingRequestDescription desc)
     {
         commandBuffer.Set(
             in entity,
-            new StartShippingRequest
+            new StartJumpingRequest
             {
                 Departure = desc.Departure,
                 Destination = desc.Destination,

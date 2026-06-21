@@ -17,19 +17,19 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 处理<see cref="StartShippingRequest"/>来使单位开始飞行的系统
+/// 处理<see cref="StartJumpingRequest"/>来使单位开始飞行的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
-    ReadPrev(typeof(StartShippingRequest)),
+    ReadPrev(typeof(StartJumpingRequest)),
     ReadPrev(typeof(AnchoredShipsRegistry)),
-    ReadPrev(typeof(Shippable)),
+    ReadPrev(typeof(Jumpable)),
     ReadPrev(typeof(AbsoluteTransform)),
     ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild)),
     ReadPrev(typeof(RevolutionOrbit)),
     ReadPrev(typeof(RevolutionState)),
     ReadPrev(typeof(PlanetGeostationaryOrbit)),
-    Iterate(typeof(ShippingStatus)),
+    Iterate(typeof(JumpingStatus)),
     Write(typeof(SoundEffect)),
     ChangeStructure
 ]
@@ -41,11 +41,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 ]
 // 这一帧刚抵达的单位不会立刻出发
 [ExecuteBefore(typeof(LandArrivedShipsSystem))]
-public sealed partial class StartShippingSystem(
+public sealed partial class StartJumpingSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory,
-    [Section("systems:simulate:shipping")] IConfiguration configs
+    [Section("systems:simulate:jumping")] IConfiguration configs
 ) : ICalcSystemWithStructuralChanges
 {
     private readonly SafeFmodEventDescription _chargingSoundEvent =
@@ -57,10 +57,10 @@ public sealed partial class StartShippingSystem(
     );
 
     [Query]
-    [All<StartShippingRequest>]
-    private void StartShipping(
+    [All<StartJumpingRequest>]
+    private void StartJumping(
         Entity requestEntity,
-        in StartShippingRequest request,
+        in StartJumpingRequest request,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -76,12 +76,12 @@ public sealed partial class StartShippingSystem(
         var shipsRemain = request.ExpectedNum;
         var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
 
-        var shippable = request.Team.Get<Shippable>();
+        var jumpable = request.Team.Get<Jumpable>();
         var (
             expectedArrivalPlanetPosition,
             expectedTravelDuration,
             arrivalPlanetPositionDerivative
-        ) = ShippingUtils.CalculateShippingTask(request.Departure, request.Destination, shippable);
+        ) = JumpingUtils.CalculateJumpingTask(request.Departure, request.Destination, jumpable);
 
         var departurePlanetPosition = request.Departure.Get<AbsoluteTransform>().Translation;
         var departure2Destination = Vector3.Normalize(
@@ -130,10 +130,10 @@ public sealed partial class StartShippingSystem(
                 _maxOffsetRatio * expectedTravelDuration / 2
             );
 
-            ref var shippingStatus = ref ship.Get<ShippingStatus>();
+            ref var jumpingStatus = ref ship.Get<JumpingStatus>();
 
             // 设置任务
-            shippingStatus.Task = new()
+            jumpingStatus.Task = new()
             {
                 DestinationPlanet = request.Destination,
                 ExpectedTravelDuration = expectedTravelDuration + dt,
@@ -143,8 +143,8 @@ public sealed partial class StartShippingSystem(
                 ExpectedRevolutionState = revolutionState,
             };
             // 初始化状态
-            shippingStatus.State = ShippingState.Charging;
-            shippingStatus.Charging.ElapsedTime = 0;
+            jumpingStatus.State = JumpingState.Charging;
+            jumpingStatus.Charging.ElapsedTime = 0;
 
             // 解除到星球的锚定
             commandBuffer.Destroy(
@@ -167,5 +167,5 @@ public sealed partial class StartShippingSystem(
         commandBuffer.Destroy(in requestEntity);
     }
 
-    public void Update(CommandBuffer commandBuffer) => StartShippingQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer) => StartJumpingQuery(world, commandBuffer);
 }

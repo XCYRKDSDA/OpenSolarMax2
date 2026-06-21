@@ -37,7 +37,7 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 // 在自动计算绝对位姿系统之后以覆盖位姿
 [ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
 // 与普通运输系统完全不相干
-[FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateShippingEffectSystem))]
+[FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateJumpingEffectSystem))]
 // 动画不会设置颜色，因此和阵营颜色应用系统不相干
 [FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
 // 覆盖新生单位动画

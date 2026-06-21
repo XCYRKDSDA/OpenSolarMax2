@@ -24,7 +24,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
-public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactory factory)
+public sealed partial class ShootJumpingUnitsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myTeam)

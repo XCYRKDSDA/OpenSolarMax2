@@ -22,7 +22,7 @@ public abstract class TeamDefinition : IDefinition
             // 阵营属性
             typeof(Producible),
             typeof(Combatable),
-            typeof(Shippable),
+            typeof(Jumpable),
             typeof(ColonizationAbility),
             // 隶属关系
             typeof(InTeam.AsTeam),
@@ -76,7 +76,7 @@ public class TeamApplier : IApplier<TeamDescription>
             }
         );
 
-        commandBuffer.Set(in entity, new Shippable { Speed = 100 });
+        commandBuffer.Set(in entity, new Jumpable { Speed = 100 });
 
         commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 1 });
 

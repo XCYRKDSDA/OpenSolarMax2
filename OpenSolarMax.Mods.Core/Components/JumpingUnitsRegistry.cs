@@ -4,7 +4,7 @@ using OpenSolarMax.Game.Modding.ECS;
 namespace OpenSolarMax.Mods.Core.Components;
 
 [Component]
-public struct ShippingUnitsRegistry
+public struct JumpingUnitsRegistry
 {
     /// <summary>
     /// 阵营 -> 舰船

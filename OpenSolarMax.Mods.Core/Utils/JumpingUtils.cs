@@ -8,7 +8,7 @@ using OpenSolarMax.Mods.Core.Systems;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
-public static class ShippingUtils
+public static class JumpingUtils
 {
     //private enum TransformLinkType
     //{
@@ -143,10 +143,10 @@ public static class ShippingUtils
 
     private static readonly float _dt = 1f;
 
-    public static (Vector3 Destination, float Duration, Vector3 Derivative) CalculateShippingTask(
+    public static (Vector3 Destination, float Duration, Vector3 Derivative) CalculateJumpingTask(
         Entity departure,
         Entity destination,
-        Shippable shippable
+        Jumpable jumpable
     )
     {
         // 获取出发位置
@@ -187,7 +187,7 @@ public static class ShippingUtils
             var distance = (destinationPositionRef - departurePosition).Length();
 
             // 单位可移动的距离
-            var movedDistance = shippable.Speed * t;
+            var movedDistance = jumpable.Speed * t;
 
             // 计算误差
             var err = distance - movedDistance;

@@ -13,14 +13,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 检查充能时间，从充能阶段切换到移动阶段的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[Iterate(typeof(ShippingStatus)), Write(typeof(SoundEffect))]
+[Iterate(typeof(JumpingStatus)), Write(typeof(SoundEffect))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 状态先量变才能质变
 [ExecuteAfter(typeof(UpdateShipsStateSystem))]
 public sealed partial class TransitFromChargingToTravellingSystem(
     World world,
     IAssetsManager assets,
-    [Section("systems:simulate:shipping")] IConfiguration configs
+    [Section("systems:simulate:jumping")] IConfiguration configs
 ) : ICalcSystem
 {
     private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
@@ -29,17 +29,17 @@ public sealed partial class TransitFromChargingToTravellingSystem(
         assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipBegun");
 
     [Query]
-    [All<ShippingStatus, SoundEffect>]
-    private void Proceed(ref ShippingStatus status, ref SoundEffect soundEffect)
+    [All<JumpingStatus, SoundEffect>]
+    private void Proceed(ref JumpingStatus status, ref SoundEffect soundEffect)
     {
         // 只考察Charging状态
-        if (status.State != ShippingState.Charging)
+        if (status.State != JumpingState.Charging)
             return;
 
         if (status.Charging.ElapsedTime > _chargingDuration)
         {
-            status.State = ShippingState.Travelling;
-            status.Travelling = new ShippingStatus_Travelling()
+            status.State = JumpingState.Travelling;
+            status.Travelling = new JumpingStatus_Travelling()
             {
                 DelayedTime = status.Charging.ElapsedTime,
                 ElapsedTime = 0,

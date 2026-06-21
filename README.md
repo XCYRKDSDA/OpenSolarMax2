@@ -29,7 +29,7 @@ The project is modularly designed: a launcher loads different modules to introdu
 
 - [x] Unit production
 - [x] Unit combat
-- [x] Unit Shipping
+- [x] Unit Jumping
 - [x] Unit Revolution
 - [x] Planet colonization
 - [x] Planet revolution
@@ -37,7 +37,7 @@ The project is modularly designed: a launcher loads different modules to introdu
 - [ ] Basic AI
 - [x] Visualization of unit combat status
 - [x] Visualization of planet colonization
-- [x] Input system for shipping units
+- [x] Input system for jumping units
 - [ ] Sound system and effects
 
 ### SolarMax2 Features

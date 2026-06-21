@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
-    Iterate(typeof(ShippingStatus)),
+    Iterate(typeof(JumpingStatus)),
     ReadPrev(typeof(TrailOf.AsShip)),
     Write(typeof(SoundEffect)),
     ChangeStructure
@@ -38,17 +38,17 @@ public sealed partial class LandArrivedShipsSystem(
         assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipDone");
 
     [Query]
-    [All<ShippingStatus>]
+    [All<JumpingStatus>]
     private static void FindArrivedShips(
         Entity ship,
-        in ShippingStatus status,
+        in JumpingStatus status,
         [Data] List<Entity> arrivedEntities
     )
     {
-        if (status.State == ShippingState.Idle)
+        if (status.State == JumpingState.Idle)
             return;
 
-        if (status.State != ShippingState.Travelling)
+        if (status.State != JumpingState.Travelling)
             return;
 
         if (
@@ -60,13 +60,13 @@ public sealed partial class LandArrivedShipsSystem(
 
     private void LandShip(
         Entity ship,
-        ref ShippingStatus status,
+        ref JumpingStatus status,
         ref SoundEffect soundEffect,
         CommandBuffer commandBuffer
     )
     {
         // 结束飞行
-        status.State = ShippingState.Idle;
+        status.State = JumpingState.Idle;
 
         // 将单位挂载到目标星球
         factory.Make(
@@ -105,7 +105,7 @@ public sealed partial class LandArrivedShipsSystem(
 
         foreach (var entity in _arrivedEntities)
         {
-            var refs = entity.Get<ShippingStatus, SoundEffect>();
+            var refs = entity.Get<JumpingStatus, SoundEffect>();
             LandShip(entity, ref refs.t0, ref refs.t1, commandBuffer);
         }
         _arrivedEntities.Clear();

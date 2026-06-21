@@ -34,7 +34,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(TreeRelationship<Anchorage>.AsParent), // 挂载关系父方
             typeof(AnchoredShipsRegistry), // 挂载单位的索引
             // 移动相关
-            typeof(ShippingUnitsRegistry), // 前往该天体的单位的索引
+            typeof(JumpingUnitsRegistry), // 前往该天体的单位的索引
             typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
             // 战争相关
             typeof(Battlefield), // 允许发生战争

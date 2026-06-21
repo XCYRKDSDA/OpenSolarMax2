@@ -8,24 +8,24 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 运输系统。根据运输时间计算单位动画、位置和方向
+/// 跳跃系统。根据跳跃时间计算单位动画、位置和方向
 /// </summary>
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(ShippingStatus)), Write(typeof(AbsoluteTransform))]
-[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 运输单位应当不再有相对变换，因此和计算绝对位姿的系统无干扰
+[ReadCurr(typeof(JumpingStatus)), Write(typeof(AbsoluteTransform))]
+[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 跳跃单位应当不再有相对变换，因此和计算绝对位姿的系统无干扰
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
 {
     [Query]
-    [All<ShippingStatus, AbsoluteTransform>]
-    private static void CalculatePosition(in ShippingStatus status, ref AbsoluteTransform pose)
+    [All<JumpingStatus, AbsoluteTransform>]
+    private static void CalculatePosition(in JumpingStatus status, ref AbsoluteTransform pose)
     {
-        if (status.State == ShippingState.Idle)
+        if (status.State == JumpingState.Idle)
             return;
 
-        if (status.State == ShippingState.Charging)
+        if (status.State == JumpingState.Charging)
             pose.Translation = status.Task.DeparturePosition;
-        else if (status.State == ShippingState.Travelling)
+        else if (status.State == JumpingState.Travelling)
         {
             var progress =
                 status.Travelling.ElapsedTime

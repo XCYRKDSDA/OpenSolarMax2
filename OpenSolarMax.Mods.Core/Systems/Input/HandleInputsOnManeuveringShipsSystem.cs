@@ -22,7 +22,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ReachabilityRegistry)),
-    Iterate(typeof(ShippingStatus)),
+    Iterate(typeof(JumpingStatus)),
     ChangeStructure
 ]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
@@ -181,7 +181,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                     factory.Make(
                         world,
                         commandBuffer,
-                        new ShippingRequestDescription()
+                        new JumpingRequestDescription()
                         {
                             Departure = departure,
                             Destination = selection.SimpleSelecting.TappingDestination,
@@ -245,7 +245,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         factory.Make(
                             world,
                             commandBuffer,
-                            new ShippingRequestDescription()
+                            new JumpingRequestDescription()
                             {
                                 Departure = departure,
                                 Destination = selection.DraggingToDestination.CandidateDestination,

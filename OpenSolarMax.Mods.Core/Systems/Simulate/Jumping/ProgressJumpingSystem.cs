@@ -8,23 +8,23 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 更新运输任务状态的系统。该系统作用于运输任务的所有阶段
+/// 更新跳跃任务状态的系统。该系统作用于跳跃任务的所有阶段
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
-[Iterate(typeof(ShippingStatus))]
+[Iterate(typeof(JumpingStatus))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 {
     [Query]
-    [All<ShippingStatus>]
-    private static void Proceed([Data] GameTime time, ref ShippingStatus status)
+    [All<JumpingStatus>]
+    private static void Proceed([Data] GameTime time, ref JumpingStatus status)
     {
-        if (status.State == ShippingState.Idle)
+        if (status.State == JumpingState.Idle)
             return;
 
-        if (status.State == ShippingState.Charging)
+        if (status.State == JumpingState.Charging)
             status.Charging.ElapsedTime += (float)time.ElapsedGameTime.TotalSeconds;
-        else if (status.State == ShippingState.Travelling)
+        else if (status.State == JumpingState.Travelling)
             status.Travelling.ElapsedTime += (float)time.ElapsedGameTime.TotalSeconds;
         else
             throw new ArgumentOutOfRangeException();

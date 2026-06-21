@@ -13,32 +13,32 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 根据运输任务执行的时间和阶段，应用单位及其尾焰的动画
+/// 根据跳跃任务执行的时间和阶段，应用单位及其尾焰的动画
 /// </summary>
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TrailOf.AsShip)), ReadCurr(typeof(ShippingStatus)), Write(typeof(Sprite))]
+[ReadCurr(typeof(TrailOf.AsShip)), ReadCurr(typeof(JumpingStatus)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyTeamColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))] // 如果一个单位刚出生就移动，则用移动动画覆盖其出生动画
 [ExecuteBefore(typeof(SynchronizeColorSystem))]
-public sealed partial class UpdateShippingEffectSystem(
+public sealed partial class UpdateJumpingEffectSystem(
     World world,
     IAssetsManager assets,
-    [Section("systems:simulate:shipping")] IConfiguration configs
+    [Section("systems:simulate:jumping")] IConfiguration configs
 ) : ICalcSystem
 {
     private readonly float _landingDuration = configs.RequireValue<float>("landing_duration");
 
-    private readonly float _unitShippingFadeInDuration = configs.RequireValue<float>(
+    private readonly float _unitJumpingFadeInDuration = configs.RequireValue<float>(
         "fading_in_duration"
     );
-    private readonly float _unitShippingFadeOutDuration = configs.RequireValue<float>(
+    private readonly float _unitJumpingFadeOutDuration = configs.RequireValue<float>(
         "fading_out_duration"
     );
 
-    private readonly AnimationClip<Entity> _unitShippingAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _unitJumpingAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitShipping.json");
+    >("Animations/UnitJumping.json");
 
     private readonly AnimationClip<Entity> _unitTakingOffAnimationClip = assets.Load<
         AnimationClip<Entity>
@@ -53,23 +53,23 @@ public sealed partial class UpdateShippingEffectSystem(
     >("Animations/TrailExtinguished.json");
 
     [Query]
-    [All<TrailOf.AsShip, ShippingStatus, Sprite, Animation>]
+    [All<TrailOf.AsShip, JumpingStatus, Sprite, Animation>]
     private void CalculateAnimation(
         Entity ship,
         in TrailOf.AsShip asShip,
-        in ShippingStatus status,
+        in JumpingStatus status,
         in Sprite sprite
     )
     {
-        if (status.State == ShippingState.Idle)
+        if (status.State == JumpingState.Idle)
             return;
 
         // Charging状态下播放起飞动画
-        if (status.State == ShippingState.Charging)
+        if (status.State == JumpingState.Charging)
         {
             var takingOffAnimationTime = status.Charging.ElapsedTime;
             var fadeInTime = status.Charging.ElapsedTime;
-            var fadeInRatio = fadeInTime / _unitShippingFadeInDuration;
+            var fadeInRatio = fadeInTime / _unitJumpingFadeInDuration;
 
             switch (fadeInRatio)
             {
@@ -94,29 +94,29 @@ public sealed partial class UpdateShippingEffectSystem(
             }
         }
         // Travelling状态下播放飞行动画
-        else if (status.State == ShippingState.Travelling)
+        else if (status.State == JumpingState.Travelling)
         {
-            var shippingAnimationTime = status.Travelling.ElapsedTime;
+            var jumpingAnimationTime = status.Travelling.ElapsedTime;
             var fadeOutTime =
                 status.Travelling.ElapsedTime
                 + status.Travelling.DelayedTime
-                - (status.Task.ExpectedTravelDuration - _unitShippingFadeOutDuration);
-            var fadeOutRatio = fadeOutTime / _unitShippingFadeOutDuration;
+                - (status.Task.ExpectedTravelDuration - _unitJumpingFadeOutDuration);
+            var fadeOutRatio = fadeOutTime / _unitJumpingFadeOutDuration;
 
             switch (fadeOutRatio)
             {
                 case < 0:
                     AnimationEvaluator<Entity>.EvaluateAndSet(
                         ref ship,
-                        _unitShippingAnimationClip,
-                        shippingAnimationTime
+                        _unitJumpingAnimationClip,
+                        jumpingAnimationTime
                     );
                     break;
                 case >= 0 and < 1:
                     AnimationEvaluator<Entity>.TweenAndSet(
                         ref ship,
-                        _unitShippingAnimationClip,
-                        shippingAnimationTime,
+                        _unitJumpingAnimationClip,
+                        jumpingAnimationTime,
                         null,
                         float.NaN, // 下一个动画设置为空，直接继承上一个系统设置的值
                         null,
@@ -134,7 +134,7 @@ public sealed partial class UpdateShippingEffectSystem(
         trail.Get<Sprite>().Color = sprite.Color;
 
         // 应用尾迹动画
-        if (status.State == ShippingState.Travelling)
+        if (status.State == JumpingState.Travelling)
         {
             if (
                 status.Travelling.ElapsedTime + status.Travelling.DelayedTime
