@@ -16,6 +16,8 @@ namespace OpenSolarMax.Game.Modding;
 
 internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? Applier);
 
+internal record AssetLoaderInfo(Type LoaderType, Type AssetType);
+
 /// <param name="ContentFileSystems">模组中提供资产的所有文件系统</param>
 /// <param name="Configs">模组中提供的参数配置文件</param>
 /// <param name="Assembly">模组的入口程序集</param>
@@ -30,6 +32,7 @@ internal record BehaviorMod(
     Assembly Assembly,
     ImmutableArray<Type> ComponentTypes,
     ImmutableDictionary<string, DeclarationSchemaInfo> DeclarationSchemaInfos,
+    ImmutableArray<AssetLoaderInfo> AssetLoaderTypes,
     BehaviorsInfo GameplayBehaviorsInfo,
     BehaviorsInfo PreviewBehaviorsInfo
 ) : IDisposable
@@ -98,6 +101,8 @@ internal record BehaviorMod(
             .ToImmutableArray();
         // 查找关卡文件声明类型
         var declarationSchemaInfos = FindDeclarationTypes(assembly).ToImmutableDictionary();
+        // 查找资产加载器类型
+        var assetLoaderTypes = FindAssetLoaderTypes(assembly);
         // 查找游玩场景行为相关类型
         var gameplayBehaviorsInfo = new BehaviorsInfo(
             FindTranslatorTypes(assembly, GameplayOrPreview.Gameplay).ToImmutableDictionary(),
@@ -122,6 +127,7 @@ internal record BehaviorMod(
             assembly,
             componentTypes,
             declarationSchemaInfos,
+            assetLoaderTypes,
             gameplayBehaviorsInfo,
             previewBehaviorsInfo
         );
@@ -348,6 +354,31 @@ internal record BehaviorMod(
                 t.GetCustomAttribute<LevelWidgetAttribute>()!,
                 t
             ));
+    }
+
+    /// <summary>
+    /// 从一个程序集中找到所有的资产加载器类型
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <returns>所有资产加载器的类型和其对应的资产类型</returns>
+    private static ImmutableArray<AssetLoaderInfo> FindAssetLoaderTypes(Assembly assembly)
+    {
+        return assembly
+            .ExportedTypes.Where(t => t.GetCustomAttribute<AssetLoaderAttribute>() is not null)
+            .Select(t =>
+            {
+                var assetLoaderInterface =
+                    t.GetInterfaces()
+                        .FirstOrDefault(i =>
+                            i.IsGenericType
+                            && i.GetGenericTypeDefinition() == typeof(IAssetLoader<>)
+                        )
+                    ?? throw new Exception(
+                        $"Type {t.Name} has [AssetLoader] but does not implement IAssetLoader<T>"
+                    );
+                return new AssetLoaderInfo(t, assetLoaderInterface.GetGenericArguments()[0]);
+            })
+            .ToImmutableArray();
     }
 
     #endregion
