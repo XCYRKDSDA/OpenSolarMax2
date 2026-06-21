@@ -48,7 +48,8 @@ public static class Signatures
             typeof(Animation),
             typeof(TrailOf.AsShip),
             typeof(PopulationCost),
-            typeof(SoundEffect)
+            typeof(SoundEffect),
+            typeof(UnitDeathState)
         );
 
     public static readonly Signature PredefinedOrbit =
