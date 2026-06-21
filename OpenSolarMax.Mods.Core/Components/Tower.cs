@@ -2,7 +2,7 @@ using Nine.Graphics;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public struct Turret
+public struct Tower
 {
     public TextureRegion? FlareTexture;
 }

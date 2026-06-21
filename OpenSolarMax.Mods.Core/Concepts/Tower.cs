@@ -12,11 +12,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string Turret = "Turret";
+    public const string Tower = "Tower";
 }
 
-[Define(ConceptNames.Turret)]
-public abstract class TurretDefinition : IDefinition
+[Define(ConceptNames.Tower)]
+public abstract class TowerDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         CelestialBodyDefinition.Signature
@@ -28,12 +28,12 @@ public abstract class TurretDefinition : IDefinition
             typeof(InAttackRangeShipsRegistry),
             typeof(AttackTimer),
             typeof(AttackCooldown),
-            typeof(Turret)
+            typeof(Tower)
         );
 }
 
-[Describe(ConceptNames.Turret)]
-public class TurretDescription : IDescription
+[Describe(ConceptNames.Tower)]
+public class TowerDescription : IDescription
 {
     /// <summary>
     /// 炮塔的变换关系
@@ -60,36 +60,36 @@ public class TurretDescription : IDescription
     public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.25);
 }
 
-[Apply(ConceptNames.Turret)]
-public class TurretApplier(
+[Apply(ConceptNames.Tower)]
+public class TowerApplier(
     IAssetsManager assets,
     IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:turret")] IConfiguration configs
-) : IApplier<TurretDescription>
+    [Section("applier:celestial_body", "applier:tower")] IConfiguration configs
+) : IApplier<TowerDescription>
 {
     // 固定的尺寸
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
     private readonly int _volume = configs.RequireValue<int>("volume");
 
-    private readonly TextureRegion _turretTexture = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:Turret"
+    private readonly TextureRegion _towerTexture = assets.Load<TextureRegion>(
+        "/Textures/SolarMax2.Atlas.json:Tower"
     );
 
-    private readonly TextureRegion _turretShape = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TurretShape"
+    private readonly TextureRegion _towerShape = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:TowerShape"
     );
 
-    private readonly TextureRegion _turretFlare = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TurretShape"
+    private readonly TextureRegion _towerFlare = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:TowerShape"
     );
 
-    private readonly TextureRegion _turretGlow = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TurretGlow"
+    private readonly TextureRegion _towerGlow = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:TowerGlow"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, TurretDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, TowerDescription desc)
     {
         // 设置天体基本信息
         _celestialBodyApplier.Apply(
@@ -97,19 +97,19 @@ public class TurretApplier(
             entity,
             new CelestialBodyDescription()
             {
-                Shape = _turretShape,
-                Texture = _turretTexture,
+                Shape = _towerShape,
+                Texture = _towerTexture,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
                 Party = desc.Party,
                 Volume = _volume,
-                GlowTexture = _turretGlow,
+                GlowTexture = _towerGlow,
             }
         );
 
         // 配置炮塔属性
         commandBuffer.Set(in entity, new AttackRange { Range = desc.AttackRange });
         commandBuffer.Set(in entity, new AttackCooldown { Duration = desc.CooldownTime });
-        commandBuffer.Set(in entity, new Turret { FlareTexture = _turretFlare });
+        commandBuffer.Set(in entity, new Tower { FlareTexture = _towerFlare });
     }
 }

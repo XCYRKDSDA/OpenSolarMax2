@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[SchemaName("turret")]
-public class TurretDeclaration : IDeclaration<TurretDeclaration>
+[SchemaName("tower")]
+public class TowerDeclaration : IDeclaration<TowerDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -17,9 +17,9 @@ public class TurretDeclaration : IDeclaration<TurretDeclaration>
 
     public string? Party { get; set; }
 
-    public TurretDeclaration Aggregate(TurretDeclaration newCfg)
+    public TowerDeclaration Aggregate(TowerDeclaration newCfg)
     {
-        return new TurretDeclaration()
+        return new TowerDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -32,17 +32,17 @@ public class TurretDeclaration : IDeclaration<TurretDeclaration>
     }
 }
 
-[Translate("turret", ConceptNames.Turret)]
-public class TurretDeclarationTranslator : ITranslator<TurretDeclaration, TurretDescription>
+[Translate("tower", ConceptNames.Tower)]
+public class TowerDeclarationTranslator : ITranslator<TowerDeclaration, TowerDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public TurretDescription ToDescription(
-        TurretDeclaration declaration,
+    public TowerDescription ToDescription(
+        TowerDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new TurretDescription();
+        var desc = new TowerDescription();
 
         var tfCfg = new TransformableDeclaration()
         {
@@ -60,18 +60,18 @@ public class TurretDeclarationTranslator : ITranslator<TurretDeclaration, Turret
     }
 }
 
-[Translate("turret", ConceptNames.TurretPreview), OnlyForPreview]
-public class TurretPreviewDeclarationTranslator
-    : ITranslator<TurretDeclaration, TurretPreviewDescription>
+[Translate("tower", ConceptNames.TowerPreview), OnlyForPreview]
+public class TowerPreviewDeclarationTranslator
+    : ITranslator<TowerDeclaration, TowerPreviewDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public TurretPreviewDescription ToDescription(
-        TurretDeclaration declaration,
+    public TowerPreviewDescription ToDescription(
+        TowerDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new TurretPreviewDescription();
+        var desc = new TowerPreviewDescription();
 
         var tfCfg = new TransformableDeclaration()
         {

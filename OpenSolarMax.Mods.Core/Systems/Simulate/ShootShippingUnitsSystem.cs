@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, BeforeStructuralChanges]
 [
-    ReadPrev(typeof(Turret)),
+    ReadPrev(typeof(Tower)),
     ReadPrev(typeof(InAttackRangeShipsRegistry)),
     ReadPrev(typeof(AttackCooldown)),
     ReadPrev(typeof(InParty.AsAffiliate)),
@@ -44,10 +44,10 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
     }
 
     [Query]
-    [All<Turret, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InParty.AsAffiliate>]
+    [All<Tower, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InParty.AsAffiliate>]
     private void Shoot(
         Entity entity,
-        in Turret turret,
+        in Tower tower,
         in InAttackRangeShipsRegistry registry,
         ref AttackTimer timer,
         in AttackCooldown cooldown,
@@ -61,15 +61,15 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
         if (asAffiliate.Relationship is null)
             return;
 
-        var turretParty = asAffiliate.Relationship.Value.Copy.Party;
-        var target = SelectTarget(in registry, in turretParty);
+        var towerParty = asAffiliate.Relationship.Value.Copy.Party;
+        var target = SelectTarget(in registry, in towerParty);
         if (target is null)
             return;
 
         timer.TimeLeft = cooldown.Duration;
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
-        var turretColor = turretParty.Get<PartyReferenceColor>().Value;
+        var towerColor = towerParty.Get<PartyReferenceColor>().Value;
         factory.Make(
             world,
             commandBuffer,
@@ -77,20 +77,20 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
             {
                 Planet = entity,
                 TargetPosition = targetPosition,
-                Color = turretColor,
+                Color = towerColor,
             }
         );
 
-        if (turret.FlareTexture is not null)
+        if (tower.FlareTexture is not null)
         {
             factory.Make(
                 world,
                 commandBuffer,
                 new LaserFlashDescription()
                 {
-                    Turret = entity,
+                    Tower = entity,
                     Color = Color.White,
-                    Texture = turret.FlareTexture,
+                    Texture = tower.FlareTexture,
                 }
             );
         }

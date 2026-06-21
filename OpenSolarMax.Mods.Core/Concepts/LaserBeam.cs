@@ -68,8 +68,8 @@ public class LaserBeamApplier(
         var world = World.Worlds[entity.WorldId];
 
         // 摆放位置
-        ref readonly var turretPose = ref desc.Planet.Get<AbsoluteTransform>();
-        var vector = desc.TargetPosition - turretPose.Translation;
+        ref readonly var towerPose = ref desc.Planet.Get<AbsoluteTransform>();
+        var vector = desc.TargetPosition - towerPose.Translation;
         factory.Make(
             world,
             commandBuffer,

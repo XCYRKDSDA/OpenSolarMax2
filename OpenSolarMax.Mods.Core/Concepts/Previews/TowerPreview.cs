@@ -12,17 +12,17 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string TurretPreview = "TurretPreview";
+    public const string TowerPreview = "TowerPreview";
 }
 
-[Define(ConceptNames.TurretPreview), OnlyForPreview]
-public abstract class TurretPreviewDefinition : IDefinition
+[Define(ConceptNames.TowerPreview), OnlyForPreview]
+public abstract class TowerPreviewDefinition : IDefinition
 {
     public static Signature Signature => CelestialBodyPreviewDefinition.Signature;
 }
 
-[Describe(ConceptNames.TurretPreview), OnlyForPreview]
-public class TurretPreviewDescription : IDescription
+[Describe(ConceptNames.TowerPreview), OnlyForPreview]
+public class TowerPreviewDescription : IDescription
 {
     /// <summary>
     /// 炮塔的变换关系
@@ -39,23 +39,23 @@ public class TurretPreviewDescription : IDescription
     public Entity Party { get; set; } = Entity.Null;
 }
 
-[Apply(ConceptNames.TurretPreview), OnlyForPreview]
-public class TurretPreviewApplier(
+[Apply(ConceptNames.TowerPreview), OnlyForPreview]
+public class TowerPreviewApplier(
     IAssetsManager assets,
     IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:turret")] IConfiguration configs
-) : IApplier<TurretPreviewDescription>
+    [Section("applier:celestial_body", "applier:tower")] IConfiguration configs
+) : IApplier<TowerPreviewDescription>
 {
     // 固定的尺寸
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
 
-    private readonly TextureRegion _turretShape = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TurretShape"
+    private readonly TextureRegion _towerShape = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:TowerShape"
     );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, TurretPreviewDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, TowerPreviewDescription desc)
     {
         // 设置天体预览基本信息
         _celestialBodyApplier.Apply(
@@ -63,7 +63,7 @@ public class TurretPreviewApplier(
             entity,
             new CelestialBodyPreviewDescription()
             {
-                Shape = _turretShape,
+                Shape = _towerShape,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
                 Party = desc.Party,

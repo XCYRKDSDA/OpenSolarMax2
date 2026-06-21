@@ -43,7 +43,7 @@ The project is modularly designed: a launcher loads different modules to introdu
 ### SolarMax2 Features
 
 - [ ] Portal
-- [ ] Turret
+- [ ] Tower
 - [ ] Fortress
 
 ### SolarMax3 Features

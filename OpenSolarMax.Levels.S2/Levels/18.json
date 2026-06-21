@@ -14,10 +14,10 @@
 
         { "$base": "portal", "position": [ 512, 384 ] },
 
-        { "$base": "turret", "position": [ 272, 248 ] },
-        { "$base": "turret", "position": [ 272, 520 ] },
-        { "$base": "turret", "position": [ 752, 248 ] },
-        { "$base": "turret", "position": [ 752, 520 ] },
+        { "$base": "tower", "position": [ 272, 248 ] },
+        { "$base": "tower", "position": [ 272, 520 ] },
+        { "$base": "tower", "position": [ 752, 248 ] },
+        { "$base": "tower", "position": [ 752, 520 ] },
 
         { "$base": "planet30", "position": [ 392, 312 ] },
         { "$base": "planet30", "position": [ 632, 312 ] },
