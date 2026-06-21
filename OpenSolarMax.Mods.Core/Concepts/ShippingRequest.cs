@@ -24,7 +24,7 @@ public class ShippingRequestDescription : IDescription
 
     public required Entity Destination { get; set; }
 
-    public required Entity Party { get; set; }
+    public required Entity Team { get; set; }
 
     public required int ExpectedNum { get; set; }
 }
@@ -40,7 +40,7 @@ public class ShippingRequestApplier : IApplier<ShippingRequestDescription>
             {
                 Departure = desc.Departure,
                 Destination = desc.Destination,
-                Party = desc.Party,
+                Team = desc.Team,
                 ExpectedNum = desc.ExpectedNum,
             }
         );

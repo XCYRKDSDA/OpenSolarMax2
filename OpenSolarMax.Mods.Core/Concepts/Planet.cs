@@ -50,7 +50,7 @@ public class PlanetDescription : IDescription
     /// <summary>
     /// 星球所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 
     /// <summary>
     /// 星球的体量
@@ -102,7 +102,7 @@ public class PlanetApplier(
                 Texture = _defaultPlanetTextures[randomIndex],
                 ReferenceRadius = desc.ReferenceRadius,
                 Transform = desc.Transform,
-                Party = desc.Party,
+                Team = desc.Team,
                 Volume = desc.Volume,
                 GlowTexture = _defaultPlanetGlowTexture,
             }

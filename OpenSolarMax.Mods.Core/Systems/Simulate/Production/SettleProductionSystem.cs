@@ -16,8 +16,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem, BeforeStructuralChanges]
 [
     ReadCurr(typeof(ProductionState)),
-    ReadPrev(typeof(InParty.AsAffiliate)),
-    ReadPrev(typeof(PartyReferenceColor)),
+    ReadPrev(typeof(InTeam.AsAffiliate)),
+    ReadPrev(typeof(TeamReferenceColor)),
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
@@ -25,17 +25,17 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
     : ICalcSystemWithStructuralChanges
 {
     [Query]
-    [All<ProductionState, InParty.AsAffiliate>]
+    [All<ProductionState, InTeam.AsAffiliate>]
     private void SettleProduction(
         Entity planet,
         in ProductionState state,
-        in InParty.AsAffiliate partyRelationship,
+        in InTeam.AsAffiliate teamRelationship,
         [Data] CommandBuffer commandBuffer
     )
     {
-        if (partyRelationship.Relationship is null)
+        if (teamRelationship.Relationship is null)
             return;
-        var party = partyRelationship.Relationship!.Value.Copy.Party;
+        var team = teamRelationship.Relationship!.Value.Copy.Team;
 
         // 生产一个新部队
         for (int i = 0; i < state.UnitsProducedThisFrame; i++)
@@ -44,7 +44,7 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
                 world,
                 commandBuffer,
                 ConceptNames.Ship,
-                new ShipDescription() { Party = party, Planet = planet }
+                new ShipDescription() { Team = team, Planet = planet }
             );
 
             // 添加出生后动画
@@ -57,7 +57,7 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
                 new UnitBornPulseDescription()
                 {
                     Unit = newShip,
-                    Color = party.Get<PartyReferenceColor>().Value,
+                    Color = team.Get<TeamReferenceColor>().Value,
                 }
             );
         }

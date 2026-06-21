@@ -63,7 +63,7 @@ public sealed partial class VisualizeColonizationSystem(
             return;
 
         // 当无人占领时不绘制占领环
-        if (colonizationState.Party == Entity.Null)
+        if (colonizationState.Team == Entity.Null)
             return;
 
         // 计算从世界到UI画布的缩放
@@ -83,7 +83,7 @@ public sealed partial class VisualizeColonizationSystem(
         var head = MathF.PI * 1.5f - angle / 2;
 
         // 获取颜色
-        var color = colonizationState.Party.Get<PartyReferenceColor>().Value;
+        var color = colonizationState.Team.Get<TeamReferenceColor>().Value;
 
         _ringRenderer.DrawArc(ringCenter, ringRadius, head, angle, color, _ringThickness);
         _ringRenderer.DrawArc(

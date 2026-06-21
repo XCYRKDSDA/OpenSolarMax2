@@ -16,10 +16,10 @@ public sealed class IndexDependenceSystem(World world)
     : IndexRelationshipSystemBase<Dependence>(world) { }
 
 [SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
-[ReadCurr(typeof(InParty)), Write(typeof(InParty.AsParty)), Write(typeof(InParty.AsAffiliate))]
+[ReadCurr(typeof(InTeam)), Write(typeof(InTeam.AsTeam)), Write(typeof(InTeam.AsAffiliate))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed class IndexPartyAffiliationSystem(World world)
-    : IndexRelationshipSystemBase<InParty>(world) { }
+public sealed class IndexTeamAffiliationSystem(World world)
+    : IndexRelationshipSystemBase<InTeam>(world) { }
 
 [SimulateSystem, AfterStructuralChanges]
 [

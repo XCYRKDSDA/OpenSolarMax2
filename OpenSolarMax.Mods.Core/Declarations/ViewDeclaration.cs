@@ -19,7 +19,7 @@ public class ViewDeclaration : IDeclaration<ViewDeclaration>
 
     public float[]? Depth { get; set; }
 
-    public string? Party { get; set; }
+    public string? Team { get; set; }
 
     public ViewDeclaration Aggregate(ViewDeclaration newCfg)
     {
@@ -33,7 +33,7 @@ public class ViewDeclaration : IDeclaration<ViewDeclaration>
                     : newCfg.Orbit ?? Orbit,
             Size = newCfg.Size ?? Size,
             Depth = newCfg.Depth ?? Depth,
-            Party = newCfg.Party ?? Party,
+            Team = newCfg.Team ?? Team,
         };
     }
 }
@@ -48,10 +48,10 @@ public class ViewDeclarationTranslator : ITranslator<ViewDeclaration, ViewDescri
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        if (declaration.Party is null)
+        if (declaration.Team is null)
             throw new NullReferenceException();
 
-        var desc = new ViewDescription() { Party = otherEntities[declaration.Party] };
+        var desc = new ViewDescription() { Team = otherEntities[declaration.Team] };
 
         var tfCfg = new TransformableDeclaration()
         {

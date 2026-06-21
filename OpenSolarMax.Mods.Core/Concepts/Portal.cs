@@ -41,7 +41,7 @@ public class PortalDescription : IDescription
     /// <summary>
     /// 传送门所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.Portal)]
@@ -81,7 +81,7 @@ public class PortalApplier(
                 Texture = _portalTexture,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
-                Party = desc.Party,
+                Team = desc.Team,
                 Volume = _volume,
                 GlowTexture = _portalGlow,
             }

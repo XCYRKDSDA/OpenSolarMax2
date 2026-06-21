@@ -22,7 +22,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
 
         public TimeSpan AiTimeLeft;
 
-        public Entity Party;
+        public Entity Team;
 
         public Vector2 Position;
         public float Volume;
@@ -39,7 +39,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
 
     [Query]
     [All<
-        InParty.AsAffiliate,
+        InTeam.AsAffiliate,
         Battlefield,
         ProductionCondition,
         Colonizable,
@@ -50,7 +50,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
     >]
     private static void CollectPlanetInfo(
         Entity planet,
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         in Battlefield battlefield,
         in ProductionCondition productionCondition,
         in Colonizable colonizable,
@@ -58,7 +58,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         in ShippingUnitsRegistry shippingUnitsRegistry,
         in AbsoluteTransform absoluteTransform,
         in PlanetAiTimers planetAiTimers,
-        [Data] Entity party,
+        [Data] Entity team,
         [Data] Dictionary<Entity, PlanetInfo> planetInfos
     )
     {
@@ -67,27 +67,27 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             new PlanetInfo()
             {
                 Entity = planet,
-                AiTimeLeft = planetAiTimers.TimeLeft[party],
-                Party = asAffiliate.Relationship is null
+                AiTimeLeft = planetAiTimers.TimeLeft[team],
+                Team = asAffiliate.Relationship is null
                     ? Entity.Null
-                    : asAffiliate.Relationship.Value.Copy.Party,
+                    : asAffiliate.Relationship.Value.Copy.Team,
                 Position =
                 {
                     X = absoluteTransform.Translation.X,
                     Y = absoluteTransform.Translation.Y,
                 },
                 Volume = colonizable.Volume,
-                ActualFriendUnits = anchoredShipsRegistry.Ships[party].Count(),
+                ActualFriendUnits = anchoredShipsRegistry.Ships[team].Count(),
                 PredictedFriendUnits =
-                    anchoredShipsRegistry.Ships[party].Count()
-                    + shippingUnitsRegistry.IncomingUnits[party].Count(),
+                    anchoredShipsRegistry.Ships[team].Count()
+                    + shippingUnitsRegistry.IncomingUnits[team].Count(),
                 ActualEnemyUnits = anchoredShipsRegistry
-                    .Ships.Where(g => g.Key != party)
+                    .Ships.Where(g => g.Key != team)
                     .Sum(g => g.Count()),
                 PredictedEnemyUnits =
-                    anchoredShipsRegistry.Ships.Where(g => g.Key != party).Sum(g => g.Count())
+                    anchoredShipsRegistry.Ships.Where(g => g.Key != team).Sum(g => g.Count())
                     + shippingUnitsRegistry
-                        .IncomingUnits.Where(g => g.Key != party)
+                        .IncomingUnits.Where(g => g.Key != team)
                         .Sum(g => g.Count()),
                 Battle = battlefield.FrontlineDamage.Count > 0,
                 CanProduce = productionCondition.IsMet,
@@ -99,9 +99,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         !departure.Entity.Get<ReachabilityRegistry>().FromHereTo[destination.Entity];
 
     [Query]
-    [All<Ai, InParty.AsParty, AiCooldown, AiTimer>]
+    [All<Ai, InTeam.AsTeam, AiCooldown, AiTimer>]
     private void Execute(
-        Entity party,
+        Entity team,
         in Ai ai,
         in AiCooldown cooldown,
         ref AiTimer timer,
@@ -117,15 +117,15 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
 
         // 统计星球信息
         var planetInfos = new Dictionary<Entity, PlanetInfo>();
-        CollectPlanetInfoQuery(world, party, planetInfos);
+        CollectPlanetInfoQuery(world, team, planetInfos);
 
         // 上限为 0 且总飞船数少于 40 时挂机
-        ref readonly var populationRegistry = ref party.Get<PartyPopulationRegistry>();
+        ref readonly var populationRegistry = ref team.Get<TeamPopulationRegistry>();
         if (populationRegistry is { PopulationLimit: 0, CurrentPopulation: < 40 })
             return;
 
         // 计算己方天体中心
-        var friendPlanets = planetInfos.Values.Where(info => info.Party == party).ToList();
+        var friendPlanets = planetInfos.Values.Where(info => info.Team == team).ToList();
         var friendPlanetsCenter =
             friendPlanets.Select(info => info.Position).Aggregate(Vector2.Zero, (v1, v2) => v1 + v2)
             / friendPlanets.Count;
@@ -137,7 +137,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 条件1：为己方天体或有己方飞船（包括飞行中的）
-                if (info.Party != party && info.PredictedFriendUnits == 0)
+                if (info.Team != team && info.PredictedFriendUnits == 0)
                     return false;
                 // 条件2：有敌方
                 if (info.PredictedEnemyUnits == 0)
@@ -168,7 +168,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 )
                     return false;
                 // 条件：是己方天体或预测己方强度低于敌方
-                if (info.Party != party && info.PredictedFriendUnits > info.PredictedEnemyUnits)
+                if (info.Team != team && info.PredictedFriendUnits > info.PredictedEnemyUnits)
                     return false;
                 // 条件：没有敌方或预测己方强度低于敌方
                 if (
@@ -221,11 +221,11 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     {
                         Departure = sender.Entity,
                         Destination = target.Entity,
-                        Party = party,
+                        Team = team,
                         ExpectedNum = unitsToSend,
                     }
                 );
-                sender.Entity.Get<PlanetAiTimers>().TimeLeft[party] = TimeSpan.FromSeconds(1); // TODO 随机化
+                sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(1); // TODO 随机化
 
                 return;
             }
@@ -240,7 +240,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 基本条件：不为己方天体
-                if (info.Party == party)
+                if (info.Team == team)
                     return false;
                 // 条件：排除己方强度足够且无敌方的天体
                 if (info.PredictedEnemyUnits == 0 && info.PredictedFriendUnits > info.Volume)
@@ -268,10 +268,10 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 )
                     return false;
                 // 条件：天体不被己方占据
-                if (info.PredictedEnemyUnits == 0 && info.Party != party)
+                if (info.PredictedEnemyUnits == 0 && info.Team != team)
                     return false;
                 // 条件：是己方天体或预测己方强度低于敌方
-                if (info.Party != party && info.PredictedFriendUnits > info.PredictedEnemyUnits)
+                if (info.Team != team && info.PredictedFriendUnits > info.PredictedEnemyUnits)
                     return false;
                 // 条件：没有敌方或预测己方强度低于敌方
                 if (
@@ -331,11 +331,11 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     {
                         Departure = sender.Entity,
                         Destination = target.Entity,
-                        Party = party,
+                        Team = team,
                         ExpectedNum = unitsToSend,
                     }
                 );
-                sender.Entity.Get<PlanetAiTimers>().TimeLeft[party] = TimeSpan.FromSeconds(1);
+                sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(1);
                 return;
             }
         }
@@ -352,7 +352,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 var value = reachabilityRegistry
                     .FromHereTo.Where(p => p.Value)
                     .Count(p =>
-                        planetInfos[p.Key].Party != party
+                        planetInfos[p.Key].Team != team
                         || planetInfos[p.Key].PredictedEnemyUnits > 0
                     );
                 return value;
@@ -363,10 +363,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 条件：没在锁星
-                if (
-                    info.Party != party
-                    && info is { PredictedEnemyUnits: 0, ActualFriendUnits: > 0 }
-                )
+                if (info.Team != team && info is { PredictedEnemyUnits: 0, ActualFriendUnits: > 0 })
                     return false;
                 // 条件：无敌方或打不过敌方
                 if (
@@ -416,11 +413,11 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     {
                         Departure = sender.Entity,
                         Destination = target.Entity,
-                        Party = party,
+                        Team = team,
                         ExpectedNum = unitsToSend,
                     }
                 );
-                sender.Entity.Get<PlanetAiTimers>().TimeLeft[party] = TimeSpan.FromSeconds(1); // TODO 随机化
+                sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(1); // TODO 随机化
                 return;
             }
         }

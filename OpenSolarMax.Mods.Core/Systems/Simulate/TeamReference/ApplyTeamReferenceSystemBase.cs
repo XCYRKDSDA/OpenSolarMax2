@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 /// <typeparam name="TTarget">将要被设置的实体上属性的类型</typeparam>
 /// <typeparam name="TReference">用于参考的阵营上属性的类型</typeparam>
-public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World world) : ICalcSystem
+public abstract class ApplyTeamReferenceSystemBase<TTarget, TReference>(World world) : ICalcSystem
 {
     /// <summary>
     /// 当实体不属于任何一个阵营时设置其目标属性
@@ -21,10 +21,10 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
     /// <summary>
     /// 根据阵营参考属性的值，设置实体目标属性
     /// </summary>
-    protected abstract void ApplyPartyReferenceImpl(in TReference reference, ref TTarget target);
+    protected abstract void ApplyTeamReferenceImpl(in TReference reference, ref TTarget target);
 
     private static readonly QueryDescription _entitiesDesc = new QueryDescription().WithAll<
-        InParty.AsAffiliate,
+        InTeam.AsAffiliate,
         TTarget
     >();
 
@@ -33,17 +33,17 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
         var query = world.Query(in _entitiesDesc);
         foreach (ref var chunk in query.GetChunkIterator())
         {
-            chunk.GetSpan<InParty.AsAffiliate, TTarget>(
+            chunk.GetSpan<InTeam.AsAffiliate, TTarget>(
                 out var relationshipSpan,
                 out var componentSpan
             );
             foreach (var entity in chunk)
-                ApplyPartyReference(in relationshipSpan[entity], ref componentSpan[entity]);
+                ApplyTeamReference(in relationshipSpan[entity], ref componentSpan[entity]);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ApplyPartyReference(in InParty.AsAffiliate asAffiliate, ref TTarget target)
+    private void ApplyTeamReference(in InTeam.AsAffiliate asAffiliate, ref TTarget target)
     {
         if (asAffiliate.Relationship is null)
         {
@@ -51,8 +51,7 @@ public abstract class ApplyPartyReferenceSystemBase<TTarget, TReference>(World w
             return;
         }
 
-        ref readonly var reference =
-            ref asAffiliate.Relationship.Value.Copy.Party.Get<TReference>();
-        ApplyPartyReferenceImpl(in reference, ref target);
+        ref readonly var reference = ref asAffiliate.Relationship.Value.Copy.Team.Get<TReference>();
+        ApplyTeamReferenceImpl(in reference, ref target);
     }
 }

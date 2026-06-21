@@ -15,7 +15,7 @@ public class PortalDeclaration : IDeclaration<PortalDeclaration>
 
     public OrbitDeclaration? Orbit { get; set; }
 
-    public string? Party { get; set; }
+    public string? Team { get; set; }
 
     public PortalDeclaration Aggregate(PortalDeclaration newCfg)
     {
@@ -27,7 +27,7 @@ public class PortalDeclaration : IDeclaration<PortalDeclaration>
                 Orbit is not null && newCfg.Orbit is not null
                     ? Orbit.Aggregate(newCfg.Orbit)
                     : newCfg.Orbit ?? Orbit,
-            Party = newCfg.Party ?? Party,
+            Team = newCfg.Team ?? Team,
         };
     }
 }
@@ -53,8 +53,8 @@ public class PortalDeclarationTranslator : ITranslator<PortalDeclaration, Portal
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (declaration.Party is not null)
-            desc.Party = otherEntities[declaration.Party];
+        if (declaration.Team is not null)
+            desc.Team = otherEntities[declaration.Team];
 
         return desc;
     }
@@ -82,8 +82,8 @@ public class PortalPreviewDeclarationTranslator
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (declaration.Party is not null)
-            desc.Party = otherEntities[declaration.Party];
+        if (declaration.Team is not null)
+            desc.Team = otherEntities[declaration.Team];
 
         return desc;
     }

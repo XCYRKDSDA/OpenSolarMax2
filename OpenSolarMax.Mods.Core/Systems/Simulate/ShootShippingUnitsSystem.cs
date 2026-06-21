@@ -16,9 +16,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadPrev(typeof(Tower)),
     ReadPrev(typeof(InAttackRangeShipsRegistry)),
     ReadPrev(typeof(AttackCooldown)),
-    ReadPrev(typeof(InParty.AsAffiliate)),
+    ReadPrev(typeof(InTeam.AsAffiliate)),
     ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(PartyReferenceColor)),
+    ReadPrev(typeof(TeamReferenceColor)),
     Iterate(typeof(AttackTimer)),
     ChangeStructure
 ]
@@ -27,11 +27,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
-    private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myParty)
+    private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myTeam)
     {
-        foreach (var (party, pairs) in registry.Ships)
+        foreach (var (team, pairs) in registry.Ships)
         {
-            if (party == myParty)
+            if (team == myTeam)
                 continue;
 
             if (pairs.Count == 0)
@@ -44,14 +44,14 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
     }
 
     [Query]
-    [All<Tower, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InParty.AsAffiliate>]
+    [All<Tower, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InTeam.AsAffiliate>]
     private void Shoot(
         Entity entity,
         in Tower tower,
         in InAttackRangeShipsRegistry registry,
         ref AttackTimer timer,
         in AttackCooldown cooldown,
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -61,15 +61,15 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
         if (asAffiliate.Relationship is null)
             return;
 
-        var towerParty = asAffiliate.Relationship.Value.Copy.Party;
-        var target = SelectTarget(in registry, in towerParty);
+        var towerTeam = asAffiliate.Relationship.Value.Copy.Team;
+        var target = SelectTarget(in registry, in towerTeam);
         if (target is null)
             return;
 
         timer.TimeLeft = cooldown.Duration;
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
-        var towerColor = towerParty.Get<PartyReferenceColor>().Value;
+        var towerColor = towerTeam.Get<TeamReferenceColor>().Value;
         factory.Make(
             world,
             commandBuffer,

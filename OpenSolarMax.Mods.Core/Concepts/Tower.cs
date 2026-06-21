@@ -47,7 +47,7 @@ public class TowerDescription : IDescription
     /// <summary>
     /// 炮塔所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 
     /// <summary>
     /// 攻击距离
@@ -101,7 +101,7 @@ public class TowerApplier(
                 Texture = _towerTexture,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
-                Party = desc.Party,
+                Team = desc.Team,
                 Volume = _volume,
                 GlowTexture = _towerGlow,
             }

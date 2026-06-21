@@ -28,7 +28,7 @@ public abstract class ShipDefinition : IDefinition
             // 动画
             typeof(Animation),
             //
-            typeof(InParty.AsAffiliate),
+            typeof(InTeam.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(TrailOf.AsShip),
             typeof(ShippingStatus),
@@ -49,7 +49,7 @@ public class ShipDescription : IDescription
     /// <summary>
     /// 单位创建时所属的阵营。必须提供
     /// </summary>
-    public required Entity Party { get; set; }
+    public required Entity Team { get; set; }
 }
 
 [Apply(ConceptNames.Ship)]
@@ -105,8 +105,8 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.InParty,
-            new InPartyDescription { Party = desc.Party, Affiliate = entity }
+            ConceptNames.InTeam,
+            new InTeamDescription { Team = desc.Team, Affiliate = entity }
         );
 
         // 初始化飞行状态

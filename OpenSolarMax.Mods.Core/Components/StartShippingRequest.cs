@@ -11,7 +11,7 @@ public struct StartShippingRequest
 
     public Entity Destination;
 
-    public Entity Party;
+    public Entity Team;
 
     public int ExpectedNum;
 }

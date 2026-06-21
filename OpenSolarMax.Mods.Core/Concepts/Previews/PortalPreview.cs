@@ -36,7 +36,7 @@ public class PortalPreviewDescription : IDescription
     /// <summary>
     /// 传送门所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.PortalPreview), OnlyForPreview]
@@ -66,7 +66,7 @@ public class PortalPreviewApplier(
                 Shape = _defaultPortalShape,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
-                Party = desc.Party,
+                Team = desc.Team,
             }
         );
     }

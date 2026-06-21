@@ -137,7 +137,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
 
             // 计算文字颜色
-            var color = parties[0].Get<PartyReferenceColor>().Value;
+            var color = parties[0].Get<TeamReferenceColor>().Value;
             var shadowColor = Color.Lerp(color, Color.Black, _shadowDensity) * _shadowDensity;
 
             _font.DrawText(_fontRenderer, text, shadowPosition, shadowColor);
@@ -161,7 +161,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
             // 获得各阵营的单位数目、颜色和标签
             var shipsRegistry = registry.Ships;
             var weights = parties.Select(p => shipsRegistry[p].Count()).ToArray();
-            var colors = parties.Select((p) => p.Get<PartyReferenceColor>().Value).ToArray();
+            var colors = parties.Select((p) => p.Get<TeamReferenceColor>().Value).ToArray();
             var labels = weights.Select((w) => string.Format(_textFormat, w)).ToArray();
 
             // 计算每个阵营对应的弧的起止角度

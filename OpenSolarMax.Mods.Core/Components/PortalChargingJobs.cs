@@ -6,7 +6,7 @@ public struct PortalTransportationTask
 {
     public Entity Destination;
 
-    public Entity Party;
+    public Entity Team;
 
     public int Units;
 }

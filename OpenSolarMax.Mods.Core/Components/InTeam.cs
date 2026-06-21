@@ -4,10 +4,10 @@ using OpenSolarMax.Mods.Core.SourceGenerators;
 namespace OpenSolarMax.Mods.Core.Components;
 
 [Relationship]
-public readonly partial struct InParty(in Entity party, in Entity affiliate)
+public readonly partial struct InTeam(in Entity team, in Entity affiliate)
 {
     [Participant(exclusive: false)]
-    public readonly Entity Party = party;
+    public readonly Entity Team = team;
 
     [Participant]
     public readonly Entity Affiliate = affiliate;

@@ -67,16 +67,16 @@ public sealed partial class StartShippingSystem(
         Debug.Assert(
             requestEntity.WorldId == request.Departure.WorldId
                 && requestEntity.WorldId == request.Destination.WorldId
-                && requestEntity.WorldId == request.Party.WorldId
+                && requestEntity.WorldId == request.Team.WorldId
         );
 
         if (!request.Departure.Has<DefaultLaunchPad>())
             return;
 
         var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Party];
+        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
 
-        var shippable = request.Party.Get<Shippable>();
+        var shippable = request.Team.Get<Shippable>();
         var (
             expectedArrivalPlanetPosition,
             expectedTravelDuration,

@@ -36,7 +36,7 @@ public class TowerPreviewDescription : IDescription
     /// <summary>
     /// 炮塔所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.TowerPreview), OnlyForPreview]
@@ -66,7 +66,7 @@ public class TowerPreviewApplier(
                 Shape = _towerShape,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
-                Party = desc.Party,
+                Team = desc.Team,
             }
         );
     }

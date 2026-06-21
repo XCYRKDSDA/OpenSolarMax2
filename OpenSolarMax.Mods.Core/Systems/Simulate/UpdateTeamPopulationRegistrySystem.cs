@@ -9,17 +9,17 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, AfterStructuralChanges]
 [
-    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ProductionAbility)),
     ReadCurr(typeof(PopulationCost)),
-    Write(typeof(PartyPopulationRegistry))
+    Write(typeof(TeamPopulationRegistry))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : ICalcSystem
+public sealed partial class UpdateTeamPopulationRegistrySystem(World world) : ICalcSystem
 {
     [Query]
-    [All<PartyPopulationRegistry>]
-    private static void ClearRegistry(ref PartyPopulationRegistry registry)
+    [All<TeamPopulationRegistry>]
+    private static void ClearRegistry(ref TeamPopulationRegistry registry)
     {
         registry.PopulationLimit = 0;
         registry.CurrentPopulation = 0;
@@ -27,42 +27,42 @@ public sealed partial class UpdatePartyPopulationRegistrySystem(World world) : I
     }
 
     [Query]
-    [All<InParty.AsAffiliate, ProductionAbility>]
+    [All<InTeam.AsAffiliate, ProductionAbility>]
     private static void CountPopulationLimit(
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         in ProductionAbility productionAbility
     )
     {
         if (asAffiliate.Relationship is null)
             return;
 
-        var party = asAffiliate.Relationship!.Value.Copy.Party;
-        party.Get<PartyPopulationRegistry>().PopulationLimit += productionAbility.Population;
+        var team = asAffiliate.Relationship!.Value.Copy.Team;
+        team.Get<TeamPopulationRegistry>().PopulationLimit += productionAbility.Population;
     }
 
     [Query]
-    [All<InParty.AsAffiliate, Colonizable>]
-    private static void CountColonizedPlanets(Entity planet, in InParty.AsAffiliate asAffiliate)
+    [All<InTeam.AsAffiliate, Colonizable>]
+    private static void CountColonizedPlanets(Entity planet, in InTeam.AsAffiliate asAffiliate)
     {
         if (asAffiliate.Relationship is null)
             return;
 
-        var party = asAffiliate.Relationship!.Value.Copy.Party;
-        party.Get<PartyPopulationRegistry>().Planets.Add(planet);
+        var team = asAffiliate.Relationship!.Value.Copy.Team;
+        team.Get<TeamPopulationRegistry>().Planets.Add(planet);
     }
 
     [Query]
-    [All<InParty.AsAffiliate, PopulationCost>]
+    [All<InTeam.AsAffiliate, PopulationCost>]
     private static void CountCurrentPopulation(
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         in PopulationCost populationCost
     )
     {
         if (asAffiliate.Relationship is null)
             return;
 
-        var party = asAffiliate.Relationship!.Value.Copy.Party;
-        party.Get<PartyPopulationRegistry>().CurrentPopulation += populationCost.Value;
+        var team = asAffiliate.Relationship!.Value.Copy.Team;
+        team.Get<TeamPopulationRegistry>().CurrentPopulation += populationCost.Value;
     }
 
     public void Update()

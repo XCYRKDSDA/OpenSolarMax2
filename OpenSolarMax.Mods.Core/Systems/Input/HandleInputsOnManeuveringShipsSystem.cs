@@ -20,7 +20,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ReachabilityRegistry)),
     Iterate(typeof(ShippingStatus)),
     ChangeStructure
@@ -114,7 +114,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         ref ShipsSelection selection,
         in Matrix worldToViewport,
         in Viewport viewport,
-        Entity party,
+        Entity team,
         ref Entity? pointedPlanet,
         CommandBuffer commandBuffer
     )
@@ -185,10 +185,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         {
                             Departure = departure,
                             Destination = selection.SimpleSelecting.TappingDestination,
-                            Party = party,
+                            Team = team,
                             ExpectedNum = departure
                                 .Get<AnchoredShipsRegistry>()
-                                .Ships[party]
+                                .Ships[team]
                                 .Count(),
                         }
                     );
@@ -249,10 +249,10 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                             {
                                 Departure = departure,
                                 Destination = selection.DraggingToDestination.CandidateDestination,
-                                Party = party,
+                                Team = team,
                                 ExpectedNum = departure
                                     .Get<AnchoredShipsRegistry>()
-                                    .Ships[party]
+                                    .Ships[team]
                                     .Count(),
                             }
                         );
@@ -272,7 +272,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         ref ShipsSelection selection,
         in Matrix worldToViewport,
         in Viewport viewport,
-        Entity party,
+        Entity team,
         ref Entity? pointedPlanet
     )
     {
@@ -349,12 +349,12 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, InParty.AsAffiliate>]
+    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, InTeam.AsAffiliate>]
     private void HandleInputs(
         in Camera camera,
         in AbsoluteTransform pose,
         ref ManeuvaringShipsStatus status,
-        in InParty.AsAffiliate ofParty,
+        in InTeam.AsAffiliate ofTeam,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -383,7 +383,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             ref status.Selection,
             in worldToCanvas,
             in camera.Output,
-            ofParty.Relationship!.Value.Copy.Party,
+            ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
             commandBuffer
         );
@@ -391,7 +391,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             ref status.Selection,
             in worldToCanvas,
             in camera.Output,
-            ofParty.Relationship!.Value.Copy.Party,
+            ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet
         );
     }

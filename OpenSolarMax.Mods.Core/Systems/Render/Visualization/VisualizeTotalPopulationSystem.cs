@@ -9,27 +9,27 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem, AfterStructuralChanges]
 [
-    ReadCurr(typeof(InParty.AsAffiliate)),
-    ReadCurr(typeof(PartyPopulationRegistry)),
-    ReadCurr(typeof(PartyReferenceColor)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(TeamPopulationRegistry)),
+    ReadCurr(typeof(TeamReferenceColor)),
     Write(typeof(TotalPopulationWidget))
 ]
 public sealed partial class VisualizeTotalPopulationSystem(World world) : ICalcSystem
 {
     [Query]
-    [All<TotalPopulationWidget, InParty.AsAffiliate>]
+    [All<TotalPopulationWidget, InTeam.AsAffiliate>]
     private static void VisualizePopulation(
         TotalPopulationWidget widget,
-        in InParty.AsAffiliate asAffiliate
+        in InTeam.AsAffiliate asAffiliate
     )
     {
-        var party = asAffiliate.Relationship!.Value.Copy.Party;
-        ref readonly var populationRegistry = ref party.Get<PartyPopulationRegistry>();
-        ref readonly var partyColor = ref party.Get<PartyReferenceColor>();
+        var team = asAffiliate.Relationship!.Value.Copy.Team;
+        ref readonly var populationRegistry = ref team.Get<TeamPopulationRegistry>();
+        ref readonly var teamColor = ref team.Get<TeamReferenceColor>();
 
         widget.PopulationLimit = populationRegistry.PopulationLimit;
         widget.CurrentPopulation = populationRegistry.CurrentPopulation;
-        widget.Color = partyColor.Value;
+        widget.Color = teamColor.Value;
     }
 
     public void Update() => VisualizePopulationQuery(world);

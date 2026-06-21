@@ -39,7 +39,7 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 // 与普通运输系统完全不相干
 [FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateShippingEffectSystem))]
 // 动画不会设置颜色，因此和阵营颜色应用系统不相干
-[FineWith(typeof(ApplyPartyColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
+[FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
 // 覆盖新生单位动画
 [ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
 public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets)
@@ -119,10 +119,10 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 [
     ReadPrev(typeof(AbsoluteTransform)),
     ReadPrev(typeof(Sprite)),
-    ReadPrev(typeof(PartyReferenceColor)),
+    ReadPrev(typeof(TeamReferenceColor)),
     ReadPrev(typeof(TreeRelationship<Anchorage>.AsChild)),
     ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
-    ReadPrev(typeof(InParty.AsAffiliate))
+    ReadPrev(typeof(InTeam.AsAffiliate))
 ]
 [Iterate(typeof(TransportingStatus)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
@@ -143,7 +143,7 @@ public partial class TransportUnitsSystem(
         Sprite,
         TreeRelationship<Anchorage>.AsChild,
         TreeRelationship<RelativeTransform>.AsChild,
-        InParty.AsAffiliate
+        InTeam.AsAffiliate
     >]
     private void TransportUnits(
         Entity ship,
@@ -151,7 +151,7 @@ public partial class TransportUnitsSystem(
         in AbsoluteTransform pose,
         in Sprite sprite,
         in TreeRelationship<Anchorage>.AsChild asChild,
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         [Data] HashSet<(Entity, Entity)> jobs,
         [Data] HashSet<(Entity, Entity)> arrivals,
         [Data] CommandBuffer commandBuffer
@@ -219,7 +219,7 @@ public partial class TransportUnitsSystem(
                         * destination.Get<AbsoluteTransform>().TransformToRoot
                     ).Translation,
                     Color = asAffiliate
-                        .Relationship!.Value.Copy.Party.Get<PartyReferenceColor>()
+                        .Relationship!.Value.Copy.Team.Get<TeamReferenceColor>()
                         .Value,
                 }
             );
@@ -228,7 +228,7 @@ public partial class TransportUnitsSystem(
             status.PostTransportation = new() { ElapsedTime = TimeSpan.Zero };
 
             jobs.Add((departure, destination));
-            arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Party));
+            arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Team));
         }
         else if (
             status.State == TransportingState.PostTransportation
@@ -249,7 +249,7 @@ public partial class TransportUnitsSystem(
         TransportUnitsQuery(world, _jobs, _arrivalsPerFrame, commandBuffer);
 
         // 对每个阵营每次抵达只创建一个抵达效果
-        foreach (var (destination, party) in _arrivalsPerFrame)
+        foreach (var (destination, team) in _arrivalsPerFrame)
         {
             factory.Make(
                 world,
@@ -257,7 +257,7 @@ public partial class TransportUnitsSystem(
                 new DestinationEffectDescription()
                 {
                     Portal = destination,
-                    Color = party.Get<PartyReferenceColor>().Value,
+                    Color = team.Get<TeamReferenceColor>().Value,
                     PortalRadius = destination.Get<ReferenceSize>().Radius,
                 }
             );

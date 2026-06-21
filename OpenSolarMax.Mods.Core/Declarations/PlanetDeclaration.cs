@@ -17,7 +17,7 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
 
     public float? Radius { get; set; }
 
-    public string? Party { get; set; }
+    public string? Team { get; set; }
 
     public int? Volume { get; set; }
 
@@ -36,7 +36,7 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
                     ? Orbit.Aggregate(newCfg.Orbit)
                     : newCfg.Orbit ?? Orbit,
             Radius = newCfg.Radius ?? Radius,
-            Party = newCfg.Party ?? Party,
+            Team = newCfg.Team ?? Team,
             Volume = newCfg.Volume ?? Volume,
             Population = newCfg.Population ?? Population,
             ProduceSpeed = newCfg.ProduceSpeed ?? ProduceSpeed,
@@ -79,8 +79,8 @@ public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, Planet
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (declaration.Party is not null)
-            desc.Party = otherEntities[declaration.Party];
+        if (declaration.Team is not null)
+            desc.Team = otherEntities[declaration.Team];
 
         return desc;
     }
@@ -111,8 +111,8 @@ public class PlanetPreviewDeclarationTranslator
         var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
         desc.Transform = tfDesc.Transform;
 
-        if (declaration.Party is not null)
-            desc.Party = otherEntities[declaration.Party];
+        if (declaration.Team is not null)
+            desc.Team = otherEntities[declaration.Team];
 
         return desc;
     }

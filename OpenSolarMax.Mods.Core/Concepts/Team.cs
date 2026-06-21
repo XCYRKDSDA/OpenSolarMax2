@@ -8,25 +8,25 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string Party = "Party";
+    public const string Team = "Team";
 }
 
-[Define(ConceptNames.Party)]
-public abstract class PartyDefinition : IDefinition
+[Define(ConceptNames.Team)]
+public abstract class TeamDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + new Signature(
             // 阵营参考值
-            typeof(PartyReferenceColor),
+            typeof(TeamReferenceColor),
             // 阵营属性
             typeof(Producible),
             typeof(Combatable),
             typeof(Shippable),
             typeof(ColonizationAbility),
             // 隶属关系
-            typeof(InParty.AsParty),
-            typeof(PartyPopulationRegistry),
+            typeof(InTeam.AsTeam),
+            typeof(TeamPopulationRegistry),
             // Ai
             typeof(Ai),
             typeof(AiTimer),
@@ -34,8 +34,8 @@ public abstract class PartyDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.Party)]
-public class PartyDescription : IDescription
+[Describe(ConceptNames.Team)]
+public class TeamDescription : IDescription
 {
     /// <summary>
     /// 阵营的代表色
@@ -58,12 +58,12 @@ public class PartyDescription : IDescription
     public required float Health { get; set; }
 }
 
-[Apply(ConceptNames.Party)]
-public class PartyApplier : IApplier<PartyDescription>
+[Apply(ConceptNames.Team)]
+public class TeamApplier : IApplier<TeamDescription>
 {
-    public void Apply(CommandBuffer commandBuffer, Entity entity, PartyDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, TeamDescription desc)
     {
-        commandBuffer.Set(in entity, new PartyReferenceColor { Value = desc.Color });
+        commandBuffer.Set(in entity, new TeamReferenceColor { Value = desc.Color });
 
         commandBuffer.Set(in entity, new Producible { WorkloadPerShip = desc.Workload });
 

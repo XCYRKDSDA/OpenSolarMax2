@@ -5,10 +5,10 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, ReactToStructuralChanges]
-[ReadCurr(typeof(InParty)), ChangeStructure]
+[ReadCurr(typeof(InTeam)), ChangeStructure]
 [ExecuteAfter(typeof(ManageDependenceSystem))]
-public sealed class DestroyBrokenPartyRelationshipSystem(World world)
-    : DestroyBrokenRelationshipsSystem<InParty>(world) { }
+public sealed class DestroyBrokenTeamRelationshipSystem(World world)
+    : DestroyBrokenRelationshipsSystem<InTeam>(world) { }
 
 [SimulateSystem, ReactToStructuralChanges]
 [ReadCurr(typeof(TreeRelationship<Anchorage>)), ChangeStructure]

@@ -35,8 +35,8 @@ public sealed partial class ProgressCombatSystem(World world) : ITickSystem
 
         // 删除本星球上已不存在的阵营的战斗数据
         var deleteParties = damage.Keys.Where(k => !engagedParties.Contains(k)).ToArray();
-        foreach (var party in deleteParties)
-            damage.Remove(party);
+        foreach (var team in deleteParties)
+            damage.Remove(team);
 
         // 如果阵营数目不足2个，则没有任何战斗发生，前线战损清空
         if (engagedParties.Count < 2)
@@ -46,19 +46,19 @@ public sealed partial class ProgressCombatSystem(World world) : ITickSystem
         }
 
         // 计算每个阵营对其他阵营的伤害
-        foreach (var party1 in engagedParties)
+        foreach (var team1 in engagedParties)
         {
             // 计算该阵营造成的总伤害
             var totalDamage =
-                party1.Get<Combatable>().AttackPerUnitPerSecond
-                * ships[party1].Count()
+                team1.Get<Combatable>().AttackPerUnitPerSecond
+                * ships[team1].Count()
                 * (float)time.ElapsedGameTime.TotalSeconds;
 
             // 将总伤害平均到每个其他阵营
-            foreach (var party2 in engagedParties.Where(party2 => party2 != party1))
+            foreach (var team2 in engagedParties.Where(team2 => team2 != team1))
             {
-                damage.TryAdd(party2, 0);
-                damage[party2] += totalDamage / (engagedParties.Count - 1);
+                damage.TryAdd(team2, 0);
+                damage[team2] += totalDamage / (engagedParties.Count - 1);
             }
         }
     }

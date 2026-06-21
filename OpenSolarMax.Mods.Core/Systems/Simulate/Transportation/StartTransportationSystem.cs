@@ -23,7 +23,7 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
     ReadPrev(typeof(RevolutionState)),
     ReadPrev(typeof(PlanetGeostationaryOrbit)),
     ReadPrev(typeof(ReferenceSize)),
-    ReadPrev(typeof(PartyReferenceColor)),
+    ReadPrev(typeof(TeamReferenceColor)),
     Write(typeof(TransportingStatus)),
     Write(typeof(PortalChargingJobs)),
     ChangeStructure
@@ -48,7 +48,7 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
         Debug.Assert(
             requestEntity.WorldId == request.Departure.WorldId
                 && requestEntity.WorldId == request.Destination.WorldId
-                && requestEntity.WorldId == request.Party.WorldId
+                && requestEntity.WorldId == request.Team.WorldId
         );
 
         if (!request.Departure.Has<PortalChargingJobs>())
@@ -56,7 +56,7 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
 
         // 设置单位传送状态
         var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Party];
+        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
         using var shipsEnumerator = allShips.GetEnumerator();
         while (shipsRemain > 0 && shipsEnumerator.MoveNext())
         {
@@ -103,7 +103,7 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
             {
                 Portal = request.Departure,
                 PortalRadius = request.Departure.Get<ReferenceSize>().Radius,
-                Color = request.Party.Get<PartyReferenceColor>().Value,
+                Color = request.Team.Get<TeamReferenceColor>().Value,
             }
         );
     }

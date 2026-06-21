@@ -10,7 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, AfterStructuralChanges]
 [
-    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ShippingStatus)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(AttackRange)),
@@ -20,10 +20,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class GetShippingUnitsInRangeSystem(World world) : ICalcSystem
 {
     [Query]
-    [All<InParty.AsAffiliate, ShippingStatus, AbsoluteTransform>]
+    [All<InTeam.AsAffiliate, ShippingStatus, AbsoluteTransform>]
     private static void GetShippingUnitsInRangeForCertainEntity(
         Entity entity,
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         in ShippingStatus shippingStatus,
         in AbsoluteTransform unitPose,
         [Data] in AbsoluteTransform planetPose,
@@ -46,7 +46,7 @@ public sealed partial class GetShippingUnitsInRangeSystem(World world) : ICalcSy
             return;
 
         Debug.Assert(asAffiliate.Relationship is not null);
-        result[asAffiliate.Relationship.Value.Copy.Party].Add((entity, distance));
+        result[asAffiliate.Relationship.Value.Copy.Team].Add((entity, distance));
     }
 
     [Query]

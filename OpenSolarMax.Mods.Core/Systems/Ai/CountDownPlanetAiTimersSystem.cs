@@ -43,7 +43,7 @@ public partial class CleanPlanetAiTimerEntry(World world) : ICalcSystem
     }
 
     [Query]
-    [All<InParty.AsParty>]
+    [All<InTeam.AsTeam>]
     private static void CountParties(Entity entity, [Data] HashSet<Entity> parties)
     {
         parties.Add(entity);

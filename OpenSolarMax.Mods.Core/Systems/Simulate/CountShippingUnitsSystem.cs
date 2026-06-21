@@ -9,7 +9,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem, AfterStructuralChanges]
 [
     ReadCurr(typeof(TreeRelationship<Anchorage>.AsChild)),
-    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ShippingStatus)),
     Write(typeof(ShippingUnitsRegistry))
 ]
@@ -17,12 +17,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
 {
     [Query]
-    [All<TreeRelationship<Anchorage>.AsChild, ShippingStatus, InParty.AsAffiliate>]
+    [All<TreeRelationship<Anchorage>.AsChild, ShippingStatus, InTeam.AsAffiliate>]
     private static void CountShippingUnits(
         Entity unit,
         in TreeRelationship<Anchorage>.AsChild asChild,
         in ShippingStatus shippingStatus,
-        in InParty.AsAffiliate asAffiliate,
+        in InTeam.AsAffiliate asAffiliate,
         // 目的地 -> (阵营, 单位)...
         [Data] Dictionary<Entity, List<(Entity, Entity)>> shippingUnits
     )
@@ -31,12 +31,12 @@ public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
             return;
 
         var destination = shippingStatus.Task.DestinationPlanet;
-        var party = asAffiliate.Relationship!.Value.Copy.Party;
+        var team = asAffiliate.Relationship!.Value.Copy.Team;
 
         if (shippingUnits.TryGetValue(destination, out var records))
-            records.Add((party, unit));
+            records.Add((team, unit));
         else
-            shippingUnits.Add(destination, [(party, unit)]);
+            shippingUnits.Add(destination, [(team, unit)]);
     }
 
     [Query]
@@ -44,7 +44,7 @@ public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
     private static void UpdateShippingShipsRegistry(
         Entity destination,
         ref ShippingUnitsRegistry shipRegistry,
-        [Data] Dictionary<Entity, List<(Entity Party, Entity Unit)>> shippingUnits
+        [Data] Dictionary<Entity, List<(Entity Team, Entity Unit)>> shippingUnits
     )
     {
         if (!shippingUnits.TryGetValue(destination, out var unitInfos))
@@ -53,7 +53,7 @@ public sealed partial class CountShippingUnitsSystem(World world) : ICalcSystem
             return;
         }
 
-        shipRegistry.IncomingUnits = unitInfos.ToLookup(p => p.Party, p => p.Unit);
+        shipRegistry.IncomingUnits = unitInfos.ToLookup(p => p.Team, p => p.Unit);
     }
 
     public void Update()

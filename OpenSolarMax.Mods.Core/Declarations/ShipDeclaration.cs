@@ -9,17 +9,13 @@ public record ShipDeclaration : IDeclaration<ShipDeclaration>
 {
     public string? Planet { get; set; }
 
-    public string? Party { get; set; }
+    public string? Team { get; set; }
 
     public IReadOnlyList<string> Requirements => [Planet!];
 
     public ShipDeclaration Aggregate(ShipDeclaration @new)
     {
-        return new ShipDeclaration()
-        {
-            Planet = @new.Planet ?? Planet,
-            Party = @new.Party ?? Party,
-        };
+        return new ShipDeclaration() { Planet = @new.Planet ?? Planet, Team = @new.Team ?? Team };
     }
 }
 
@@ -31,13 +27,13 @@ public class ShipDeclarationTranslator : ITranslator<ShipDeclaration, ShipDescri
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        if (declaration.Planet is null || declaration.Party is null)
+        if (declaration.Planet is null || declaration.Team is null)
             throw new NullReferenceException();
 
         return new ShipDescription()
         {
             Planet = otherEntities[declaration.Planet],
-            Party = otherEntities[declaration.Party],
+            Team = otherEntities[declaration.Team],
         };
     }
 }

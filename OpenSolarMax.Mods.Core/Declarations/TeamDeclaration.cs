@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[SchemaName("party")]
-public class PartyDeclaration : IDeclaration<PartyDeclaration>
+[SchemaName("team")]
+public class TeamDeclaration : IDeclaration<TeamDeclaration>
 {
     public Color? Color { get; set; }
 
@@ -17,9 +17,9 @@ public class PartyDeclaration : IDeclaration<PartyDeclaration>
 
     public float? Health { get; set; }
 
-    public PartyDeclaration Aggregate(PartyDeclaration newCfg)
+    public TeamDeclaration Aggregate(TeamDeclaration newCfg)
     {
-        return new PartyDeclaration()
+        return new TeamDeclaration()
         {
             Color = newCfg.Color ?? Color,
             Workload = newCfg.Workload ?? Workload,
@@ -29,11 +29,11 @@ public class PartyDeclaration : IDeclaration<PartyDeclaration>
     }
 }
 
-[Translate("party", ConceptNames.Party)]
-public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDescription>
+[Translate("team", ConceptNames.Team)]
+public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescription>
 {
-    public PartyDescription ToDescription(
-        PartyDeclaration declaration,
+    public TeamDescription ToDescription(
+        TeamDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
@@ -45,7 +45,7 @@ public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDes
         )
             throw new NullReferenceException();
 
-        var desc = new PartyDescription()
+        var desc = new TeamDescription()
         {
             Color = declaration.Color.Value,
             Workload = declaration.Workload.Value,
@@ -57,19 +57,18 @@ public class PartyDeclarationTranslator : ITranslator<PartyDeclaration, PartyDes
     }
 }
 
-[Translate("party", ConceptNames.PartyPreview), OnlyForPreview]
-public class PartyPreviewDeclarationTranslator
-    : ITranslator<PartyDeclaration, PartyPreviewDescription>
+[Translate("team", ConceptNames.TeamPreview), OnlyForPreview]
+public class TeamPreviewDeclarationTranslator : ITranslator<TeamDeclaration, TeamPreviewDescription>
 {
-    public PartyPreviewDescription ToDescription(
-        PartyDeclaration declaration,
+    public TeamPreviewDescription ToDescription(
+        TeamDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
         if (declaration.Color is null)
             throw new NullReferenceException();
 
-        var desc = new PartyPreviewDescription() { Color = declaration.Color.Value };
+        var desc = new TeamPreviewDescription() { Color = declaration.Color.Value };
 
         return desc;
     }
