@@ -54,24 +54,8 @@ internal record BehaviorMod(
         _disposed = true;
     }
 
-    public static BehaviorMod LoadFrom(
-        BehaviorModInfo info,
-        IReadOnlyDictionary<string, Assembly> sharedAssemblies
-    )
+    public static BehaviorMod LoadFrom(BehaviorModInfo info, Assembly assembly)
     {
-        // 加载程序集
-        var ctx = new ModLoadContext(info.Assembly, sharedAssemblies);
-        using var dllStream = info.Assembly.Open(FileMode.Open, FileAccess.Read);
-#if DEBUG
-        var pdb = info
-            .Assembly.Directory.EnumerateFiles($"{info.Assembly.NameWithoutExtension}.pdb")
-            .FirstOrDefault();
-        using var pdbStream = pdb?.Open(FileMode.Open, FileAccess.Read);
-        var assembly = ctx.LoadFromStream(dllStream, pdbStream);
-#else
-        var assembly = ctx.LoadFromStream(dllStream);
-#endif
-
         // 加载资产文件系统
         List<IFileSystem> contentFileSystems = [new ResourceFileSystem(assembly)];
         if (info.Content is not null)
@@ -131,6 +115,27 @@ internal record BehaviorMod(
             gameplayBehaviorsInfo,
             previewBehaviorsInfo
         );
+    }
+
+    public static BehaviorMod LoadFrom(
+        BehaviorModInfo info,
+        IReadOnlyDictionary<string, Assembly> sharedAssemblies
+    )
+    {
+        // 加载程序集
+        var ctx = new ModLoadContext(info.Assembly, sharedAssemblies);
+        using var dllStream = info.Assembly.Open(FileMode.Open, FileAccess.Read);
+#if DEBUG
+        var pdb = info
+            .Assembly.Directory.EnumerateFiles($"{info.Assembly.NameWithoutExtension}.pdb")
+            .FirstOrDefault();
+        using var pdbStream = pdb?.Open(FileMode.Open, FileAccess.Read);
+        var assembly = ctx.LoadFromStream(dllStream, pdbStream);
+#else
+        var assembly = ctx.LoadFromStream(dllStream);
+#endif
+
+        return LoadFrom(info, assembly);
     }
 
     #region 反射扫描
