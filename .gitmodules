@@ -1,3 +1,6 @@
 [submodule "Nine"]
 	path = Third Party/Nine
 	url = https://github.com/XCYRKDSDA/Nine.git
+[submodule "Third Party/Arch"]
+	path = Third Party/Arch
+	url = git@github.com:XCYRKDSDA/Arch.git
