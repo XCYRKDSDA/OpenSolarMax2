@@ -95,24 +95,8 @@ public sealed partial class ShootShippingUnitsSystem(World world, IConceptFactor
             );
         }
 
-        var targetParty = target.Value.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party;
-        var targetColor = targetParty.Get<PartyReferenceColor>().Value;
-
-        // 生成闪光
-        factory.Make(
-            world,
-            commandBuffer,
-            new UnitFlareDescription() { Color = targetColor, Position = targetPosition }
-        );
-
-        // 生成冲击波
-        factory.Make(
-            world,
-            commandBuffer,
-            new UnitPulseDescription() { Color = targetColor, Position = targetPosition }
-        );
-
-        commandBuffer.Destroy(target.Value);
+        ref var targetDeathState = ref target.Value.Get<UnitDeathState>();
+        targetDeathState.State = DeathState.Dying;
     }
 
     public void Update(CommandBuffer commandBuffer) => ShootQuery(world, commandBuffer);
