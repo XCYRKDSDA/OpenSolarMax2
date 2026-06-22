@@ -49,7 +49,7 @@ public static class Signatures
             typeof(TrailOf.AsShip),
             typeof(PopulationCost),
             typeof(SoundEffect),
-            typeof(UnitDeathState)
+            typeof(ShipDeathState)
         );
 
     public static readonly Signature PredefinedOrbit =

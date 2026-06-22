@@ -11,11 +11,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string UnitBornPulse = "UnitBornPulse";
+    public const string ShipBornPulse = "ShipBornPulse";
 }
 
-[Define(ConceptNames.UnitBornPulse)]
-public abstract class UnitBornPulseDefinition : IDefinition
+[Define(ConceptNames.ShipBornPulse)]
+public abstract class ShipBornPulseDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
@@ -29,17 +29,17 @@ public abstract class UnitBornPulseDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.UnitBornPulse)]
-public class UnitBornPulseDescription : IDescription
+[Describe(ConceptNames.ShipBornPulse)]
+public class ShipBornPulseDescription : IDescription
 {
-    public required Entity Unit { get; set; }
+    public required Entity Ship { get; set; }
 
     public required Color Color { get; set; }
 }
 
-[Apply(ConceptNames.UnitBornPulse)]
-public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<UnitBornPulseDescription>
+[Apply(ConceptNames.ShipBornPulse)]
+public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipBornPulseDescription>
 {
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
         "Textures/SolarMax2.Atlas.json:ShipPulse"
@@ -47,9 +47,9 @@ public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory
 
     private readonly AnimationClip<Entity> _bornPulseAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitBornPulse.json");
+    >("Animations/ShipBornPulse.json");
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, UnitBornPulseDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ShipBornPulseDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
@@ -83,7 +83,7 @@ public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             world,
             commandBuffer,
             ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Parent = desc.Unit, Child = entity }
+            new RelativeTransformDescription { Parent = desc.Ship, Child = entity }
         );
 
         // 设置依赖关系
@@ -91,7 +91,7 @@ public class UnitBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             world,
             commandBuffer,
             ConceptNames.Dependence,
-            new DependenceDescription { Dependent = entity, Dependency = desc.Unit }
+            new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
         );
     }
 }

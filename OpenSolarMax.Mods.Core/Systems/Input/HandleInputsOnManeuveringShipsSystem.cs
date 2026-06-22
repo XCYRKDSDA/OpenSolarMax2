@@ -167,7 +167,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                 && selection.SimpleSelecting.TappingDestination != Entity.Null
             )
             {
-                // 当前右键没有按下，但是之前有选中的目标，则操作单位，并切换至初始状态的简单选择状态
+                // 当前右键没有按下，但是之前有选中的目标，则操作舰船，并切换至初始状态的简单选择状态
                 foreach (var departure in selection.SimpleSelecting.SelectedSources)
                 {
                     // 排除目标星球和出发星球相同的情况

@@ -37,15 +37,15 @@ public sealed partial class SettleCombatSystem(World world) : ICalcSystemWithStr
             ref readonly var teamCombatAbility = ref team.Get<Combatable>();
             using var shipEnumerator = shipsRegistry.Ships[team].GetEnumerator();
 
-            // 根据前线战损逐个移除单位
+            // 根据前线战损逐个移除舰船
             var damage = battle.FrontlineDamage[team];
-            while (damage >= teamCombatAbility.MaximumDamagePerUnit && shipEnumerator.MoveNext())
+            while (damage >= teamCombatAbility.MaximumDamagePerShip && shipEnumerator.MoveNext())
             {
-                damage -= teamCombatAbility.MaximumDamagePerUnit;
+                damage -= teamCombatAbility.MaximumDamagePerShip;
 
                 var ship = shipEnumerator.Current;
 
-                ref var deathState = ref ship.Get<UnitDeathState>();
+                ref var deathState = ref ship.Get<ShipDeathState>();
                 deathState.State = DeathState.Dying;
             }
             battle.FrontlineDamage[team] = damage;

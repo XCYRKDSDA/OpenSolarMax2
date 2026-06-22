@@ -12,7 +12,7 @@ using OpenSolarMax.Mods.Core.Concepts;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 考察移动进度，将单位降落到目标星球的系统
+/// 考察移动进度，将舰船降落到目标星球的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
@@ -68,7 +68,7 @@ public sealed partial class LandArrivedShipsSystem(
         // 结束飞行
         status.State = JumpingState.Idle;
 
-        // 将单位挂载到目标星球
+        // 将舰船挂载到目标星球
         factory.Make(
             world,
             commandBuffer,
@@ -90,7 +90,7 @@ public sealed partial class LandArrivedShipsSystem(
             }
         );
 
-        // 销毁单位的尾迹实体
+        // 销毁舰船的尾迹实体
         commandBuffer.Destroy(ship.Get<TrailOf.AsShip>().Relationship!.Value.Copy.Trail);
 
         // 播放音效

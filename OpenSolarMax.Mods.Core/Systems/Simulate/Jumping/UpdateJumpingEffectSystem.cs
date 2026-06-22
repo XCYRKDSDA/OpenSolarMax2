@@ -13,13 +13,13 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 根据跳跃任务执行的时间和阶段，应用单位及其尾焰的动画
+/// 根据跳跃任务执行的时间和阶段，应用舰船及其尾焰的动画
 /// </summary>
 [SimulateSystem, AfterStructuralChanges]
 [ReadCurr(typeof(TrailOf.AsShip)), ReadCurr(typeof(JumpingStatus)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyTeamColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
-[ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))] // 如果一个单位刚出生就移动，则用移动动画覆盖其出生动画
+[ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))] // 如果一个舰船刚出生就移动，则用移动动画覆盖其出生动画
 [ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed partial class UpdateJumpingEffectSystem(
     World world,
@@ -29,20 +29,20 @@ public sealed partial class UpdateJumpingEffectSystem(
 {
     private readonly float _landingDuration = configs.RequireValue<float>("landing_duration");
 
-    private readonly float _unitJumpingFadeInDuration = configs.RequireValue<float>(
+    private readonly float _shipJumpingFadeInDuration = configs.RequireValue<float>(
         "fading_in_duration"
     );
-    private readonly float _unitJumpingFadeOutDuration = configs.RequireValue<float>(
+    private readonly float _shipJumpingFadeOutDuration = configs.RequireValue<float>(
         "fading_out_duration"
     );
 
-    private readonly AnimationClip<Entity> _unitJumpingAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipJumpingAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitJumping.json");
+    >("Animations/ShipJumping.json");
 
-    private readonly AnimationClip<Entity> _unitTakingOffAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipTakingOffAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitTakingOff.json");
+    >("Animations/ShipTakingOff.json");
 
     private readonly AnimationClip<Entity> _trailStretchingAnimation = assets.Load<
         AnimationClip<Entity>
@@ -69,7 +69,7 @@ public sealed partial class UpdateJumpingEffectSystem(
         {
             var takingOffAnimationTime = status.Charging.ElapsedTime;
             var fadeInTime = status.Charging.ElapsedTime;
-            var fadeInRatio = fadeInTime / _unitJumpingFadeInDuration;
+            var fadeInRatio = fadeInTime / _shipJumpingFadeInDuration;
 
             switch (fadeInRatio)
             {
@@ -78,7 +78,7 @@ public sealed partial class UpdateJumpingEffectSystem(
                         ref ship,
                         null,
                         float.NaN, // 上一个动画设置为空，直接继承上一个系统设置的值
-                        _unitTakingOffAnimationClip,
+                        _shipTakingOffAnimationClip,
                         takingOffAnimationTime,
                         null,
                         fadeInRatio
@@ -87,7 +87,7 @@ public sealed partial class UpdateJumpingEffectSystem(
                 case >= 1:
                     AnimationEvaluator<Entity>.EvaluateAndSet(
                         ref ship,
-                        _unitTakingOffAnimationClip,
+                        _shipTakingOffAnimationClip,
                         takingOffAnimationTime
                     );
                     break;
@@ -100,22 +100,22 @@ public sealed partial class UpdateJumpingEffectSystem(
             var fadeOutTime =
                 status.Travelling.ElapsedTime
                 + status.Travelling.DelayedTime
-                - (status.Task.ExpectedTravelDuration - _unitJumpingFadeOutDuration);
-            var fadeOutRatio = fadeOutTime / _unitJumpingFadeOutDuration;
+                - (status.Task.ExpectedTravelDuration - _shipJumpingFadeOutDuration);
+            var fadeOutRatio = fadeOutTime / _shipJumpingFadeOutDuration;
 
             switch (fadeOutRatio)
             {
                 case < 0:
                     AnimationEvaluator<Entity>.EvaluateAndSet(
                         ref ship,
-                        _unitJumpingAnimationClip,
+                        _shipJumpingAnimationClip,
                         jumpingAnimationTime
                     );
                     break;
                 case >= 0 and < 1:
                     AnimationEvaluator<Entity>.TweenAndSet(
                         ref ship,
-                        _unitJumpingAnimationClip,
+                        _shipJumpingAnimationClip,
                         jumpingAnimationTime,
                         null,
                         float.NaN, // 下一个动画设置为空，直接继承上一个系统设置的值
@@ -129,7 +129,7 @@ public sealed partial class UpdateJumpingEffectSystem(
         // 处理尾迹效果
         var trail = asShip.Relationship!.Value.Copy.Trail;
 
-        // 尾迹的颜色和单位的颜色相同
+        // 尾迹的颜色和舰船的颜色相同
         Debug.Assert(trail.Has<Sprite>());
         trail.Get<Sprite>().Color = sprite.Color;
 

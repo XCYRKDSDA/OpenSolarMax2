@@ -9,12 +9,12 @@ namespace OpenSolarMax.Mods.Core.Components;
 public struct ProductionState()
 {
     /// <summary>
-    /// 当前单位的生产进度
+    /// 当前舰船的生产进度
     /// </summary>
     public float Progress = 0;
 
     /// <summary>
-    /// 这一帧完成生产的单位个数
+    /// 这一帧完成生产的舰船个数
     /// </summary>
-    public int UnitsProducedThisFrame = 0;
+    public int ShipsProducedThisFrame = 0;
 }

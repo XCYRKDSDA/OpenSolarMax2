@@ -3,7 +3,7 @@ using Arch.Core;
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
-/// 传送任务组件。描述某个单位参与的传送任务
+/// 传送任务组件。描述某个舰船参与的传送任务
 /// </summary>
 public struct TransportingTask
 {

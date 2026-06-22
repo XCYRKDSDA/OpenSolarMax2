@@ -186,7 +186,7 @@ public static class JumpingUtils
             // 计算距离
             var distance = (destinationPositionRef - departurePosition).Length();
 
-            // 单位可移动的距离
+            // 舰船可移动的距离
             var movedDistance = jumpable.Speed * t;
 
             // 计算误差

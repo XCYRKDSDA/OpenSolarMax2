@@ -12,7 +12,7 @@ using OpenSolarMax.Mods.Core.Concepts;
 namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 /// <summary>
-/// 处理<see cref="StartJumpingRequest"/>使传送门上单位开始传送的系统
+/// 处理<see cref="StartJumpingRequest"/>使传送门上舰船开始传送的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
@@ -29,10 +29,10 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
+// 新出发的舰船无须更新移动状态，因此要在计算上一帧的移动变化之后发出舰船
 [
-    ExecuteAfter(typeof(ProgressUnitsTransportationSystem)),
-    ExecuteAfter(typeof(TransportUnitsSystem))
+    ExecuteAfter(typeof(ProgressShipsTransportationSystem)),
+    ExecuteAfter(typeof(TransportShipsSystem))
 ]
 public sealed partial class StartTransportationSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
@@ -54,7 +54,7 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
         if (!request.Departure.Has<PortalChargingJobs>())
             return;
 
-        // 设置单位传送状态
+        // 设置舰船传送状态
         var shipsRemain = request.ExpectedNum;
         var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
         using var shipsEnumerator = allShips.GetEnumerator();

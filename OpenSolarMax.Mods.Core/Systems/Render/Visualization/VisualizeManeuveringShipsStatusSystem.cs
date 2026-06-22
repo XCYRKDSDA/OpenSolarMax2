@@ -140,10 +140,10 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
-            var unitDirection = targetInCanvas - sourceInCanvas;
-            unitDirection.Normalize();
-            var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
-            var tailInCanvas = targetInCanvas - unitDirection * targetRingRadius;
+            var shipDirection = targetInCanvas - sourceInCanvas;
+            shipDirection.Normalize();
+            var headInCanvas = sourceInCanvas + shipDirection * sourceRingRadius;
+            var tailInCanvas = targetInCanvas - shipDirection * targetRingRadius;
 
             _segmentRenderer.DrawSegment(
                 headInCanvas,
@@ -179,9 +179,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
-            var unitDirection = tailInCanvas - sourceInCanvas;
-            unitDirection.Normalize();
-            var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
+            var shipDirection = tailInCanvas - sourceInCanvas;
+            shipDirection.Normalize();
+            var headInCanvas = sourceInCanvas + shipDirection * sourceRingRadius;
 
             _segmentRenderer.DrawSegment(
                 headInCanvas,

@@ -34,7 +34,7 @@ public abstract class ShipDefinition : IDefinition
             typeof(JumpingStatus),
             typeof(PopulationCost),
             typeof(TransportingStatus),
-            typeof(UnitDeathState)
+            typeof(ShipDeathState)
         );
 }
 
@@ -42,12 +42,12 @@ public abstract class ShipDefinition : IDefinition
 public class ShipDescription : IDescription
 {
     /// <summary>
-    /// 单位创建时所在的星球。必须提供
+    /// 舰船创建时所在的星球。必须提供
     /// </summary>
     public required Entity Planet { get; set; }
 
     /// <summary>
-    /// 单位创建时所属的阵营。必须提供
+    /// 舰船创建时所属的阵营。必须提供
     /// </summary>
     public required Entity Team { get; set; }
 }
@@ -59,9 +59,9 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         Content.Textures.DefaultShip
     );
 
-    private readonly AnimationClip<Entity> _unitBlinkingAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipBlinkingAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitBlinking.json");
+    >("Animations/ShipBlinking.json");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipDescription desc)
     {
@@ -88,7 +88,7 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
             in entity,
             new Animation
             {
-                Clip = _unitBlinkingAnimationClip,
+                Clip = _shipBlinkingAnimationClip,
                 TimeElapsed = TimeSpan.Zero,
                 TimeOffset = TimeSpan.FromSeconds(new Random().NextDouble()),
             }
@@ -116,6 +116,6 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         commandBuffer.Set(in entity, new TransportingStatus { State = TransportingState.Idle });
 
         // 初始化死亡状态
-        commandBuffer.Set(in entity, new UnitDeathState { State = DeathState.Alive });
+        commandBuffer.Set(in entity, new ShipDeathState { State = DeathState.Alive });
     }
 }

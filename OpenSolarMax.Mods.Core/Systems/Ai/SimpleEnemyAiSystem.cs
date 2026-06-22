@@ -27,11 +27,11 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         public Vector2 Position;
         public float Volume;
 
-        public int ActualFriendUnits;
-        public int PredictedFriendUnits;
+        public int ActualFriendShips;
+        public int PredictedFriendShips;
 
-        public int ActualEnemyUnits;
-        public int PredictedEnemyUnits;
+        public int ActualEnemyShips;
+        public int PredictedEnemyShips;
 
         public bool Battle;
         public bool CanProduce;
@@ -44,7 +44,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         ProductionCondition,
         Colonizable,
         AnchoredShipsRegistry,
-        JumpingUnitsRegistry,
+        JumpingShipsRegistry,
         AbsoluteTransform,
         PlanetAiTimers
     >]
@@ -55,7 +55,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         in ProductionCondition productionCondition,
         in Colonizable colonizable,
         in AnchoredShipsRegistry anchoredShipsRegistry,
-        in JumpingUnitsRegistry jumpingUnitsRegistry,
+        in JumpingShipsRegistry jumpingShipsRegistry,
         in AbsoluteTransform absoluteTransform,
         in PlanetAiTimers planetAiTimers,
         [Data] Entity team,
@@ -77,17 +77,17 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     Y = absoluteTransform.Translation.Y,
                 },
                 Volume = colonizable.Volume,
-                ActualFriendUnits = anchoredShipsRegistry.Ships[team].Count(),
-                PredictedFriendUnits =
+                ActualFriendShips = anchoredShipsRegistry.Ships[team].Count(),
+                PredictedFriendShips =
                     anchoredShipsRegistry.Ships[team].Count()
-                    + jumpingUnitsRegistry.IncomingUnits[team].Count(),
-                ActualEnemyUnits = anchoredShipsRegistry
+                    + jumpingShipsRegistry.IncomingShips[team].Count(),
+                ActualEnemyShips = anchoredShipsRegistry
                     .Ships.Where(g => g.Key != team)
                     .Sum(g => g.Count()),
-                PredictedEnemyUnits =
+                PredictedEnemyShips =
                     anchoredShipsRegistry.Ships.Where(g => g.Key != team).Sum(g => g.Count())
-                    + jumpingUnitsRegistry
-                        .IncomingUnits.Where(g => g.Key != team)
+                    + jumpingShipsRegistry
+                        .IncomingShips.Where(g => g.Key != team)
                         .Sum(g => g.Count()),
                 Battle = battlefield.FrontlineDamage.Count > 0,
                 CanProduce = productionCondition.IsMet,
@@ -137,13 +137,13 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 条件1：为己方天体或有己方飞船（包括飞行中的）
-                if (info.Team != team && info.PredictedFriendUnits == 0)
+                if (info.Team != team && info.PredictedFriendShips == 0)
                     return false;
                 // 条件2：有敌方
-                if (info.PredictedEnemyUnits == 0)
+                if (info.PredictedEnemyShips == 0)
                     return false;
                 // 条件3：预测己方强度低于敌方两倍（即可能打不过敌方
-                if (info.PredictedFriendUnits > info.PredictedEnemyUnits * 2)
+                if (info.PredictedFriendShips > info.PredictedEnemyShips * 2)
                     return false;
                 return true;
             })
@@ -152,7 +152,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 该天体到己方天体几何中心的距离
                 var distance = Vector2.Distance(info.Position, friendPlanetsCenter); // TODO: 归一化; TODO: 随机化
                 // 己方势力强度减去非己方势力强度
-                var relativeStrength = info.PredictedFriendUnits - info.PredictedEnemyUnits;
+                var relativeStrength = info.PredictedFriendShips - info.PredictedEnemyShips;
                 // 计算防守价值
                 return distance + relativeStrength;
             })
@@ -164,16 +164,16 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             {
                 // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
                 if ( /*info.AiTimeLeft > TimeSpan.Zero ||*/
-                    info.PredictedFriendUnits <= 0
+                    info.PredictedFriendShips <= 0
                 )
                     return false;
                 // 条件：是己方天体或预测己方强度低于敌方
-                if (info.Team != team && info.PredictedFriendUnits > info.PredictedEnemyUnits)
+                if (info.Team != team && info.PredictedFriendShips > info.PredictedEnemyShips)
                     return false;
                 // 条件：没有敌方或预测己方强度低于敌方
                 if (
-                    info.PredictedEnemyUnits > 0
-                    && info.PredictedFriendUnits > info.PredictedEnemyUnits
+                    info.PredictedEnemyShips > 0
+                    && info.PredictedFriendShips > info.PredictedEnemyShips
                 )
                     return false;
                 return true;
@@ -181,7 +181,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .OrderBy(info =>
             {
                 // 将该天体己方强度记为飞船数的相反数
-                return -info.ActualFriendUnits;
+                return -info.ActualFriendShips;
             })
             .ToList();
 
@@ -194,26 +194,26 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     continue;
                 // 出兵条件：出兵天体的强度和目标天体的预测强度之和高于目标天体的预测敌方强度
                 if (
-                    sender.ActualFriendUnits + target.PredictedFriendUnits
-                    <= target.PredictedEnemyUnits
+                    sender.ActualFriendShips + target.PredictedFriendShips
+                    <= target.PredictedEnemyShips
                 )
                     continue;
 
                 // 飞船数：目标天体上预测敌方强度的二倍减去预测己方强度
-                var unitsToSend = target.PredictedEnemyUnits * 2 - target.PredictedFriendUnits;
+                var shipsToSend = target.PredictedEnemyShips * 2 - target.PredictedFriendShips;
 
                 // TODO: 估损
                 var towerAttack = 0;
-                unitsToSend += towerAttack; // 为飞船数加上估损
+                shipsToSend += towerAttack; // 为飞船数加上估损
 
                 // 条件：没有经过攻击天体或总兵力多于估损
                 if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
                     continue;
                 // 条件：没有经过攻击天体或出兵天体强度高于估损的一半
-                if (towerAttack > 0 && sender.ActualFriendUnits < towerAttack / 2)
+                if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
                     continue;
 
-                // 创建单位移动请求
+                // 创建舰船移动请求
                 factory.Make(
                     world,
                     commandBuffer,
@@ -222,7 +222,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                         Departure = sender.Entity,
                         Destination = target.Entity,
                         Team = team,
-                        ExpectedNum = unitsToSend,
+                        ExpectedNum = shipsToSend,
                     }
                 );
                 sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(1); // TODO 随机化
@@ -243,7 +243,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 if (info.Team == team)
                     return false;
                 // 条件：排除己方强度足够且无敌方的天体
-                if (info.PredictedEnemyUnits == 0 && info.PredictedFriendUnits > info.Volume)
+                if (info.PredictedEnemyShips == 0 && info.PredictedFriendShips > info.Volume)
                     return false;
                 return true;
             })
@@ -252,7 +252,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 该天体到己方天体几何中心的距离
                 var distance = Vector2.Distance(info.Position, friendPlanetsCenter); // TODO: 归一化; TODO: 随机化
                 // 预测敌方强度减去预测己方强度
-                var relativeStrength = info.PredictedEnemyUnits - info.PredictedFriendUnits;
+                var relativeStrength = info.PredictedEnemyShips - info.PredictedFriendShips;
                 // 计算防守价值
                 return distance + relativeStrength;
             })
@@ -264,19 +264,19 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             {
                 // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
                 if ( /*info.AiTimeLeft > TimeSpan.Zero ||*/
-                    info.PredictedFriendUnits <= 0
+                    info.PredictedFriendShips <= 0
                 )
                     return false;
                 // 条件：天体不被己方占据
-                if (info.PredictedEnemyUnits == 0 && info.Team != team)
+                if (info.PredictedEnemyShips == 0 && info.Team != team)
                     return false;
                 // 条件：是己方天体或预测己方强度低于敌方
-                if (info.Team != team && info.PredictedFriendUnits > info.PredictedEnemyUnits)
+                if (info.Team != team && info.PredictedFriendShips > info.PredictedEnemyShips)
                     return false;
                 // 条件：没有敌方或预测己方强度低于敌方
                 if (
-                    info.PredictedEnemyUnits > 0
-                    && info.PredictedFriendUnits > info.PredictedEnemyUnits
+                    info.PredictedEnemyShips > 0
+                    && info.PredictedFriendShips > info.PredictedEnemyShips
                 )
                     return false;
                 return true;
@@ -284,7 +284,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .OrderBy(info =>
             {
                 // 将该天体己方强度记为飞船数的相反数
-                return -info.ActualFriendUnits;
+                return -info.ActualFriendShips;
             })
             .ToList();
 
@@ -297,33 +297,33 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     continue;
                 // 出兵条件：出兵天体和目标天体的己方综合强度高于目标天体的预测敌方强度
                 if (
-                    sender.ActualFriendUnits + target.PredictedFriendUnits
-                    <= target.PredictedEnemyUnits
+                    sender.ActualFriendShips + target.PredictedFriendShips
+                    <= target.PredictedEnemyShips
                 )
                     continue;
 
                 // 基本飞船数：目标天体上预测敌方强度的二倍减去预测己方强度一半
-                var unitsToSend = target.PredictedEnemyUnits * 2 - target.PredictedFriendUnits / 2;
+                var shipsToSend = target.PredictedEnemyShips * 2 - target.PredictedFriendShips / 2;
 
                 // 预测敌方强度大于己方时，派出全部飞船
-                if (sender.PredictedEnemyUnits > sender.PredictedFriendUnits)
-                    unitsToSend = sender.ActualFriendUnits;
+                if (sender.PredictedEnemyShips > sender.PredictedFriendShips)
+                    shipsToSend = sender.ActualFriendShips;
                 // 飞船数不应低于目标的二倍标准兵力
-                if (unitsToSend < target.Volume * 2)
-                    unitsToSend = (int)(target.Volume * 2);
+                if (shipsToSend < target.Volume * 2)
+                    shipsToSend = (int)(target.Volume * 2);
 
                 // TODO: 估损
                 var towerAttack = 0;
-                unitsToSend += towerAttack; // 为飞船数加上估损
+                shipsToSend += towerAttack; // 为飞船数加上估损
 
                 // 总兵力不足估损时不派兵
                 if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
                     continue;
                 // 出兵天体强度低于估损的一半时不派兵
-                if (towerAttack > 0 && sender.ActualFriendUnits < towerAttack / 2)
+                if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
                     continue;
 
-                // 创建单位移动请求
+                // 创建舰船移动请求
                 factory.Make(
                     world,
                     commandBuffer,
@@ -332,7 +332,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                         Departure = sender.Entity,
                         Destination = target.Entity,
                         Team = team,
-                        ExpectedNum = unitsToSend,
+                        ExpectedNum = shipsToSend,
                     }
                 );
                 sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(1);
@@ -353,7 +353,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     .FromHereTo.Where(p => p.Value)
                     .Count(p =>
                         planetInfos[p.Key].Team != team
-                        || planetInfos[p.Key].PredictedEnemyUnits > 0
+                        || planetInfos[p.Key].PredictedEnemyShips > 0
                     );
                 return value;
             }
@@ -363,12 +363,12 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 条件：没在锁星
-                if (info.Team != team && info is { PredictedEnemyUnits: 0, ActualFriendUnits: > 0 })
+                if (info.Team != team && info is { PredictedEnemyShips: 0, ActualFriendShips: > 0 })
                     return false;
                 // 条件：无敌方或打不过敌方
                 if (
-                    info.PredictedEnemyUnits > 0
-                    && info.PredictedFriendUnits > info.PredictedEnemyUnits
+                    info.PredictedEnemyShips > 0
+                    && info.PredictedFriendShips > info.PredictedEnemyShips
                 )
                     return false;
                 return true;
@@ -376,7 +376,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .OrderBy(info =>
             {
                 // 将该天体己方强度记为飞船数的相反数
-                return -info.ActualFriendUnits;
+                return -info.ActualFriendShips;
             })
             .ToList();
 
@@ -392,20 +392,20 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     continue;
 
                 // 派出全部飞船
-                var unitsToSend = sender.ActualFriendUnits;
+                var shipsToSend = sender.ActualFriendShips;
 
                 // TODO: 估损
                 var towerAttack = 0;
-                unitsToSend += towerAttack; // 为飞船数加上估损
+                shipsToSend += towerAttack; // 为飞船数加上估损
 
                 // 总兵力不足估损时不派兵
                 if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
                     continue;
                 // 出兵天体强度低于估损的一半时不派兵
-                if (towerAttack > 0 && sender.ActualFriendUnits < towerAttack / 2)
+                if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
                     continue;
 
-                // 创建单位移动请求
+                // 创建舰船移动请求
                 factory.Make(
                     world,
                     commandBuffer,
@@ -414,7 +414,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                         Departure = sender.Entity,
                         Destination = target.Entity,
                         Team = team,
-                        ExpectedNum = unitsToSend,
+                        ExpectedNum = shipsToSend,
                     }
                 );
                 sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(1); // TODO 随机化

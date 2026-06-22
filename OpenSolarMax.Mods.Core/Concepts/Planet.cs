@@ -63,7 +63,7 @@ public class PlanetDescription : IDescription
     public required int Population { get; set; }
 
     /// <summary>
-    /// 该星球生产单位的速度
+    /// 该星球生产舰船的速度
     /// </summary>
     public required float ProduceSpeed { get; set; }
 }

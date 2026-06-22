@@ -82,7 +82,7 @@ public struct ShipsSelection()
 }
 
 /// <summary>
-/// 操作单位的状态。描述某个视图实体上对世界中单位的操作状态
+/// 操作舰船的状态。描述某个视图实体上对世界中舰船的操作状态
 /// </summary>
 [Component]
 public struct ManeuvaringShipsStatus()

@@ -11,7 +11,7 @@ using OpenSolarMax.Mods.Core.Concepts;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 结算生产系统. 在所有推进了生产的星球上计算是否产生新单位
+/// 结算生产系统. 在所有推进了生产的星球上计算是否产生新舰船
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
@@ -38,7 +38,7 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
         var team = teamRelationship.Relationship!.Value.Copy.Team;
 
         // 生产一个新部队
-        for (int i = 0; i < state.UnitsProducedThisFrame; i++)
+        for (int i = 0; i < state.ShipsProducedThisFrame; i++)
         {
             var newShip = factory.Make(
                 world,
@@ -48,15 +48,15 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
             );
 
             // 添加出生后动画
-            commandBuffer.Add(newShip, new UnitPostBornEffect() { TimeElapsed = TimeSpan.Zero });
+            commandBuffer.Add(newShip, new ShipPostBornEffect() { TimeElapsed = TimeSpan.Zero });
 
             // 生成出生动画
             factory.Make(
                 world,
                 commandBuffer,
-                new UnitBornPulseDescription()
+                new ShipBornPulseDescription()
                 {
-                    Unit = newShip,
+                    Ship = newShip,
                     Color = team.Get<TeamReferenceColor>().Value,
                 }
             );

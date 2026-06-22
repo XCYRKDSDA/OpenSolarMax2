@@ -4,10 +4,10 @@ using OpenSolarMax.Game.Modding.ECS;
 namespace OpenSolarMax.Mods.Core.Components;
 
 [Component]
-public struct JumpingUnitsRegistry
+public struct JumpingShipsRegistry
 {
     /// <summary>
     /// 阵营 -> 舰船
     /// </summary>
-    public ILookup<Entity, Entity> IncomingUnits;
+    public ILookup<Entity, Entity> IncomingShips;
 }

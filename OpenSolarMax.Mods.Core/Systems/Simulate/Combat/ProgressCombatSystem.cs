@@ -50,7 +50,7 @@ public sealed partial class ProgressCombatSystem(World world) : ITickSystem
         {
             // 计算该阵营造成的总伤害
             var totalDamage =
-                team1.Get<Combatable>().AttackPerUnitPerSecond
+                team1.Get<Combatable>().AttackPerShipPerSecond
                 * ships[team1].Count()
                 * (float)time.ElapsedGameTime.TotalSeconds;
 

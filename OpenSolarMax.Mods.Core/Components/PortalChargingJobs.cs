@@ -8,7 +8,7 @@ public struct PortalTransportationTask
 
     public Entity Team;
 
-    public int Units;
+    public int Ships;
 }
 
 public struct PortalChargingStatus

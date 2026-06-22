@@ -1,9 +1,9 @@
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
-/// 单位出生后的渐入动画
+/// 舰船出生后的渐入动画
 /// </summary>
-public struct UnitPostBornEffect()
+public struct ShipPostBornEffect()
 {
     /// <summary>
     /// 该效果已作用的时间

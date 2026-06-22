@@ -31,7 +31,7 @@ public sealed partial class ProgressProductionSystem(World world) : ITickSystem
         ref ProductionState state
     )
     {
-        state.UnitsProducedThisFrame = 0;
+        state.ShipsProducedThisFrame = 0;
 
         if (!cond.IsMet)
         {
@@ -49,7 +49,7 @@ public sealed partial class ProgressProductionSystem(World world) : ITickSystem
         while (state.Progress > producible.WorkloadPerShip)
         {
             state.Progress -= producible.WorkloadPerShip;
-            state.UnitsProducedThisFrame += 1;
+            state.ShipsProducedThisFrame += 1;
         }
     }
 

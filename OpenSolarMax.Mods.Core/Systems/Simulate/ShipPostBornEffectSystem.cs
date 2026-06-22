@@ -10,22 +10,22 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-using Params = UnitPostBornEffectParams;
+using Params = ShipPostBornEffectParams;
 
-internal static class UnitPostBornEffectParams
+internal static class ShipPostBornEffectParams
 {
     internal static readonly TimeSpan PostBornDuration = TimeSpan.FromSeconds(1);
     internal static readonly TimeSpan FadeOutDuration = PostBornDuration * 0.1;
 }
 
 [SimulateSystem, BeforeStructuralChanges]
-[Iterate(typeof(UnitPostBornEffect))]
+[Iterate(typeof(ShipPostBornEffect))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
+public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
 {
     [Query]
-    [All<UnitPostBornEffect>]
-    private static void UpdateBlinkEffect(ref UnitPostBornEffect effect, [Data] GameTime time)
+    [All<ShipPostBornEffect>]
+    private static void UpdateBlinkEffect(ref ShipPostBornEffect effect, [Data] GameTime time)
     {
         effect.TimeElapsed += time.ElapsedGameTime;
     }
@@ -34,43 +34,43 @@ public partial class UpdateUnitPostBornEffectSystem(World world) : ITickSystem
 }
 
 [SimulateSystem, BeforeStructuralChanges]
-[ReadCurr(typeof(UnitPostBornEffect)), ChangeStructure]
+[ReadCurr(typeof(ShipPostBornEffect)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public partial class RemoveUnitPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
+public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
-    [All<UnitPostBornEffect>]
-    private static void RemoveUnitPostBornEffect(
+    [All<ShipPostBornEffect>]
+    private static void RemoveShipPostBornEffect(
         Entity entity,
-        in UnitPostBornEffect effect,
+        in ShipPostBornEffect effect,
         [Data] CommandBuffer commandBuffer
     )
     {
         if (effect.TimeElapsed >= Params.PostBornDuration)
-            commandBuffer.Remove<UnitPostBornEffect>(entity);
+            commandBuffer.Remove<ShipPostBornEffect>(entity);
     }
 
     public void Update(CommandBuffer commandBuffer) =>
-        RemoveUnitPostBornEffectQuery(world, commandBuffer);
+        RemoveShipPostBornEffectQuery(world, commandBuffer);
 }
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(UnitPostBornEffect)), Write(typeof(Sprite))]
+[ReadCurr(typeof(ShipPostBornEffect)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
-public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
+public partial class ApplyShipPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     /// <summary>
-    /// 外置的单位出生后动画。<br/>
+    /// 外置的舰船出生后动画。<br/>
     /// 要求的组件为<see cref="Sprite"/>
     /// </summary>
-    private readonly AnimationClip<Entity> _unitPostBornAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipPostBornAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitPostBorn.json");
+    >("Animations/ShipPostBorn.json");
 
     [Query]
-    [All<UnitPostBornEffect, Sprite>]
-    private void ApplyBlinkEffect(Entity entity, in UnitPostBornEffect effect)
+    [All<ShipPostBornEffect, Sprite>]
+    private void ApplyBlinkEffect(Entity entity, in ShipPostBornEffect effect)
     {
         var animationTime = (float)effect.TimeElapsed.TotalSeconds;
         var fadeOutTime = effect.TimeElapsed - (Params.PostBornDuration - Params.FadeOutDuration);
@@ -80,14 +80,14 @@ public partial class ApplyUnitPostBornEffectSystem(World world, IAssetsManager a
             case < 0:
                 AnimationEvaluator<Entity>.EvaluateAndSet(
                     ref entity,
-                    _unitPostBornAnimationClip,
+                    _shipPostBornAnimationClip,
                     animationTime
                 );
                 break;
             case >= 0 and < 1:
                 AnimationEvaluator<Entity>.TweenAndSet(
                     ref entity,
-                    _unitPostBornAnimationClip,
+                    _shipPostBornAnimationClip,
                     animationTime,
                     null,
                     float.NaN,

@@ -17,7 +17,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 处理<see cref="StartJumpingRequest"/>来使单位开始飞行的系统
+/// 处理<see cref="StartJumpingRequest"/>来使舰船开始飞行的系统
 /// </summary>
 [SimulateSystem, BeforeStructuralChanges]
 [
@@ -34,12 +34,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 新出发的单位无须更新移动状态，因此要在计算上一帧的移动变化之后发出单位
+// 新出发的舰船无须更新移动状态，因此要在计算上一帧的移动变化之后发出舰船
 [
     ExecuteAfter(typeof(UpdateShipsStateSystem)),
     ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))
 ]
-// 这一帧刚抵达的单位不会立刻出发
+// 这一帧刚抵达的舰船不会立刻出发
 [ExecuteBefore(typeof(LandArrivedShipsSystem))]
 public sealed partial class StartJumpingSystem(
     World world,
@@ -159,8 +159,8 @@ public sealed partial class StartJumpingSystem(
             ship.Get<SoundEffect>().EventInstance = instance;
             instance.start();
 
-            // 创建单位的尾迹
-            factory.Make(world, commandBuffer, new UnitTrailDescription() { Unit = ship });
+            // 创建舰船的尾迹
+            factory.Make(world, commandBuffer, new ShipTrailDescription() { Ship = ship });
         }
 
         // 移除任务

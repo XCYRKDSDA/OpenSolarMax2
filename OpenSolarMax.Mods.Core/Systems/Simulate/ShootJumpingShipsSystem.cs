@@ -24,7 +24,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 [ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
-public sealed partial class ShootJumpingUnitsSystem(World world, IConceptFactory factory)
+public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myTeam)
@@ -95,7 +95,7 @@ public sealed partial class ShootJumpingUnitsSystem(World world, IConceptFactory
             );
         }
 
-        ref var targetDeathState = ref target.Value.Get<UnitDeathState>();
+        ref var targetDeathState = ref target.Value.Get<ShipDeathState>();
         targetDeathState.State = DeathState.Dying;
     }
 

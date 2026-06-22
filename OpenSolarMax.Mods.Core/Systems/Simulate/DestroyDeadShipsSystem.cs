@@ -8,15 +8,15 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, BeforeStructuralChanges]
-[ReadCurr(typeof(UnitDeathState)), ChangeStructure]
+[ReadCurr(typeof(ShipDeathState)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class DestroyDeadUnitsSystem(World world) : ICalcSystemWithStructuralChanges
+public sealed partial class DestroyDeadShipsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
-    [All<UnitDeathState>]
+    [All<ShipDeathState>]
     private void DestroyDead(
         Entity entity,
-        ref UnitDeathState deathState,
+        ref ShipDeathState deathState,
         [Data] CommandBuffer commandBuffer
     )
     {

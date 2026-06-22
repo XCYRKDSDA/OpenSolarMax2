@@ -10,11 +10,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string UnitTrail = "UnitTrail";
+    public const string ShipTrail = "ShipTrail";
 }
 
-[Define(ConceptNames.UnitTrail)]
-public abstract class UnitTrailDefinition : IDefinition
+[Define(ConceptNames.ShipTrail)]
+public abstract class ShipTrailDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
@@ -29,21 +29,21 @@ public abstract class UnitTrailDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.UnitTrail)]
-public class UnitTrailDescription : IDescription
+[Describe(ConceptNames.ShipTrail)]
+public class ShipTrailDescription : IDescription
 {
-    public required Entity Unit { get; set; }
+    public required Entity Ship { get; set; }
 }
 
-[Apply(ConceptNames.UnitTrail)]
-public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<UnitTrailDescription>
+[Apply(ConceptNames.ShipTrail)]
+public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipTrailDescription>
 {
     private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>(
         "Textures/SolarMax2.Atlas.json:Quad8x4"
     );
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, UnitTrailDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ShipTrailDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
@@ -68,18 +68,18 @@ public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory)
             }
         );
 
-        // 挂载到单位上
+        // 挂载到舰船上
         factory.Make(
             world,
             commandBuffer,
             ConceptNames.TrailOf,
-            new TrailOfDescription { Ship = desc.Unit, Trail = entity }
+            new TrailOfDescription { Ship = desc.Ship, Trail = entity }
         );
         factory.Make(
             world,
             commandBuffer,
             ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Child = entity, Parent = desc.Unit }
+            new RelativeTransformDescription { Child = entity, Parent = desc.Ship }
         );
 
         // 设置依赖关系
@@ -87,7 +87,7 @@ public class UnitTrailApplier(IAssetsManager assets, IConceptFactory factory)
             world,
             commandBuffer,
             ConceptNames.Dependence,
-            new DependenceDescription { Dependent = entity, Dependency = desc.Unit }
+            new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
         );
     }
 }

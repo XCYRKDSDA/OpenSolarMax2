@@ -13,17 +13,17 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadPrev(typeof(AbsoluteTransform)),
     ReadPrev(typeof(Sprite)),
-    Iterate(typeof(UnitDeathState)),
+    Iterate(typeof(ShipDeathState)),
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public sealed partial class PlayUnitDeathEffectSystem(World world, IConceptFactory factory)
+public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     [Query]
-    [All<UnitDeathState, AbsoluteTransform, Sprite>]
+    [All<ShipDeathState, AbsoluteTransform, Sprite>]
     private void PlayEffect(
-        ref UnitDeathState deathState,
+        ref ShipDeathState deathState,
         in AbsoluteTransform transform,
         in Sprite sprite,
         [Data] CommandBuffer commandBuffer
@@ -38,13 +38,13 @@ public sealed partial class PlayUnitDeathEffectSystem(World world, IConceptFacto
         factory.Make(
             world,
             commandBuffer,
-            new UnitFlareDescription { Color = color, Position = position }
+            new ShipFlareDescription { Color = color, Position = position }
         );
 
         factory.Make(
             world,
             commandBuffer,
-            new UnitPulseDescription { Color = color, Position = position }
+            new ShipPulseDescription { Color = color, Position = position }
         );
 
         deathState.State = DeathState.Dead;

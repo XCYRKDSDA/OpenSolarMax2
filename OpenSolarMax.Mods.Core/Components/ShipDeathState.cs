@@ -3,7 +3,7 @@ using OpenSolarMax.Game.Modding.ECS;
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
-///  Unit 当前所处的死亡阶段
+///  Ship 当前所处的死亡阶段
 /// </summary>
 public enum DeathState
 {
@@ -24,11 +24,11 @@ public enum DeathState
 }
 
 /// <summary>
-///  Unit 死亡状态组件。
-/// 所有 Unit 出生时即携带此组件，<see cref="State"/> 初始为 <see cref="DeathState.Alive"/>
+///  Ship 死亡状态组件。
+/// 所有 Ship 出生时即携带此组件，<see cref="State"/> 初始为 <see cref="DeathState.Alive"/>
 /// </summary>
 [Component]
-public struct UnitDeathState
+public struct ShipDeathState
 {
     public DeathState State;
 }

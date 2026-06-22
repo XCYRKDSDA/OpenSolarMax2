@@ -13,7 +13,7 @@ public struct TeamPopulationRegistry()
     public int PopulationLimit;
 
     /// <summary>
-    /// 当前阵营旗下所有单位已经占用的人口
+    /// 当前阵营旗下所有舰船已经占用的人口
     /// </summary>
     public int CurrentPopulation;
 

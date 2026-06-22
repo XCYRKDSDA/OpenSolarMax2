@@ -11,11 +11,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string UnitFlare = "UnitFlare";
+    public const string ShipFlare = "ShipFlare";
 }
 
-[Define(ConceptNames.UnitFlare)]
-public abstract class UnitFlareDefinition : IDefinition
+[Define(ConceptNames.ShipFlare)]
+public abstract class ShipFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         new(
@@ -30,29 +30,29 @@ public abstract class UnitFlareDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.UnitFlare)]
-public class UnitFlareDescription : IDescription
+[Describe(ConceptNames.ShipFlare)]
+public class ShipFlareDescription : IDescription
 {
     public required Vector3 Position { get; set; }
 
     public required Color Color { get; set; }
 }
 
-[Apply(ConceptNames.UnitFlare)]
-public class UnitFlareApplier(IAssetsManager assets) : IApplier<UnitFlareDescription>
+[Apply(ConceptNames.ShipFlare)]
+public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
         "Textures/SolarMax2.Atlas.json:ShipFlare"
     );
 
     private readonly AnimationClip<Entity> _flareAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/UnitFlare.json"
+        "Animations/ShipFlare.json"
     );
 
     private readonly SafeFmodEventDescription _destroyedSoundEvent =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/UnitDestroyed");
+        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipDestroyed");
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, UnitFlareDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ShipFlareDescription desc)
     {
         // 设置位置
         commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });

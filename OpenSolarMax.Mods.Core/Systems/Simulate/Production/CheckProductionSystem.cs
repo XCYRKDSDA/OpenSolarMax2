@@ -28,16 +28,16 @@ public sealed partial class CheckProductionSystem(World world) : ICalcSystem
             return false;
         var team = asAffiliate.Relationship.Value.Copy.Team;
 
-        // 无己方单位且有敌方单位的不生产
+        // 无己方舰船且有敌方舰船的不生产
         var ships = shipsRegistry.Ships;
         if (ships.All(g => g.Key != team) && ships.Any(g => g.Key != team))
             return false;
 
-        // 己方单位数量超过星球容量的不生产
+        // 己方舰船数量超过星球容量的不生产
         if (ships[team].Count() >= productable.Population)
             return false;
 
-        // 己方各星球单位总数量超过总容量的不生产
+        // 己方各星球舰船总数量超过总容量的不生产
         var populationRegistry =
             asAffiliate.Relationship!.Value.Copy.Team.Get<TeamPopulationRegistry>();
         if (populationRegistry.CurrentPopulation >= populationRegistry.PopulationLimit)

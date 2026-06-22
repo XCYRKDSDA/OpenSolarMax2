@@ -8,11 +8,11 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
-/// 跳跃系统。根据跳跃时间计算单位动画、位置和方向
+/// 跳跃系统。根据跳跃时间计算舰船动画、位置和方向
 /// </summary>
 [SimulateSystem, AfterStructuralChanges]
 [ReadCurr(typeof(JumpingStatus)), Write(typeof(AbsoluteTransform))]
-[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 跳跃单位应当不再有相对变换，因此和计算绝对位姿的系统无干扰
+[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 跳跃舰船应当不再有相对变换，因此和计算绝对位姿的系统无干扰
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
 {

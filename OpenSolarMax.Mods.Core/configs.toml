@@ -15,7 +15,7 @@ minimal_select_pixels = 10
 
 # 可视化系统相关
 
-[systems.visualization.anchored_units]
+[systems.visualization.anchored_ships]
 text.size = 36
 text.template = "{0}"
 shadow.distance = 2

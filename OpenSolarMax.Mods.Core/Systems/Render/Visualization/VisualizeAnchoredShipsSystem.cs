@@ -19,11 +19,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [RenderSystem, AfterStructuralChanges]
 [ReadCurr(typeof(Camera))]
 [Priority((int)GraphicsLayer.Interface)]
-public sealed partial class VisualizeAnchoredUnitsSystem(
+public sealed partial class VisualizeAnchoredShipsSystem(
     World world,
     GraphicsDevice graphicsDevice,
     IAssetsManager assets,
-    [Section("systems:visualization:anchored_units")] IConfiguration configs
+    [Section("systems:visualization:anchored_ships")] IConfiguration configs
 ) : ICalcSystem
 {
     private readonly int _textSize = configs.RequireValue<int>("text:size");
@@ -110,7 +110,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
         in Matrix worldToCanvas
     )
     {
-        // 如果没有停泊任何单位则跳过绘制
+        // 如果没有停泊任何舰船则跳过绘制
         if (registry.Ships.Count == 0)
             return;
 
@@ -158,7 +158,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
                 Vector3.Transform(pose.Translation, worldToCanvas)
             );
 
-            // 获得各阵营的单位数目、颜色和标签
+            // 获得各阵营的舰船数目、颜色和标签
             var shipsRegistry = registry.Ships;
             var weights = parties.Select(p => shipsRegistry[p].Count()).ToArray();
             var colors = parties.Select((p) => p.Get<TeamReferenceColor>().Value).ToArray();
@@ -182,7 +182,7 @@ public sealed partial class VisualizeAnchoredUnitsSystem(
                 );
             }
 
-            // 绘制各个阵营的单位数目文字
+            // 绘制各个阵营的舰船数目文字
             for (int i = 0; i < parties.Length; i++)
             {
                 var textSize = _font.MeasureString(labels[i]);

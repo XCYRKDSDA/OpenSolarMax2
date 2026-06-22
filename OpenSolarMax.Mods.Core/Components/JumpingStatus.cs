@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 namespace OpenSolarMax.Mods.Core.Components;
 
 /// <summary>
-/// 运输任务组件。描述某个单位参与的运输任务
+/// 运输任务组件。描述某个舰船参与的运输任务
 /// </summary>
 public struct JumpingTask
 {

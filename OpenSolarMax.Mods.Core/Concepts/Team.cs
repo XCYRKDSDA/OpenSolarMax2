@@ -43,17 +43,17 @@ public class TeamDescription : IDescription
     public required Color Color { get; set; }
 
     /// <summary>
-    /// 生产一个该阵营单位需要的工作量
+    /// 生产一个该阵营舰船需要的工作量
     /// </summary>
     public required float Workload { get; set; }
 
     /// <summary>
-    /// 每个该阵营的单位每秒可以造成的伤害
+    /// 每个该阵营的舰船每秒可以造成的伤害
     /// </summary>
     public required float Attack { get; set; }
 
     /// <summary>
-    /// 每个该阵营的单位最多可以承受的伤害
+    /// 每个该阵营的舰船最多可以承受的伤害
     /// </summary>
     public required float Health { get; set; }
 }
@@ -71,8 +71,8 @@ public class TeamApplier : IApplier<TeamDescription>
             in entity,
             new Combatable
             {
-                AttackPerUnitPerSecond = desc.Attack,
-                MaximumDamagePerUnit = desc.Health,
+                AttackPerShipPerSecond = desc.Attack,
+                MaximumDamagePerShip = desc.Health,
             }
         );
 

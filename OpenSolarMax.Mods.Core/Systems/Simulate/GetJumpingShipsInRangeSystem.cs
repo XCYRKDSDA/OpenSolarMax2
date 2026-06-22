@@ -17,15 +17,15 @@ namespace OpenSolarMax.Mods.Core.Systems;
     Write(typeof(InAttackRangeShipsRegistry))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class GetJumpingUnitsInRangeSystem(World world) : ICalcSystem
+public sealed partial class GetJumpingShipsInRangeSystem(World world) : ICalcSystem
 {
     [Query]
     [All<InTeam.AsAffiliate, JumpingStatus, AbsoluteTransform>]
-    private static void GetJumpingUnitsInRangeForCertainEntity(
+    private static void GetJumpingShipsInRangeForCertainEntity(
         Entity entity,
         in InTeam.AsAffiliate asAffiliate,
         in JumpingStatus jumpingStatus,
-        in AbsoluteTransform unitPose,
+        in AbsoluteTransform shipPose,
         [Data] in AbsoluteTransform planetPose,
         [Data] in float range,
         [Data] in Registry<Entity, (Entity Ship, float Distance)> result
@@ -35,8 +35,8 @@ public sealed partial class GetJumpingUnitsInRangeSystem(World world) : ICalcSys
             return;
 
         // 矩形判断，减少计算量
-        var diffX = unitPose.Translation.X - planetPose.Translation.X;
-        var diffY = unitPose.Translation.Y - planetPose.Translation.Y;
+        var diffX = shipPose.Translation.X - planetPose.Translation.X;
+        var diffY = shipPose.Translation.Y - planetPose.Translation.Y;
         if (diffX > range || diffX < -range || diffY > range || diffY < -range)
             return;
 
@@ -51,7 +51,7 @@ public sealed partial class GetJumpingUnitsInRangeSystem(World world) : ICalcSys
 
     [Query]
     [All<InAttackRangeShipsRegistry, AttackRange, AbsoluteTransform>]
-    private void GetJumpingUnitsInRange(
+    private void GetJumpingShipsInRange(
         ref InAttackRangeShipsRegistry registry,
         in AttackRange attackRange,
         in AbsoluteTransform pose
@@ -59,7 +59,7 @@ public sealed partial class GetJumpingUnitsInRangeSystem(World world) : ICalcSys
     {
         foreach (var (_, pairs) in registry.Ships)
             pairs.Clear();
-        GetJumpingUnitsInRangeForCertainEntityQuery(
+        GetJumpingShipsInRangeForCertainEntityQuery(
             world,
             in pose,
             in attackRange.Range,
@@ -69,5 +69,5 @@ public sealed partial class GetJumpingUnitsInRangeSystem(World world) : ICalcSys
             pairs.Sort((p1, p2) => p1.Item2.CompareTo(p2.Item2));
     }
 
-    public void Update() => GetJumpingUnitsInRangeQuery(world);
+    public void Update() => GetJumpingShipsInRangeQuery(world);
 }

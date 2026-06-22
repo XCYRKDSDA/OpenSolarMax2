@@ -30,11 +30,11 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(Animation),
             //
             // 停靠相关
-            typeof(PlanetGeostationaryOrbit), // 同步轨道，用于生成新单位轨道
+            typeof(PlanetGeostationaryOrbit), // 同步轨道，用于生成新舰船轨道
             typeof(TreeRelationship<Anchorage>.AsParent), // 挂载关系父方
-            typeof(AnchoredShipsRegistry), // 挂载单位的索引
+            typeof(AnchoredShipsRegistry), // 挂载舰船的索引
             // 移动相关
-            typeof(JumpingUnitsRegistry), // 前往该天体的单位的索引
+            typeof(JumpingShipsRegistry), // 前往该天体的舰船的索引
             typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
             // 战争相关
             typeof(Battlefield), // 允许发生战争

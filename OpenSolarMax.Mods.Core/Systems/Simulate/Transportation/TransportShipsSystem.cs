@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
 
 [SimulateSystem, BeforeStructuralChanges, Iterate(typeof(TransportingStatus))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public partial class ProgressUnitsTransportationSystem(World world) : ITickSystem
+public partial class ProgressShipsTransportationSystem(World world) : ITickSystem
 {
     [Query]
     [All<TransportingStatus>]
@@ -40,18 +40,18 @@ public partial class ProgressUnitsTransportationSystem(World world) : ITickSyste
 [FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateJumpingEffectSystem))]
 // 动画不会设置颜色，因此和阵营颜色应用系统不相干
 [FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
-// 覆盖新生单位动画
-[ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))]
-public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsManager assets)
+// 覆盖新生舰船动画
+[ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))]
+public partial class ApplyShipsTransportationEffectSystem(World world, IAssetsManager assets)
     : ICalcSystem
 {
-    private readonly AnimationClip<Entity> _unitPreTransportationAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipPreTransportationAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitPreTransportation.json");
+    >("Animations/ShipPreTransportation.json");
 
-    private readonly AnimationClip<Entity> _unitPostTransportationAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipPostTransportationAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitPostTransportation.json");
+    >("Animations/ShipPostTransportation.json");
 
     [Query]
     [All<TransportingStatus, Sprite, AbsoluteTransform>]
@@ -83,7 +83,7 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
                     ref ship,
                     null,
                     float.NaN,
-                    _unitPreTransportationAnimationClip,
+                    _shipPreTransportationAnimationClip,
                     animationTime,
                     null,
                     animationTime / 0.25f
@@ -91,7 +91,7 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
             else
                 AnimationEvaluator<Entity>.EvaluateAndSet(
                     ref ship,
-                    _unitPreTransportationAnimationClip,
+                    _shipPreTransportationAnimationClip,
                     animationTime
                 );
         }
@@ -102,7 +102,7 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 
             AnimationEvaluator<Entity>.TweenAndSet(
                 ref ship,
-                _unitPostTransportationAnimationClip,
+                _shipPostTransportationAnimationClip,
                 animationTime,
                 null,
                 float.NaN,
@@ -126,8 +126,8 @@ public partial class ApplyUnitsTransportationEffectSystem(World world, IAssetsMa
 ]
 [Iterate(typeof(TransportingStatus)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(ProgressUnitsTransportationSystem))]
-public partial class TransportUnitsSystem(
+[ExecuteAfter(typeof(ProgressShipsTransportationSystem))]
+public partial class TransportShipsSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory
@@ -145,7 +145,7 @@ public partial class TransportUnitsSystem(
         TreeRelationship<RelativeTransform>.AsChild,
         InTeam.AsAffiliate
     >]
-    private void TransportUnits(
+    private void TransportShips(
         Entity ship,
         ref TransportingStatus status,
         in AbsoluteTransform pose,
@@ -168,7 +168,7 @@ public partial class TransportUnitsSystem(
             factory.Make(
                 world,
                 commandBuffer,
-                new UnitAfterImageDescription()
+                new ShipAfterImageDescription()
                 {
                     Position = pose.Translation,
                     Rotation = pose.Rotation,
@@ -183,7 +183,7 @@ public partial class TransportUnitsSystem(
             commandBuffer.Destroy(
                 ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref
             );
-            // 锚定单位到新星球
+            // 锚定舰船到新星球
             factory.Make(
                 world,
                 commandBuffer,
@@ -246,7 +246,7 @@ public partial class TransportUnitsSystem(
     {
         _jobs.Clear();
         _arrivalsPerFrame.Clear();
-        TransportUnitsQuery(world, _jobs, _arrivalsPerFrame, commandBuffer);
+        TransportShipsQuery(world, _jobs, _arrivalsPerFrame, commandBuffer);
 
         // 对每个阵营每次抵达只创建一个抵达效果
         foreach (var (destination, team) in _arrivalsPerFrame)

@@ -11,11 +11,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string UnitAfterImage = "UnitAfterImage";
+    public const string ShipAfterImage = "ShipAfterImage";
 }
 
-[Define(ConceptNames.UnitAfterImage)]
-public abstract class UnitAfterImageDefinition : IDefinition
+[Define(ConceptNames.ShipAfterImage)]
+public abstract class ShipAfterImageDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         new(
@@ -29,8 +29,8 @@ public abstract class UnitAfterImageDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.UnitAfterImage)]
-public class UnitAfterImageDescription : IDescription
+[Describe(ConceptNames.ShipAfterImage)]
+public class ShipAfterImageDescription : IDescription
 {
     public required Color Color { get; set; }
 
@@ -39,18 +39,18 @@ public class UnitAfterImageDescription : IDescription
     public required Quaternion Rotation { get; set; }
 }
 
-[Apply(ConceptNames.UnitAfterImage)]
-public class UnitAfterImageApplier(IAssetsManager assets) : IApplier<UnitAfterImageDescription>
+[Apply(ConceptNames.ShipAfterImage)]
+public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterImageDescription>
 {
     private readonly TextureRegion _texture = assets.Load<TextureRegion>(
         Content.Textures.DefaultShip
     );
 
     private readonly AnimationClip<Entity> _animation = assets.Load<AnimationClip<Entity>>(
-        "Animations/UnitAfterImage.json"
+        "Animations/ShipAfterImage.json"
     );
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, UnitAfterImageDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ShipAfterImageDescription desc)
     {
         // 摆放位置
         commandBuffer.Set(
