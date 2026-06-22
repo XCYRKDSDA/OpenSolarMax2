@@ -3,4 +3,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>FMOD.Wrapper</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="runtimes\**\*" Pack="true" PackagePath="runtimes" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
