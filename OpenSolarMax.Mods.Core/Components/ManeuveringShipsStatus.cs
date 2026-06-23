@@ -85,7 +85,7 @@ public struct ShipsSelection()
 /// 操作舰船的状态。描述某个视图实体上对世界中舰船的操作状态
 /// </summary>
 [Component]
-public struct ManeuvaringShipsStatus()
+public struct ManeuveringShipsStatus()
 {
     public float SelectionRatio;
 

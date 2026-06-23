@@ -28,7 +28,7 @@ public delegate bool? CheckLocationReachabilityCallback(
     ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(ManeuvaringShipsStatus))
+    ReadCurr(typeof(ManeuveringShipsStatus))
 ]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
@@ -233,11 +233,11 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus>]
+    [All<Camera, AbsoluteTransform, ManeuveringShipsStatus>]
     private void DrawSelection(
         in Camera camera,
         in AbsoluteTransform pose,
-        in ManeuvaringShipsStatus status
+        in ManeuveringShipsStatus status
     )
     {
         var mouse = Mouse.GetState();

@@ -349,11 +349,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, InTeam.AsAffiliate>]
+    [All<Camera, AbsoluteTransform, ManeuveringShipsStatus, InTeam.AsAffiliate>]
     private void HandleInputs(
         in Camera camera,
         in AbsoluteTransform pose,
-        ref ManeuvaringShipsStatus status,
+        ref ManeuveringShipsStatus status,
         in InTeam.AsAffiliate ofTeam,
         [Data] CommandBuffer commandBuffer
     )

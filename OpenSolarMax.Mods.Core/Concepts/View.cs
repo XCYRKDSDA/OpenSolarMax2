@@ -25,7 +25,7 @@ public abstract class ViewDefinition : IDefinition
             typeof(AbsoluteTransform),
             // 交互
             typeof(Camera),
-            typeof(ManeuvaringShipsStatus),
+            typeof(ManeuveringShipsStatus),
             typeof(FMOD.Studio.System),
             typeof(Viewport),
             typeof(RenderSettings),

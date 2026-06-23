@@ -78,7 +78,7 @@ public static class Signatures
         + new Signature(
             typeof(AbsoluteTransform),
             typeof(Camera),
-            typeof(ManeuvaringShipsStatus),
+            typeof(ManeuveringShipsStatus),
             typeof(InTeam.AsAffiliate),
             // typeof(LevelUIContext),
             typeof(FMOD.Studio.System)
