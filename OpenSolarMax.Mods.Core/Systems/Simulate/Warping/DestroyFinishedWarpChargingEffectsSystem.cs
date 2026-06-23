@@ -8,11 +8,11 @@
 // using OpenSolarMax.Game.ECS;
 // using OpenSolarMax.Mods.Core.Components;
 //
-// namespace OpenSolarMax.Mods.Core.Systems.Transportation;
+// namespace OpenSolarMax.Mods.Core.Systems.Warping;
 //
 // [StructuralChangeSystem]
 // [ExecuteBefore(typeof(ManageDependenceSystem))]
-// public sealed partial class DestroyFinishedPortalChargingEffectsSystem(World world)
+// public sealed partial class DestroyFinishedWarpChargingEffectsSystem(World world)
 //     : BaseSystem<World, GameTime>(world), ISystem
 // {
 //     private static bool AnimationDone(in Animation animation)
@@ -25,9 +25,9 @@
 //     private readonly CommandBuffer _commandBuffer = new();
 //
 //     [Query]
-//     [All<PortalChargingEffectAssignment>]
+//     [All<WarpChargingEffectAssignment>]
 //     private static void ExpireEffects([Data] CommandBuffer commands,
-//                                       Entity entity, in PortalChargingEffectAssignment assignment)
+//                                       Entity entity, in WarpChargingEffectAssignment assignment)
 //     {
 //         if (AnimationDone(in assignment.BackFlare.Get<Animation>())
 //             && assignment.SurroundFlares.All(r => AnimationDone(in r.Get<Animation>())))

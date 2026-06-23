@@ -6,8 +6,8 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Declarations;
 
-[SchemaName("portal")]
-public class PortalDeclaration : IDeclaration<PortalDeclaration>
+[SchemaName("warp")]
+public class WarpDeclaration : IDeclaration<WarpDeclaration>
 {
     public string? Parent { get; set; }
 
@@ -17,9 +17,9 @@ public class PortalDeclaration : IDeclaration<PortalDeclaration>
 
     public string? Team { get; set; }
 
-    public PortalDeclaration Aggregate(PortalDeclaration newCfg)
+    public WarpDeclaration Aggregate(WarpDeclaration newCfg)
     {
-        return new PortalDeclaration()
+        return new WarpDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
@@ -32,17 +32,17 @@ public class PortalDeclaration : IDeclaration<PortalDeclaration>
     }
 }
 
-[Translate("portal", ConceptNames.Portal)]
-public class PortalDeclarationTranslator : ITranslator<PortalDeclaration, PortalDescription>
+[Translate("warp", ConceptNames.Warp)]
+public class WarpDeclarationTranslator : ITranslator<WarpDeclaration, WarpDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public PortalDescription ToDescription(
-        PortalDeclaration declaration,
+    public WarpDescription ToDescription(
+        WarpDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new PortalDescription();
+        var desc = new WarpDescription();
 
         var tfCfg = new TransformableDeclaration()
         {
@@ -60,18 +60,17 @@ public class PortalDeclarationTranslator : ITranslator<PortalDeclaration, Portal
     }
 }
 
-[Translate("portal", ConceptNames.PortalPreview), OnlyForPreview]
-public class PortalPreviewDeclarationTranslator
-    : ITranslator<PortalDeclaration, PortalPreviewDescription>
+[Translate("warp", ConceptNames.WarpPreview), OnlyForPreview]
+public class WarpPreviewDeclarationTranslator : ITranslator<WarpDeclaration, WarpPreviewDescription>
 {
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
-    public PortalPreviewDescription ToDescription(
-        PortalDeclaration declaration,
+    public WarpPreviewDescription ToDescription(
+        WarpDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new PortalPreviewDescription();
+        var desc = new WarpPreviewDescription();
 
         var tfCfg = new TransformableDeclaration()
         {

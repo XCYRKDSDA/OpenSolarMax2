@@ -9,11 +9,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string PortalChargingEffect = "PortalChargingEffect";
+    public const string WarpChargingEffect = "WarpChargingEffect";
 }
 
-[Define(ConceptNames.PortalChargingEffect)]
-public abstract class PortalChargingEffectDefinition : IDefinition
+[Define(ConceptNames.WarpChargingEffect)]
+public abstract class WarpChargingEffectDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
@@ -21,23 +21,23 @@ public abstract class PortalChargingEffectDefinition : IDefinition
         + new Signature(
             //
             typeof(SoundEffect),
-            typeof(PortalChargingEffectAssignment)
+            typeof(WarpChargingEffectAssignment)
         );
 }
 
-[Describe(ConceptNames.PortalChargingEffect)]
-public class PortalChargingEffectDescription : IDescription
+[Describe(ConceptNames.WarpChargingEffect)]
+public class WarpChargingEffectDescription : IDescription
 {
-    public required Entity Portal { get; set; }
+    public required Entity Warp { get; set; }
 
-    public required float PortalRadius { get; set; }
+    public required float WarpRadius { get; set; }
 
     public required Color Color { get; set; }
 }
 
-[Apply(ConceptNames.PortalChargingEffect)]
-public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<PortalChargingEffectDescription>
+[Apply(ConceptNames.WarpChargingEffect)]
+public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<WarpChargingEffectDescription>
 {
     private readonly SafeFmodEventDescription _warpChargingSoundEffect =
         assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/WarpCharging");
@@ -45,7 +45,7 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
-        PortalChargingEffectDescription desc
+        WarpChargingEffectDescription desc
     )
     {
         var world = World.Worlds[entity.WorldId];
@@ -53,11 +53,11 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
         var backFlare = factory.Make(
             world,
             commandBuffer,
-            ConceptNames.PortalChargingBackFlare,
-            new PortalChargingBackFlareDescription
+            ConceptNames.WarpChargingBackFlare,
+            new WarpChargingBackFlareDescription
             {
                 Effect = entity,
-                Radius = desc.PortalRadius * 3f,
+                Radius = desc.WarpRadius * 3f,
                 Color = desc.Color,
             }
         );
@@ -77,11 +77,11 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
                     factory.Make(
                         world,
                         commandBuffer,
-                        ConceptNames.PortalChargingSurroundFlare,
-                        new PortalChargingSurroundFlareDescription
+                        ConceptNames.WarpChargingSurroundFlare,
+                        new WarpChargingSurroundFlareDescription
                         {
                             Effect = entity,
-                            Radius = desc.PortalRadius * 3f,
+                            Radius = desc.WarpRadius * 3f,
                             Color = desc.Color,
                             MaxSize = maxSize,
                             Ratio = rate,
@@ -101,14 +101,14 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
 
         commandBuffer.Set(
             in entity,
-            new PortalChargingEffectAssignment(surroundFlares.ToArray(), backFlare)
+            new WarpChargingEffectAssignment(surroundFlares.ToArray(), backFlare)
         );
 
         factory.Make(
             world,
             commandBuffer,
             ConceptNames.Dependence,
-            new DependenceDescription { Dependent = entity, Dependency = desc.Portal }
+            new DependenceDescription { Dependent = entity, Dependency = desc.Warp }
         );
         factory.Make(
             world,
@@ -116,7 +116,7 @@ public class PortalChargingEffectApplier(IAssetsManager assets, IConceptFactory 
             ConceptNames.RelativeTransform,
             new RelativeTransformDescription
             {
-                Parent = desc.Portal,
+                Parent = desc.Warp,
                 Child = entity,
                 Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
             }

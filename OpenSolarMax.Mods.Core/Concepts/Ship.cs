@@ -33,7 +33,7 @@ public abstract class ShipDefinition : IDefinition
             typeof(TrailOf.AsShip),
             typeof(JumpingStatus),
             typeof(PopulationCost),
-            typeof(TransportingStatus),
+            typeof(WarpingStatus),
             typeof(ShipDeathState)
         );
 }
@@ -113,7 +113,7 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         commandBuffer.Set(in entity, new JumpingStatus { State = JumpingState.Idle });
 
         // 初始化传送状态
-        commandBuffer.Set(in entity, new TransportingStatus { State = TransportingState.Idle });
+        commandBuffer.Set(in entity, new WarpingStatus { State = WarpingState.Idle });
 
         // 初始化死亡状态
         commandBuffer.Set(in entity, new ShipDeathState { State = DeathState.Alive });

@@ -12,7 +12,7 @@
 
         { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "team": "blue" },
 
-        { "$base": "portal", "position": [ 512, 384 ] },
+        { "$base": "warp", "position": [ 512, 384 ] },
 
         { "$base": "tower", "position": [ 272, 248 ] },
         { "$base": "tower", "position": [ 272, 520 ] },

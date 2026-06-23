@@ -9,7 +9,7 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Systems.Transportation;
+namespace OpenSolarMax.Mods.Core.Systems.Warping;
 
 /// <summary>
 /// 处理<see cref="StartJumpingRequest"/>使传送门上舰船开始传送的系统
@@ -24,22 +24,19 @@ namespace OpenSolarMax.Mods.Core.Systems.Transportation;
     ReadPrev(typeof(PlanetGeostationaryOrbit)),
     ReadPrev(typeof(ReferenceSize)),
     ReadPrev(typeof(TeamReferenceColor)),
-    Write(typeof(TransportingStatus)),
-    Write(typeof(PortalChargingJobs)),
+    Write(typeof(WarpingStatus)),
+    Write(typeof(WarpChargingJobs)),
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 // 新出发的舰船无须更新移动状态，因此要在计算上一帧的移动变化之后发出舰船
-[
-    ExecuteAfter(typeof(ProgressShipsTransportationSystem)),
-    ExecuteAfter(typeof(TransportShipsSystem))
-]
-public sealed partial class StartTransportationSystem(World world, IConceptFactory factory)
+[ExecuteAfter(typeof(ProgressShipsWarpingSystem)), ExecuteAfter(typeof(WarpSystem))]
+public sealed partial class StartWarpingSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     [Query]
     [All<StartJumpingRequest>]
-    private void StartTransporting(
+    private void StartWarping(
         Entity requestEntity,
         in StartJumpingRequest request,
         [Data] CommandBuffer commandBuffer
@@ -51,7 +48,7 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
                 && requestEntity.WorldId == request.Team.WorldId
         );
 
-        if (!request.Departure.Has<PortalChargingJobs>())
+        if (!request.Departure.Has<WarpChargingJobs>())
             return;
 
         // 设置舰船传送状态
@@ -84,29 +81,29 @@ public sealed partial class StartTransportationSystem(World world, IConceptFacto
                 Period = destinationPlanetOrbit.Period * MathF.Pow(orbitOffset, 1.5f),
             };
 
-            ref var transportingStatus = ref ship.Get<TransportingStatus>();
-            transportingStatus.State = TransportingState.PreTransportation;
-            transportingStatus.Task = new()
+            ref var warpingStatus = ref ship.Get<WarpingStatus>();
+            warpingStatus.State = WarpingState.PreWarp;
+            warpingStatus.Task = new()
             {
                 DestinationPlanet = request.Destination,
                 ExpectedRevolutionOrbit = expectedOrbit,
                 ExpectedRevolutionState = revolutionState,
             };
-            transportingStatus.PreTransportation = new() { ElapsedTime = TimeSpan.Zero };
+            warpingStatus.PreWarp = new() { ElapsedTime = TimeSpan.Zero };
         }
 
         // 创建传送门特效
         factory.Make(
             world,
             commandBuffer,
-            new PortalChargingEffectDescription()
+            new WarpChargingEffectDescription()
             {
-                Portal = request.Departure,
-                PortalRadius = request.Departure.Get<ReferenceSize>().Radius,
+                Warp = request.Departure,
+                WarpRadius = request.Departure.Get<ReferenceSize>().Radius,
                 Color = request.Team.Get<TeamReferenceColor>().Value,
             }
         );
     }
 
-    public void Update(CommandBuffer commandBuffer) => StartTransportingQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer) => StartWarpingQuery(world, commandBuffer);
 }

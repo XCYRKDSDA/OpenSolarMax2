@@ -2,7 +2,7 @@ using Arch.Core;
 
 namespace OpenSolarMax.Mods.Core.Components;
 
-public readonly struct PortalChargingEffectAssignment(Entity[] surroundFlares, Entity backFlare)
+public readonly struct WarpChargingEffectAssignment(Entity[] surroundFlares, Entity backFlare)
 {
     public readonly Entity[] SurroundFlares = surroundFlares;
 

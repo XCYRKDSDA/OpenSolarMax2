@@ -12,27 +12,27 @@ using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
 
-namespace OpenSolarMax.Mods.Core.Systems.Transportation;
+namespace OpenSolarMax.Mods.Core.Systems.Warping;
 
-[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(TransportingStatus))]
+[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(WarpingStatus))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-public partial class ProgressShipsTransportationSystem(World world) : ITickSystem
+public partial class ProgressShipsWarpingSystem(World world) : ITickSystem
 {
     [Query]
-    [All<TransportingStatus>]
-    private static void ProgressEffect(ref TransportingStatus status, [Data] GameTime time)
+    [All<WarpingStatus>]
+    private static void ProgressEffect(ref WarpingStatus status, [Data] GameTime time)
     {
-        if (status.State == TransportingState.PreTransportation)
-            status.PreTransportation.ElapsedTime += time.ElapsedGameTime;
-        else if (status.State == TransportingState.PostTransportation)
-            status.PostTransportation.ElapsedTime += time.ElapsedGameTime;
+        if (status.State == WarpingState.PreWarp)
+            status.PreWarp.ElapsedTime += time.ElapsedGameTime;
+        else if (status.State == WarpingState.PostWarp)
+            status.PostWarp.ElapsedTime += time.ElapsedGameTime;
     }
 
     public void Update(GameTime gameTime) => ProgressEffectQuery(world, gameTime);
 }
 
 [SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TransportingStatus)), Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
+[ReadCurr(typeof(WarpingStatus)), Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在自动计算绝对位姿系统之后以覆盖位姿
 [ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
@@ -42,22 +42,21 @@ public partial class ProgressShipsTransportationSystem(World world) : ITickSyste
 [FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
 // 覆盖新生舰船动画
 [ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))]
-public partial class ApplyShipsTransportationEffectSystem(World world, IAssetsManager assets)
-    : ICalcSystem
+public partial class ApplyShipsWarpingEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
-    private readonly AnimationClip<Entity> _shipPreTransportationAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipPreWarpAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipPreTransportation.json");
+    >("Animations/ShipPreWarp.json");
 
-    private readonly AnimationClip<Entity> _shipPostTransportationAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipPostWarpAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipPostTransportation.json");
+    >("Animations/ShipPostWarp.json");
 
     [Query]
-    [All<TransportingStatus, Sprite, AbsoluteTransform>]
-    private void ApplyEffect(Entity ship, in TransportingStatus status, ref AbsoluteTransform pose)
+    [All<WarpingStatus, Sprite, AbsoluteTransform>]
+    private void ApplyEffect(Entity ship, in WarpingStatus status, ref AbsoluteTransform pose)
     {
-        if (status.State == TransportingState.PreTransportation)
+        if (status.State == WarpingState.PreWarp)
         {
             // 面向目标位置
             var head = ship.Get<AbsoluteTransform>().Translation;
@@ -76,14 +75,14 @@ public partial class ApplyShipsTransportationEffectSystem(World world, IAssetsMa
             pose.Rotation = TransformProjection.UprightAim(tail - head);
 
             // 播放动画
-            var animationTime = (float)status.PreTransportation.ElapsedTime.TotalSeconds;
+            var animationTime = (float)status.PreWarp.ElapsedTime.TotalSeconds;
 
             if (animationTime < 0.25f) // 用0.5秒渐入
                 AnimationEvaluator<Entity>.TweenAndSet(
                     ref ship,
                     null,
                     float.NaN,
-                    _shipPreTransportationAnimationClip,
+                    _shipPreWarpAnimationClip,
                     animationTime,
                     null,
                     animationTime / 0.25f
@@ -91,18 +90,18 @@ public partial class ApplyShipsTransportationEffectSystem(World world, IAssetsMa
             else
                 AnimationEvaluator<Entity>.EvaluateAndSet(
                     ref ship,
-                    _shipPreTransportationAnimationClip,
+                    _shipPreWarpAnimationClip,
                     animationTime
                 );
         }
-        else if (status.State == TransportingState.PostTransportation)
+        else if (status.State == WarpingState.PostWarp)
         {
             // 播放动画
-            var animationTime = (float)status.PostTransportation.ElapsedTime.TotalSeconds;
+            var animationTime = (float)status.PostWarp.ElapsedTime.TotalSeconds;
 
             AnimationEvaluator<Entity>.TweenAndSet(
                 ref ship,
-                _shipPostTransportationAnimationClip,
+                _shipPostWarpAnimationClip,
                 animationTime,
                 null,
                 float.NaN,
@@ -124,30 +123,27 @@ public partial class ApplyShipsTransportationEffectSystem(World world, IAssetsMa
     ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
     ReadPrev(typeof(InTeam.AsAffiliate))
 ]
-[Iterate(typeof(TransportingStatus)), ChangeStructure]
+[Iterate(typeof(WarpingStatus)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(ProgressShipsTransportationSystem))]
-public partial class TransportShipsSystem(
-    World world,
-    IAssetsManager assets,
-    IConceptFactory factory
-) : ICalcSystemWithStructuralChanges
+[ExecuteAfter(typeof(ProgressShipsWarpingSystem))]
+public partial class WarpSystem(World world, IAssetsManager assets, IConceptFactory factory)
+    : ICalcSystemWithStructuralChanges
 {
     private readonly SafeFmodEventDescription _warpingSoundEffect =
         assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/Warping");
 
     [Query]
     [All<
-        TransportingStatus,
+        WarpingStatus,
         AbsoluteTransform,
         Sprite,
         TreeRelationship<Anchorage>.AsChild,
         TreeRelationship<RelativeTransform>.AsChild,
         InTeam.AsAffiliate
     >]
-    private void TransportShips(
+    private void Warp(
         Entity ship,
-        ref TransportingStatus status,
+        ref WarpingStatus status,
         in AbsoluteTransform pose,
         in Sprite sprite,
         in TreeRelationship<Anchorage>.AsChild asChild,
@@ -158,8 +154,8 @@ public partial class TransportShipsSystem(
     )
     {
         if (
-            status.State == TransportingState.PreTransportation
-            && status.PreTransportation.ElapsedTime > TimeSpan.FromSeconds(0.9333)
+            status.State == WarpingState.PreWarp
+            && status.PreWarp.ElapsedTime > TimeSpan.FromSeconds(0.9333)
         )
         {
             var departure = asChild.Relationship!.Value.Copy.Parent;
@@ -206,7 +202,7 @@ public partial class TransportShipsSystem(
             factory.Make(
                 world,
                 commandBuffer,
-                new TransportationTrailDescription()
+                new WarpTrailDescription()
                 {
                     Head = ship.Get<AbsoluteTransform>().Translation,
                     Tail = (
@@ -224,18 +220,18 @@ public partial class TransportShipsSystem(
                 }
             );
 
-            status.State = TransportingState.PostTransportation;
-            status.PostTransportation = new() { ElapsedTime = TimeSpan.Zero };
+            status.State = WarpingState.PostWarp;
+            status.PostWarp = new() { ElapsedTime = TimeSpan.Zero };
 
             jobs.Add((departure, destination));
             arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Team));
         }
         else if (
-            status.State == TransportingState.PostTransportation
-            && status.PostTransportation.ElapsedTime > TimeSpan.FromSeconds(1)
+            status.State == WarpingState.PostWarp
+            && status.PostWarp.ElapsedTime > TimeSpan.FromSeconds(1)
         )
         {
-            status.State = TransportingState.Idle;
+            status.State = WarpingState.Idle;
         }
     }
 
@@ -246,7 +242,7 @@ public partial class TransportShipsSystem(
     {
         _jobs.Clear();
         _arrivalsPerFrame.Clear();
-        TransportShipsQuery(world, _jobs, _arrivalsPerFrame, commandBuffer);
+        WarpQuery(world, _jobs, _arrivalsPerFrame, commandBuffer);
 
         // 对每个阵营每次抵达只创建一个抵达效果
         foreach (var (destination, team) in _arrivalsPerFrame)
@@ -256,9 +252,9 @@ public partial class TransportShipsSystem(
                 commandBuffer,
                 new DestinationEffectDescription()
                 {
-                    Portal = destination,
+                    Warp = destination,
                     Color = team.Get<TeamReferenceColor>().Value,
-                    PortalRadius = destination.Get<ReferenceSize>().Radius,
+                    WarpRadius = destination.Get<ReferenceSize>().Radius,
                 }
             );
         }

@@ -12,22 +12,22 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string Portal = "Portal";
+    public const string Warp = "Warp";
 }
 
-[Define(ConceptNames.Portal)]
-public abstract class PortalDefinition : IDefinition
+[Define(ConceptNames.Warp)]
+public abstract class WarpDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         CelestialBodyDefinition.Signature
         + new Signature(
             // 传送任务
-            typeof(PortalChargingJobs)
+            typeof(WarpChargingJobs)
         );
 }
 
-[Describe(ConceptNames.Portal)]
-public class PortalDescription : IDescription
+[Describe(ConceptNames.Warp)]
+public class WarpDescription : IDescription
 {
     /// <summary>
     /// 传送门的变换关系
@@ -44,32 +44,32 @@ public class PortalDescription : IDescription
     public Entity Team { get; set; } = Entity.Null;
 }
 
-[Apply(ConceptNames.Portal)]
-public class PortalApplier(
+[Apply(ConceptNames.Warp)]
+public class WarpApplier(
     IAssetsManager assets,
     IConceptFactory factory,
-    [Section("applier:celestial_body", "applier:portal")] IConfiguration configs
-) : IApplier<PortalDescription>
+    [Section("applier:celestial_body", "applier:warp")] IConfiguration configs
+) : IApplier<WarpDescription>
 {
     // 固定的尺寸
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
     private readonly int _volume = configs.RequireValue<int>("volume");
 
-    private readonly TextureRegion _portalTexture = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:Portal"
+    private readonly TextureRegion _warpTexture = assets.Load<TextureRegion>(
+        "/Textures/SolarMax2.Atlas.json:Warp"
     );
 
-    private readonly TextureRegion _portalShape = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:PortalShape"
+    private readonly TextureRegion _warpShape = assets.Load<TextureRegion>(
+        "/Textures/SolarMax2.Atlas.json:WarpShape"
     );
 
-    private readonly TextureRegion _portalGlow = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:PortalGlow"
+    private readonly TextureRegion _warpGlow = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:WarpGlow"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
 
-    public void Apply(CommandBuffer commandBuffer, Entity entity, PortalDescription desc)
+    public void Apply(CommandBuffer commandBuffer, Entity entity, WarpDescription desc)
     {
         // 设置天体基本信息
         _celestialBodyApplier.Apply(
@@ -77,17 +77,17 @@ public class PortalApplier(
             entity,
             new CelestialBodyDescription()
             {
-                Shape = _portalShape,
-                Texture = _portalTexture,
+                Shape = _warpShape,
+                Texture = _warpTexture,
                 ReferenceRadius = _referenceRadius,
                 Transform = desc.Transform,
                 Team = desc.Team,
                 Volume = _volume,
-                GlowTexture = _portalGlow,
+                GlowTexture = _warpGlow,
             }
         );
 
         // 初始化传送任务
-        commandBuffer.Set(in entity, new PortalChargingJobs());
+        commandBuffer.Set(in entity, new WarpChargingJobs());
     }
 }

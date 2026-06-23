@@ -11,11 +11,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string PortalChargingBackFlare = "PortalChargingBackFlare";
+    public const string WarpChargingBackFlare = "WarpChargingBackFlare";
 }
 
-[Define(ConceptNames.PortalChargingBackFlare)]
-public abstract class PortalChargingBackFlareDefinition : IDefinition
+[Define(ConceptNames.WarpChargingBackFlare)]
+public abstract class WarpChargingBackFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
@@ -28,8 +28,8 @@ public abstract class PortalChargingBackFlareDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.PortalChargingBackFlare)]
-public class PortalChargingBackFlareDescription : IDescription
+[Describe(ConceptNames.WarpChargingBackFlare)]
+public class WarpChargingBackFlareDescription : IDescription
 {
     public required Entity Effect { get; set; }
 
@@ -38,22 +38,22 @@ public class PortalChargingBackFlareDescription : IDescription
     public required Color Color { get; set; }
 }
 
-[Apply(ConceptNames.PortalChargingBackFlare)]
-public class PortalChargingBackFlareApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<PortalChargingBackFlareDescription>
+[Apply(ConceptNames.WarpChargingBackFlare)]
+public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<WarpChargingBackFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
         "Textures/SolarMax2.Atlas.json:SpotGlow"
     );
 
     private readonly AnimationClip<Entity> _rawFlareCharging = assets.Load<AnimationClip<Entity>>(
-        "Animations/PortalBackFlareCharging.json"
+        "Animations/WarpBackFlareCharging.json"
     );
 
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
-        PortalChargingBackFlareDescription desc
+        WarpChargingBackFlareDescription desc
     )
     {
         var world = World.Worlds[entity.WorldId];

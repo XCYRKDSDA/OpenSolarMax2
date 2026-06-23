@@ -5,7 +5,7 @@ namespace OpenSolarMax.Mods.Core.Components;
 /// <summary>
 /// 传送任务组件。描述某个舰船参与的传送任务
 /// </summary>
-public struct TransportingTask
+public struct WarpingTask
 {
     /// <summary>
     /// 当前传送的目标星球
@@ -23,42 +23,42 @@ public struct TransportingTask
     public RevolutionState ExpectedRevolutionState;
 }
 
-public enum TransportingState
+public enum WarpingState
 {
     Idle,
-    PreTransportation,
-    PostTransportation,
+    PreWarp,
+    PostWarp,
 }
 
-public struct TransportingStatus_PreTransportation
+public struct WarpingStatus_PreWarp
 {
     public TimeSpan ElapsedTime;
 }
 
-public struct TransportingStatus_PostTransportation
+public struct WarpingStatus_PostWarp
 {
     public TimeSpan ElapsedTime;
 }
 
-public struct TransportingStatus
+public struct WarpingStatus
 {
     /// <summary>
     /// 当前传送状态机状态
     /// </summary>
-    public TransportingState State;
+    public WarpingState State;
 
     /// <summary>
     /// 当前传送任务
     /// </summary>
-    public TransportingTask Task;
+    public WarpingTask Task;
 
     /// <summary>
-    /// 处于<see cref="TransportingState.PreTransportation"/>状态时的具体状态
+    /// 处于<see cref="WarpingState.PreWarp"/>状态时的具体状态
     /// </summary>
-    public TransportingStatus_PreTransportation PreTransportation;
+    public WarpingStatus_PreWarp PreWarp;
 
     /// <summary>
-    /// 处于<see cref="TransportingState.PostTransportation"/>状态时的具体状态
+    /// 处于<see cref="WarpingState.PostWarp"/>状态时的具体状态
     /// </summary>
-    public TransportingStatus_PostTransportation PostTransportation;
+    public WarpingStatus_PostWarp PostWarp;
 }

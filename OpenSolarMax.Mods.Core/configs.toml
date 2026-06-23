@@ -64,7 +64,7 @@ orbit.pitch.max.deg = -67.5
 orbit.roll.min.deg = 0
 orbit.roll.max.deg = 7.5
 
-[applier.portal]
+[applier.warp]
 reference_radius = 25.6 # 128 / 2 * 0.4 : 以 1024px 等级纹理为基础, 乘上固定系数 0.4
 volume = 400
 

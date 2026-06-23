@@ -12,11 +12,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string TransportationTrail = "TransportationTrail";
+    public const string WarpTrail = "WarpTrail";
 }
 
-[Define(ConceptNames.TransportationTrail)]
-public abstract class TransportationTrailDefinition : IDefinition
+[Define(ConceptNames.WarpTrail)]
+public abstract class WarpTrailDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
@@ -31,8 +31,8 @@ public abstract class TransportationTrailDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.TransportationTrail)]
-public class TransportationTrailDescription : IDescription
+[Describe(ConceptNames.WarpTrail)]
+public class WarpTrailDescription : IDescription
 {
     public required Vector3 Head { get; set; }
 
@@ -41,9 +41,8 @@ public class TransportationTrailDescription : IDescription
     public required Color Color { get; set; }
 }
 
-[Apply(ConceptNames.TransportationTrail)]
-public class TransportationTrailApplier(IAssetsManager assets)
-    : IApplier<TransportationTrailDescription>
+[Apply(ConceptNames.WarpTrail)]
+public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
         "/Textures/SolarMax2.Atlas.json:WarpGlare"
@@ -51,13 +50,9 @@ public class TransportationTrailApplier(IAssetsManager assets)
 
     private readonly AnimationClip<Entity> _trailFadeOutAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("/Animations/TransportationTrailFadeOut.json");
+    >("/Animations/WarpTrailFadeOut.json");
 
-    public void Apply(
-        CommandBuffer commandBuffer,
-        Entity entity,
-        TransportationTrailDescription desc
-    )
+    public void Apply(CommandBuffer commandBuffer, Entity entity, WarpTrailDescription desc)
     {
         var vector = desc.Tail - desc.Head;
         var length = vector.Length();

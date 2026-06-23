@@ -7,7 +7,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [HookProvider]
-public static class PortalReachabilityCheckerProvider
+public static class WarpReachabilityCheckerProvider
 {
     [HookOn("CheckPlanetReachability")]
     public static bool? CountReachability(
@@ -16,7 +16,7 @@ public static class PortalReachabilityCheckerProvider
         in AbsoluteTransform departurePose,
         Entity destination,
         in AbsoluteTransform destinationPose
-    ) => departure.Has<PortalChargingJobs>() ? true : null;
+    ) => departure.Has<WarpChargingJobs>() ? true : null;
 
     [HookOn("CheckLocationReachability")]
     public static bool? CountReachability2(
@@ -24,5 +24,5 @@ public static class PortalReachabilityCheckerProvider
         Entity departure,
         in AbsoluteTransform departurePose,
         in Vector3 destinationPose
-    ) => departure.Has<PortalChargingJobs>() ? true : null;
+    ) => departure.Has<WarpChargingJobs>() ? true : null;
 }

@@ -12,11 +12,11 @@ namespace OpenSolarMax.Mods.Core.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string PortalChargingSurroundFlare = "PortalChargingSurroundFlare";
+    public const string WarpChargingSurroundFlare = "WarpChargingSurroundFlare";
 }
 
-[Define(ConceptNames.PortalChargingSurroundFlare)]
-public abstract class PortalChargingSurroundFlareDefinition : IDefinition
+[Define(ConceptNames.WarpChargingSurroundFlare)]
+public abstract class WarpChargingSurroundFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
@@ -29,8 +29,8 @@ public abstract class PortalChargingSurroundFlareDefinition : IDefinition
         );
 }
 
-[Describe(ConceptNames.PortalChargingSurroundFlare)]
-public class PortalChargingSurroundFlareDescription : IDescription
+[Describe(ConceptNames.WarpChargingSurroundFlare)]
+public class WarpChargingSurroundFlareDescription : IDescription
 {
     public required Entity Effect { get; set; }
 
@@ -47,9 +47,9 @@ public class PortalChargingSurroundFlareDescription : IDescription
     public required float Delay { get; set; }
 }
 
-[Apply(ConceptNames.PortalChargingSurroundFlare)]
-public class PortalChargingSurroundFlareApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<PortalChargingSurroundFlareDescription>
+[Apply(ConceptNames.WarpChargingSurroundFlare)]
+public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<WarpChargingSurroundFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
         "Textures/SolarMax2.Atlas.json:Halo"
@@ -57,16 +57,16 @@ public class PortalChargingSurroundFlareApplier(IAssetsManager assets, IConceptF
 
     private readonly ParametricAnimationClip<Entity> _rawFlareRotating = assets.Load<
         ParametricAnimationClip<Entity>
-    >("Animations/PortalSurroundFlareRotating.json");
+    >("Animations/WarpSurroundFlareRotating.json");
 
     private readonly ParametricAnimationClip<Entity> _rawFlareCharging = assets.Load<
         ParametricAnimationClip<Entity>
-    >("Animations/PortalSurroundFlareCharging.json");
+    >("Animations/WarpSurroundFlareCharging.json");
 
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
-        PortalChargingSurroundFlareDescription desc
+        WarpChargingSurroundFlareDescription desc
     )
     {
         var world = World.Worlds[entity.WorldId];
