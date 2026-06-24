@@ -33,6 +33,7 @@ public abstract class ViewDefinition : IDefinition
             typeof(InTeam.AsAffiliate),
             // UI 插件
             typeof(TotalPopulationWidget),
+            typeof(FleetSliderWidget),
             // 视图标识
             typeof(ViewTag)
         );
@@ -92,5 +93,6 @@ public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
 
         // 初始化 UI
         commandBuffer.Set(in entity, new TotalPopulationWidget(assets));
+        commandBuffer.Set(in entity, new FleetSliderWidget(assets));
     }
 }
