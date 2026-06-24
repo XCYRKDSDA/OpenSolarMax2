@@ -22,3 +22,8 @@ public interface ICalcSystemWithStructuralChanges
 {
     void Update(CommandBuffer commandBuffer);
 }
+
+public interface IBootstrapSystem
+{
+    void Bootstrap(CommandBuffer commandBuffer);
+}

@@ -269,17 +269,19 @@ internal record BehaviorMod(
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters)
                 continue;
 
-            // 筛选系统类型
-            if (
-                !type.GetInterfaces()
-                    .Intersect([
-                        typeof(ITickSystem),
-                        typeof(ITickSystemWithStructuralChanges),
-                        typeof(ICalcSystem),
-                        typeof(ICalcSystemWithStructuralChanges),
-                    ])
-                    .Any()
-            )
+            var isRegularSystem = type.GetInterfaces()
+                .Intersect([
+                    typeof(ITickSystem),
+                    typeof(ITickSystemWithStructuralChanges),
+                    typeof(ICalcSystem),
+                    typeof(ICalcSystemWithStructuralChanges),
+                ])
+                .Any();
+            var isBootstrapSystem =
+                type.GetInterfaces().Contains(typeof(IBootstrapSystem))
+                && type.GetCustomAttribute<BootstrapSystemAttribute>() is not null;
+
+            if (!isRegularSystem && !isBootstrapSystem)
                 continue;
 
             // 排除禁用的系统
@@ -290,17 +292,23 @@ internal record BehaviorMod(
             if ((GetBehaviorTypeScene(type) & scene) == 0)
                 continue;
 
-            if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
-                systemTypes.Simulate.Add(type);
+            if (isRegularSystem)
+            {
+                if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
+                    systemTypes.Simulate.Add(type);
 
-            if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
-                systemTypes.Input.Add(type);
+                if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
+                    systemTypes.Input.Add(type);
 
-            if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
-                systemTypes.Ai.Add(type);
+                if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
+                    systemTypes.Ai.Add(type);
 
-            if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
-                systemTypes.Render.Add(type);
+                if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
+                    systemTypes.Render.Add(type);
+            }
+
+            if (isBootstrapSystem)
+                systemTypes.Bootstrap.Add(type);
         }
 
         return systemTypes.ToImmutableSystemTypeCollection();

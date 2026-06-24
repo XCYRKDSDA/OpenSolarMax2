@@ -23,3 +23,9 @@ public sealed class SimulateSystemAttribute() : Attribute { }
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class RenderSystemAttribute : Attribute { }
+
+/// <summary>
+/// 在世界初始化时执行一次，创建基础设施实体的引导系统
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class BootstrapSystemAttribute : Attribute { }

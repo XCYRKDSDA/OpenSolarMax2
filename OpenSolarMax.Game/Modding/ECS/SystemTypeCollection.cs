@@ -15,8 +15,10 @@ internal class SystemTypeCollection
 
     public HashSet<Type> Render { get; set; } = [];
 
+    public HashSet<Type> Bootstrap { get; set; } = [];
+
     public ImmutableSystemTypeCollection ToImmutableSystemTypeCollection() =>
-        new([.. Input], [.. Ai], [.. Simulate], [.. Render]);
+        new([.. Input], [.. Ai], [.. Simulate], [.. Render], [.. Bootstrap]);
 }
 
 /// <summary>
@@ -26,9 +28,11 @@ internal class SystemTypeCollection
 /// <param name="Ai">所有AI系统类型</param>
 /// <param name="Simulate">所有世界仿真系统类型</param>
 /// <param name="Render">所有渲染系统类型</param>
+/// <param name="Bootstrap">所有引导系统类型</param>
 internal record ImmutableSystemTypeCollection(
     ImmutableHashSet<Type> Input,
     ImmutableHashSet<Type> Ai,
     ImmutableHashSet<Type> Simulate,
-    ImmutableHashSet<Type> Render
+    ImmutableHashSet<Type> Render,
+    ImmutableHashSet<Type> Bootstrap
 );

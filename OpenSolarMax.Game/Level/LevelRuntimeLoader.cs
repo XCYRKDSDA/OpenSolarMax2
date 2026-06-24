@@ -135,6 +135,19 @@ internal class LevelRuntimeLoader
             )
         );
 
+        // 执行引导系统
+        var bootstrapSystem = new AggregateBootstrapSystem(
+            world,
+            _behaviors.SystemTypes.Bootstrap.Sorted,
+            new Dictionary<Type, object>
+            {
+                [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
+                [typeof(IConceptFactory)] = _factory,
+                [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+            }
+        );
+        bootstrapSystem.Bootstrap();
+
         // 加载关卡内容
         var commandBuffer = new CommandBuffer();
         var enumerator = _worldLoader.LoadStepByStep(level, world, commandBuffer);

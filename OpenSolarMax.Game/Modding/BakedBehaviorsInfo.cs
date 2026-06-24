@@ -59,6 +59,21 @@ internal record BakedBehaviorsInfo(
         }
         var mergedConceptInfos = conceptInfos.ToImmutableDictionary();
 
+        // 合并引导系统类型并排序
+        var mergedBootstrapSystemTypes = layers
+            .SelectMany(l => l.SystemTypes.Bootstrap)
+            .ToImmutableHashSet();
+        var bootstrapOrders = SystemsTopology.ExtractBootstrapOrders(mergedBootstrapSystemTypes);
+        var sortedBootstrapSystems = SystemsTopology.TopologicalSortSystems(
+            mergedBootstrapSystemTypes,
+            bootstrapOrders
+        );
+        var bootstrapSortedSystemTypes = new ImmutableSortedSystemTypes(
+            mergedBootstrapSystemTypes,
+            [.. bootstrapOrders],
+            [.. sortedBootstrapSystems]
+        );
+
         // 合并系统类型。合并后完成拓扑排序
         var mergedSystemTypes = new ImmutableSortedSystemTypeCollection(
             BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Input).ToImmutableHashSet()),
@@ -66,7 +81,10 @@ internal record BakedBehaviorsInfo(
             BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Simulate).ToImmutableHashSet()
             ),
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Render).ToImmutableHashSet())
+            BakeSortedSystemTypes(
+                layers.SelectMany(l => l.SystemTypes.Render).ToImmutableHashSet()
+            ),
+            bootstrapSortedSystemTypes
         );
 
         // 合并钩子函数

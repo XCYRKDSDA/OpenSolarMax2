@@ -440,4 +440,72 @@ internal static class SystemsTopology
 
         return systems;
     }
+
+    /// <summary>
+    /// 提取引导系统之间的显式执行顺序关系（仅显式声明，不考虑组件读写）
+    /// </summary>
+    public static HashSet<OrderedTypePair> ExtractBootstrapOrders(IReadOnlySet<Type> systemTypes)
+    {
+        var explicitOrders = new HashSet<OrderedTypePair>();
+        var priorityGroups = new SortedDictionary<int, HashSet<Type>>();
+
+        foreach (var systemType in systemTypes)
+        {
+            // 检查 ExecuteAfter 属性
+            foreach (var attr in systemType.GetCustomAttributes<ExecuteAfterAttribute>())
+            {
+                if (systemTypes.Contains(attr.TheOther))
+                    explicitOrders.Add(new OrderedTypePair(attr.TheOther, systemType));
+            }
+
+            // 检查 ExecuteBefore 属性
+            foreach (var attr in systemType.GetCustomAttributes<ExecuteBeforeAttribute>())
+            {
+                if (systemTypes.Contains(attr.TheOther))
+                    explicitOrders.Add(new OrderedTypePair(systemType, attr.TheOther));
+            }
+
+            // 检查 Priority 属性
+            var priorityAttr = systemType.GetCustomAttributes<PriorityAttribute>().FirstOrDefault();
+            if (priorityAttr is not null)
+            {
+                if (priorityGroups.TryGetValue(priorityAttr.Value, out var group))
+                    group.Add(systemType);
+                else
+                    priorityGroups.Add(priorityAttr.Value, [systemType]);
+            }
+        }
+
+        // 合并优先级关系
+        foreach (var (priority1, group1) in priorityGroups)
+        {
+            foreach (var (priority2, group2) in priorityGroups.Reverse())
+            {
+                if (priority2 <= priority1)
+                    break;
+
+                explicitOrders.UnionWith(
+                    from sys1 in group1
+                    from sys2 in group2
+                    select new OrderedTypePair(sys1, sys2)
+                );
+            }
+        }
+
+        // 检查自相矛盾
+        foreach (
+            var group in explicitOrders.ToLookup(
+                p => new UnorderedTypePair(p.Before, p.After),
+                p => p
+            )
+        )
+        {
+            if (group.Count() > 1)
+                throw new Exception(
+                    $"Conflicted strong execution order between {group.Key.Sys1} and {group.Key.Sys2}"
+                );
+        }
+
+        return explicitOrders;
+    }
 }
