@@ -22,7 +22,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class ProgressColonizationSystem(World world) : ITickSystem
 {
     [Query]
-    [All<ColonizationState, Colonizable, InParty.AsAffiliate, AnchoredShipsRegistry>]
+    [All<ColonizationState, Colonizable, InTeam.AsAffiliate, AnchoredShipsRegistry>]
     private static void UpdateColonization(
         [Data] GameTime time,
         ref ColonizationState state,
@@ -36,21 +36,21 @@ public sealed partial class ProgressColonizationSystem(World world) : ITickSyste
             return;
         }
 
-        var colonizeParty = shipsRegistry.Ships.First().Key;
+        var colonizeTeam = shipsRegistry.Ships.First().Key;
         var shipsNum = shipsRegistry.Ships.First().Count();
 
         var deltaProgress =
             shipsNum
-            * colonizeParty.Get<ColonizationAbility>().ProgressPerSecond
+            * colonizeTeam.Get<ColonizationAbility>().ProgressPerSecond
             * (float)time.ElapsedGameTime.TotalSeconds;
 
-        if (state.Party == colonizeParty || state.Party == Entity.Null)
+        if (state.Team == colonizeTeam || state.Team == Entity.Null)
         {
             if (state.Progress >= colonizable.Volume)
                 state.Event = ColonizationEvent.Idle;
             else
             {
-                state.Party = colonizeParty;
+                state.Team = colonizeTeam;
                 state.Progress += deltaProgress;
 
                 if (state.Progress > colonizable.Volume)
@@ -69,7 +69,7 @@ public sealed partial class ProgressColonizationSystem(World world) : ITickSyste
             if (state.Progress < 0)
             {
                 state.Progress = -state.Progress;
-                state.Party = colonizeParty;
+                state.Team = colonizeTeam;
                 state.Event = ColonizationEvent.Destroyed;
             }
             else

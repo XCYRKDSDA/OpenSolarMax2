@@ -37,7 +37,7 @@ public class LaserFlashDescription : IDescription
 
     public required TextureRegion Texture { get; set; }
 
-    public required Entity Turret { get; set; }
+    public required Entity Tower { get; set; }
 }
 
 [Apply(ConceptNames.LaserFlash)]
@@ -59,7 +59,7 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
             ConceptNames.RelativeTransform,
             new RelativeTransformDescription
             {
-                Parent = desc.Turret,
+                Parent = desc.Tower,
                 Child = entity,
                 Translation = Vector3.UnitZ * 0.1f,
                 Rotation = Quaternion.Identity,
@@ -67,10 +67,10 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
         );
 
         // 设置纹理
-        ref readonly var turretSprite = ref desc.Turret.Get<Sprite>();
+        ref readonly var towerSprite = ref desc.Tower.Get<Sprite>();
         commandBuffer.Set(
             in entity,
-            turretSprite with
+            towerSprite with
             {
                 Texture = desc.Texture,
                 Color = desc.Color,

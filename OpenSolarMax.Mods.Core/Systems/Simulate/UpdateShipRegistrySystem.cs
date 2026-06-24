@@ -22,7 +22,7 @@ public sealed partial class UpdateShipRegistrySystem(World world) : ICalcSystem
         shipRegistry.Ships =
             (Lookup<Entity, Entity>)
                 asAnchorageParent.Relationships.Values.ToLookup(
-                    copy => copy.Child.Get<InParty.AsAffiliate>().Relationship!.Value.Copy.Party,
+                    copy => copy.Child.Get<InTeam.AsAffiliate>().Relationship!.Value.Copy.Team,
                     copy => copy.Child
                 );
     }

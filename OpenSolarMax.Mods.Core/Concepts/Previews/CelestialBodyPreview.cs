@@ -19,7 +19,7 @@ public static partial class ConceptNames
 public class CelestialBodyPreviewDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        Drawable.Signature + new Signature(typeof(InParty.AsAffiliate));
+        Drawable.Signature + new Signature(typeof(InTeam.AsAffiliate));
 }
 
 [Describe(ConceptNames.CelestialBodyPreview), OnlyForPreview]
@@ -47,7 +47,7 @@ public class CelestialBodyPreviewDescription : IDescription
     /// <summary>
     /// 天体所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.CelestialBodyPreview), OnlyForPreview]
@@ -86,13 +86,13 @@ public class CelestialBodyPreviewApplier(IAssetsManager assets, IConceptFactory 
         );
 
         // 设置阵营
-        if (desc.Party != Entity.Null)
+        if (desc.Team != Entity.Null)
         {
             factory.Make(
                 world,
                 commandBuffer,
-                ConceptNames.InParty,
-                new InPartyDescription { Party = desc.Party, Affiliate = entity }
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
             );
         }
     }

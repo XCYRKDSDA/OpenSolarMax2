@@ -1,0 +1,97 @@
+using Arch.Buffer;
+using Arch.Core;
+using Microsoft.Xna.Framework;
+using Nine.Animations;
+using Nine.Assets;
+using Nine.Graphics;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Mods.Core.Components;
+
+namespace OpenSolarMax.Mods.Core.Concepts;
+
+public static partial class ConceptNames
+{
+    public const string ShipBornPulse = "ShipBornPulse";
+}
+
+[Define(ConceptNames.ShipBornPulse)]
+public abstract class ShipBornPulseDefinition : IDefinition
+{
+    public static Signature Signature { get; } =
+        DependencyCapableDefinition.Signature
+        + TransformableDefinition.Signature
+        + new Signature(
+            // 效果
+            typeof(Sprite),
+            // 动画
+            typeof(Animation),
+            typeof(ExpireAfterAnimationCompleted)
+        );
+}
+
+[Describe(ConceptNames.ShipBornPulse)]
+public class ShipBornPulseDescription : IDescription
+{
+    public required Entity Ship { get; set; }
+
+    public required Color Color { get; set; }
+}
+
+[Apply(ConceptNames.ShipBornPulse)]
+public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipBornPulseDescription>
+{
+    private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
+        "Textures/SolarMax2.Atlas.json:ShipPulse"
+    );
+
+    private readonly AnimationClip<Entity> _bornPulseAnimationClip = assets.Load<
+        AnimationClip<Entity>
+    >("Animations/ShipBornPulse.json");
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ShipBornPulseDescription desc)
+    {
+        var world = World.Worlds[entity.WorldId];
+
+        // 设置颜色
+        commandBuffer.Set(
+            in entity,
+            new Sprite
+            {
+                Texture = _pulseTexture,
+                Color = desc.Color,
+                Alpha = 1,
+                Size = new(4, 4),
+                Scale = Vector2.Zero,
+                Blend = SpriteBlend.Additive,
+            }
+        );
+
+        // 设置动画
+        commandBuffer.Set(
+            in entity,
+            new Animation
+            {
+                Clip = _bornPulseAnimationClip,
+                TimeOffset = TimeSpan.Zero,
+                TimeElapsed = TimeSpan.Zero,
+            }
+        );
+
+        // 设置相对位置
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.RelativeTransform,
+            new RelativeTransformDescription { Parent = desc.Ship, Child = entity }
+        );
+
+        // 设置依赖关系
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.Dependence,
+            new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
+        );
+    }
+}

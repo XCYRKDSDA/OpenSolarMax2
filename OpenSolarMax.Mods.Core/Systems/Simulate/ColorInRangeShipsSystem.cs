@@ -15,9 +15,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在其他设置外观的系统之后执行以覆写
 [
-    ExecuteAfter(typeof(ApplyPartyColorSystem)),
-    ExecuteAfter(typeof(UpdateShippingEffectSystem)),
-    ExecuteAfter(typeof(ApplyUnitPostBornEffectSystem))
+    ExecuteAfter(typeof(ApplyTeamColorSystem)),
+    ExecuteAfter(typeof(UpdateJumpingEffectSystem)),
+    ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))
 ]
 // 在颜色同步系统之前执行, 这样子实体也能共享染色
 [ExecuteBefore(typeof(SynchronizeColorSystem))]

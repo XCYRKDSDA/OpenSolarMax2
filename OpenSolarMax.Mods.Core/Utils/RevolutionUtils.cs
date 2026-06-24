@@ -8,12 +8,12 @@ namespace OpenSolarMax.Mods.Core.Utils;
 public static class RevolutionUtils
 {
     /// <summary>
-    /// 根据星球同步轨道随机生成单位公转轨道
+    /// 根据星球同步轨道随机生成舰船公转轨道
     /// </summary>
     /// <param name="planetOrbit">星球同步轨道组件</param>
     /// <param name="random">随机引擎</param>
-    /// <param name="orbitOffsetRange">单位半径偏差范围</param>
-    /// <returns>单位公转轨道组件</returns>
+    /// <param name="orbitOffsetRange">舰船半径偏差范围</param>
+    /// <returns>舰船公转轨道组件</returns>
     public static RevolutionOrbit CreateRandomRevolutionOrbit(
         in PlanetGeostationaryOrbit planetOrbit,
         Random random,
@@ -31,11 +31,11 @@ public static class RevolutionUtils
     }
 
     /// <summary>
-    /// 随机生成单位公转状态。
+    /// 随机生成舰船公转状态。
     /// 注意，因为认为调用该函数者希望操作的对象进行公转，因此状态中的<see cref="RevolutionState.Revolving"/>设置为了<c>true</c>
     /// </summary>
     /// <param name="random">随机引擎</param>
-    /// <returns>单位公转状态组件</returns>
+    /// <returns>舰船公转状态组件</returns>
     public static RevolutionState CreateRandomState(Random random)
     {
         float phase = (float)random.NextDouble() * 2 * MathF.PI;
@@ -68,7 +68,7 @@ public static class RevolutionUtils
     /// </summary>
     /// <param name="orbit">实体所在轨道</param>
     /// <param name="state">实体当前公转状态</param>
-    /// <returns>单位相对轨道所在实体的相对变换</returns>
+    /// <returns>舰船相对轨道所在实体的相对变换</returns>
     public static RelativeTransform CalculateTransform(
         in RevolutionOrbit orbit,
         in RevolutionState state

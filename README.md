@@ -27,23 +27,23 @@ The project is modularly designed: a launcher loads different modules to introdu
 
 ### Core Mechanics
 
-- [x] Unit production
-- [x] Unit combat
-- [x] Unit Shipping
-- [x] Unit Revolution
+- [x] Ship production
+- [x] Ship combat
+- [x] Ship Jumping
+- [x] Ship Revolution
 - [x] Planet colonization
 - [x] Planet revolution
 - [x] Barrier
 - [ ] Basic AI
-- [x] Visualization of unit combat status
+- [x] Visualization of ship combat status
 - [x] Visualization of planet colonization
-- [x] Input system for shipping units
+- [x] Input system for jumping ships
 - [ ] Sound system and effects
 
 ### SolarMax2 Features
 
-- [ ] Portal
-- [ ] Turret
+- [ ] Warp
+- [ ] Tower
 - [ ] Fortress
 
 ### SolarMax3 Features

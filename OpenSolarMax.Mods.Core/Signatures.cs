@@ -24,7 +24,7 @@ public static class Signatures
             typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(Sprite),
             typeof(PlanetGeostationaryOrbit),
-            typeof(InParty.AsAffiliate),
+            typeof(InTeam.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsParent),
             typeof(AnchoredShipsRegistry),
             typeof(ProductionAbility),
@@ -43,13 +43,13 @@ public static class Signatures
             typeof(Sprite),
             typeof(RevolutionOrbit),
             typeof(RevolutionState),
-            typeof(InParty.AsAffiliate),
+            typeof(InTeam.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(Animation),
             typeof(TrailOf.AsShip),
             typeof(PopulationCost),
             typeof(SoundEffect),
-            typeof(UnitDeathState)
+            typeof(ShipDeathState)
         );
 
     public static readonly Signature PredefinedOrbit =
@@ -61,15 +61,15 @@ public static class Signatures
             typeof(PredefinedOrbit)
         );
 
-    public static readonly Signature Party =
+    public static readonly Signature Team =
         Dependentable
         + new Signature(
-            typeof(PartyReferenceColor),
+            typeof(TeamReferenceColor),
             typeof(Producible),
             typeof(Combatable),
-            typeof(Shippable),
-            typeof(InParty.AsParty),
-            typeof(PartyPopulationRegistry),
+            typeof(Jumpable),
+            typeof(InTeam.AsTeam),
+            typeof(TeamPopulationRegistry),
             typeof(ColonizationAbility)
         );
 
@@ -78,8 +78,8 @@ public static class Signatures
         + new Signature(
             typeof(AbsoluteTransform),
             typeof(Camera),
-            typeof(ManeuvaringShipsStatus),
-            typeof(InParty.AsAffiliate),
+            typeof(ManeuveringShipsStatus),
+            typeof(InTeam.AsAffiliate),
             // typeof(LevelUIContext),
             typeof(FMOD.Studio.System)
         );

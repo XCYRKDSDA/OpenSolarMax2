@@ -28,7 +28,7 @@ public delegate bool? CheckLocationReachabilityCallback(
     ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(ManeuvaringShipsStatus))
+    ReadCurr(typeof(ManeuveringShipsStatus))
 ]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
@@ -140,10 +140,10 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
-            var unitDirection = targetInCanvas - sourceInCanvas;
-            unitDirection.Normalize();
-            var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
-            var tailInCanvas = targetInCanvas - unitDirection * targetRingRadius;
+            var shipDirection = targetInCanvas - sourceInCanvas;
+            shipDirection.Normalize();
+            var headInCanvas = sourceInCanvas + shipDirection * sourceRingRadius;
+            var tailInCanvas = targetInCanvas - shipDirection * targetRingRadius;
 
             _segmentRenderer.DrawSegment(
                 headInCanvas,
@@ -179,9 +179,9 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
 
             // 计算线段起止点
-            var unitDirection = tailInCanvas - sourceInCanvas;
-            unitDirection.Normalize();
-            var headInCanvas = sourceInCanvas + unitDirection * sourceRingRadius;
+            var shipDirection = tailInCanvas - sourceInCanvas;
+            shipDirection.Normalize();
+            var headInCanvas = sourceInCanvas + shipDirection * sourceRingRadius;
 
             _segmentRenderer.DrawSegment(
                 headInCanvas,
@@ -233,11 +233,11 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus>]
+    [All<Camera, AbsoluteTransform, ManeuveringShipsStatus>]
     private void DrawSelection(
         in Camera camera,
         in AbsoluteTransform pose,
-        in ManeuvaringShipsStatus status
+        in ManeuveringShipsStatus status
     )
     {
         var mouse = Mouse.GetState();

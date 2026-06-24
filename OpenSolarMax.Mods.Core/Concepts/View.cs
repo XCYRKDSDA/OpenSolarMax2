@@ -25,12 +25,12 @@ public abstract class ViewDefinition : IDefinition
             typeof(AbsoluteTransform),
             // 交互
             typeof(Camera),
-            typeof(ManeuvaringShipsStatus),
+            typeof(ManeuveringShipsStatus),
             typeof(FMOD.Studio.System),
             typeof(Viewport),
             typeof(RenderSettings),
             //
-            typeof(InParty.AsAffiliate),
+            typeof(InTeam.AsAffiliate),
             // UI 插件
             typeof(TotalPopulationWidget),
             // 视图标识
@@ -51,7 +51,7 @@ public class ViewDescription : IDescription
 
     public (float Near, float Far) Depth { get; set; } = (-1001, 1001);
 
-    public required Entity Party { get; set; }
+    public required Entity Team { get; set; }
 }
 
 [Apply(ConceptNames.View)]
@@ -86,8 +86,8 @@ public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.InParty,
-            new InPartyDescription { Party = desc.Party, Affiliate = entity }
+            ConceptNames.InTeam,
+            new InTeamDescription { Team = desc.Team, Affiliate = entity }
         );
 
         // 初始化 UI

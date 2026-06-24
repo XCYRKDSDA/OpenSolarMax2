@@ -22,7 +22,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed partial class ProgressProductionSystem(World world) : ITickSystem
 {
     [Query]
-    [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InParty.AsAffiliate>]
+    [All<ProductionAbility, ProductionState, AnchoredShipsRegistry, InTeam.AsAffiliate>]
     private static void UpdateProduction(
         [Data] GameTime time,
         Entity planet,
@@ -31,7 +31,7 @@ public sealed partial class ProgressProductionSystem(World world) : ITickSystem
         ref ProductionState state
     )
     {
-        state.UnitsProducedThisFrame = 0;
+        state.ShipsProducedThisFrame = 0;
 
         if (!cond.IsMet)
         {
@@ -44,12 +44,12 @@ public sealed partial class ProgressProductionSystem(World world) : ITickSystem
         state.Progress += ability.ProgressPerSecond * (float)time.ElapsedGameTime.TotalSeconds;
 
         // 记录生产个数
-        ref readonly var asAffiliate = ref planet.Get<InParty.AsAffiliate>();
-        ref var producible = ref asAffiliate.Relationship!.Value.Copy.Party.Get<Producible>();
+        ref readonly var asAffiliate = ref planet.Get<InTeam.AsAffiliate>();
+        ref var producible = ref asAffiliate.Relationship!.Value.Copy.Team.Get<Producible>();
         while (state.Progress > producible.WorkloadPerShip)
         {
             state.Progress -= producible.WorkloadPerShip;
-            state.UnitsProducedThisFrame += 1;
+            state.ShipsProducedThisFrame += 1;
         }
     }
 

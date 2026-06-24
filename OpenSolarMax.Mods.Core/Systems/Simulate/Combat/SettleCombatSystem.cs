@@ -32,23 +32,23 @@ public sealed partial class SettleCombatSystem(World world) : ICalcSystemWithStr
     )
     {
         // 考察各个阵营的破坏度
-        foreach (var party in battle.FrontlineDamage.Keys)
+        foreach (var team in battle.FrontlineDamage.Keys)
         {
-            ref readonly var partyCombatAbility = ref party.Get<Combatable>();
-            using var shipEnumerator = shipsRegistry.Ships[party].GetEnumerator();
+            ref readonly var teamCombatAbility = ref team.Get<Combatable>();
+            using var shipEnumerator = shipsRegistry.Ships[team].GetEnumerator();
 
-            // 根据前线战损逐个移除单位
-            var damage = battle.FrontlineDamage[party];
-            while (damage >= partyCombatAbility.MaximumDamagePerUnit && shipEnumerator.MoveNext())
+            // 根据前线战损逐个移除舰船
+            var damage = battle.FrontlineDamage[team];
+            while (damage >= teamCombatAbility.MaximumDamagePerShip && shipEnumerator.MoveNext())
             {
-                damage -= partyCombatAbility.MaximumDamagePerUnit;
+                damage -= teamCombatAbility.MaximumDamagePerShip;
 
                 var ship = shipEnumerator.Current;
 
-                ref var deathState = ref ship.Get<UnitDeathState>();
+                ref var deathState = ref ship.Get<ShipDeathState>();
                 deathState.State = DeathState.Dying;
             }
-            battle.FrontlineDamage[party] = damage;
+            battle.FrontlineDamage[team] = damage;
         }
     }
 

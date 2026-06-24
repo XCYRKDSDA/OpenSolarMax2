@@ -10,12 +10,12 @@ namespace OpenSolarMax.Mods.Core.Components;
 public struct Combatable
 {
     /// <summary>
-    /// 单位每秒造成的伤害值
+    /// 舰船每秒造成的伤害值
     /// </summary>
-    public float AttackPerUnitPerSecond;
+    public float AttackPerShipPerSecond;
 
     /// <summary>
-    /// 每个单位最大可承受的伤害值
+    /// 每个舰船最大可承受的伤害值
     /// </summary>
-    public float MaximumDamagePerUnit;
+    public float MaximumDamagePerShip;
 }

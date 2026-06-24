@@ -23,9 +23,9 @@ public abstract class DestinationEffectDefinition : IDefinition
 [Describe(ConceptNames.DestinationEffect)]
 public class DestinationEffectDescription : IDescription
 {
-    public required Entity Portal { get; set; }
+    public required Entity Warp { get; set; }
 
-    public required float PortalRadius { get; set; }
+    public required float WarpRadius { get; set; }
 
     public required Color Color { get; set; }
 }
@@ -45,7 +45,7 @@ public class DestinationEffectApplier(IConceptFactory factory)
             new DestinationBackFlareDescription
             {
                 Effect = entity,
-                Radius = desc.PortalRadius * 2f,
+                Radius = desc.WarpRadius * 2f,
                 Color = desc.Color,
             }
         );
@@ -61,7 +61,7 @@ public class DestinationEffectApplier(IConceptFactory factory)
                     new DestinationSurroundFlareDescription
                     {
                         Effect = entity,
-                        Radius = desc.PortalRadius * 2f,
+                        Radius = desc.WarpRadius * 2f,
                         Color = desc.Color,
                         Angle = i * MathF.PI * 2 / 3,
                     }
@@ -79,7 +79,7 @@ public class DestinationEffectApplier(IConceptFactory factory)
             world,
             commandBuffer,
             ConceptNames.Dependence,
-            new DependenceDescription { Dependent = entity, Dependency = desc.Portal }
+            new DependenceDescription { Dependent = entity, Dependency = desc.Warp }
         );
         factory.Make(
             world,
@@ -87,7 +87,7 @@ public class DestinationEffectApplier(IConceptFactory factory)
             ConceptNames.RelativeTransform,
             new RelativeTransformDescription
             {
-                Parent = desc.Portal,
+                Parent = desc.Warp,
                 Child = entity,
                 Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
             }

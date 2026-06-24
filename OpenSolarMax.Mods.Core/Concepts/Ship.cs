@@ -28,13 +28,13 @@ public abstract class ShipDefinition : IDefinition
             // 动画
             typeof(Animation),
             //
-            typeof(InParty.AsAffiliate),
+            typeof(InTeam.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(TrailOf.AsShip),
-            typeof(ShippingStatus),
+            typeof(JumpingStatus),
             typeof(PopulationCost),
-            typeof(TransportingStatus),
-            typeof(UnitDeathState)
+            typeof(WarpingStatus),
+            typeof(ShipDeathState)
         );
 }
 
@@ -42,14 +42,14 @@ public abstract class ShipDefinition : IDefinition
 public class ShipDescription : IDescription
 {
     /// <summary>
-    /// 单位创建时所在的星球。必须提供
+    /// 舰船创建时所在的星球。必须提供
     /// </summary>
     public required Entity Planet { get; set; }
 
     /// <summary>
-    /// 单位创建时所属的阵营。必须提供
+    /// 舰船创建时所属的阵营。必须提供
     /// </summary>
-    public required Entity Party { get; set; }
+    public required Entity Team { get; set; }
 }
 
 [Apply(ConceptNames.Ship)]
@@ -59,9 +59,9 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         Content.Textures.DefaultShip
     );
 
-    private readonly AnimationClip<Entity> _unitBlinkingAnimationClip = assets.Load<
+    private readonly AnimationClip<Entity> _shipBlinkingAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/UnitBlinking.json");
+    >("Animations/ShipBlinking.json");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipDescription desc)
     {
@@ -88,7 +88,7 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
             in entity,
             new Animation
             {
-                Clip = _unitBlinkingAnimationClip,
+                Clip = _shipBlinkingAnimationClip,
                 TimeElapsed = TimeSpan.Zero,
                 TimeOffset = TimeSpan.FromSeconds(new Random().NextDouble()),
             }
@@ -105,17 +105,17 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.InParty,
-            new InPartyDescription { Party = desc.Party, Affiliate = entity }
+            ConceptNames.InTeam,
+            new InTeamDescription { Team = desc.Team, Affiliate = entity }
         );
 
         // 初始化飞行状态
-        commandBuffer.Set(in entity, new ShippingStatus { State = ShippingState.Idle });
+        commandBuffer.Set(in entity, new JumpingStatus { State = JumpingState.Idle });
 
         // 初始化传送状态
-        commandBuffer.Set(in entity, new TransportingStatus { State = TransportingState.Idle });
+        commandBuffer.Set(in entity, new WarpingStatus { State = WarpingState.Idle });
 
         // 初始化死亡状态
-        commandBuffer.Set(in entity, new UnitDeathState { State = DeathState.Alive });
+        commandBuffer.Set(in entity, new ShipDeathState { State = DeathState.Alive });
     }
 }

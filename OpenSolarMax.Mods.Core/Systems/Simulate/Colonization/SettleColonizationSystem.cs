@@ -19,8 +19,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadPrev(typeof(AbsoluteTransform)),
     ReadPrev(typeof(ReferenceSize)),
-    ReadPrev(typeof(PartyReferenceColor)),
-    ReadPrev(typeof(InParty.AsAffiliate)),
+    ReadPrev(typeof(TeamReferenceColor)),
+    ReadPrev(typeof(InTeam.AsAffiliate)),
     Iterate(typeof(ColonizationState)),
     ChangeStructure
 ]
@@ -50,32 +50,28 @@ public sealed partial class SettleColonizationSystem(
     }
 
     [Query]
-    [All<ColonizationState, InParty.AsAffiliate>]
+    [All<ColonizationState, InTeam.AsAffiliate>]
     private void SettleColonization(
         Entity planet,
         ref ColonizationState state,
-        in InParty.AsAffiliate asPartyAffiliate,
+        in InTeam.AsAffiliate asTeamAffiliate,
         [Data] CommandBuffer commandBuffer
     )
     {
-        var planetParty = asPartyAffiliate.Relationship?.Copy.Party;
+        var planetTeam = asTeamAffiliate.Relationship?.Copy.Team;
 
         if (state.Event == ColonizationEvent.Finished)
         {
             // 不管怎样，先开香槟
-            CreateHaloExplosion(
-                commandBuffer,
-                planet,
-                state.Party.Get<PartyReferenceColor>().Value
-            );
+            CreateHaloExplosion(commandBuffer, planet, state.Team.Get<TeamReferenceColor>().Value);
 
             // 完成殖民
-            if (planetParty is null)
+            if (planetTeam is null)
             {
                 factory.Make(
                     world,
                     commandBuffer,
-                    new InPartyDescription() { Party = state.Party, Affiliate = planet }
+                    new InTeamDescription() { Team = state.Team, Affiliate = planet }
                 );
             }
         }
@@ -85,8 +81,8 @@ public sealed partial class SettleColonizationSystem(
             CreateHaloExplosion(commandBuffer, planet, Color.White);
 
             // 解除当前阵营的殖民
-            if (planetParty is not null)
-                commandBuffer.Destroy(asPartyAffiliate.Relationship!.Value.Ref);
+            if (planetTeam is not null)
+                commandBuffer.Destroy(asTeamAffiliate.Relationship!.Value.Ref);
         }
     }
 

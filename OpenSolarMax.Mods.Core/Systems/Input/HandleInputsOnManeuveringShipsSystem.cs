@@ -20,9 +20,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(InParty.AsAffiliate)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ReachabilityRegistry)),
-    Iterate(typeof(ShippingStatus)),
+    Iterate(typeof(JumpingStatus)),
     ChangeStructure
 ]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
@@ -114,7 +114,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         ref ShipsSelection selection,
         in Matrix worldToViewport,
         in Viewport viewport,
-        Entity party,
+        Entity team,
         ref Entity? pointedPlanet,
         CommandBuffer commandBuffer
     )
@@ -167,7 +167,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                 && selection.SimpleSelecting.TappingDestination != Entity.Null
             )
             {
-                // 当前右键没有按下，但是之前有选中的目标，则操作单位，并切换至初始状态的简单选择状态
+                // 当前右键没有按下，但是之前有选中的目标，则操作舰船，并切换至初始状态的简单选择状态
                 foreach (var departure in selection.SimpleSelecting.SelectedSources)
                 {
                     // 排除目标星球和出发星球相同的情况
@@ -181,14 +181,14 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                     factory.Make(
                         world,
                         commandBuffer,
-                        new ShippingRequestDescription()
+                        new JumpingRequestDescription()
                         {
                             Departure = departure,
                             Destination = selection.SimpleSelecting.TappingDestination,
-                            Party = party,
+                            Team = team,
                             ExpectedNum = departure
                                 .Get<AnchoredShipsRegistry>()
-                                .Ships[party]
+                                .Ships[team]
                                 .Count(),
                         }
                     );
@@ -245,14 +245,14 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         factory.Make(
                             world,
                             commandBuffer,
-                            new ShippingRequestDescription()
+                            new JumpingRequestDescription()
                             {
                                 Departure = departure,
                                 Destination = selection.DraggingToDestination.CandidateDestination,
-                                Party = party,
+                                Team = team,
                                 ExpectedNum = departure
                                     .Get<AnchoredShipsRegistry>()
-                                    .Ships[party]
+                                    .Ships[team]
                                     .Count(),
                             }
                         );
@@ -272,7 +272,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         ref ShipsSelection selection,
         in Matrix worldToViewport,
         in Viewport viewport,
-        Entity party,
+        Entity team,
         ref Entity? pointedPlanet
     )
     {
@@ -349,12 +349,12 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuvaringShipsStatus, InParty.AsAffiliate>]
+    [All<Camera, AbsoluteTransform, ManeuveringShipsStatus, InTeam.AsAffiliate>]
     private void HandleInputs(
         in Camera camera,
         in AbsoluteTransform pose,
-        ref ManeuvaringShipsStatus status,
-        in InParty.AsAffiliate ofParty,
+        ref ManeuveringShipsStatus status,
+        in InTeam.AsAffiliate ofTeam,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -383,7 +383,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             ref status.Selection,
             in worldToCanvas,
             in camera.Output,
-            ofParty.Relationship!.Value.Copy.Party,
+            ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
             commandBuffer
         );
@@ -391,7 +391,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             ref status.Selection,
             in worldToCanvas,
             in camera.Output,
-            ofParty.Relationship!.Value.Copy.Party,
+            ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet
         );
     }

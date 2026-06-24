@@ -30,17 +30,17 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(Animation),
             //
             // 停靠相关
-            typeof(PlanetGeostationaryOrbit), // 同步轨道，用于生成新单位轨道
+            typeof(PlanetGeostationaryOrbit), // 同步轨道，用于生成新舰船轨道
             typeof(TreeRelationship<Anchorage>.AsParent), // 挂载关系父方
-            typeof(AnchoredShipsRegistry), // 挂载单位的索引
+            typeof(AnchoredShipsRegistry), // 挂载舰船的索引
             // 移动相关
-            typeof(ShippingUnitsRegistry), // 前往该天体的单位的索引
+            typeof(JumpingShipsRegistry), // 前往该天体的舰船的索引
             typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
             // 战争相关
             typeof(Battlefield), // 允许发生战争
             typeof(Colonizable), // 允许进行殖民
             typeof(ColonizationState), // 殖民状态
-            typeof(InParty.AsAffiliate), // 可以隶属于某个阵营
+            typeof(InTeam.AsAffiliate), // 可以隶属于某个阵营
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
             typeof(TreeRelationship<ColorSync>.AsParent), // 颜色同步关系父方
@@ -79,7 +79,7 @@ public class CelestialBodyDescription : IDescription
     /// <summary>
     /// 天体所属的阵营
     /// </summary>
-    public Entity Party { get; set; } = Entity.Null;
+    public Entity Team { get; set; } = Entity.Null;
 
     /// <summary>
     /// 天体的体量
@@ -155,20 +155,20 @@ public class CelestialBodyApplier(
         commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
 
         // 设置阵营
-        if (desc.Party != Entity.Null)
+        if (desc.Team != Entity.Null)
         {
             factory.Make(
                 world,
                 commandBuffer,
-                ConceptNames.InParty,
-                new InPartyDescription { Party = desc.Party, Affiliate = entity }
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
             );
 
             commandBuffer.Set(
                 in entity,
                 new ColonizationState
                 {
-                    Party = desc.Party,
+                    Team = desc.Team,
                     Progress = desc.Volume,
                     Event = ColonizationEvent.Idle,
                 }

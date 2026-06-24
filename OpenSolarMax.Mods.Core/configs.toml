@@ -1,6 +1,6 @@
 # 仿真系统相关
 
-[systems.simulate.shipping]
+[systems.simulate.jumping]
 charging_duration = 0.5
 landing_duration = 0.5
 fading_in_duration = 0.1
@@ -15,7 +15,7 @@ minimal_select_pixels = 10
 
 # 可视化系统相关
 
-[systems.visualization.anchored_units]
+[systems.visualization.anchored_ships]
 text.size = 36
 text.template = "{0}"
 shadow.distance = 2
@@ -64,11 +64,11 @@ orbit.pitch.max.deg = -67.5
 orbit.roll.min.deg = 0
 orbit.roll.max.deg = 7.5
 
-[applier.portal]
+[applier.warp]
 reference_radius = 25.6 # 128 / 2 * 0.4 : 以 1024px 等级纹理为基础, 乘上固定系数 0.4
 volume = 400
 
-[applier.turret]
+[applier.tower]
 reference_radius = 19.2 # 128 / 2 * 0.3 : 以 1024px 等级纹理为基础, 乘上固定系数 0.3
 volume = 600
 
