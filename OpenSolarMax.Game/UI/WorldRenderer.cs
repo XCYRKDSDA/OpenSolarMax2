@@ -29,6 +29,7 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
 
         // 计算画布中的绘制位置
         var sourceRectangle = new Rectangle(Point.Zero, dest.Size);
+        graphicsDevice.Viewport = new(sourceRectangle);
 
         // 绘制世界
         graphicsDevice.Clear(Color.Transparent);

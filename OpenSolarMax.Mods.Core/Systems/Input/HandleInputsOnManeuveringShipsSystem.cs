@@ -22,6 +22,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ReachabilityRegistry)),
+    ReadCurr(typeof(Projection)),
     Iterate(typeof(JumpingStatus)),
     ChangeStructure
 ]
@@ -349,39 +350,19 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuveringShipsStatus, InTeam.AsAffiliate>]
+    [All<Camera, ManeuveringShipsStatus, InTeam.AsAffiliate, Projection>]
     private void HandleInputs(
         in Camera camera,
-        in AbsoluteTransform pose,
         ref ManeuveringShipsStatus status,
         in InTeam.AsAffiliate ofTeam,
+        in Projection projection,
         [Data] CommandBuffer commandBuffer
     )
     {
-        // 根据相机和视口状态计算变换矩阵
-        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
-        var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
-            0,
-            canvas.Width,
-            canvas.Height,
-            0,
-            0,
-            -1
-        );
-        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
-
-        // 处理星球选择
         Entity? pointedPlanet = null;
         HandleSelectionStateTransition(
             ref status.Selection,
-            in worldToCanvas,
+            in projection.WorldToCanvas,
             in camera.Output,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
@@ -389,7 +370,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         );
         UpdateSelectionStatus(
             ref status.Selection,
-            in worldToCanvas,
+            in projection.WorldToCanvas,
             in camera.Output,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet

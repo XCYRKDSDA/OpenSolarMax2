@@ -25,10 +25,11 @@ public delegate bool? CheckLocationReachabilityCallback(
 [RenderSystem, AfterStructuralChanges]
 [Priority((int)GraphicsLayer.Interface)]
 [
-    ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(ManeuveringShipsStatus))
+    ReadCurr(typeof(ManeuveringShipsStatus)),
+    ReadCurr(typeof(Camera)),
+    ReadCurr(typeof(Projection))
 ]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
@@ -233,37 +234,16 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, ManeuveringShipsStatus>]
+    [All<ManeuveringShipsStatus, Camera, Projection>]
     private void DrawSelection(
+        in ManeuveringShipsStatus status,
         in Camera camera,
-        in AbsoluteTransform pose,
-        in ManeuveringShipsStatus status
+        in Projection projection
     )
     {
         var mouse = Mouse.GetState();
 
-        // 根据相机和视口状态计算变换矩阵
-        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
         var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
-            0,
-            canvas.Width,
-            canvas.Height,
-            0,
-            0,
-            -1
-        );
-        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
-
-        // 设置绘图区域
-        var oldViewport = graphicsDevice.Viewport;
-        graphicsDevice.Viewport = camera.Output;
 
         // 设置绘图参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
@@ -275,7 +255,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         _circleRenderer.Effect.Projection =
             _boxRenderer.Effect.Projection =
             _segmentRenderer.Effect.Projection =
-                canvasToNdc;
+                projection.CanvasToNdc;
 
         ref readonly var selection = ref status.Selection;
 
@@ -290,7 +270,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                 if (selection.SimpleSelecting.PointingPlanet != Entity.Null)
                     DrawSelected(
                         selection.SimpleSelecting.PointingPlanet,
-                        in worldToCanvas,
+                        in projection.WorldToCanvas,
                         _hoveredRingColor,
                         _ringThickness
                     );
@@ -300,7 +280,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             // TappingSource已经包含在SelectedSources中了，故不重复绘制
             DrawSelected(
                 selection.SimpleSelecting.SelectedSources,
-                in worldToCanvas,
+                in projection.WorldToCanvas,
                 Enumerable.Repeat(_selectedRingColor, int.MaxValue),
                 _ringThickness
             );
@@ -309,7 +289,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             if (selection.SimpleSelecting.TappingDestination != Entity.Null)
                 DrawSelected(
                     selection.SimpleSelecting.TappingDestination,
-                    in worldToCanvas,
+                    in projection.WorldToCanvas,
                     _selectedRingColor,
                     _ringThickness
                 );
@@ -323,7 +303,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                     selection.BoxSelectingSources.OtherSelectedPlanets,
                     selection.BoxSelectingSources.PlanetsInBox
                 ),
-                in worldToCanvas,
+                in projection.WorldToCanvas,
                 Enumerable.Repeat(_selectedRingColor, int.MaxValue),
                 _ringThickness
             );
@@ -346,7 +326,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                     ? CalculateBlocking(
                             selection.DraggingToDestination.SelectedSources,
                             mouseInCanvas.ToVector2(),
-                            Matrix.Invert(worldToCanvas)
+                            Matrix.Invert(projection.WorldToCanvas)
                         )
                         .ToArray()
                     : CalculateBlocking(
@@ -358,7 +338,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceColors = blockStates.Select(b => b ? _blockedRingColor : _selectedRingColor);
             DrawSelected(
                 selection.DraggingToDestination.SelectedSources,
-                in worldToCanvas,
+                in projection.WorldToCanvas,
                 sourceColors,
                 _ringThickness
             );
@@ -368,7 +348,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                 DrawLines(
                     selection.DraggingToDestination.SelectedSources,
                     mouseInCanvas.ToVector2(),
-                    worldToCanvas,
+                    in projection.WorldToCanvas,
                     edgeColors
                 );
             else
@@ -376,21 +356,18 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                 DrawLines(
                     selection.DraggingToDestination.SelectedSources,
                     selection.DraggingToDestination.CandidateDestination,
-                    worldToCanvas,
+                    in projection.WorldToCanvas,
                     edgeColors
                 );
 
                 var targetColor = blockStates.All(b => b) ? _blockedRingColor : _selectedRingColor;
                 DrawSelected(
                     selection.DraggingToDestination.CandidateDestination,
-                    in worldToCanvas,
+                    in projection.WorldToCanvas,
                     targetColor,
                     _ringThickness
                 );
             }
         }
-
-        // 恢复 Viewport
-        graphicsDevice.Viewport = oldViewport;
     }
 }

@@ -17,7 +17,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem, AfterStructuralChanges]
-[ReadCurr(typeof(Camera))]
+[ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredShipsSystem(
     World world,
@@ -205,36 +205,9 @@ public sealed partial class VisualizeAnchoredShipsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera(
-        [Data] IEnumerable<Entity> entities,
-        in Camera camera,
-        in AbsoluteTransform pose
-    )
+    [All<Projection>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Projection projection)
     {
-        // 根据相机和视口状态计算变换矩阵
-        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
-        var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
-            0,
-            canvas.Width,
-            canvas.Height,
-            0,
-            0,
-            -1
-        );
-        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
-
-        // 设置绘图区域
-        var oldViewport = graphicsDevice.Viewport;
-        graphicsDevice.Viewport = camera.Output;
-
         // 设置绘图参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
         graphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -242,16 +215,13 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNdc;
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.CanvasToNdc;
 
         // 逐个绘制
         foreach (var entity in entities)
         {
             var refs = entity.Get<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
-            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in worldToCanvas);
+            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in projection.WorldToCanvas);
         }
-
-        // 恢复 Viewport
-        graphicsDevice.Viewport = oldViewport;
     }
 }
