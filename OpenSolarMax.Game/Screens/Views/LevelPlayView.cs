@@ -23,8 +23,9 @@ internal class LevelPlayView
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
     private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
-    private readonly Widget _embeddingWorldView;
-    private Widget? _floatingWorldView;
+    private readonly WorldPad _worldPad;
+    private readonly InputPassthroughWidget _embeddingWorldView;
+    private InputPassthroughWidget? _floatingWorldView;
 
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
@@ -39,6 +40,14 @@ internal class LevelPlayView
         _desktop = new Desktop();
         _rootPanel = new Panel();
         _desktop.Root = _rootPanel;
+
+        // 世界面板：垫在最底层接收穿透的输入
+        _worldPad = new WorldPad()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        _rootPanel.Widgets.Add(_worldPad);
 
         // 整体的布局网格
         var grid = new Grid()
@@ -252,7 +261,7 @@ internal class LevelPlayView
         grid.Widgets.Add(rightPanel);
 
         // 世界代理组件。仅用于排版和输入
-        _embeddingWorldView = new Widget()
+        _embeddingWorldView = new InputPassthroughWidget()
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
@@ -299,6 +308,9 @@ internal class LevelPlayView
 
         // 初始化 UI 布局
         _desktop.UpdateLayout();
+
+        // 将世界面板设为键盘焦点
+        _desktop.FocusedKeyboardWidget = _worldPad;
 
         #endregion
     }
@@ -359,7 +371,7 @@ internal class LevelPlayView
     void IVisualConfigurable<GamePlayTransitionTargetState>.EnterConfigurationMode()
     {
         // 创建悬浮世界视图控件
-        _floatingWorldView = new Widget();
+        _floatingWorldView = new InputPassthroughWidget();
         _rootPanel.Widgets.Add(_floatingWorldView);
 
         // 世界更新速度归零
