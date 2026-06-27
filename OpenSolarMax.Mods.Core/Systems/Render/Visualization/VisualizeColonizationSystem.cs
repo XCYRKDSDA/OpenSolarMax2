@@ -14,7 +14,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem, AfterStructuralChanges]
-[ReadCurr(typeof(Camera))]
+[ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeColonizationSystem(
     World world,
@@ -51,7 +51,7 @@ public sealed partial class VisualizeColonizationSystem(
         in ColonizationState colonizationState,
         in ReferenceSize refSize,
         in AbsoluteTransform pose,
-        in Matrix worldToCanvas
+        in Matrix worldToScreen
     )
     {
         // 当且仅当有一个阵营时绘制占领环
@@ -66,8 +66,8 @@ public sealed partial class VisualizeColonizationSystem(
         if (colonizationState.Team == Entity.Null)
             return;
 
-        // 计算从世界到UI画布的缩放
-        var scale2D = Vector2.TransformNormal(new Vector2(1, 1), worldToCanvas);
+        // 计算从世界到屏幕的缩放
+        var scale2D = Vector2.TransformNormal(new Vector2(1, 1), worldToScreen);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
         // 计算殖民环的尺寸
@@ -75,7 +75,7 @@ public sealed partial class VisualizeColonizationSystem(
 
         // 获得殖民环的圆心
         var ringCenter = TransformProjection.To2D(
-            Vector3.Transform(pose.Translation, worldToCanvas)
+            Vector3.Transform(pose.Translation, worldToScreen)
         );
 
         // 计算首尾角度
@@ -97,36 +97,9 @@ public sealed partial class VisualizeColonizationSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera(
-        [Data] IEnumerable<Entity> entities,
-        in Camera camera,
-        in AbsoluteTransform pose
-    )
+    [All<Projection>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Projection projection)
     {
-        // 根据相机和视口状态计算变换矩阵
-        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
-        var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
-            0,
-            canvas.Width,
-            canvas.Height,
-            0,
-            0,
-            -1
-        );
-        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
-
-        // 设置绘图区域
-        var oldViewport = graphicsDevice.Viewport;
-        graphicsDevice.Viewport = camera.Output;
-
         // 设置绘图参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
         graphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -134,7 +107,7 @@ public sealed partial class VisualizeColonizationSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _ringRenderer.Effect.Projection = canvasToNdc;
+        _ringRenderer.Effect.Projection = projection.ScreenToNdc;
 
         // 逐个绘制
         foreach (var entity in entities)
@@ -152,11 +125,8 @@ public sealed partial class VisualizeColonizationSystem(
                 in refs.t2,
                 in refs.t3,
                 in refs.t4,
-                in worldToCanvas
+                in projection.WorldToScreen
             );
         }
-
-        // 恢复 Viewport
-        graphicsDevice.Viewport = oldViewport;
     }
 }

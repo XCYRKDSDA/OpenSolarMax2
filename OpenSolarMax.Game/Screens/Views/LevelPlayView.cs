@@ -23,8 +23,9 @@ internal class LevelPlayView
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
     private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
-    private readonly Widget _embeddingWorldView;
-    private Widget? _floatingWorldView;
+    private readonly Widget _worldInputPad;
+    private readonly InputPassthroughWidget _embeddingWorldView;
+    private InputPassthroughWidget? _floatingWorldView;
 
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
@@ -39,6 +40,20 @@ internal class LevelPlayView
         _desktop = new Desktop();
         _rootPanel = new Panel();
         _desktop.Root = _rootPanel;
+
+        // 世界输入面板：垫在最底层判断输入是否聚焦在游戏世界而非 UI
+        _worldInputPad = new Widget()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        _rootPanel.Widgets.Add(_worldInputPad);
+        _desktop.FocusedKeyboardWidget = _worldInputPad; // 默认将键盘聚焦在游戏世界
+        _desktop.WidgetGotKeyboardFocus += (_, e) => // 当无任何控件被键盘聚焦时，默认聚焦回游戏世界
+        {
+            if (e.Data is null)
+                _desktop.FocusedKeyboardWidget = _worldInputPad;
+        };
 
         // 整体的布局网格
         var grid = new Grid()
@@ -252,7 +267,7 @@ internal class LevelPlayView
         grid.Widgets.Add(rightPanel);
 
         // 世界代理组件。仅用于排版和输入
-        _embeddingWorldView = new Widget()
+        _embeddingWorldView = new InputPassthroughWidget()
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
@@ -330,6 +345,24 @@ internal class LevelPlayView
         ViewModel.SimulateSpeed = _speedButtonsMap[theButton];
     }
 
+    public override void Update(GameTime gameTime)
+    {
+        // 强行处理一次输入
+        // _desktop.UpdateInput(); UpdateInput() 只修改状态不触发事件，但这就导致 Render() 中再次 UpdateInput() 后丢失了一些事件
+        var focusState = new InputFocusState
+        {
+            MouseFocused = _worldInputPad.IsMouseInside,
+            KeyboardFocused = _worldInputPad.IsKeyboardFocused,
+        };
+        ViewModel.World.Query(
+            new QueryDescription().WithAll<InputFocusState>(),
+            (ref InputFocusState focusState2) => focusState2 = focusState
+        );
+        ViewModel.InputSystem.Update(gameTime);
+
+        base.Update(gameTime);
+    }
+
     public override void Draw(GameTime gameTime)
     {
         // 先画背景
@@ -359,7 +392,7 @@ internal class LevelPlayView
     void IVisualConfigurable<GamePlayTransitionTargetState>.EnterConfigurationMode()
     {
         // 创建悬浮世界视图控件
-        _floatingWorldView = new Widget();
+        _floatingWorldView = new InputPassthroughWidget();
         _rootPanel.Widgets.Add(_floatingWorldView);
 
         // 世界更新速度归零
