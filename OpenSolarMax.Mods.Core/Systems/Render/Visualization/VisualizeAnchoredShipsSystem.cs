@@ -107,7 +107,7 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         in AnchoredShipsRegistry registry,
         in ReferenceSize refSize,
         in AbsoluteTransform pose,
-        in Matrix worldToCanvas
+        in Matrix worldToScreen
     )
     {
         // 如果没有停泊任何舰船则跳过绘制
@@ -118,8 +118,8 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
         if (parties.Length == 1)
         {
-            // 计算从世界到UI画布的缩放
-            var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
+            // 计算从世界到屏幕的缩放
+            var scale2D = Vector2.TransformNormal(new(1, 1), worldToScreen);
             var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
             // 更新文字
@@ -127,11 +127,11 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
             // 计算文字位置
             var textSize = _font.MeasureString(text);
-            var planetInCanvas = TransformProjection.To2D(
-                Vector3.Transform(pose.Translation, worldToCanvas)
+            var planetInScreen = TransformProjection.To2D(
+                Vector3.Transform(pose.Translation, worldToScreen)
             );
             var position =
-                planetInCanvas
+                planetInScreen
                 + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius * scale
                 - textSize / 2;
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
@@ -145,8 +145,8 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         }
         else
         {
-            // 计算从世界到UI画布的缩放
-            var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
+            // 计算从世界到屏幕的缩放
+            var scale2D = Vector2.TransformNormal(new(1, 1), worldToScreen);
             var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
             // 计算战斗环的尺寸
@@ -155,7 +155,7 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
             // 获得战斗环的圆心
             var ringCenter = TransformProjection.To2D(
-                Vector3.Transform(pose.Translation, worldToCanvas)
+                Vector3.Transform(pose.Translation, worldToScreen)
             );
 
             // 获得各阵营的舰船数目、颜色和标签
@@ -215,13 +215,13 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.CanvasToNdc;
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.ScreenToNdc;
 
         // 逐个绘制
         foreach (var entity in entities)
         {
             var refs = entity.Get<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
-            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in projection.WorldToCanvas);
+            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in projection.WorldToScreen);
         }
     }
 }

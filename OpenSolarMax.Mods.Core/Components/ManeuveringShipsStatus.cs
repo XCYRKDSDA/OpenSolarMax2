@@ -37,14 +37,14 @@ public struct ShipsSelection_SimpleSelecting()
 public struct ShipsSelection_BoxSelectingSources
 {
     /// <summary>
-    /// 在 Viewport 坐标系下，选框的起始点
+    /// 在屏幕坐标系下，选框的起始点
     /// </summary>
-    public Point BoxStartInViewport;
+    public Point BoxStartInScreen;
 
     /// <summary>
-    /// 在 Viewport 坐标系下，选框当前的矩形
+    /// 在屏幕坐标系下，选框当前的矩形
     /// </summary>
-    public Rectangle BoxInViewport;
+    public Rectangle BoxInScreen;
 
     /// <summary>
     /// 在进入框选状态前已经选中了的星球

@@ -51,7 +51,7 @@ public sealed partial class VisualizeColonizationSystem(
         in ColonizationState colonizationState,
         in ReferenceSize refSize,
         in AbsoluteTransform pose,
-        in Matrix worldToCanvas
+        in Matrix worldToScreen
     )
     {
         // 当且仅当有一个阵营时绘制占领环
@@ -66,8 +66,8 @@ public sealed partial class VisualizeColonizationSystem(
         if (colonizationState.Team == Entity.Null)
             return;
 
-        // 计算从世界到UI画布的缩放
-        var scale2D = Vector2.TransformNormal(new Vector2(1, 1), worldToCanvas);
+        // 计算从世界到屏幕的缩放
+        var scale2D = Vector2.TransformNormal(new Vector2(1, 1), worldToScreen);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
         // 计算殖民环的尺寸
@@ -75,7 +75,7 @@ public sealed partial class VisualizeColonizationSystem(
 
         // 获得殖民环的圆心
         var ringCenter = TransformProjection.To2D(
-            Vector3.Transform(pose.Translation, worldToCanvas)
+            Vector3.Transform(pose.Translation, worldToScreen)
         );
 
         // 计算首尾角度
@@ -107,7 +107,7 @@ public sealed partial class VisualizeColonizationSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _ringRenderer.Effect.Projection = projection.CanvasToNdc;
+        _ringRenderer.Effect.Projection = projection.ScreenToNdc;
 
         // 逐个绘制
         foreach (var entity in entities)
@@ -125,7 +125,7 @@ public sealed partial class VisualizeColonizationSystem(
                 in refs.t2,
                 in refs.t3,
                 in refs.t4,
-                in projection.WorldToCanvas
+                in projection.WorldToScreen
             );
         }
     }

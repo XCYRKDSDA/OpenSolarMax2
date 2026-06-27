@@ -12,12 +12,12 @@ public struct Projection
     public Matrix WorldToNdc;
 
     /// <summary>
-    /// 世界坐标到画布坐标的变换矩阵
+    /// 世界坐标到屏幕坐标的变换矩阵
     /// </summary>
-    public Matrix WorldToCanvas;
+    public Matrix WorldToScreen;
 
     /// <summary>
-    /// 画布坐标到 NDC 的变换矩阵
+    /// 屏幕坐标到 NDC 的变换矩阵
     /// </summary>
-    public Matrix CanvasToNdc;
+    public Matrix ScreenToNdc;
 }

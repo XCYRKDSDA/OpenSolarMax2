@@ -6,7 +6,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
@@ -18,7 +17,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [InputSystem, BeforeStructuralChanges]
 [
-    ReadCurr(typeof(Camera)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ReachabilityRegistry)),
@@ -39,44 +37,44 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     private void CheckPointedPlanet(
         Entity planet,
         in AbsoluteTransform pose,
-        [Data] in Point mouseInViewport,
-        [Data] in Matrix worldToViewport,
+        [Data] in Point mouseInScreen,
+        [Data] in Matrix worldToScreen,
         [Data] ref Entity pointedPlanet,
         [Data] ref float pointedPlanetZ
     )
     {
-        float radiusInViewport = _minimalSelectPixels;
+        float radiusInScreen = _minimalSelectPixels;
         if (planet.Has<ReferenceSize>()) // 若对象没有参考尺寸，则按照最小选择像素数判定范围；否则按照参考尺寸判定，但不得小于最小值
         {
             ref readonly var refSize = ref planet.Get<ReferenceSize>();
-            var halfSizeInViewport = Vector2.TransformNormal(new(refSize.Radius), worldToViewport);
-            radiusInViewport = MathF.Max(
-                MathF.Abs(MathF.MaxMagnitude(halfSizeInViewport.X, halfSizeInViewport.Y)),
-                radiusInViewport
+            var halfSizeInScreen = Vector2.TransformNormal(new(refSize.Radius), worldToScreen);
+            radiusInScreen = MathF.Max(
+                MathF.Abs(MathF.MaxMagnitude(halfSizeInScreen.X, halfSizeInScreen.Y)),
+                radiusInScreen
             );
         }
 
-        var positionInViewport = Vector3.Transform(pose.Translation, worldToViewport);
+        var positionInScreen = Vector3.Transform(pose.Translation, worldToScreen);
         var delta = new Vector2(
-            positionInViewport.X - mouseInViewport.X,
-            positionInViewport.Y - mouseInViewport.Y
+            positionInScreen.X - mouseInScreen.X,
+            positionInScreen.Y - mouseInScreen.Y
         );
-        if (delta.Length() < radiusInViewport && positionInViewport.Z < pointedPlanetZ)
+        if (delta.Length() < radiusInScreen && positionInScreen.Z < pointedPlanetZ)
         {
             pointedPlanet = planet;
-            pointedPlanetZ = positionInViewport.Z;
+            pointedPlanetZ = positionInScreen.Z;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Entity GetPointedPlanet(in Point mouseInViewport, in Matrix worldToViewport)
+    private Entity GetPointedPlanet(in Point mouseInScreen, in Matrix worldToScreen)
     {
         Entity pointedPlanet = Entity.Null;
         float pointedPlanetZ = float.PositiveInfinity;
         CheckPointedPlanetQuery(
             world,
-            in mouseInViewport,
-            in worldToViewport,
+            in mouseInScreen,
+            in worldToScreen,
             ref pointedPlanet,
             ref pointedPlanetZ
         );
@@ -89,20 +87,20 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         Entity planet,
         in AbsoluteTransform pose,
         [Data] in Rectangle box,
-        [Data] in Matrix worldToViewport,
+        [Data] in Matrix worldToScreen,
         [Data] ref HashSet<Entity> boxedPlanets
     )
     {
-        var positionInViewport = Vector3.Transform(pose.Translation, worldToViewport);
-        if (box.Contains(positionInViewport.X, positionInViewport.Y))
+        var positionInScreen = Vector3.Transform(pose.Translation, worldToScreen);
+        if (box.Contains(positionInScreen.X, positionInScreen.Y))
             boxedPlanets.Add(planet);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private HashSet<Entity> GetBoxedPlanets(in Rectangle box, in Matrix worldToViewport)
+    private HashSet<Entity> GetBoxedPlanets(in Rectangle box, in Matrix worldToScreen)
     {
         var boxedPlanets = new HashSet<Entity>();
-        CheckBoxedPlanetsQuery(world, in box, in worldToViewport, ref boxedPlanets);
+        CheckBoxedPlanetsQuery(world, in box, in worldToScreen, ref boxedPlanets);
         return boxedPlanets;
     }
 
@@ -113,8 +111,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
 
     private void HandleSelectionStateTransition(
         ref ShipsSelection selection,
-        in Matrix worldToViewport,
-        in Viewport viewport,
+        in Matrix worldToScreen,
         Entity team,
         ref Entity? pointedPlanet,
         CommandBuffer commandBuffer
@@ -123,7 +120,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         var mouse = Mouse.GetState();
         var keys = Keyboard.GetState();
 
-        var mouseInViewport = new Point(mouse.X - viewport.X, mouse.Y - viewport.Y);
+        var mouseInScreen = mouse.Position;
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // Simple Selecting
@@ -133,8 +130,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             if (mouse.LeftButton == ButtonState.Pressed)
             {
                 var tappingSource = pointedPlanet ??= GetPointedPlanet(
-                    in mouseInViewport,
-                    worldToViewport
+                    in mouseInScreen,
+                    worldToScreen
                 );
                 var keepPrevious = keys[Keys.LeftShift] == KeyState.Down;
 
@@ -155,7 +152,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         selection.State = ShipsSelection_State.BoxSelectingSources;
                         selection.BoxSelectingSources = new()
                         {
-                            BoxStartInViewport = mouseInViewport,
+                            BoxStartInScreen = mouseInScreen,
                             OtherSelectedPlanets = keepPrevious
                                 ? selection.SimpleSelecting.SelectedSources
                                 : [],
@@ -271,8 +268,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
 
     private void UpdateSelectionStatus(
         ref ShipsSelection selection,
-        in Matrix worldToViewport,
-        in Viewport viewport,
+        in Matrix worldToScreen,
         Entity team,
         ref Entity? pointedPlanet
     )
@@ -280,7 +276,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         var mouse = Mouse.GetState();
         var keys = Keyboard.GetState();
 
-        var mouseInViewport = new Point(mouse.X - viewport.X, mouse.Y - viewport.Y);
+        var mouseInScreen = mouse.Position;
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // Simple Selecting
@@ -288,8 +284,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
             selection.SimpleSelecting.PointingPlanet = pointedPlanet ??= GetPointedPlanet(
-                in mouseInViewport,
-                worldToViewport
+                in mouseInScreen,
+                worldToScreen
             );
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -322,17 +318,17 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         {
             // 在框选状态下时，更新选框，并计算选框内的星球
             var boxOrigin = new Point(
-                Math.Min(mouseInViewport.X, selection.BoxSelectingSources.BoxStartInViewport.X),
-                Math.Min(mouseInViewport.Y, selection.BoxSelectingSources.BoxStartInViewport.Y)
+                Math.Min(mouseInScreen.X, selection.BoxSelectingSources.BoxStartInScreen.X),
+                Math.Min(mouseInScreen.Y, selection.BoxSelectingSources.BoxStartInScreen.Y)
             );
             var boxSize = new Point(
-                Math.Abs(mouseInViewport.X - selection.BoxSelectingSources.BoxStartInViewport.X),
-                Math.Abs(mouseInViewport.Y - selection.BoxSelectingSources.BoxStartInViewport.Y)
+                Math.Abs(mouseInScreen.X - selection.BoxSelectingSources.BoxStartInScreen.X),
+                Math.Abs(mouseInScreen.Y - selection.BoxSelectingSources.BoxStartInScreen.Y)
             );
-            selection.BoxSelectingSources.BoxInViewport = new(boxOrigin, boxSize);
+            selection.BoxSelectingSources.BoxInScreen = new(boxOrigin, boxSize);
             selection.BoxSelectingSources.PlanetsInBox = GetBoxedPlanets(
-                in selection.BoxSelectingSources.BoxInViewport,
-                worldToViewport
+                in selection.BoxSelectingSources.BoxInScreen,
+                worldToScreen
             );
         }
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -342,17 +338,16 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         {
             // 在拖拽状态下时，计算并记录当前拖拽到的目标星球
             var hoveringDestination = pointedPlanet ??= GetPointedPlanet(
-                in mouseInViewport,
-                worldToViewport
+                in mouseInScreen,
+                worldToScreen
             );
             selection.DraggingToDestination.CandidateDestination = hoveringDestination;
         }
     }
 
     [Query]
-    [All<Camera, ManeuveringShipsStatus, InTeam.AsAffiliate, Projection>]
+    [All<ManeuveringShipsStatus, InTeam.AsAffiliate, Projection>]
     private void HandleInputs(
-        in Camera camera,
         ref ManeuveringShipsStatus status,
         in InTeam.AsAffiliate ofTeam,
         in Projection projection,
@@ -362,16 +357,14 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         Entity? pointedPlanet = null;
         HandleSelectionStateTransition(
             ref status.Selection,
-            in projection.WorldToCanvas,
-            in camera.Output,
+            in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
             commandBuffer
         );
         UpdateSelectionStatus(
             ref status.Selection,
-            in projection.WorldToCanvas,
-            in camera.Output,
+            in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet
         );

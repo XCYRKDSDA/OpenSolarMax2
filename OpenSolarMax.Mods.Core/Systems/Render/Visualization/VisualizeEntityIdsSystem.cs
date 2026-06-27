@@ -39,17 +39,17 @@ public sealed partial class VisualizeEntityIdsSystem(
 
     [Query]
     [All<AbsoluteTransform>]
-    private void Visualize(Entity entity, in AbsoluteTransform pose, [Data] in Matrix worldToCanvas)
+    private void Visualize(Entity entity, in AbsoluteTransform pose, [Data] in Matrix worldToScreen)
     {
         // 更新文字
         var text = $"{entity.Id}";
 
         // 计算文字位置
         var textSize = _font.MeasureString(text);
-        var entityInCanvas = TransformProjection.To2D(
-            Vector3.Transform(pose.Translation, worldToCanvas)
+        var entityInScreen = TransformProjection.To2D(
+            Vector3.Transform(pose.Translation, worldToScreen)
         );
-        var position = entityInCanvas - textSize / 2;
+        var position = entityInScreen - textSize / 2;
 
         // 绘制文字
         _font.DrawText(
@@ -73,8 +73,8 @@ public sealed partial class VisualizeEntityIdsSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.CanvasToNdc;
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.ScreenToNdc;
 
-        VisualizeQuery(world, in projection.WorldToCanvas);
+        VisualizeQuery(world, in projection.WorldToScreen);
     }
 }
