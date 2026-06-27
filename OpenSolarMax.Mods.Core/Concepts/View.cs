@@ -1,10 +1,12 @@
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -58,7 +60,11 @@ public class ViewDescription : IDescription
 }
 
 [Apply(ConceptNames.View)]
-public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ViewDescription>
+public class ViewApplier(
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:view:fleet_slider")] IConfiguration fleetSliderConfigs
+) : IApplier<ViewDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
 
@@ -95,6 +101,6 @@ public class ViewApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
 
         // 初始化 UI
         commandBuffer.Set(in entity, new TotalPopulationWidget(assets));
-        commandBuffer.Set(in entity, new FleetSliderWidget(assets));
+        commandBuffer.Set(in entity, new FleetSliderWidget(assets, fleetSliderConfigs));
     }
 }

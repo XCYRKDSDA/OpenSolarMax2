@@ -81,3 +81,17 @@ edge.preview.width = 6
 
 [applier.laser_beam]
 width = 2 # 4 / 2
+
+# 舰船飞行比例滑动条
+[applier.view.fleet_slider]
+color = "#ff9daa"
+track.length = 1280
+track.thickness = 4
+track.alpha.left = 0.5
+track.alpha.right = 0.25
+knot.width = 140
+knot.height = 60
+knot.alpha = 0.5
+knot.thickness = 4
+text.size = 36
+text.alpha = 0.6
