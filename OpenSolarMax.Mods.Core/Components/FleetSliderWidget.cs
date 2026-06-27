@@ -34,7 +34,7 @@ public sealed class FleetSliderWidget : HorizontalSlider
         // 行为相关
         Minimum = 0;
         Maximum = 100;
-        Value = 0;
+        Value = 100;
 
         // UI 图形相关
         Height = SliderHeight;
@@ -45,7 +45,7 @@ public sealed class FleetSliderWidget : HorizontalSlider
 
         _knobLabel = new Label
         {
-            Text = string.Format(PercentageFormat, 0f),
+            Text = string.Format(PercentageFormat, 100f),
             Font = font,
             TextColor = TextColor,
             HorizontalAlignment = HorizontalAlignment.Center,
