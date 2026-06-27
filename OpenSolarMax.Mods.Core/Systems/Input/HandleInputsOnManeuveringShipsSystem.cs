@@ -131,11 +131,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         //
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
-            if (
-                mouse.LeftButton == ButtonState.Pressed
-                && focus.MouseFocused
-                && _lastLeftButton == ButtonState.Released
-            )
+            if (mouse.LeftButton == ButtonState.Pressed && focus.MouseFocused)
             {
                 var tappingSource = pointedPlanet ??= GetPointedPlanet(
                     in mouseInScreen,
@@ -154,7 +150,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                             SelectedSources = selection.SimpleSelecting.SelectedSources,
                         };
                     }
-                    else
+                    else if (_lastLeftButton == ButtonState.Released)
                     {
                         // 当前左键点在空白处，而且之前也没有正在点选任何星球，则切换至框选状态
                         selection.State = ShipsSelection_State.BoxSelectingSources;
@@ -297,15 +293,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                 worldToScreen
             );
 
-            if (
-                mouse.LeftButton == ButtonState.Pressed
-                && focus.MouseFocused
-                && _lastLeftButton == ButtonState.Released
-            )
+            if (mouse.LeftButton == ButtonState.Pressed && focus.MouseFocused)
             {
                 var tappingSource = selection.SimpleSelecting.PointingPlanet;
                 selection.SimpleSelecting.TappingSource = selection.SimpleSelecting.PointingPlanet;
-                if (tappingSource != Entity.Null)
+                if (_lastLeftButton == ButtonState.Released && tappingSource != Entity.Null)
                 {
                     if (keys[Keys.LeftShift] != KeyState.Down)
                         selection.SimpleSelecting.SelectedSources.Clear();
