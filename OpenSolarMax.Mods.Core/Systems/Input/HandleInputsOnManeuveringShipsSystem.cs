@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 
@@ -19,6 +20,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(InputFocusState)),
     ReadCurr(typeof(ReachabilityRegistry)),
     ReadCurr(typeof(Projection)),
     Iterate(typeof(JumpingStatus)),
@@ -31,6 +33,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
 ) : ICalcSystemWithStructuralChanges
 {
     private readonly int _minimalSelectPixels = configs.RequireValue<int>("minimal_select_pixels");
+    private ButtonState _lastLeftButton = ButtonState.Released;
 
     [Query]
     [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
@@ -114,7 +117,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         in Matrix worldToScreen,
         Entity team,
         ref Entity? pointedPlanet,
-        CommandBuffer commandBuffer
+        CommandBuffer commandBuffer,
+        in InputFocusState focus
     )
     {
         var mouse = Mouse.GetState();
@@ -127,7 +131,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         //
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
-            if (mouse.LeftButton == ButtonState.Pressed)
+            if (
+                mouse.LeftButton == ButtonState.Pressed
+                && focus.MouseFocused
+                && _lastLeftButton == ButtonState.Released
+            )
             {
                 var tappingSource = pointedPlanet ??= GetPointedPlanet(
                     in mouseInScreen,
@@ -270,7 +278,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         ref ShipsSelection selection,
         in Matrix worldToScreen,
         Entity team,
-        ref Entity? pointedPlanet
+        ref Entity? pointedPlanet,
+        in InputFocusState focus
     )
     {
         var mouse = Mouse.GetState();
@@ -288,7 +297,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                 worldToScreen
             );
 
-            if (mouse.LeftButton == ButtonState.Pressed)
+            if (
+                mouse.LeftButton == ButtonState.Pressed
+                && focus.MouseFocused
+                && _lastLeftButton == ButtonState.Released
+            )
             {
                 var tappingSource = selection.SimpleSelecting.PointingPlanet;
                 selection.SimpleSelecting.TappingSource = selection.SimpleSelecting.PointingPlanet;
@@ -302,7 +315,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             else
                 selection.SimpleSelecting.TappingSource = Entity.Null;
 
-            if (mouse.RightButton == ButtonState.Pressed)
+            if (mouse.RightButton == ButtonState.Pressed && focus.MouseFocused)
             {
                 // 将当前右键点选的对象，不论有没有点选在星球上，都进行记录
                 var tappingDestination = selection.SimpleSelecting.PointingPlanet;
@@ -346,11 +359,12 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     [Query]
-    [All<ManeuveringShipsStatus, InTeam.AsAffiliate, Projection>]
+    [All<ManeuveringShipsStatus, InTeam.AsAffiliate, Projection, InputFocusState>]
     private void HandleInputs(
         ref ManeuveringShipsStatus status,
         in InTeam.AsAffiliate ofTeam,
         in Projection projection,
+        in InputFocusState focus,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -360,14 +374,17 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
-            commandBuffer
+            commandBuffer,
+            in focus
         );
         UpdateSelectionStatus(
             ref status.Selection,
             in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
-            ref pointedPlanet
+            ref pointedPlanet,
+            in focus
         );
+        _lastLeftButton = Mouse.GetState().LeftButton;
     }
 
     public void Update(CommandBuffer commandBuffer) => HandleInputsQuery(world, commandBuffer);

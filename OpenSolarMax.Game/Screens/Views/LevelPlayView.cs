@@ -23,7 +23,7 @@ internal class LevelPlayView
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
     private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
-    private readonly WorldPad _worldPad;
+    private readonly Widget _worldInputPad;
     private readonly InputPassthroughWidget _embeddingWorldView;
     private InputPassthroughWidget? _floatingWorldView;
 
@@ -41,13 +41,19 @@ internal class LevelPlayView
         _rootPanel = new Panel();
         _desktop.Root = _rootPanel;
 
-        // 世界面板：垫在最底层接收穿透的输入
-        _worldPad = new WorldPad()
+        // 世界输入面板：垫在最底层判断输入是否聚焦在游戏世界而非 UI
+        _worldInputPad = new Widget()
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
-        _rootPanel.Widgets.Add(_worldPad);
+        _rootPanel.Widgets.Add(_worldInputPad);
+        _desktop.FocusedKeyboardWidget = _worldInputPad; // 默认将键盘聚焦在游戏世界
+        _desktop.WidgetGotKeyboardFocus += (_, e) => // 当无任何控件被键盘聚焦时，默认聚焦回游戏世界
+        {
+            if (e.Data is null)
+                _desktop.FocusedKeyboardWidget = _worldInputPad;
+        };
 
         // 整体的布局网格
         var grid = new Grid()
@@ -309,9 +315,6 @@ internal class LevelPlayView
         // 初始化 UI 布局
         _desktop.UpdateLayout();
 
-        // 将世界面板设为键盘焦点
-        _desktop.FocusedKeyboardWidget = _worldPad;
-
         #endregion
     }
 
@@ -340,6 +343,24 @@ internal class LevelPlayView
 
         // 通知 ViewModel
         ViewModel.SimulateSpeed = _speedButtonsMap[theButton];
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        // 强行处理一次输入
+        // _desktop.UpdateInput(); UpdateInput() 只修改状态不触发事件，但这就导致 Render() 中再次 UpdateInput() 后丢失了一些事件
+        var focusState = new InputFocusState
+        {
+            MouseFocused = _worldInputPad.IsMouseInside,
+            KeyboardFocused = _worldInputPad.IsKeyboardFocused,
+        };
+        ViewModel.World.Query(
+            new QueryDescription().WithAll<InputFocusState>(),
+            (ref InputFocusState focusState2) => focusState2 = focusState
+        );
+        ViewModel.InputSystem.Update(gameTime);
+
+        base.Update(gameTime);
     }
 
     public override void Draw(GameTime gameTime)

@@ -29,6 +29,7 @@ public abstract class ViewDefinition : IDefinition
             typeof(ManeuveringShipsStatus),
             typeof(FMOD.Studio.System),
             typeof(Viewport),
+            typeof(InputFocusState),
             typeof(RenderSettings),
             //
             typeof(InTeam.AsAffiliate),
