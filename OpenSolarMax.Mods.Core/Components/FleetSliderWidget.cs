@@ -38,7 +38,7 @@ public sealed class FleetSliderWidget : HorizontalSlider
         // 行为相关
         Minimum = 0;
         Maximum = 1;
-        Value = 1;
+        _percentage = Value = 1;
 
         // UI 图形相关
         Height = knotHeight;
