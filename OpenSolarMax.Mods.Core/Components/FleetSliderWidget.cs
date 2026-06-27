@@ -37,8 +37,8 @@ public sealed class FleetSliderWidget : HorizontalSlider
 
         // 行为相关
         Minimum = 0;
-        Maximum = 100;
-        Value = 100;
+        Maximum = 1;
+        Value = 1;
 
         // UI 图形相关
         Height = knotHeight;
@@ -66,7 +66,7 @@ public sealed class FleetSliderWidget : HorizontalSlider
         ValueChanged += (_, args) =>
         {
             _percentage = args.NewValue;
-            knobLabel.Text = string.Format(_percentageFormat, args.NewValue);
+            knobLabel.Text = string.Format(_percentageFormat, args.NewValue * 100);
         };
     }
 

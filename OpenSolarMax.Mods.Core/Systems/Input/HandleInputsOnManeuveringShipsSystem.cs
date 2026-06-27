@@ -21,6 +21,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(InputFocusState)),
+    ReadCurr(typeof(FleetSliderWidget)),
     ReadCurr(typeof(ReachabilityRegistry)),
     ReadCurr(typeof(Projection)),
     Iterate(typeof(JumpingStatus)),
@@ -114,6 +115,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
 
     private void HandleSelectionStateTransition(
         ref ShipsSelection selection,
+        float percentage,
         in Matrix worldToScreen,
         Entity team,
         ref Entity? pointedPlanet,
@@ -188,10 +190,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                             Departure = departure,
                             Destination = selection.SimpleSelecting.TappingDestination,
                             Team = team,
-                            ExpectedNum = departure
-                                .Get<AnchoredShipsRegistry>()
-                                .Ships[team]
-                                .Count(),
+                            ExpectedNum = (int)
+                                MathF.Round(
+                                    departure.Get<AnchoredShipsRegistry>().Ships[team].Count()
+                                        * percentage
+                                ),
                         }
                     );
                 }
@@ -252,10 +255,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                                 Departure = departure,
                                 Destination = selection.DraggingToDestination.CandidateDestination,
                                 Team = team,
-                                ExpectedNum = departure
-                                    .Get<AnchoredShipsRegistry>()
-                                    .Ships[team]
-                                    .Count(),
+                                ExpectedNum = (int)
+                                    MathF.Round(
+                                        departure.Get<AnchoredShipsRegistry>().Ships[team].Count()
+                                            * percentage
+                                    ),
                             }
                         );
                     }
@@ -351,9 +355,16 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     [Query]
-    [All<ManeuveringShipsStatus, InTeam.AsAffiliate, Projection, InputFocusState>]
+    [All<
+        ManeuveringShipsStatus,
+        FleetSliderWidget,
+        InTeam.AsAffiliate,
+        Projection,
+        InputFocusState
+    >]
     private void HandleInputs(
         ref ManeuveringShipsStatus status,
+        in FleetSliderWidget fleetSlider,
         in InTeam.AsAffiliate ofTeam,
         in Projection projection,
         in InputFocusState focus,
@@ -363,6 +374,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         Entity? pointedPlanet = null;
         HandleSelectionStateTransition(
             ref status.Selection,
+            fleetSlider.Percentage,
             in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,

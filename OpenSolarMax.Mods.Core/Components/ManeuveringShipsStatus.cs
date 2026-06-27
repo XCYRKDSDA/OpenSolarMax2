@@ -87,7 +87,5 @@ public struct ShipsSelection()
 [Component]
 public struct ManeuveringShipsStatus()
 {
-    public float SelectionRatio;
-
     public ShipsSelection Selection = new();
 }

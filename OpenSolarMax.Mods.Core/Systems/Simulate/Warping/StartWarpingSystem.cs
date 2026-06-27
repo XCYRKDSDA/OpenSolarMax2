@@ -58,6 +58,7 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
         while (shipsRemain > 0 && shipsEnumerator.MoveNext())
         {
             var ship = shipsEnumerator.Current;
+            shipsRemain -= 1;
 
             // 获取相关信息
             var transformRelationship =
