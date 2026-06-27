@@ -17,7 +17,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem, AfterStructuralChanges]
-[ReadCurr(typeof(Camera))]
+[ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredShipsSystem(
     World world,
@@ -107,7 +107,7 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         in AnchoredShipsRegistry registry,
         in ReferenceSize refSize,
         in AbsoluteTransform pose,
-        in Matrix worldToCanvas
+        in Matrix worldToScreen
     )
     {
         // 如果没有停泊任何舰船则跳过绘制
@@ -118,8 +118,8 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
         if (parties.Length == 1)
         {
-            // 计算从世界到UI画布的缩放
-            var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
+            // 计算从世界到屏幕的缩放
+            var scale2D = Vector2.TransformNormal(new(1, 1), worldToScreen);
             var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
             // 更新文字
@@ -127,11 +127,11 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
             // 计算文字位置
             var textSize = _font.MeasureString(text);
-            var planetInCanvas = TransformProjection.To2D(
-                Vector3.Transform(pose.Translation, worldToCanvas)
+            var planetInScreen = TransformProjection.To2D(
+                Vector3.Transform(pose.Translation, worldToScreen)
             );
             var position =
-                planetInCanvas
+                planetInScreen
                 + new Vector2(_labelXOffsetFactor, _labelYOffsetFactor) * refSize.Radius * scale
                 - textSize / 2;
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
@@ -145,8 +145,8 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         }
         else
         {
-            // 计算从世界到UI画布的缩放
-            var scale2D = Vector2.TransformNormal(new(1, 1), worldToCanvas);
+            // 计算从世界到屏幕的缩放
+            var scale2D = Vector2.TransformNormal(new(1, 1), worldToScreen);
             var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
 
             // 计算战斗环的尺寸
@@ -155,7 +155,7 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
             // 获得战斗环的圆心
             var ringCenter = TransformProjection.To2D(
-                Vector3.Transform(pose.Translation, worldToCanvas)
+                Vector3.Transform(pose.Translation, worldToScreen)
             );
 
             // 获得各阵营的舰船数目、颜色和标签
@@ -205,36 +205,9 @@ public sealed partial class VisualizeAnchoredShipsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera(
-        [Data] IEnumerable<Entity> entities,
-        in Camera camera,
-        in AbsoluteTransform pose
-    )
+    [All<Projection>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Projection projection)
     {
-        // 根据相机和视口状态计算变换矩阵
-        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
-        var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
-            0,
-            canvas.Width,
-            canvas.Height,
-            0,
-            0,
-            -1
-        );
-        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
-
-        // 设置绘图区域
-        var oldViewport = graphicsDevice.Viewport;
-        graphicsDevice.Viewport = camera.Output;
-
         // 设置绘图参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
         graphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -242,16 +215,13 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNdc;
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.ScreenToNdc;
 
         // 逐个绘制
         foreach (var entity in entities)
         {
             var refs = entity.Get<AnchoredShipsRegistry, ReferenceSize, AbsoluteTransform>();
-            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in worldToCanvas);
+            VisualizeOnePlanet(in refs.t0, in refs.t1, in refs.t2, in projection.WorldToScreen);
         }
-
-        // 恢复 Viewport
-        graphicsDevice.Viewport = oldViewport;
     }
 }

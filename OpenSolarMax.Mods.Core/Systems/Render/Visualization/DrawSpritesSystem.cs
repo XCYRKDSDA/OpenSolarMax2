@@ -15,7 +15,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [RenderSystem, AfterStructuralChanges, BothForGameplayAndPreview]
-[ReadCurr(typeof(Camera)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(Projection)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
 public sealed partial class DrawSpritesSystem(
     World world,
@@ -161,27 +161,14 @@ public sealed partial class DrawSpritesSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform, RenderSettings>]
+    [All<RenderSettings, Projection>]
     private void RenderToCamera(
         [Data] IEnumerable<Entity> entities,
-        in Camera camera,
-        in AbsoluteTransform pose,
-        in RenderSettings renderSettings
+        in RenderSettings renderSettings,
+        in Projection projection
     )
     {
-        // 计算相机参数
-        var view = Matrix.Invert(pose.TransformToRoot);
-        var projection = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
-        _effect.Parameters["to_ndc"].SetValue(view * projection);
-
-        // 设置绘图区域
-        var oldViewport = graphicsDevice.Viewport;
-        graphicsDevice.Viewport = camera.Output;
+        _effect.Parameters["to_ndc"].SetValue(projection.WorldToNdc);
 
         // 设置绘图设备参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
@@ -195,8 +182,5 @@ public sealed partial class DrawSpritesSystem(
             var refs = entity.Get<Sprite, AbsoluteTransform>();
             DrawEntity(in refs.t0, in refs.t1, in renderSettings);
         }
-
-        // 恢复 Viewport
-        graphicsDevice.Viewport = oldViewport;
     }
 }

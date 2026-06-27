@@ -25,6 +25,7 @@ public abstract class ViewPreviewDefinition : IDefinition
             typeof(AbsoluteTransform),
             // 渲染
             typeof(Camera),
+            typeof(Projection),
             typeof(Viewport),
             typeof(RenderSettings),
             // 视图标识

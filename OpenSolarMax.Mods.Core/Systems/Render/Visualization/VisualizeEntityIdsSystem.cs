@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
 [RenderSystem, AfterStructuralChanges]
-[ReadCurr(typeof(Camera))]
+[ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(
     World world,
@@ -39,17 +39,17 @@ public sealed partial class VisualizeEntityIdsSystem(
 
     [Query]
     [All<AbsoluteTransform>]
-    private void Visualize(Entity entity, in AbsoluteTransform pose, [Data] in Matrix worldToCanvas)
+    private void Visualize(Entity entity, in AbsoluteTransform pose, [Data] in Matrix worldToScreen)
     {
         // 更新文字
         var text = $"{entity.Id}";
 
         // 计算文字位置
         var textSize = _font.MeasureString(text);
-        var entityInCanvas = TransformProjection.To2D(
-            Vector3.Transform(pose.Translation, worldToCanvas)
+        var entityInScreen = TransformProjection.To2D(
+            Vector3.Transform(pose.Translation, worldToScreen)
         );
-        var position = entityInCanvas - textSize / 2;
+        var position = entityInScreen - textSize / 2;
 
         // 绘制文字
         _font.DrawText(
@@ -63,32 +63,9 @@ public sealed partial class VisualizeEntityIdsSystem(
     }
 
     [Query]
-    [All<Camera, AbsoluteTransform>]
-    private void RenderToCamera(in Camera camera, in AbsoluteTransform pose)
+    [All<Projection>]
+    private void RenderToCamera(in Projection projection)
     {
-        // 根据相机和视口状态计算变换矩阵
-        var viewMatrix = Matrix.Invert(pose.TransformToRoot);
-        var projectionMatrix = Matrix.CreateOrthographic(
-            camera.Width,
-            camera.Height,
-            camera.ZNear,
-            camera.ZFar
-        );
-        var canvas = camera.Output.Bounds;
-        var canvasToNdc = Matrix.CreateOrthographicOffCenter(
-            0,
-            canvas.Width,
-            canvas.Height,
-            0,
-            0,
-            -1
-        );
-        var worldToCanvas = viewMatrix * projectionMatrix * Matrix.Invert(canvasToNdc);
-
-        // 设置绘图区域
-        var oldViewport = graphicsDevice.Viewport;
-        graphicsDevice.Viewport = camera.Output;
-
         // 设置绘图参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
         graphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -96,11 +73,8 @@ public sealed partial class VisualizeEntityIdsSystem(
         graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
         // 设置着色器坐标变换参数
-        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = canvasToNdc;
+        _fontRenderer.Effect.Projection = _ringRenderer.Effect.Projection = projection.ScreenToNdc;
 
-        VisualizeQuery(world, in worldToCanvas);
-
-        // 恢复 Viewport
-        graphicsDevice.Viewport = oldViewport;
+        VisualizeQuery(world, in projection.WorldToScreen);
     }
 }

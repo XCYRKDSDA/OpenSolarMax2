@@ -32,6 +32,8 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public World World => _runtime.World;
 
+    public AggregateSystem InputSystem => _runtime.InputSystems;
+
     public AggregateSystem RenderSystem => _runtime.RenderSystems;
 
     public Entity ViewEntity => _viewEntity;
@@ -80,7 +82,6 @@ internal partial class LevelPlayViewModel : ViewModelBase
         _playTime.IsRunningSlowly = gameTime.IsRunningSlowly;
 
         // 更新世界
-        _runtime.InputSystems.Update(_playTime);
         _runtime.AiSystems.Update(_playTime);
         _runtime.SimulateSystems.Update(_playTime);
     }
