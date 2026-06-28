@@ -92,6 +92,7 @@ public sealed partial class StartJumpingSystem(
         while (shipsRemain > 0 && shipsEnumerator.MoveNext())
         {
             var ship = shipsEnumerator.Current;
+            shipsRemain -= 1;
 
             // 获取相关信息
             ref readonly var pose = ref ship.Get<AbsoluteTransform>();
