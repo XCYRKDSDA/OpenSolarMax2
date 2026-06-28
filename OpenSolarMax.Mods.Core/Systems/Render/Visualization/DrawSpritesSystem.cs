@@ -77,18 +77,14 @@ public sealed partial class DrawSpritesSystem(
         // 完成最后的缩放
         anchorToWorld =
             Matrix.CreateScale(
-                sprite.Scale.X * sprite.Size.X / sprite.Texture.LogicalSize.X,
-                sprite.Scale.Y * sprite.Size.Y / sprite.Texture.LogicalSize.Y,
+                sprite.Scale.X * sprite.Size.X / sprite.Texture.VirtualFrame.Width,
+                sprite.Scale.Y * sprite.Size.Y / sprite.Texture.VirtualFrame.Height,
                 1
             )
             * Matrix.CreateScale(renderSettings.SpriteScaling, renderSettings.SpriteScaling, 1)
             * anchorToWorld;
 
-        var leftTop = new Vector3(
-            -sprite.Texture.LogicalOrigin.X,
-            sprite.Texture.LogicalOrigin.Y,
-            0
-        );
+        var leftTop = new Vector3(-sprite.Texture.Anchor.X, sprite.Texture.Anchor.Y, 0);
         var leftToRight = new Vector3(sprite.Texture.Bounds.Width, 0, 0);
         var topToBottom = new Vector3(0, -sprite.Texture.Bounds.Height, 0);
 

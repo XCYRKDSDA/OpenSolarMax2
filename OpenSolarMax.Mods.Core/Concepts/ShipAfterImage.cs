@@ -66,7 +66,7 @@ public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterIm
                 Texture = _texture,
                 Color = desc.Color,
                 Alpha = 1,
-                Size = _texture.LogicalSize,
+                Size = new(8, 8),
                 Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
             }
