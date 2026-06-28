@@ -27,6 +27,9 @@ internal class LevelPlayView
     private readonly InputPassthroughWidget _embeddingWorldView;
     private InputPassthroughWidget? _floatingWorldView;
 
+    private readonly RenderTarget2D _uiRenderTarget;
+    private readonly SpriteBatch _uiSpriteBatch;
+
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
     {
@@ -34,6 +37,19 @@ internal class LevelPlayView
         {
             Texture = viewModel.Background,
         };
+
+        var pp = game.GraphicsDevice.PresentationParameters;
+        _uiRenderTarget = new RenderTarget2D(
+            game.GraphicsDevice,
+            pp.BackBufferWidth,
+            pp.BackBufferHeight,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.PreserveContents
+        );
+        _uiSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
 
         #region 初始化 UI
 
@@ -383,8 +399,16 @@ internal class LevelPlayView
         );
         ViewModel.RenderSystem.Update(gameTime);
 
-        // 再画 UI
+        var gd = Game.GraphicsDevice;
+        var oldRenderTargets = gd.GetRenderTargets();
+        gd.SetRenderTarget(_uiRenderTarget);
+        gd.Clear(Color.Black);
         _desktop.Render();
+        gd.SetRenderTargets(oldRenderTargets);
+
+        _uiSpriteBatch.Begin(blendState: BlendState.Additive);
+        _uiSpriteBatch.Draw(_uiRenderTarget, Vector2.Zero, Color.White);
+        _uiSpriteBatch.End();
     }
 
     #region GamePlayTransitionTargetState
