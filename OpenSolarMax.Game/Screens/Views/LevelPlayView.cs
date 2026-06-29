@@ -4,7 +4,6 @@ using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
-using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
 using OpenSolarMax.Game.Modding.UI;
@@ -22,7 +21,7 @@ internal class LevelPlayView
 
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
-    private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
+    private readonly Dictionary<StateOpacityToggleButton, float> _speedButtonsMap;
     private readonly Widget _worldInputPad;
     private readonly InputPassthroughWidget _embeddingWorldView;
     private InputPassthroughWidget? _floatingWorldView;
@@ -76,7 +75,7 @@ internal class LevelPlayView
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
-            Margin = new Thickness(20),
+            Margin = new Thickness(28, 18),
             RowsProportions =
             {
                 new Proportion { Type = ProportionType.Auto },
@@ -98,48 +97,46 @@ internal class LevelPlayView
         var leftStack = new HorizontalStackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Top,
+            VerticalAlignment = VerticalAlignment.Center,
         };
         Grid.SetColumnSpan(leftStack, 3);
-        var exitButton = new Button(null)
+        var exitTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
+            "UIs/SolarMax2.Atlas.json:BtnClose"
+        );
+        var exitButton = new StateOpacityButton(null)
         {
-            Margin = new Thickness(0, 0, 20, 0),
-            Content = new Image()
-            {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Idle)
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)
-                ),
-            },
+            Content = new Image() { Renderable = new IconRegion(exitTexture) },
+            Margin = new Thickness(0, 0, 10, 0),
+            NormalOpacity = 0.3f,
+            HoverOpacity = 0.5f,
+            PressedOpacity = 0.8f,
         };
         exitButton.Click += OnExitButtonClicked;
-        var pauseButton = new Button(null)
+        var pauseTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
+            "UIs/SolarMax2.Atlas.json:BtnPause"
+        );
+        var pauseButton = new StateOpacityButton(null)
         {
-            Content = new Image()
-            {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.PauseBtn_Idle)
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.PauseBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.PauseBtn_Pressed
-                    )
-                ),
-            },
+            Content = new Image() { Renderable = new IconRegion(pauseTexture) },
+            Margin = new Thickness(0, 0, 10, 0),
+            NormalOpacity = 0.3f,
+            HoverOpacity = 0.5f,
+            PressedOpacity = 0.8f,
         };
         //pauseButton.Click += OnPauseButtonClicked;
+        var restartTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
+            "UIs/SolarMax2.Atlas.json:BtnRestart"
+        );
+        var restartButton = new StateOpacityButton(null)
+        {
+            Content = new Image() { Renderable = new IconRegion(restartTexture) },
+            NormalOpacity = 0.3f,
+            HoverOpacity = 0.5f,
+            PressedOpacity = 0.8f,
+        };
         leftStack.Widgets.Add(exitButton);
         leftStack.Widgets.Add(pauseButton);
+        leftStack.Widgets.Add(restartButton);
         grid.Widgets.Add(leftStack);
 
         // 右上侧速度按键堆栈
@@ -149,78 +146,45 @@ internal class LevelPlayView
             VerticalAlignment = VerticalAlignment.Top,
         };
         Grid.SetColumnSpan(rightStack, 3);
-        var slowButton = new ToggleButton(null)
+        var slowSpeedIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/SolarMax2.Atlas.json:BtnPlay1")
+        );
+        var slowButton = new StateOpacityToggleButton(null)
         {
             Margin = new Thickness(0, 0, 20, 0),
-            Content = new Image()
-            {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.SlowSpeedBtn_Idle
-                    )
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.SlowSpeedBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.SlowSpeedBtn_Pressed
-                    )
-                ),
-            },
+            Content = new Image() { Renderable = slowSpeedIcon },
+            NormalOpacity = 0.3f,
+            HoverOpacity = 0.5f,
+            PressedOpacity = 0.8f,
         };
         slowButton.Click += OnSpeedOptionChanged;
-        var normalButton = new ToggleButton(null)
+        var normalSpeedIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/SolarMax2.Atlas.json:BtnPlay2")
+        );
+        var normalButton = new StateOpacityToggleButton(null)
         {
             Margin = new Thickness(0, 0, 20, 0),
-            Content = new Image()
-            {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.NormalSpeedBtn_Idle
-                    )
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.NormalSpeedBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.NormalSpeedBtn_Pressed
-                    )
-                ),
-            },
+            Content = new Image() { Renderable = normalSpeedIcon },
+            NormalOpacity = 0.3f,
+            HoverOpacity = 0.5f,
+            PressedOpacity = 0.8f,
         };
         normalButton.Click += OnSpeedOptionChanged;
-        var fastButton = new ToggleButton(null)
+        var fastSpeedIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/SolarMax2.Atlas.json:BtnPlay3")
+        );
+        var fastButton = new StateOpacityToggleButton(null)
         {
-            Content = new Image()
-            {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.FastSpeedBtn_Idle
-                    )
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.FastSpeedBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.FastSpeedBtn_Pressed
-                    )
-                ),
-            },
+            Content = new Image() { Renderable = fastSpeedIcon },
+            NormalOpacity = 0.3f,
+            HoverOpacity = 0.5f,
+            PressedOpacity = 0.8f,
         };
         fastButton.Click += OnSpeedOptionChanged;
         rightStack.Widgets.Add(slowButton);
         rightStack.Widgets.Add(normalButton);
         rightStack.Widgets.Add(fastButton);
-        _speedButtonsMap = new Dictionary<ToggleButton, float>
+        _speedButtonsMap = new Dictionary<StateOpacityToggleButton, float>
         {
             [slowButton] = 0.5f,
             [normalButton] = 1f,
@@ -334,9 +298,6 @@ internal class LevelPlayView
         #endregion
     }
 
-    private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
-        new(region.Texture, region.Bounds);
-
     private void OnExitButtonClicked(object? sender, EventArgs e)
     {
         ViewModel.ExitCommand.Execute(null);
@@ -344,7 +305,7 @@ internal class LevelPlayView
 
     private void OnSpeedOptionChanged(object? sender, EventArgs e)
     {
-        if (sender is not ToggleButton theButton)
+        if (sender is not StateOpacityToggleButton theButton)
             throw new ArgumentException(null, nameof(sender));
 
         // 锁定当前按键
