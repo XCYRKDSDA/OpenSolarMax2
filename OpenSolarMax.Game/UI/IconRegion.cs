@@ -13,7 +13,7 @@ public class IconRegion : IImage
     private void UpdateSize()
     {
         _size = new(
-            (int)(_textureRegion.VirtualFrame.X * _height / _textureRegion.VirtualFrame.Y),
+            (int)(_textureRegion.VirtualFrame.Width * _height / _textureRegion.VirtualFrame.Height),
             _height
         );
     }
