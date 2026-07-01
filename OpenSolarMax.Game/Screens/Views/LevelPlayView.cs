@@ -101,7 +101,7 @@ internal class LevelPlayView
         };
         Grid.SetColumnSpan(leftStack, 3);
         var exitTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
-            "UIs/SolarMax2.Atlas.json:BtnClose"
+            "UIs/Icons.Atlas.json:ButtonClose"
         );
         var exitButton = new StateOpacityButton(null)
         {
@@ -113,7 +113,7 @@ internal class LevelPlayView
         };
         exitButton.Click += OnExitButtonClicked;
         var pauseTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
-            "UIs/SolarMax2.Atlas.json:BtnPause"
+            "UIs/Icons.Atlas.json:ButtonPause"
         );
         var pauseButton = new StateOpacityButton(null)
         {
@@ -125,7 +125,7 @@ internal class LevelPlayView
         };
         //pauseButton.Click += OnPauseButtonClicked;
         var restartTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
-            "UIs/SolarMax2.Atlas.json:BtnRestart"
+            "UIs/Icons.Atlas.json:ButtonRestart"
         );
         var restartButton = new StateOpacityButton(null)
         {
@@ -147,7 +147,7 @@ internal class LevelPlayView
         };
         Grid.SetColumnSpan(rightStack, 3);
         var slowSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/SolarMax2.Atlas.json:BtnPlay1")
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonSlowSpeed")
         );
         var slowButton = new StateOpacityToggleButton(null)
         {
@@ -159,7 +159,7 @@ internal class LevelPlayView
         };
         slowButton.Click += OnSpeedOptionChanged;
         var normalSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/SolarMax2.Atlas.json:BtnPlay2")
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonNormalSpeed")
         );
         var normalButton = new StateOpacityToggleButton(null)
         {
@@ -171,7 +171,7 @@ internal class LevelPlayView
         };
         normalButton.Click += OnSpeedOptionChanged;
         var fastSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/SolarMax2.Atlas.json:BtnPlay3")
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonFastSpeed")
         );
         var fastButton = new StateOpacityToggleButton(null)
         {

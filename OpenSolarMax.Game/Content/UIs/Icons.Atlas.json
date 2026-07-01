@@ -1,0 +1,11 @@
+{
+    "image": "Icons.Atlas.png",
+    "regions": {
+        "ButtonFastSpeed": { "x": 0, "y": 0, "w": 221, "h": 122, "anchor": [ 110.5, 61 ], "frame": { "x": -30, "y": -29, "w": 282, "h": 180 } },
+        "ButtonNormalSpeed": { "x": 221, "y": 0, "w": 161, "h": 122, "anchor": [ 80.5, 61 ], "frame": { "x": -30, "y": -29, "w": 222, "h": 180 } },
+        "ButtonRestart": { "x": 382, "y": 0, "w": 126, "h": 130, "anchor": [ 63, 65 ], "frame": { "x": -27, "y": -25, "w": 180, "h": 180 } },
+        "ButtonClose": { "x": 0, "y": 122, "w": 120, "h": 120, "anchor": [ 60, 60 ], "frame": { "x": -30, "y": -30, "w": 180, "h": 180 } },
+        "ButtonSlowSpeed": { "x": 120, "y": 122, "w": 101, "h": 122, "anchor": [ 50.5, 61 ], "frame": { "x": -30, "y": -29, "w": 162, "h": 180 } },
+        "ButtonPause": { "x": 0, "y": 242, "w": 84, "h": 121, "anchor": [ 42, 60.5 ], "frame": { "x": -30, "y": -29, "w": 144, "h": 180 } }
+    }
+}
