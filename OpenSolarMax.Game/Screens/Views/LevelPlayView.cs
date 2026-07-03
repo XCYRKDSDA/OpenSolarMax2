@@ -105,7 +105,12 @@ internal class LevelPlayView
         );
         var exitButton = new StateOpacityButton(null)
         {
-            Content = new Image() { Renderable = exitIcon, Padding = new Thickness(16) },
+            Content = new Image()
+            {
+                Renderable = exitIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
             Margin = new Thickness(0, 0, 8, 0),
         };
         exitButton.Click += OnExitButtonClicked;
@@ -114,7 +119,12 @@ internal class LevelPlayView
         );
         var pauseButton = new StateOpacityButton(null)
         {
-            Content = new Image() { Renderable = pauseIcon, Padding = new Thickness(16) },
+            Content = new Image()
+            {
+                Renderable = pauseIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
             Margin = new Thickness(0, 0, 8, 0),
         };
         //pauseButton.Click += OnPauseButtonClicked;
@@ -123,7 +133,12 @@ internal class LevelPlayView
         );
         var restartButton = new StateOpacityButton(null)
         {
-            Content = new Image() { Renderable = restartIcon, Padding = new Thickness(16) },
+            Content = new Image()
+            {
+                Renderable = restartIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
         };
         leftStack.Widgets.Add(exitButton);
         leftStack.Widgets.Add(pauseButton);
@@ -143,7 +158,12 @@ internal class LevelPlayView
         var slowButton = new StateOpacityToggleButton(null)
         {
             Margin = new Thickness(0, 0, 8, 0),
-            Content = new Image() { Renderable = slowSpeedIcon, Padding = new Thickness(16) },
+            Content = new Image()
+            {
+                Renderable = slowSpeedIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
         };
         slowButton.Click += OnSpeedOptionChanged;
         var normalSpeedIcon = new IconRegion(
@@ -152,7 +172,12 @@ internal class LevelPlayView
         var normalButton = new StateOpacityToggleButton(null)
         {
             Margin = new Thickness(0, 0, 8, 0),
-            Content = new Image() { Renderable = normalSpeedIcon, Padding = new Thickness(16) },
+            Content = new Image()
+            {
+                Renderable = normalSpeedIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
         };
         normalButton.Click += OnSpeedOptionChanged;
         var fastSpeedIcon = new IconRegion(
@@ -160,7 +185,12 @@ internal class LevelPlayView
         );
         var fastButton = new StateOpacityToggleButton(null)
         {
-            Content = new Image() { Renderable = fastSpeedIcon, Padding = new Thickness(16) },
+            Content = new Image()
+            {
+                Renderable = fastSpeedIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
         };
         fastButton.Click += OnSpeedOptionChanged;
         rightStack.Widgets.Add(slowButton);

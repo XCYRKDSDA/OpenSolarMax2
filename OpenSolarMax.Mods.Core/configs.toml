@@ -84,13 +84,13 @@ width = 2 # 4 / 2
 
 # 人口可视化标签
 [applier.view.total_population_label]
-color = "#ff9daa"
+color = "#ffaaaa"
 opacity = 0.8
 text.size = 36
 
 # 舰船飞行比例滑动条
 [applier.view.fleet_slider]
-color = "#ff9daa"
+color = "#ffaaaa"
 track.length = 960
 track.thickness = 4
 track.alpha.left = 0.5
