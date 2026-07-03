@@ -100,51 +100,30 @@ internal class LevelPlayView
             VerticalAlignment = VerticalAlignment.Center,
         };
         Grid.SetColumnSpan(leftStack, 3);
-        var exitTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
-            "UIs/Icons.Atlas.json:ButtonClose"
+        var exitIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonClose")
         );
         var exitButton = new StateOpacityButton(null)
         {
-            Content = new Image()
-            {
-                Renderable = new IconRegion(exitTexture),
-                Padding = new Thickness(16),
-            },
+            Content = new Image() { Renderable = exitIcon, Padding = new Thickness(16) },
             Margin = new Thickness(0, 0, 8, 0),
-            NormalOpacity = 0.3f,
-            HoverOpacity = 0.5f,
-            PressedOpacity = 0.8f,
         };
         exitButton.Click += OnExitButtonClicked;
-        var pauseTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
-            "UIs/Icons.Atlas.json:ButtonPause"
+        var pauseIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonPause")
         );
         var pauseButton = new StateOpacityButton(null)
         {
-            Content = new Image()
-            {
-                Renderable = new IconRegion(pauseTexture),
-                Padding = new Thickness(16),
-            },
+            Content = new Image() { Renderable = pauseIcon, Padding = new Thickness(16) },
             Margin = new Thickness(0, 0, 8, 0),
-            NormalOpacity = 0.3f,
-            HoverOpacity = 0.5f,
-            PressedOpacity = 0.8f,
         };
         //pauseButton.Click += OnPauseButtonClicked;
-        var restartTexture = game.Assets.Load<Nine.Graphics.TextureRegion>(
-            "UIs/Icons.Atlas.json:ButtonRestart"
+        var restartIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonRestart")
         );
         var restartButton = new StateOpacityButton(null)
         {
-            Content = new Image()
-            {
-                Renderable = new IconRegion(restartTexture),
-                Padding = new Thickness(16),
-            },
-            NormalOpacity = 0.3f,
-            HoverOpacity = 0.5f,
-            PressedOpacity = 0.8f,
+            Content = new Image() { Renderable = restartIcon, Padding = new Thickness(16) },
         };
         leftStack.Widgets.Add(exitButton);
         leftStack.Widgets.Add(pauseButton);
@@ -165,9 +144,6 @@ internal class LevelPlayView
         {
             Margin = new Thickness(0, 0, 8, 0),
             Content = new Image() { Renderable = slowSpeedIcon, Padding = new Thickness(16) },
-            NormalOpacity = 0.3f,
-            HoverOpacity = 0.5f,
-            PressedOpacity = 0.8f,
         };
         slowButton.Click += OnSpeedOptionChanged;
         var normalSpeedIcon = new IconRegion(
@@ -177,9 +153,6 @@ internal class LevelPlayView
         {
             Margin = new Thickness(0, 0, 8, 0),
             Content = new Image() { Renderable = normalSpeedIcon, Padding = new Thickness(16) },
-            NormalOpacity = 0.3f,
-            HoverOpacity = 0.5f,
-            PressedOpacity = 0.8f,
         };
         normalButton.Click += OnSpeedOptionChanged;
         var fastSpeedIcon = new IconRegion(
@@ -188,9 +161,6 @@ internal class LevelPlayView
         var fastButton = new StateOpacityToggleButton(null)
         {
             Content = new Image() { Renderable = fastSpeedIcon, Padding = new Thickness(16) },
-            NormalOpacity = 0.3f,
-            HoverOpacity = 0.5f,
-            PressedOpacity = 0.8f,
         };
         fastButton.Click += OnSpeedOptionChanged;
         rightStack.Widgets.Add(slowButton);
