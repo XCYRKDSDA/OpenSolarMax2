@@ -75,7 +75,7 @@ internal class LevelPlayView
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
-            Margin = new Thickness(28, 18),
+            Margin = new Thickness(15),
             RowsProportions =
             {
                 new Proportion { Type = ProportionType.Auto },
@@ -105,8 +105,12 @@ internal class LevelPlayView
         );
         var exitButton = new StateOpacityButton(null)
         {
-            Content = new Image() { Renderable = new IconRegion(exitTexture) },
-            Margin = new Thickness(0, 0, 10, 0),
+            Content = new Image()
+            {
+                Renderable = new IconRegion(exitTexture),
+                Padding = new Thickness(16),
+            },
+            Margin = new Thickness(0, 0, 8, 0),
             NormalOpacity = 0.3f,
             HoverOpacity = 0.5f,
             PressedOpacity = 0.8f,
@@ -117,8 +121,12 @@ internal class LevelPlayView
         );
         var pauseButton = new StateOpacityButton(null)
         {
-            Content = new Image() { Renderable = new IconRegion(pauseTexture) },
-            Margin = new Thickness(0, 0, 10, 0),
+            Content = new Image()
+            {
+                Renderable = new IconRegion(pauseTexture),
+                Padding = new Thickness(16),
+            },
+            Margin = new Thickness(0, 0, 8, 0),
             NormalOpacity = 0.3f,
             HoverOpacity = 0.5f,
             PressedOpacity = 0.8f,
@@ -129,7 +137,11 @@ internal class LevelPlayView
         );
         var restartButton = new StateOpacityButton(null)
         {
-            Content = new Image() { Renderable = new IconRegion(restartTexture) },
+            Content = new Image()
+            {
+                Renderable = new IconRegion(restartTexture),
+                Padding = new Thickness(16),
+            },
             NormalOpacity = 0.3f,
             HoverOpacity = 0.5f,
             PressedOpacity = 0.8f,
@@ -151,8 +163,8 @@ internal class LevelPlayView
         );
         var slowButton = new StateOpacityToggleButton(null)
         {
-            Margin = new Thickness(0, 0, 20, 0),
-            Content = new Image() { Renderable = slowSpeedIcon },
+            Margin = new Thickness(0, 0, 8, 0),
+            Content = new Image() { Renderable = slowSpeedIcon, Padding = new Thickness(16) },
             NormalOpacity = 0.3f,
             HoverOpacity = 0.5f,
             PressedOpacity = 0.8f,
@@ -163,8 +175,8 @@ internal class LevelPlayView
         );
         var normalButton = new StateOpacityToggleButton(null)
         {
-            Margin = new Thickness(0, 0, 20, 0),
-            Content = new Image() { Renderable = normalSpeedIcon },
+            Margin = new Thickness(0, 0, 8, 0),
+            Content = new Image() { Renderable = normalSpeedIcon, Padding = new Thickness(16) },
             NormalOpacity = 0.3f,
             HoverOpacity = 0.5f,
             PressedOpacity = 0.8f,
@@ -175,7 +187,7 @@ internal class LevelPlayView
         );
         var fastButton = new StateOpacityToggleButton(null)
         {
-            Content = new Image() { Renderable = fastSpeedIcon },
+            Content = new Image() { Renderable = fastSpeedIcon, Padding = new Thickness(16) },
             NormalOpacity = 0.3f,
             HoverOpacity = 0.5f,
             PressedOpacity = 0.8f,

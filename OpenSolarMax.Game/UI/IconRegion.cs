@@ -22,8 +22,8 @@ public class IconRegion : IImage
     {
         _textureRegion = textureRegion;
 
-        // 以 60 作为标准高度
-        _height = 60;
+        // 以 48 作为标准高度
+        _height = 48;
         UpdateSize();
     }
 

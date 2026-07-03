@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Components;
 [LevelWidget(LevelWidgetPosition.Bottom, 0)]
 public sealed class FleetSliderWidget : HorizontalSlider
 {
-    private const string _percentageFormat = "{0:F0}%";
+    private const string _percentageFormat = " {0:F0}%"; // 左边空格抵消右侧百分号，使数字居中
 
     private readonly Color _leftTrackColor;
     private readonly Color _rightTrackColor;
@@ -34,6 +34,7 @@ public sealed class FleetSliderWidget : HorizontalSlider
         var knotThickness = configs.RequireValue<int>("knot:thickness");
         var textSize = configs.RequireValue<int>("text:size");
         var textAlpha = configs.RequireValue<float>("text:alpha");
+        var padding = configs.RequireValue<int>("padding");
 
         // 行为相关
         Minimum = 0;
@@ -41,8 +42,9 @@ public sealed class FleetSliderWidget : HorizontalSlider
         _percentage = Value = 1;
 
         // UI 图形相关
-        Height = knotHeight;
+        Height = knotHeight + padding * 2;
         Width = trackLength;
+        Padding = new Thickness(0, padding);
         Background = null;
 
         var font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(textSize);
