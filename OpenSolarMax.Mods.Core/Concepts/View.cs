@@ -63,6 +63,7 @@ public class ViewDescription : IDescription
 public class ViewApplier(
     IAssetsManager assets,
     IConceptFactory factory,
+    [Section("applier:view:total_population_label")] IConfiguration populationLabelConfigs,
     [Section("applier:view:fleet_slider")] IConfiguration fleetSliderConfigs
 ) : IApplier<ViewDescription>
 {
@@ -100,7 +101,7 @@ public class ViewApplier(
         );
 
         // 初始化 UI
-        commandBuffer.Set(in entity, new TotalPopulationWidget(assets));
+        commandBuffer.Set(in entity, new TotalPopulationWidget(assets, populationLabelConfigs));
         commandBuffer.Set(in entity, new FleetSliderWidget(assets, fleetSliderConfigs));
     }
 }

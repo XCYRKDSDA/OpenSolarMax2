@@ -4,7 +4,6 @@ using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
-using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
 using OpenSolarMax.Game.Modding.UI;
@@ -22,10 +21,13 @@ internal class LevelPlayView
 
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持 WorldView 悬浮动画
-    private readonly Dictionary<ToggleButton, float> _speedButtonsMap;
+    private readonly Dictionary<StateOpacityToggleButton, float> _speedButtonsMap;
     private readonly Widget _worldInputPad;
     private readonly InputPassthroughWidget _embeddingWorldView;
     private InputPassthroughWidget? _floatingWorldView;
+
+    private readonly RenderTarget2D _uiRenderTarget;
+    private readonly SpriteBatch _uiSpriteBatch;
 
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
@@ -34,6 +36,19 @@ internal class LevelPlayView
         {
             Texture = viewModel.Background,
         };
+
+        var pp = game.GraphicsDevice.PresentationParameters;
+        _uiRenderTarget = new RenderTarget2D(
+            game.GraphicsDevice,
+            pp.BackBufferWidth,
+            pp.BackBufferHeight,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.PreserveContents
+        );
+        _uiSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
 
         #region 初始化 UI
 
@@ -60,7 +75,7 @@ internal class LevelPlayView
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
-            Margin = new Thickness(20),
+            Margin = new Thickness(15),
             RowsProportions =
             {
                 new Proportion { Type = ProportionType.Auto },
@@ -82,48 +97,52 @@ internal class LevelPlayView
         var leftStack = new HorizontalStackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Top,
+            VerticalAlignment = VerticalAlignment.Center,
         };
         Grid.SetColumnSpan(leftStack, 3);
-        var exitButton = new Button(null)
+        var exitIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonClose")
+        );
+        var exitButton = new StateOpacityButton(null)
         {
-            Margin = new Thickness(0, 0, 20, 0),
             Content = new Image()
             {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Idle)
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.ExitBtn_Pressed)
-                ),
+                Renderable = exitIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
             },
+            Margin = new Thickness(0, 0, 8, 0),
         };
         exitButton.Click += OnExitButtonClicked;
-        var pauseButton = new Button(null)
+        var pauseIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonPause")
+        );
+        var pauseButton = new StateOpacityButton(null)
         {
             Content = new Image()
             {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.PauseBtn_Idle)
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.PauseBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.PauseBtn_Pressed
-                    )
-                ),
+                Renderable = pauseIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
             },
+            Margin = new Thickness(0, 0, 8, 0),
         };
         //pauseButton.Click += OnPauseButtonClicked;
+        var restartIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonRestart")
+        );
+        var restartButton = new StateOpacityButton(null)
+        {
+            Content = new Image()
+            {
+                Renderable = restartIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
+            },
+        };
         leftStack.Widgets.Add(exitButton);
         leftStack.Widgets.Add(pauseButton);
+        leftStack.Widgets.Add(restartButton);
         grid.Widgets.Add(leftStack);
 
         // 右上侧速度按键堆栈
@@ -133,78 +152,51 @@ internal class LevelPlayView
             VerticalAlignment = VerticalAlignment.Top,
         };
         Grid.SetColumnSpan(rightStack, 3);
-        var slowButton = new ToggleButton(null)
+        var slowSpeedIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonSlowSpeed")
+        );
+        var slowButton = new StateOpacityToggleButton(null)
         {
-            Margin = new Thickness(0, 0, 20, 0),
+            Margin = new Thickness(0, 0, 8, 0),
             Content = new Image()
             {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.SlowSpeedBtn_Idle
-                    )
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.SlowSpeedBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.SlowSpeedBtn_Pressed
-                    )
-                ),
+                Renderable = slowSpeedIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
             },
         };
         slowButton.Click += OnSpeedOptionChanged;
-        var normalButton = new ToggleButton(null)
+        var normalSpeedIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonNormalSpeed")
+        );
+        var normalButton = new StateOpacityToggleButton(null)
         {
-            Margin = new Thickness(0, 0, 20, 0),
+            Margin = new Thickness(0, 0, 8, 0),
             Content = new Image()
             {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.NormalSpeedBtn_Idle
-                    )
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.NormalSpeedBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.NormalSpeedBtn_Pressed
-                    )
-                ),
+                Renderable = normalSpeedIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
             },
         };
         normalButton.Click += OnSpeedOptionChanged;
-        var fastButton = new ToggleButton(null)
+        var fastSpeedIcon = new IconRegion(
+            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonFastSpeed")
+        );
+        var fastButton = new StateOpacityToggleButton(null)
         {
             Content = new Image()
             {
-                Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.FastSpeedBtn_Idle
-                    )
-                ),
-                OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.FastSpeedBtn_Pressed
-                    )
-                ),
-                PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
-                        Content.UIs.Icons.FastSpeedBtn_Pressed
-                    )
-                ),
+                Renderable = fastSpeedIcon,
+                Padding = new Thickness(16),
+                Color = new Color(0xffaaaaff),
             },
         };
         fastButton.Click += OnSpeedOptionChanged;
         rightStack.Widgets.Add(slowButton);
         rightStack.Widgets.Add(normalButton);
         rightStack.Widgets.Add(fastButton);
-        _speedButtonsMap = new Dictionary<ToggleButton, float>
+        _speedButtonsMap = new Dictionary<StateOpacityToggleButton, float>
         {
             [slowButton] = 0.5f,
             [normalButton] = 1f,
@@ -318,9 +310,6 @@ internal class LevelPlayView
         #endregion
     }
 
-    private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
-        new(region.Texture, region.Bounds);
-
     private void OnExitButtonClicked(object? sender, EventArgs e)
     {
         ViewModel.ExitCommand.Execute(null);
@@ -328,7 +317,7 @@ internal class LevelPlayView
 
     private void OnSpeedOptionChanged(object? sender, EventArgs e)
     {
-        if (sender is not ToggleButton theButton)
+        if (sender is not StateOpacityToggleButton theButton)
             throw new ArgumentException(null, nameof(sender));
 
         // 锁定当前按键
@@ -383,8 +372,16 @@ internal class LevelPlayView
         );
         ViewModel.RenderSystem.Update(gameTime);
 
-        // 再画 UI
+        var gd = Game.GraphicsDevice;
+        var oldRenderTargets = gd.GetRenderTargets();
+        gd.SetRenderTarget(_uiRenderTarget);
+        gd.Clear(Color.Black);
         _desktop.Render();
+        gd.SetRenderTargets(oldRenderTargets);
+
+        _uiSpriteBatch.Begin(blendState: BlendState.Additive);
+        _uiSpriteBatch.Draw(_uiRenderTarget, Vector2.Zero, Color.White);
+        _uiSpriteBatch.End();
     }
 
     #region GamePlayTransitionTargetState
