@@ -24,10 +24,7 @@
         { "$base": "planet30", "position": [ 392, 456 ] },
         { "$base": "planet30", "position": [ 632, 456 ] },
 
-        { "$id": "planet_b", "$base": "planet50", "team": "blue", "position": [ 192, 384 ] },
-        { "$id": "planet_r", "$base": "planet50", "team": "red", "position": [ 832, 384 ] },
-
-        { "$base": "ship", "team": "blue", "planet": "planet_b", "$num": 50 },
-        { "$base": "ship", "team": "red", "planet": "planet_r", "$num": 50 }
+        { "$id": "planet_b", "$base": "planet50", "team": "blue", "position": [ 192, 384 ], "ships": 50 },
+        { "$id": "planet_r", "$base": "planet50", "team": "red", "position": [ 832, 384 ], "ships": 50 }
     ]
 }

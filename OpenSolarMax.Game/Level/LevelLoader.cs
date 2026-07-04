@@ -88,13 +88,8 @@ internal class LevelLoader(
                 ? idProp.GetString()
                 : null;
 
-            // 获取实体构建个数，如果有的话
-            var num = entityJsonElement.TryGetProperty("$num", out var numProp)
-                ? numProp.GetInt32()
-                : 1;
-
             // 构造并添加新的实体语句
-            level.Entities.Add((id, statement, num));
+            level.Entities.Add((id, statement));
         }
 
         return level;

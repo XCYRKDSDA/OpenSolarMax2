@@ -25,6 +25,8 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
 
     public float? ProduceSpeed { get; set; }
 
+    public int? Ships { get; set; }
+
     public PlanetDeclaration Aggregate(PlanetDeclaration newCfg)
     {
         return new PlanetDeclaration()
@@ -40,6 +42,7 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
             Volume = newCfg.Volume ?? Volume,
             Population = newCfg.Population ?? Population,
             ProduceSpeed = newCfg.ProduceSpeed ?? ProduceSpeed,
+            Ships = newCfg.Ships ?? Ships,
         };
     }
 }
@@ -68,6 +71,7 @@ public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, Planet
             Volume = declaration.Volume.Value,
             Population = declaration.Population.Value,
             ProduceSpeed = declaration.ProduceSpeed.Value,
+            InitialShips = declaration.Ships,
         };
 
         var tfCfg = new TransformableDeclaration()

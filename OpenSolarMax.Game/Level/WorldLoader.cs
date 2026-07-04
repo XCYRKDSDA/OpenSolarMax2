@@ -30,7 +30,7 @@ internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry t
         }
 
         // 解析所有实体
-        foreach (var (optionalId, entityStatement, num) in level.Entities)
+        foreach (var (optionalId, entityStatement) in level.Entities)
         {
             // 如果没有对应的描述翻译器, 则跳过该实体
             // TODO: 应当应用更严格的检查
@@ -61,15 +61,11 @@ internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry t
             var description = translator.ToDescription(configuration, namedEntities);
 
             // 构造实体
-            for (var i = 0; i < num; i++)
-            {
-                // 创造实体
-                var entity = factory.Make(world, commandBuffer, conceptName, description);
+            var entity = factory.Make(world, commandBuffer, conceptName, description);
 
-                // 记录实体
-                if (optionalId is not null)
-                    namedEntities[optionalId] = entity;
-            }
+            // 记录实体
+            if (optionalId is not null)
+                namedEntities[optionalId] = entity;
         }
 
         yield return null;
