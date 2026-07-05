@@ -96,9 +96,6 @@ public class PlanetApplier(
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PlanetDescription desc)
     {
-        if (desc.Team == Entity.Null && desc.InitialShips is { })
-            throw new InvalidOperationException("星球未指定阵营时不能设置初始飞船数量");
-
         // 设置天体基本信息
         var randomIndex = new Random().Next(Content.Textures.DefaultPlanetTextures.Length);
         _celestialBodyApplier.Apply(
@@ -113,6 +110,7 @@ public class PlanetApplier(
                 Team = desc.Team,
                 Volume = desc.Volume,
                 GlowTexture = _defaultPlanetGlowTexture,
+                InitialShips = desc.InitialShips,
             }
         );
 
@@ -125,19 +123,5 @@ public class PlanetApplier(
                 ProgressPerSecond = desc.ProduceSpeed,
             }
         );
-
-        if (desc.InitialShips is > 0 and var count)
-        {
-            var world = World.Worlds[entity.WorldId];
-            for (int i = 0; i < count; i++)
-            {
-                factory.Make(
-                    world,
-                    commandBuffer,
-                    ConceptNames.Ship,
-                    new ShipDescription { Planet = entity, Team = desc.Team } // <- TODO: 问题出在这儿
-                );
-            }
-        }
     }
 }

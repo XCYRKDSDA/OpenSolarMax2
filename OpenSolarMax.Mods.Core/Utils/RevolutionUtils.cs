@@ -47,18 +47,17 @@ public static class RevolutionUtils
 
     public static void RandomlySetShipOrbitAroundPlanet(
         Entity relationship,
-        Entity planet,
+        in PlanetGeostationaryOrbit planetOrbit,
         Random? random = null,
         float orbitOffsetRange = _defaultOrbitOffsetRange
     )
     {
         random ??= new();
 
-        ref readonly var geostationaryOrbit = ref planet.Get<PlanetGeostationaryOrbit>();
         relationship.Get<RevolutionOrbit>() = CreateRandomRevolutionOrbit(
-            in geostationaryOrbit,
+            in planetOrbit,
             random,
-            _defaultOrbitOffsetRange
+            orbitOffsetRange
         );
         relationship.Get<RevolutionState>() = CreateRandomState(random);
     }

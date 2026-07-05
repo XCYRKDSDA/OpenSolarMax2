@@ -17,6 +17,8 @@ public class TowerDeclaration : IDeclaration<TowerDeclaration>
 
     public string? Team { get; set; }
 
+    public int? Ships { get; set; }
+
     public TowerDeclaration Aggregate(TowerDeclaration newCfg)
     {
         return new TowerDeclaration()
@@ -28,6 +30,7 @@ public class TowerDeclaration : IDeclaration<TowerDeclaration>
                     ? Orbit.Aggregate(newCfg.Orbit)
                     : newCfg.Orbit ?? Orbit,
             Team = newCfg.Team ?? Team,
+            Ships = newCfg.Ships ?? Ships,
         };
     }
 }
@@ -42,7 +45,7 @@ public class TowerDeclarationTranslator : ITranslator<TowerDeclaration, TowerDes
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new TowerDescription();
+        var desc = new TowerDescription() { InitialShips = declaration.Ships };
 
         var tfCfg = new TransformableDeclaration()
         {

@@ -90,6 +90,11 @@ public class CelestialBodyDescription : IDescription
     /// 天体光晕贴图的资产路径
     /// </summary>
     public required OneOf<string, TextureRegion> GlowTexture { get; set; }
+
+    /// <summary>
+    /// 天体初始飞船数量，null 表示不设置
+    /// </summary>
+    public int? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -108,6 +113,9 @@ public class CelestialBodyApplier(
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, CelestialBodyDescription desc)
     {
+        if (desc.Team == Entity.Null && desc.InitialShips is { })
+            throw new InvalidOperationException("天体未指定阵营时不能设置初始飞船数量");
+
         var world = World.Worlds[entity.WorldId];
         var random = new Random();
 
@@ -139,17 +147,15 @@ public class CelestialBodyApplier(
         // 随机设置同步轨道
         var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
         var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
-        commandBuffer.Set(
-            in entity,
-            new PlanetGeostationaryOrbit
-            {
-                Rotation =
-                    Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll)
-                    * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
-                Radius = desc.ReferenceRadius * 2,
-                Period = desc.ReferenceRadius * 2 / 6,
-            }
-        );
+        var geostationaryOrbit = new PlanetGeostationaryOrbit
+        {
+            Rotation =
+                Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll)
+                * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+            Radius = desc.ReferenceRadius * 2,
+            Period = desc.ReferenceRadius * 2 / 6,
+        };
+        commandBuffer.Set(in entity, in geostationaryOrbit);
 
         // 设置殖民体量
         commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
@@ -173,6 +179,24 @@ public class CelestialBodyApplier(
                     Event = ColonizationEvent.Idle,
                 }
             );
+        }
+
+        if (desc.InitialShips is > 0 and var count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                factory.Make(
+                    world,
+                    commandBuffer,
+                    ConceptNames.Ship,
+                    new ShipDescription
+                    {
+                        Planet = entity,
+                        PlanetOrbit = geostationaryOrbit,
+                        Team = desc.Team,
+                    }
+                );
+            }
         }
 
         // 创建光晕子实体

@@ -17,6 +17,8 @@ public class WarpDeclaration : IDeclaration<WarpDeclaration>
 
     public string? Team { get; set; }
 
+    public int? Ships { get; set; }
+
     public WarpDeclaration Aggregate(WarpDeclaration newCfg)
     {
         return new WarpDeclaration()
@@ -28,6 +30,7 @@ public class WarpDeclaration : IDeclaration<WarpDeclaration>
                     ? Orbit.Aggregate(newCfg.Orbit)
                     : newCfg.Orbit ?? Orbit,
             Team = newCfg.Team ?? Team,
+            Ships = newCfg.Ships ?? Ships,
         };
     }
 }
@@ -42,7 +45,7 @@ public class WarpDeclarationTranslator : ITranslator<WarpDeclaration, WarpDescri
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new WarpDescription();
+        var desc = new WarpDescription() { InitialShips = declaration.Ships };
 
         var tfCfg = new TransformableDeclaration()
         {

@@ -58,6 +58,8 @@ public class TowerDescription : IDescription
     /// 炮塔冷却时间
     /// </summary>
     public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.25);
+
+    public int? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.Tower)]
@@ -104,6 +106,7 @@ public class TowerApplier(
                 Team = desc.Team,
                 Volume = _volume,
                 GlowTexture = _towerGlow,
+                InitialShips = desc.InitialShips,
             }
         );
 

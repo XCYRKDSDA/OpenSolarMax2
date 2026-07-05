@@ -42,6 +42,8 @@ public class WarpDescription : IDescription
     /// 传送门所属的阵营
     /// </summary>
     public Entity Team { get; set; } = Entity.Null;
+
+    public int? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.Warp)]
@@ -84,6 +86,7 @@ public class WarpApplier(
                 Team = desc.Team,
                 Volume = _volume,
                 GlowTexture = _warpGlow,
+                InitialShips = desc.InitialShips,
             }
         );
 
