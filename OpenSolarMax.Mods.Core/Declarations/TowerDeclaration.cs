@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
@@ -17,7 +18,7 @@ public class TowerDeclaration : IDeclaration<TowerDeclaration>
 
     public string? Team { get; set; }
 
-    public int? Ships { get; set; }
+    public OneOf<int, Dictionary<string, int>>? Ships { get; set; }
 
     public TowerDeclaration Aggregate(TowerDeclaration newCfg)
     {
@@ -45,7 +46,16 @@ public class TowerDeclarationTranslator : ITranslator<TowerDeclaration, TowerDes
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new TowerDescription() { InitialShips = declaration.Ships };
+        var desc = new TowerDescription()
+        {
+            InitialShips = declaration.Ships?.Match(
+                count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
+                teams =>
+                    OneOf<int, Dictionary<Entity, int>>.FromT1(
+                        teams.ToDictionary(kv => otherEntities[kv.Key], kv => kv.Value)
+                    )
+            ),
+        };
 
         var tfCfg = new TransformableDeclaration()
         {

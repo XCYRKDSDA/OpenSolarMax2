@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Core.Concepts;
@@ -25,7 +26,7 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
 
     public float? ProduceSpeed { get; set; }
 
-    public int? Ships { get; set; }
+    public OneOf<int, Dictionary<string, int>>? Ships { get; set; }
 
     public PlanetDeclaration Aggregate(PlanetDeclaration newCfg)
     {
@@ -71,7 +72,13 @@ public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, Planet
             Volume = declaration.Volume.Value,
             Population = declaration.Population.Value,
             ProduceSpeed = declaration.ProduceSpeed.Value,
-            InitialShips = declaration.Ships,
+            InitialShips = declaration.Ships?.Match(
+                count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
+                teams =>
+                    OneOf<int, Dictionary<Entity, int>>.FromT1(
+                        teams.ToDictionary(kv => otherEntities[kv.Key], kv => kv.Value)
+                    )
+            ),
         };
 
         var tfCfg = new TransformableDeclaration()

@@ -91,10 +91,7 @@ public class CelestialBodyDescription : IDescription
     /// </summary>
     public required OneOf<string, TextureRegion> GlowTexture { get; set; }
 
-    /// <summary>
-    /// 天体初始飞船数量，null 表示不设置
-    /// </summary>
-    public int? InitialShips { get; set; }
+    public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -113,9 +110,6 @@ public class CelestialBodyApplier(
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, CelestialBodyDescription desc)
     {
-        if (desc.Team == Entity.Null && desc.InitialShips is { })
-            throw new InvalidOperationException("天体未指定阵营时不能设置初始飞船数量");
-
         var world = World.Worlds[entity.WorldId];
         var random = new Random();
 
@@ -181,22 +175,49 @@ public class CelestialBodyApplier(
             );
         }
 
-        if (desc.InitialShips is > 0 and var count)
+        if (desc.InitialShips is { } ships)
         {
-            for (int i = 0; i < count; i++)
-            {
-                factory.Make(
-                    world,
-                    commandBuffer,
-                    ConceptNames.Ship,
-                    new ShipDescription
+            ships.Switch(
+                count =>
+                {
+                    if (desc.Team == Entity.Null)
+                        throw new InvalidOperationException("指定飞船数量时天体必须有阵营");
+                    for (int i = 0; i < count; i++)
                     {
-                        Planet = entity,
-                        PlanetOrbit = geostationaryOrbit,
-                        Team = desc.Team,
+                        factory.Make(
+                            world,
+                            commandBuffer,
+                            ConceptNames.Ship,
+                            new ShipDescription
+                            {
+                                Planet = entity,
+                                PlanetOrbit = geostationaryOrbit,
+                                Team = desc.Team,
+                            }
+                        );
                     }
-                );
-            }
+                },
+                teams =>
+                {
+                    foreach (var (team, count) in teams)
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            factory.Make(
+                                world,
+                                commandBuffer,
+                                ConceptNames.Ship,
+                                new ShipDescription
+                                {
+                                    Planet = entity,
+                                    PlanetOrbit = geostationaryOrbit,
+                                    Team = team,
+                                }
+                            );
+                        }
+                    }
+                }
+            );
         }
 
         // 创建光晕子实体

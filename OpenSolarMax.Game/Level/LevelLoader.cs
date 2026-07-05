@@ -4,6 +4,7 @@ using Nine.Assets;
 using Nine.Assets.Serialization;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Game.Utils;
 using Zio;
 
 namespace OpenSolarMax.Game.Level;
@@ -49,6 +50,8 @@ internal class LevelLoader(
         statementSerializerOptions.Converters.Add(
             new AssetReferenceJsonConverter<TextureRegion>(assets, directory)
         );
+        // 添加 OneOf 转换器
+        statementSerializerOptions.Converters.Add(new OneOfJsonConverterFactory());
 
         // 初始化从配置模式索引到配置模式名称的映射
         var schemaNamesByDeclarationId = declarationSchemaInfos.Keys.ToDictionary(key => key);

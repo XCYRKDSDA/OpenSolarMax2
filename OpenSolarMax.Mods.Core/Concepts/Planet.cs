@@ -70,7 +70,7 @@ public class PlanetDescription : IDescription
     /// <summary>
     /// 该星球初始飞船数量，null 表示不设置
     /// </summary>
-    public int? InitialShips { get; set; }
+    public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.Planet)]

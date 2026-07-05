@@ -43,7 +43,7 @@ public class WarpDescription : IDescription
     /// </summary>
     public Entity Team { get; set; } = Entity.Null;
 
-    public int? InitialShips { get; set; }
+    public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.Warp)]

@@ -59,7 +59,7 @@ public class TowerDescription : IDescription
     /// </summary>
     public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.25);
 
-    public int? InitialShips { get; set; }
+    public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.Tower)]
