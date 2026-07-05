@@ -66,6 +66,11 @@ public class PlanetDescription : IDescription
     /// 该星球生产舰船的速度
     /// </summary>
     public required float ProduceSpeed { get; set; }
+
+    /// <summary>
+    /// 该星球初始飞船数量，null 表示不设置
+    /// </summary>
+    public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.Planet)]
@@ -105,6 +110,7 @@ public class PlanetApplier(
                 Team = desc.Team,
                 Volume = desc.Volume,
                 GlowTexture = _defaultPlanetGlowTexture,
+                InitialShips = desc.InitialShips,
             }
         );
 

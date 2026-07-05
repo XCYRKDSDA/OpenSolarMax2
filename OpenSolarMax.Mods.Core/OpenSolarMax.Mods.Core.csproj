@@ -31,7 +31,6 @@
       <ExcludeAssets>runtime</ExcludeAssets>
       <PrivateAssets>runtime</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="OneOf" Version="3.0.271" />
   </ItemGroup>
 
   <ItemGroup>

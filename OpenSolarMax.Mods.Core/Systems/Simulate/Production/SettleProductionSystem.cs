@@ -44,7 +44,12 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
                 world,
                 commandBuffer,
                 ConceptNames.Ship,
-                new ShipDescription() { Team = team, Planet = planet }
+                new ShipDescription()
+                {
+                    Team = team,
+                    Planet = planet,
+                    PlanetOrbit = planet.Get<PlanetGeostationaryOrbit>(),
+                }
             );
 
             // 添加出生后动画

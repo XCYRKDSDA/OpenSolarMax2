@@ -90,6 +90,8 @@ public class CelestialBodyDescription : IDescription
     /// 天体光晕贴图的资产路径
     /// </summary>
     public required OneOf<string, TextureRegion> GlowTexture { get; set; }
+
+    public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -139,17 +141,15 @@ public class CelestialBodyApplier(
         // 随机设置同步轨道
         var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
         var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
-        commandBuffer.Set(
-            in entity,
-            new PlanetGeostationaryOrbit
-            {
-                Rotation =
-                    Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll)
-                    * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
-                Radius = desc.ReferenceRadius * 2,
-                Period = desc.ReferenceRadius * 2 / 6,
-            }
-        );
+        var geostationaryOrbit = new PlanetGeostationaryOrbit
+        {
+            Rotation =
+                Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll)
+                * Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch),
+            Radius = desc.ReferenceRadius * 2,
+            Period = desc.ReferenceRadius * 2 / 6,
+        };
+        commandBuffer.Set(in entity, in geostationaryOrbit);
 
         // 设置殖民体量
         commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
@@ -171,6 +171,51 @@ public class CelestialBodyApplier(
                     Team = desc.Team,
                     Progress = desc.Volume,
                     Event = ColonizationEvent.Idle,
+                }
+            );
+        }
+
+        if (desc.InitialShips is { } ships)
+        {
+            ships.Switch(
+                count =>
+                {
+                    if (desc.Team == Entity.Null)
+                        throw new InvalidOperationException("指定飞船数量时天体必须有阵营");
+                    for (int i = 0; i < count; i++)
+                    {
+                        factory.Make(
+                            world,
+                            commandBuffer,
+                            ConceptNames.Ship,
+                            new ShipDescription
+                            {
+                                Planet = entity,
+                                PlanetOrbit = geostationaryOrbit,
+                                Team = desc.Team,
+                            }
+                        );
+                    }
+                },
+                teams =>
+                {
+                    foreach (var (team, count) in teams)
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            factory.Make(
+                                world,
+                                commandBuffer,
+                                ConceptNames.Ship,
+                                new ShipDescription
+                                {
+                                    Planet = entity,
+                                    PlanetOrbit = geostationaryOrbit,
+                                    Team = team,
+                                }
+                            );
+                        }
+                    }
                 }
             );
         }

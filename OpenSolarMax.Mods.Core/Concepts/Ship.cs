@@ -47,6 +47,11 @@ public class ShipDescription : IDescription
     public required Entity Planet { get; set; }
 
     /// <summary>
+    /// 舰船创建时所在星球的同步轨道。必须提供
+    /// </summary>
+    public required PlanetGeostationaryOrbit PlanetOrbit { get; set; }
+
+    /// <summary>
     /// 舰船创建时所属的阵营。必须提供
     /// </summary>
     public required Entity Team { get; set; }
@@ -99,7 +104,7 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
 
         // TODO 延迟化 设置所属星球
         var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(entity, desc.Planet);
-        RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, desc.Planet);
+        RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, desc.PlanetOrbit);
 
         // 设置所属阵营
         factory.Make(

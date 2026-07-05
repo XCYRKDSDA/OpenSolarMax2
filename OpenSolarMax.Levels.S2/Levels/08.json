@@ -12,17 +12,14 @@
 
         { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "team": "blue" },
 
-        { "$id": "planet_b", "$base": "planet50", "team": "blue", "position": [ 272, 472 ] },
-        { "$id": "planet_r", "$base": "planet40", "team": "red", "position": [ 752, 296 ] },
+        { "$id": "planet_b", "$base": "planet50", "team": "blue", "position": [ 272, 472 ], "ships": 50 },
+        { "$id": "planet_r", "$base": "planet40", "team": "red", "position": [ 752, 296 ], "ships": 40 },
 
         { "$base": "planet30", "position": [ 512, 384 ] },
         { "$base": "planet30", "position": [ 400, 248 ] },
         { "$base": "planet30", "position": [ 624, 520 ] },
 
         { "$base": "barrier", "head": [ 408, 384 ], "tail": [ 408, 456 ] },
-        { "$base": "barrier", "head": [ 616, 384 ], "tail": [ 616, 312 ] },
-
-        { "$base": "ship", "team": "blue", "planet": "planet_b", "$num": 50 },
-        { "$base": "ship", "team": "red", "planet": "planet_r", "$num": 40 }
+        { "$base": "barrier", "head": [ 616, 384 ], "tail": [ 616, 312 ] }
     ]
 }
