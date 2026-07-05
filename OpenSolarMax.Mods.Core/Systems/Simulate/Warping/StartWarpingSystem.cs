@@ -91,6 +91,12 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
                 ExpectedRevolutionState = revolutionState,
             };
             warpingStatus.PreWarp = new() { ElapsedTime = TimeSpan.Zero };
+
+            // 立即解除到星球的锚定，使舰船脱离 AnchoredShipsRegistry，
+            // 避免后续帧重复选中已处于 PreWarp 的舰船
+            commandBuffer.Destroy(
+                ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref
+            );
         }
 
         // 创建传送门特效
