@@ -25,7 +25,6 @@ namespace OpenSolarMax.Mods.Core.Systems.Warping;
     ReadPrev(typeof(ReferenceSize)),
     ReadPrev(typeof(TeamReferenceColor)),
     Write(typeof(WarpingStatus)),
-    Write(typeof(WarpChargingJobs)),
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
@@ -48,7 +47,7 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
                 && requestEntity.WorldId == request.Team.WorldId
         );
 
-        if (!request.Departure.Has<WarpChargingJobs>())
+        if (!request.Departure.Has<WarpTerminal>())
             return;
 
         // 设置舰船传送状态
