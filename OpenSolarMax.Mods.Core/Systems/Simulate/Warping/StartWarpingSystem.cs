@@ -25,7 +25,6 @@ namespace OpenSolarMax.Mods.Core.Systems.Warping;
     ReadPrev(typeof(ReferenceSize)),
     ReadPrev(typeof(TeamReferenceColor)),
     Write(typeof(WarpingStatus)),
-    Write(typeof(WarpChargingJobs)),
     ChangeStructure
 ]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
@@ -48,7 +47,7 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
                 && requestEntity.WorldId == request.Team.WorldId
         );
 
-        if (!request.Departure.Has<WarpChargingJobs>())
+        if (!request.Departure.Has<WarpTerminal>())
             return;
 
         // 设置舰船传送状态
@@ -91,6 +90,12 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
                 ExpectedRevolutionState = revolutionState,
             };
             warpingStatus.PreWarp = new() { ElapsedTime = TimeSpan.Zero };
+
+            // 立即解除到星球的锚定，使舰船脱离 AnchoredShipsRegistry，
+            // 避免后续帧重复选中已处于 PreWarp 的舰船
+            commandBuffer.Destroy(
+                ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref
+            );
         }
 
         // 创建传送门特效

@@ -16,7 +16,7 @@ public static class WarpReachabilityCheckerProvider
         in AbsoluteTransform departurePose,
         Entity destination,
         in AbsoluteTransform destinationPose
-    ) => departure.Has<WarpChargingJobs>() ? true : null;
+    ) => departure.Has<WarpTerminal>() ? true : null;
 
     [HookOn("CheckLocationReachability")]
     public static bool? CountReachability2(
@@ -24,5 +24,5 @@ public static class WarpReachabilityCheckerProvider
         Entity departure,
         in AbsoluteTransform departurePose,
         in Vector3 destinationPose
-    ) => departure.Has<WarpChargingJobs>() ? true : null;
+    ) => departure.Has<WarpTerminal>() ? true : null;
 }

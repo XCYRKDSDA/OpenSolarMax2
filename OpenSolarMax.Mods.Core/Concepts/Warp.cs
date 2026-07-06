@@ -21,8 +21,8 @@ public abstract class WarpDefinition : IDefinition
     public static Signature Signature { get; } =
         CelestialBodyDefinition.Signature
         + new Signature(
-            // 传送任务
-            typeof(WarpChargingJobs)
+            // 传送终端标记
+            typeof(WarpTerminal)
         );
 }
 
@@ -91,6 +91,6 @@ public class WarpApplier(
         );
 
         // 初始化传送任务
-        commandBuffer.Set(in entity, new WarpChargingJobs());
+        commandBuffer.Set(in entity, new WarpTerminal());
     }
 }

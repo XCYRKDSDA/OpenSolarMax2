@@ -119,7 +119,6 @@ public partial class ApplyShipsWarpingEffectSystem(World world, IAssetsManager a
     ReadPrev(typeof(AbsoluteTransform)),
     ReadPrev(typeof(Sprite)),
     ReadPrev(typeof(TeamReferenceColor)),
-    ReadPrev(typeof(TreeRelationship<Anchorage>.AsChild)),
     ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
     ReadPrev(typeof(InTeam.AsAffiliate))
 ]
@@ -137,7 +136,6 @@ public partial class WarpSystem(World world, IAssetsManager assets, IConceptFact
         WarpingStatus,
         AbsoluteTransform,
         Sprite,
-        TreeRelationship<Anchorage>.AsChild,
         TreeRelationship<RelativeTransform>.AsChild,
         InTeam.AsAffiliate
     >]
@@ -146,7 +144,7 @@ public partial class WarpSystem(World world, IAssetsManager assets, IConceptFact
         ref WarpingStatus status,
         in AbsoluteTransform pose,
         in Sprite sprite,
-        in TreeRelationship<Anchorage>.AsChild asChild,
+        in TreeRelationship<RelativeTransform>.AsChild asChild,
         in InTeam.AsAffiliate asAffiliate,
         [Data] HashSet<(Entity, Entity)> jobs,
         [Data] HashSet<(Entity, Entity)> arrivals,
@@ -172,13 +170,8 @@ public partial class WarpSystem(World world, IAssetsManager assets, IConceptFact
                 }
             );
 
-            // 解除到星球的锚定
-            commandBuffer.Destroy(
-                ship.Get<TreeRelationship<Anchorage>.AsChild>().Relationship!.Value.Ref
-            );
-            commandBuffer.Destroy(
-                ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref
-            );
+            // 解除到出发星球的公转关系（Anchorage 已在 StartWarpingSystem 中销毁）
+            commandBuffer.Destroy(asChild.Relationship!.Value.Ref);
             // 锚定舰船到新星球
             factory.Make(
                 world,
