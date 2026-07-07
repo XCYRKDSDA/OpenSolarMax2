@@ -7,6 +7,8 @@ using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Nine.Animations;
+using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
@@ -25,16 +27,106 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(ReachabilityRegistry)),
     ReadCurr(typeof(Projection)),
     Iterate(typeof(JumpingStatus)),
+    ReadCurr(typeof(PlanetSelectionRing.AsRing)),
+    ReadCurr(typeof(ViewSelectionRing.AsRing)),
     ChangeStructure
 ]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
     World world,
     IConceptFactory factory,
+    IAssetsManager assets,
     [Section("systems:input:maneuvering")] IConfiguration configs
 ) : ICalcSystemWithStructuralChanges
 {
     private readonly int _minimalSelectPixels = configs.RequireValue<int>("minimal_select_pixels");
     private ButtonState _lastLeftButton = ButtonState.Released;
+
+    /// <summary>
+    /// 淡出动画剪辑，用于选择圈消失时的动画。
+    /// </summary>
+    private readonly AnimationClip<Entity> _fadeOutClip = assets.Load<AnimationClip<Entity>>(
+        "/Animations/SelectionRingFadeOut.json"
+    );
+
+    /// <summary>
+    /// 获取某个星球在某个视图的选择圈实体。
+    /// </summary>
+    private Entity? GetSelectionRingForPlanet(Entity view, Entity planet)
+    {
+        if (!planet.Has<PlanetSelectionRing.AsPlanet>())
+            return null;
+
+        foreach (var (_, record) in planet.Get<PlanetSelectionRing.AsPlanet>().Relationships)
+        {
+            var ring = record.Ring;
+            if (
+                ring.Has<ViewSelectionRing.AsRing>()
+                && ring.Get<ViewSelectionRing.AsRing>().Relationship?.Copy.View == view
+            )
+            {
+                return ring;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 为某个星球在某个视图创建选择圈实体。
+    /// </summary>
+    private void CreateSelectionRing(Entity view, Entity planet, CommandBuffer commandBuffer)
+    {
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.SelectionRing,
+            new SelectionRingDescription() { Planet = planet, View = view }
+        );
+    }
+
+    /// <summary>
+    /// 为选择圈设置淡出动画。
+    /// </summary>
+    private void SetFadeOutAnimation(Entity ring, CommandBuffer commandBuffer)
+    {
+        // 重置动画状态并设置淡出剪辑，播完后由 ExpireAnimationCompletedEntitiesSystem 自动销毁
+        commandBuffer.Set(in ring, new Animation() { Clip = _fadeOutClip });
+    }
+
+    /// <summary>
+    /// 直接销毁选择圈实体。
+    /// </summary>
+    private void DestroySelectionRing(Entity ring, CommandBuffer commandBuffer)
+    {
+        commandBuffer.Destroy(ring);
+    }
+
+    /// <summary>
+    /// 为视图的所有选择圈设置淡出动画（用于吸附松开和右键发送飞船）。
+    /// </summary>
+    private void FadeOutAllSelectionRings(Entity view, CommandBuffer commandBuffer)
+    {
+        if (!view.Has<ViewSelectionRing.AsView>())
+            return;
+
+        foreach (var (_, record) in view.Get<ViewSelectionRing.AsView>().Relationships)
+        {
+            SetFadeOutAnimation(record.Ring, commandBuffer);
+        }
+    }
+
+    /// <summary>
+    /// 销毁视图的所有选择圈（用于悬空松开）。
+    /// </summary>
+    private void DestroyAllSelectionRings(Entity view, CommandBuffer commandBuffer)
+    {
+        if (!view.Has<ViewSelectionRing.AsView>())
+            return;
+
+        foreach (var (_, record) in view.Get<ViewSelectionRing.AsView>().Relationships)
+        {
+            DestroySelectionRing(record.Ring, commandBuffer);
+        }
+    }
 
     [Query]
     [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
@@ -114,6 +206,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     private void HandleSelectionStateTransition(
+        Entity view, // View 实体
         ref ShipsSelection selection,
         float percentage,
         in Matrix worldToScreen,
@@ -198,6 +291,8 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         }
                     );
                 }
+                // 右键发送飞船后，给所有选择圈设置淡出动画
+                FadeOutAllSelectionRings(view, commandBuffer);
                 selection.State = ShipsSelection_State.SimpleSelecting;
                 selection.SimpleSelecting = new() { SelectedSources = [] };
             }
@@ -263,23 +358,28 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                             }
                         );
                     }
+                    // 吸附松开后，给所有选择圈设置淡出动画
+                    FadeOutAllSelectionRings(view, commandBuffer);
                     selection.SimpleSelecting = new() { SelectedSources = [] };
                 }
                 else
-                    selection.SimpleSelecting = new()
-                    {
-                        SelectedSources = selection.DraggingToDestination.SelectedSources,
-                    };
+                {
+                    // 悬空松开后，直接销毁所有选择圈（原版 S2 行为）
+                    DestroyAllSelectionRings(view, commandBuffer);
+                    selection.SimpleSelecting = new() { SelectedSources = [] };
+                }
             }
         }
     }
 
     private void UpdateSelectionStatus(
+        Entity view, // View 实体
         ref ShipsSelection selection,
         in Matrix worldToScreen,
         Entity team,
         ref Entity? pointedPlanet,
-        in InputFocusState focus
+        in InputFocusState focus,
+        CommandBuffer commandBuffer
     )
     {
         var mouse = Mouse.GetState();
@@ -304,8 +404,15 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                 if (_lastLeftButton == ButtonState.Released && tappingSource != Entity.Null)
                 {
                     if (keys[Keys.LeftShift] != KeyState.Down)
+                    {
+                        // 清空之前的选中，需要先给所有选择圈设置淡出动画
+                        FadeOutAllSelectionRings(view, commandBuffer);
                         selection.SimpleSelecting.SelectedSources.Clear();
+                    }
                     selection.SimpleSelecting.SelectedSources.Add(tappingSource);
+                    // 为新选中的星球创建选择圈（如果该星球还没有属于当前视图的选择圈）
+                    if (GetSelectionRingForPlanet(view, tappingSource) == null)
+                        CreateSelectionRing(view, tappingSource, commandBuffer);
                 }
             }
             else
@@ -363,6 +470,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         InputFocusState
     >]
     private void HandleInputs(
+        Entity entity, // View 实体
         ref ManeuveringShipsStatus status,
         in FleetSliderWidget fleetSlider,
         in InTeam.AsAffiliate ofTeam,
@@ -373,6 +481,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     {
         Entity? pointedPlanet = null;
         HandleSelectionStateTransition(
+            entity, // 传入 View 实体
             ref status.Selection,
             fleetSlider.Percentage,
             in projection.WorldToScreen,
@@ -382,11 +491,13 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             in focus
         );
         UpdateSelectionStatus(
+            entity, // 传入 View 实体
             ref status.Selection,
             in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
-            in focus
+            in focus,
+            commandBuffer
         );
         _lastLeftButton = Mouse.GetState().LeftButton;
     }

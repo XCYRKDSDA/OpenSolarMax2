@@ -44,6 +44,8 @@ public abstract class CelestialBodyDefinition : IDefinition
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
             typeof(TreeRelationship<ColorSync>.AsParent), // 颜色同步关系父方
+            // 选择圈相关
+            typeof(PlanetSelectionRing.AsPlanet), // 星球的选择圈索引
             // AI 相关
             typeof(PlanetAiTimers) // AI 操作计时器
         );
