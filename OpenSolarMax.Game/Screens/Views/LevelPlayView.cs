@@ -165,7 +165,7 @@ internal class LevelPlayView
                 Color = new Color(0xffaaaaff),
             },
         };
-        slowButton.Click += OnSpeedOptionChanged;
+        slowButton.IsToggledChanged += OnSpeedOptionChanged;
         var normalSpeedIcon = new IconRegion(
             game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonNormalSpeed")
         );
@@ -179,7 +179,7 @@ internal class LevelPlayView
                 Color = new Color(0xffaaaaff),
             },
         };
-        normalButton.Click += OnSpeedOptionChanged;
+        normalButton.IsToggledChanged += OnSpeedOptionChanged;
         var fastSpeedIcon = new IconRegion(
             game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonFastSpeed")
         );
@@ -192,7 +192,7 @@ internal class LevelPlayView
                 Color = new Color(0xffaaaaff),
             },
         };
-        fastButton.Click += OnSpeedOptionChanged;
+        fastButton.IsToggledChanged += OnSpeedOptionChanged;
         rightStack.Widgets.Add(slowButton);
         rightStack.Widgets.Add(normalButton);
         rightStack.Widgets.Add(fastButton);
@@ -319,6 +319,10 @@ internal class LevelPlayView
     {
         if (sender is not StateOpacityToggleButton theButton)
             throw new ArgumentException(null, nameof(sender));
+
+        // 排除本回调因按键取消按下而触发的情况
+        if (!theButton.IsToggled)
+            return;
 
         // 锁定当前按键
         theButton.Enabled = false;
