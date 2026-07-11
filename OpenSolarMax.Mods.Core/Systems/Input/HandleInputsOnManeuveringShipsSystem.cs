@@ -39,11 +39,12 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     private readonly int _minimalSelectPixels = configs.RequireValue<int>("minimal_select_pixels");
     private ButtonState _lastLeftButton = ButtonState.Released;
 
-    /// <summary>
-    /// 淡出动画剪辑，用于选择圈消失时的动画。
-    /// </summary>
-    private readonly AnimationClip<Entity> _fadeOutClip = assets.Load<AnimationClip<Entity>>(
+    private readonly AnimationClip<Entity> _growFadeClip = assets.Load<AnimationClip<Entity>>(
         "/Animations/SelectionRingFadeOut.json"
+    );
+
+    private readonly AnimationClip<Entity> _shrinkFadeClip = assets.Load<AnimationClip<Entity>>(
+        "/Animations/SelectionRingShrinkFadeOut.json"
     );
 
     /// <summary>
@@ -59,18 +60,15 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         );
     }
 
-    /// <summary>
-    /// 为选择圈设置淡出动画。
-    /// </summary>
-    private void SetFadeOutAnimation(Entity ring, CommandBuffer commandBuffer)
+    private void SetFadeAnimation(
+        Entity ring,
+        AnimationClip<Entity> clip,
+        CommandBuffer commandBuffer
+    )
     {
-        // 重置动画状态并设置淡出剪辑，播完后由 ExpireAnimationCompletedEntitiesSystem 自动销毁
-        commandBuffer.Set(in ring, new Animation() { Clip = _fadeOutClip });
+        commandBuffer.Set(in ring, new Animation() { Clip = clip });
     }
 
-    /// <summary>
-    /// 为所有被选中的星球创建选择圈实体并设置淡出动画（用于吸附松开和右键发送飞船）。
-    /// </summary>
     private void CreateAndFadeOutSelectionRings(
         Entity view,
         IEnumerable<Entity> planets,
@@ -80,7 +78,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
         foreach (var planet in planets)
         {
             var ring = CreateSelectionRing(view, planet, commandBuffer);
-            SetFadeOutAnimation(ring, commandBuffer);
+            SetFadeAnimation(ring, _growFadeClip, commandBuffer);
         }
     }
 
@@ -247,12 +245,18 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         }
                     );
                 }
-                // 右键发送飞船后，为所有被选中的星球创建选择圈实体并设置淡出动画
+                // 右键发送飞船后，为出发星球创建扩散式淡出，为目标星球创建收缩式淡出
                 CreateAndFadeOutSelectionRings(
                     view,
                     selection.SimpleSelecting.SelectedSources,
                     commandBuffer
                 );
+                var destinationRing = CreateSelectionRing(
+                    view,
+                    selection.SimpleSelecting.TappingDestination,
+                    commandBuffer
+                );
+                SetFadeAnimation(destinationRing, _shrinkFadeClip, commandBuffer);
                 selection.State = ShipsSelection_State.SimpleSelecting;
                 selection.SimpleSelecting = new() { SelectedSources = [] };
             }
@@ -318,12 +322,18 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                             }
                         );
                     }
-                    // 吸附松开后，为所有被选中的星球创建选择圈实体并设置淡出动画
+                    // 吸附松开后，为出发星球创建扩散式淡出，为目标星球创建收缩式淡出
                     CreateAndFadeOutSelectionRings(
                         view,
                         selection.DraggingToDestination.SelectedSources,
                         commandBuffer
                     );
+                    var destinationRing = CreateSelectionRing(
+                        view,
+                        selection.DraggingToDestination.CandidateDestination,
+                        commandBuffer
+                    );
+                    SetFadeAnimation(destinationRing, _shrinkFadeClip, commandBuffer);
                     selection.SimpleSelecting = new() { SelectedSources = [] };
                 }
                 else
