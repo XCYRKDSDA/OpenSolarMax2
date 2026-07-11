@@ -23,8 +23,6 @@ internal class MenuLikeView
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionTargetState>
 {
-    private static readonly Color _gray = new(0, 0, 0, 0x55);
-
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持预览悬浮动画
     private readonly HorizontalScrollingBackground _pageBackground;
@@ -88,21 +86,6 @@ internal class MenuLikeView
             _exposureWhiteBase = game.Assets.Load<Texture2D>("Textures/Pixel.bmp");
         }
 
-        var band1 = new Widget()
-        {
-            Background = new SolidBrush(_gray),
-            Height = 54,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Top,
-        };
-        var band2 = new Widget()
-        {
-            Background = new SolidBrush(_gray),
-            Height = 54,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Bottom,
-        };
-
         // 顶栏
         var topPanel = new Panel()
         {
@@ -158,17 +141,11 @@ internal class MenuLikeView
 
         var grid = new Grid();
         grid.RowsProportions.Add(Proportion.Auto);
-        grid.RowsProportions.Add(Proportion.Auto);
         grid.RowsProportions.Add(Proportion.Fill);
-        grid.RowsProportions.Add(Proportion.Auto);
-        Grid.SetRow(band1, 0);
-        Grid.SetRow(topPanel, 1);
-        Grid.SetRow(_scrollViewer, 2);
-        Grid.SetRow(band2, 3);
-        grid.Widgets.Add(band1);
+        Grid.SetRow(topPanel, 0);
+        Grid.SetRow(_scrollViewer, 1);
         grid.Widgets.Add(topPanel);
         grid.Widgets.Add(_scrollViewer);
-        grid.Widgets.Add(band2);
 
         _rootPanel.Widgets.Add(grid);
 

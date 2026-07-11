@@ -46,21 +46,6 @@ internal class InitializationView : ViewBase<InitializationViewModel>
             Background = new SolidBrush(_lightGray),
             Filler = new SolidBrush(_gray),
         };
-        var band1 = new Widget()
-        {
-            Background = new SolidBrush(_gray),
-            Height = 54,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Top,
-        };
-        var band2 = new Widget()
-        {
-            Background = new SolidBrush(_gray),
-            Height = 54,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Bottom,
-        };
-
         var stack = new VerticalStackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -71,8 +56,6 @@ internal class InitializationView : ViewBase<InitializationViewModel>
 
         var panel = new Panel();
         panel.Widgets.Add(stack);
-        panel.Widgets.Add(band1);
-        panel.Widgets.Add(band2);
 
         _desktop = new Desktop();
         _desktop.Root = panel;
