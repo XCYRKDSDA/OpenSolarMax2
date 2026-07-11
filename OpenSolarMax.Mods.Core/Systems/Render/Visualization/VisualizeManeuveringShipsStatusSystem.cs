@@ -323,10 +323,10 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         // 绘制所有选择圈实体（从选择圈实体绘制，而不是直接从 SelectedSources 绘制）
         DrawSelectionRings(entity, in projection);
 
-        // 当处于默认状态时，绘制悬停圈和目标圈
+        // 当处于默认状态时，绘制所有点选和正在选的星球
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
-            // 如果当前没有点选星球，且此时鼠标位于某个星球上，则进行预览（悬停圈）
+            // 如果当前没有点选星球，且此时鼠标位于某个星球上，则进行预览
             if (mouse.LeftButton != ButtonState.Pressed)
             {
                 if (selection.SimpleSelecting.PointingPlanet != Entity.Null)
@@ -338,7 +338,16 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                     );
             }
 
-            // 绘制目标星球（右键目标圈）
+            // 绘制所有选中的星球
+            // TappingSource已经包含在SelectedSources中了，故不重复绘制
+            DrawSelected(
+                selection.SimpleSelecting.SelectedSources,
+                in projection.WorldToScreen,
+                Enumerable.Repeat(_selectedRingColor, int.MaxValue),
+                _ringThickness
+            );
+
+            // 绘制目标星球
             if (selection.SimpleSelecting.TappingDestination != Entity.Null)
                 DrawSelected(
                     selection.SimpleSelecting.TappingDestination,
@@ -347,9 +356,20 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                     _ringThickness
                 );
         }
-        // 当处于框选状态时，绘制选框
+        // 当处于框选状态时，还需要绘制选框和选框内的星球
         else if (selection.State == ShipsSelection_State.BoxSelectingSources)
         {
+            // 绘制所有选中的星球
+            DrawSelected(
+                Enumerable.Concat(
+                    selection.BoxSelectingSources.OtherSelectedPlanets,
+                    selection.BoxSelectingSources.PlanetsInBox
+                ),
+                in projection.WorldToScreen,
+                Enumerable.Repeat(_selectedRingColor, int.MaxValue),
+                _ringThickness
+            );
+
             // 绘制选框
             _boxRenderer.DrawBox(
                 selection.BoxSelectingSources.BoxInScreen,
@@ -357,9 +377,12 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                 _boxThickness
             );
         }
-        // 当处于拖拽状态时，绘制拖拽线和目标圈
+        // 当处于拖拽状态时，还需要绘制起点到目标的线段
         else if (selection.State == ShipsSelection_State.DraggingToDestination)
         {
+            // 所有不能抵达目标位置的出发点和边画红色圈
+            // 如果所有出发点都无法到达目标点，则目标点画红色圈
+
             var blockStates =
                 selection.DraggingToDestination.CandidateDestination == Entity.Null
                     ? CalculateBlocking(
@@ -374,7 +397,14 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                         )
                         .ToArray();
 
-            // 绘制拖拽线
+            var sourceColors = blockStates.Select(b => b ? _blockedRingColor : _selectedRingColor);
+            DrawSelected(
+                selection.DraggingToDestination.SelectedSources,
+                in projection.WorldToScreen,
+                sourceColors,
+                _ringThickness
+            );
+
             var edgeColors = blockStates.Select(b => b ? _blockedLineColor : _lineColor);
             if (selection.DraggingToDestination.CandidateDestination == Entity.Null)
                 DrawLines(
@@ -392,7 +422,6 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                     edgeColors
                 );
 
-                // 绘制目标圈（悬停的目标星球）
                 var targetColor = blockStates.All(b => b) ? _blockedRingColor : _selectedRingColor;
                 DrawSelected(
                     selection.DraggingToDestination.CandidateDestination,
