@@ -43,3 +43,19 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World worl
         commandBuffer.Playback(world);
     }
 }
+
+/// <summary>
+/// 清理已损坏的星球-选择圈关系。当星球或选择圈被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, ReactToStructuralChanges]
+[ChangeStructure]
+public sealed class DestroyBrokenPlanetSelectionRingsSystem(World world)
+    : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(world) { }
+
+/// <summary>
+/// 清理已损坏的视图-选择圈关系。当视图或选择圈被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, ReactToStructuralChanges]
+[ChangeStructure]
+public sealed class DestroyBrokenViewSelectionRingsSystem(World world)
+    : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(world) { }

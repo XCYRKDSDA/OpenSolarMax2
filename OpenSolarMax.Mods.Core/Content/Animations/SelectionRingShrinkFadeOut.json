@@ -1,0 +1,13 @@
+{
+    "duration": 0.25,
+    "curves": {
+        "SelectionRingVisual::Alpha": [
+            { "time": 0, "value": 1 },
+            { "time": 0.25, "value": 0 }
+        ],
+        "SelectionRingVisual::Scale": [
+            { "time": 0, "value": 1 },
+            { "time": 0.25, "value": 0.8 }
+        ]
+    }
+}
