@@ -202,6 +202,12 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                     else if (_lastLeftButton == ButtonState.Released)
                     {
                         // 当前左键点在空白处，而且之前也没有正在点选任何星球，则切换至框选状态
+                        if (!keepPrevious)
+                            CreateAndFadeOutSelectionRings(
+                                view,
+                                selection.SimpleSelecting.SelectedSources,
+                                commandBuffer
+                            );
                         selection.State = ShipsSelection_State.BoxSelectingSources;
                         selection.BoxSelectingSources = new()
                         {
@@ -346,11 +352,13 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     }
 
     private void UpdateSelectionStatus(
+        Entity view,
         ref ShipsSelection selection,
         in Matrix worldToScreen,
         Entity team,
         ref Entity? pointedPlanet,
-        in InputFocusState focus
+        in InputFocusState focus,
+        CommandBuffer commandBuffer
     )
     {
         var mouse = Mouse.GetState();
@@ -375,7 +383,14 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                 if (_lastLeftButton == ButtonState.Released && tappingSource != Entity.Null)
                 {
                     if (keys[Keys.LeftShift] != KeyState.Down)
+                    {
+                        CreateAndFadeOutSelectionRings(
+                            view,
+                            selection.SimpleSelecting.SelectedSources,
+                            commandBuffer
+                        );
                         selection.SimpleSelecting.SelectedSources.Clear();
+                    }
                     selection.SimpleSelecting.SelectedSources.Add(tappingSource);
                 }
             }
@@ -455,11 +470,13 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
             in focus
         );
         UpdateSelectionStatus(
+            entity,
             ref status.Selection,
             in projection.WorldToScreen,
             ofTeam.Relationship!.Value.Copy.Team,
             ref pointedPlanet,
-            in focus
+            in focus,
+            commandBuffer
         );
         _lastLeftButton = Mouse.GetState().LeftButton;
     }
