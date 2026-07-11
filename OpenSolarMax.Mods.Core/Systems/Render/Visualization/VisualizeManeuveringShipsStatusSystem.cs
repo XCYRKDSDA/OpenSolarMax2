@@ -28,7 +28,9 @@ public delegate bool? CheckLocationReachabilityCallback(
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
     ReadCurr(typeof(ManeuveringShipsStatus)),
-    ReadCurr(typeof(Projection))
+    ReadCurr(typeof(Projection)),
+    ReadCurr(typeof(SelectionRingVisual)),
+    ReadCurr(typeof(PlanetSelectionRing.AsPlanet))
 ]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
@@ -260,13 +262,39 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             // 如果当前没有点选星球，且此时鼠标位于某个星球上，则进行预览
             if (mouse.LeftButton != ButtonState.Pressed)
             {
-                if (selection.SimpleSelecting.PointingPlanet != Entity.Null)
-                    DrawSelected(
-                        selection.SimpleSelecting.PointingPlanet,
-                        in projection.WorldToScreen,
-                        _hoveredRingColor,
-                        _ringThickness
-                    );
+                var pointingPlanet = selection.SimpleSelecting.PointingPlanet;
+                if (pointingPlanet != Entity.Null)
+                {
+                    // 检查该星球是否有正在淡出的选择圈实体，如果有则跳过预览圈
+                    var hasFadingRing = false;
+                    if (pointingPlanet.Has<PlanetSelectionRing.AsPlanet>())
+                    {
+                        foreach (
+                            var (_, record) in pointingPlanet
+                                .Get<PlanetSelectionRing.AsPlanet>()
+                                .Relationships
+                        )
+                        {
+                            var ring = record.Ring;
+                            if (
+                                ring.Has<SelectionRingVisual>()
+                                && ring.Get<SelectionRingVisual>().Alpha > 0
+                            )
+                            {
+                                hasFadingRing = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!hasFadingRing)
+                        DrawSelected(
+                            pointingPlanet,
+                            in projection.WorldToScreen,
+                            _hoveredRingColor,
+                            _ringThickness
+                        );
+                }
             }
 
             // 绘制所有选中的星球
