@@ -28,10 +28,7 @@ public delegate bool? CheckLocationReachabilityCallback(
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
     ReadCurr(typeof(ManeuveringShipsStatus)),
-    ReadCurr(typeof(Projection)),
-    ReadCurr(typeof(SelectionRingVisual)),
-    ReadCurr(typeof(PlanetSelectionRing.AsRing)),
-    ReadCurr(typeof(ViewSelectionRing.AsRing))
+    ReadCurr(typeof(Projection))
 ]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
@@ -63,65 +60,6 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     public CheckLocationReachabilityCallback? CheckReachabilityDelegate { get; set; }
 
     public void Update() => DrawSelectionQuery(world);
-
-    /// <summary>
-    /// 绘制视图的所有选择圈实体。
-    /// </summary>
-    private void DrawSelectionRings(Entity view, in Projection projection)
-    {
-        if (!view.Has<ViewSelectionRing.AsView>())
-            return;
-
-        foreach (var (_, record) in view.Get<ViewSelectionRing.AsView>().Relationships)
-        {
-            var ring = record.Ring;
-
-            // 获取选择圈的视觉状态
-            if (!ring.Has<SelectionRingVisual>())
-                continue;
-
-            var visual = ring.Get<SelectionRingVisual>();
-            if (visual.Alpha <= 0)
-                continue; // Alpha 为 0 时不绘制
-
-            // 获取关联的星球实体
-            if (!ring.Has<PlanetSelectionRing.AsRing>())
-                continue;
-
-            var planetRecord = ring.Get<PlanetSelectionRing.AsRing>().Relationship;
-            if (planetRecord == null)
-                continue;
-
-            var planet = planetRecord.Value.Copy.Planet;
-            if (
-                !planet.IsAlive()
-                || !planet.Has<ReferenceSize>()
-                || !planet.Has<AbsoluteTransform>()
-            )
-                continue;
-
-            // 获取星球的位置和参考尺寸
-            var planetCompos = planet.Get<ReferenceSize, AbsoluteTransform>();
-            ref readonly var refSize = ref planetCompos.t0;
-            ref readonly var pose = ref planetCompos.t1;
-
-            // 计算选择环的尺寸（考虑 Scale 和屏幕缩放）
-            var scale2D = Vector2.TransformNormal(Vector2.One, projection.WorldToScreen);
-            var screenScale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
-            var ringRadius = refSize.Radius * _ringRadiusFactor * visual.Scale * screenScale;
-
-            // 计算选择环的位置
-            var ringInScreen = TransformProjection.To2D(
-                Vector3.Transform(pose.Translation, projection.WorldToScreen)
-            );
-
-            // 计算颜色（考虑 Alpha）
-            var color = _selectedRingColor * visual.Alpha;
-
-            // 绘制选择环
-            _circleRenderer.DrawCircle(ringInScreen, ringRadius, color, _ringThickness);
-        }
-    }
 
     private void DrawSelected(
         in ReferenceSize refSize,
@@ -296,11 +234,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
 
     [Query]
     [All<ManeuveringShipsStatus, Projection>]
-    private void DrawSelection(
-        Entity entity,
-        in ManeuveringShipsStatus status,
-        in Projection projection
-    )
+    private void DrawSelection(in ManeuveringShipsStatus status, in Projection projection)
     {
         var mouse = Mouse.GetState();
 
@@ -319,9 +253,6 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         ref readonly var selection = ref status.Selection;
 
         var mouseInScreen = mouse.Position;
-
-        // 绘制所有选择圈实体（从选择圈实体绘制，而不是直接从 SelectedSources 绘制）
-        DrawSelectionRings(entity, in projection);
 
         // 当处于默认状态时，绘制所有点选和正在选的星球
         if (selection.State == ShipsSelection_State.SimpleSelecting)
