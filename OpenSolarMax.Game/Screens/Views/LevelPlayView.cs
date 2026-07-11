@@ -204,6 +204,9 @@ internal class LevelPlayView
         };
         grid.Widgets.Add(rightStack);
 
+        // 默认选中正常速度
+        normalButton.IsPressed = true;
+
         // 添加关卡通用界面。关卡UI结构如下:
         //
         // +---------------------------+
@@ -402,9 +405,6 @@ internal class LevelPlayView
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.ExitConfigurationMode()
     {
-        // 世界更新速度正常化
-        ViewModel.SimulateSpeed = 1;
-
         // 移除悬浮视图控件
         _rootPanel.Widgets.Remove(_floatingWorldView);
         _floatingWorldView = null;
@@ -416,7 +416,12 @@ internal class LevelPlayView
             _embeddingWorldView.ToGlobal(Point.Zero),
             _embeddingWorldView.ActualBounds.Size
         );
-        return new GamePlayTransitionTargetState(targetPreviewLocation, 1, _background.Left);
+        var currentSpeed = _speedButtonsMap.First(b => b.Key.IsToggled).Value;
+        return new GamePlayTransitionTargetState(
+            targetPreviewLocation,
+            currentSpeed,
+            _background.Left
+        );
     }
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.ApplyVisualState(
