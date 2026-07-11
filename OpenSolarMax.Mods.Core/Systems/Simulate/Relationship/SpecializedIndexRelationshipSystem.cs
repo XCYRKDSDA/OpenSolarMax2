@@ -56,3 +56,29 @@ public sealed class IndexTrailAffiliationSystem(World world)
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexColorSyncTreeSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<ColorSync>>(world) { }
+
+/// <summary>
+/// 索引星球与选择圈的关系，维护 AsPlanet 和 AsRing 索引组件。
+/// </summary>
+[SimulateSystem, AfterStructuralChanges]
+[
+    ReadCurr(typeof(PlanetSelectionRing)),
+    Write(typeof(PlanetSelectionRing.AsPlanet)),
+    Write(typeof(PlanetSelectionRing.AsRing))
+]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed class IndexPlanetSelectionRingSystem(World world)
+    : IndexRelationshipSystemBase<PlanetSelectionRing>(world) { }
+
+/// <summary>
+/// 索引视图与选择圈的关系，维护 AsView 和 AsRing 索引组件。
+/// </summary>
+[SimulateSystem, AfterStructuralChanges]
+[
+    ReadCurr(typeof(ViewSelectionRing)),
+    Write(typeof(ViewSelectionRing.AsView)),
+    Write(typeof(ViewSelectionRing.AsRing))
+]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+public sealed class IndexViewSelectionRingSystem(World world)
+    : IndexRelationshipSystemBase<ViewSelectionRing>(world) { }

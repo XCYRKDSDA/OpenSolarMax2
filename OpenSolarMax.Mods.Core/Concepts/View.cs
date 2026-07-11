@@ -35,6 +35,8 @@ public abstract class ViewDefinition : IDefinition
             typeof(RenderSettings),
             //
             typeof(InTeam.AsAffiliate),
+            // 选择圈相关
+            typeof(ViewSelectionRing.AsView), // 视图的选择圈索引
             // UI 插件
             typeof(TotalPopulationWidget),
             typeof(FleetSliderWidget),

@@ -31,7 +31,8 @@ public static class Signatures
             typeof(ReferenceSize),
             typeof(Battlefield),
             typeof(Animation),
-            typeof(Colonizable)
+            typeof(Colonizable),
+            typeof(PlanetSelectionRing.AsPlanet)
         );
 
     public static readonly Signature Ship =
@@ -81,7 +82,8 @@ public static class Signatures
             typeof(ManeuveringShipsStatus),
             typeof(InTeam.AsAffiliate),
             // typeof(LevelUIContext),
-            typeof(FMOD.Studio.System)
+            typeof(FMOD.Studio.System),
+            typeof(ViewSelectionRing.AsView)
         );
 
     public static readonly Signature Animation =
@@ -104,4 +106,15 @@ public static class Signatures
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
         );
+
+    /// <summary>
+    /// 选择圈实体签名。选择圈不需要位置组件（位置从关联的星球获取）。
+    /// </summary>
+    public static readonly Signature SelectionRing = new(
+        typeof(SelectionRingVisual),
+        typeof(Animation),
+        typeof(ExpireAfterAnimationCompleted),
+        typeof(PlanetSelectionRing.AsRing),
+        typeof(ViewSelectionRing.AsRing)
+    );
 }
