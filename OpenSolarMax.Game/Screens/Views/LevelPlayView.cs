@@ -28,6 +28,7 @@ internal class LevelPlayView
 
     private readonly RenderTarget2D _uiRenderTarget;
     private readonly SpriteBatch _uiSpriteBatch;
+    private bool _exited = false;
 
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
@@ -357,6 +358,21 @@ internal class LevelPlayView
         ViewModel.InputSystem.Update(gameTime);
 
         base.Update(gameTime);
+
+        if (!_exited)
+        {
+            ViewModel.World.Query(
+                new QueryDescription().WithAll<GameState>(),
+                (ref GameState state) =>
+                {
+                    if (state.Status != GameStatus.Playing && !_exited)
+                    {
+                        Game.ScreenManager.Backward();
+                        _exited = true;
+                    }
+                }
+            );
+        }
     }
 
     public override void Draw(GameTime gameTime)
@@ -389,6 +405,13 @@ internal class LevelPlayView
         _uiSpriteBatch.Begin(blendState: BlendState.Additive);
         _uiSpriteBatch.Draw(_uiRenderTarget, Vector2.Zero, Color.White);
         _uiSpriteBatch.End();
+    }
+
+    public override void Dispose()
+    {
+        _uiRenderTarget.Dispose();
+        _uiSpriteBatch.Dispose();
+        base.Dispose();
     }
 
     #region GamePlayTransitionTargetState

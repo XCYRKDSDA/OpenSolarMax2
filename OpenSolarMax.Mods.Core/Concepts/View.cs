@@ -41,7 +41,9 @@ public abstract class ViewDefinition : IDefinition
             typeof(TotalPopulationWidget),
             typeof(FleetSliderWidget),
             // 视图标识
-            typeof(ViewTag)
+            typeof(ViewTag),
+            // 游戏状态
+            typeof(GameState)
         );
 }
 
@@ -105,5 +107,8 @@ public class ViewApplier(
         // 初始化 UI
         commandBuffer.Set(in entity, new TotalPopulationWidget(assets, populationLabelConfigs));
         commandBuffer.Set(in entity, new FleetSliderWidget(assets, fleetSliderConfigs));
+
+        // 初始化游戏状态
+        commandBuffer.Set(in entity, new GameState { Status = GameStatus.Playing });
     }
 }

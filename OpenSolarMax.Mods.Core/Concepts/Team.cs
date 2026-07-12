@@ -27,6 +27,8 @@ public abstract class TeamDefinition : IDefinition
             // 隶属关系
             typeof(InTeam.AsTeam),
             typeof(TeamPopulationRegistry),
+            // 胜利状态
+            typeof(Victory),
             // Ai
             typeof(Ai),
             typeof(AiTimer),
@@ -79,6 +81,8 @@ public class TeamApplier : IApplier<TeamDescription>
         commandBuffer.Set(in entity, new Jumpable { Speed = 100 });
 
         commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 1 });
+
+        commandBuffer.Set(in entity, new Victory { HasWon = false });
 
         commandBuffer.Set(in entity, new Ai { Enabled = false });
         commandBuffer.Set(in entity, new AiCooldown { Duration = TimeSpan.FromSeconds(3) });
