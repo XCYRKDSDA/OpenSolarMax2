@@ -1,0 +1,19 @@
+{
+    "templates": {
+        "planet50": { "$base": "planet", "radius": 32.0, "volume": 500, "population": 50, "produceSpeed": 1.0 },
+        "planet60": { "$base": "planet", "radius": 38.4, "volume": 600, "population": 60, "produceSpeed": 1.2 },
+        "blue": { "$base": "team", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
+    },
+
+    "entities": [
+        { "$id": "blue", "$base": "blue" },
+        { "$id": "red", "$base": "blue", "color": "#FF5D93" },
+
+        { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "team": "blue" },
+
+        { "$base": "planet60", "team": "blue", "position": [ 512, 288 ], "ships": 60 },
+        { "$base": "planet50", "team": "red", "position": [ 384, 480 ], "ships": 30 },
+
+        { "$base": "planet50", "position": [ 640, 480 ] }
+    ]
+}
