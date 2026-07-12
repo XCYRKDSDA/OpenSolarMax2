@@ -2,6 +2,8 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using Microsoft.Extensions.Configuration;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -16,8 +18,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
     Write(typeof(Victory))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-public sealed partial class DetectVictorySystem(World world) : ICalcSystem
+public sealed partial class DetectVictorySystem(
+    World world,
+    [Section("systems:victory")] IConfiguration configs
+) : ICalcSystem
 {
+    private readonly bool _requireAllPlanets = configs.GetValue<bool>("require_all_planets");
+
     [Query]
     [All<InTeam.AsTeam, Victory>]
     private static void CheckVictoryAlreadyDetected(ref Victory victory, [Data] ref bool hasVictory)
@@ -48,7 +55,11 @@ public sealed partial class DetectVictorySystem(World world) : ICalcSystem
     )
     {
         if (affiliation.Relationship is null)
+        {
+            if (_requireAllPlanets)
+                enemyNodes.Add(Entity.Null);
             return;
+        }
 
         var team = affiliation.Relationship.Value.Copy.Team;
         if (team != winnerTeam)

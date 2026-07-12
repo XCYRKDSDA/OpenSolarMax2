@@ -1,3 +1,8 @@
+# 胜利判定相关
+
+[systems.victory]
+require_all_planets = false
+
 # 仿真系统相关
 
 [systems.simulate.jumping]

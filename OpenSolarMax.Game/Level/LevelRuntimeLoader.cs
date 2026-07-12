@@ -1,7 +1,9 @@
 using System.Reflection;
+using System.Text.Json;
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding;
@@ -76,6 +78,23 @@ internal class LevelRuntimeLoader
 
     public LevelRuntime LoadLevel(LevelFile level)
     {
+        // 构造关卡级配置（叠加到模组 LocalConfigs 之上）
+        IConfigurationRoot effectiveConfigs;
+        if (level.Configs is { } configsJson)
+        {
+            var jsonStream = new MemoryStream(
+                System.Text.Encoding.UTF8.GetBytes(configsJson.GetRawText())
+            );
+            effectiveConfigs = new ConfigurationBuilder()
+                .AddConfiguration(_levelModContext.LocalConfigs)
+                .AddJsonStream(jsonStream)
+                .Build();
+        }
+        else
+        {
+            effectiveConfigs = _levelModContext.LocalConfigs;
+        }
+
         // 构造世界和四大系统
         var world = World.Create();
         var inputSystem = new AggregateSystem(
@@ -85,7 +104,7 @@ internal class LevelRuntimeLoader
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = _factory,
-                [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = effectiveConfigs,
             },
             _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
@@ -99,7 +118,7 @@ internal class LevelRuntimeLoader
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = _factory,
-                [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = effectiveConfigs,
             },
             _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
@@ -113,7 +132,7 @@ internal class LevelRuntimeLoader
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
                 [typeof(IConceptFactory)] = _factory,
-                [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = effectiveConfigs,
             },
             _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
@@ -127,7 +146,7 @@ internal class LevelRuntimeLoader
             {
                 [typeof(GraphicsDevice)] = _game.GraphicsDevice,
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
-                [typeof(IConfigurationRoot)] = _levelModContext.LocalConfigs,
+                [typeof(IConfigurationRoot)] = effectiveConfigs,
             },
             _behaviors.HookImplMethods.ToDictionary(
                 kv => kv.Key,
