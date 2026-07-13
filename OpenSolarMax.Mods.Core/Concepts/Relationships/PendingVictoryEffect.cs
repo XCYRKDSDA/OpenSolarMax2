@@ -13,7 +13,8 @@ public static partial class ConceptNames
 [Define(ConceptNames.PendingVictoryEffect)]
 public abstract class PendingVictoryEffectDefinition : IDefinition
 {
-    public static Signature Signature { get; } = new(typeof(PendingVictoryEffect));
+    public static Signature Signature { get; } =
+        new(typeof(PendingVictoryEffect), typeof(VictoryEffectTarget));
 }
 
 [Describe(ConceptNames.PendingVictoryEffect)]
@@ -33,14 +34,11 @@ public class PendingVictoryEffectApplier : IApplier<PendingVictoryEffectDescript
         PendingVictoryEffectDescription desc
     )
     {
+        commandBuffer.Set(in entity, new PendingVictoryEffect { TimeLeft = desc.TimeLeft });
+
         commandBuffer.Set(
             in entity,
-            new PendingVictoryEffect
-            {
-                Planet = desc.Planet,
-                Winner = desc.Winner,
-                TimeLeft = desc.TimeLeft,
-            }
+            new VictoryEffectTarget { Planet = desc.Planet, Winner = desc.Winner }
         );
     }
 }

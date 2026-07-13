@@ -19,7 +19,12 @@ public sealed partial class PendingVictoryEffectCountDownSystem(World world)
     : CountDownSystemBase<PendingVictoryEffect>(world) { }
 
 [SimulateSystem, BeforeStructuralChanges]
-[ReadCurr(typeof(PendingVictoryEffect)), Write(typeof(ColonizationState)), ChangeStructure]
+[
+    ReadCurr(typeof(PendingVictoryEffect)),
+    ReadCurr(typeof(VictoryEffectTarget)),
+    Write(typeof(ColonizationState)),
+    ChangeStructure
+]
 [ExecuteBefore(typeof(ProgressColonizationSystem))]
 [ExecuteBefore(typeof(SettleColonizationSystem))]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
@@ -31,14 +36,15 @@ public sealed partial class FirePendingVictoryEffectSystem(World world, IConcept
     private void TriggerFire(
         Entity pending,
         in PendingVictoryEffect schedule,
+        in VictoryEffectTarget target,
         [Data] CommandBuffer commandBuffer
     )
     {
         if (schedule.TimeLeft > TimeSpan.Zero)
             return;
 
-        var planet = schedule.Planet;
-        var winner = schedule.Winner;
+        var planet = target.Planet;
+        var winner = target.Winner;
 
         // 创建 HaloExplosion 特效
         var transform = planet.Get<AbsoluteTransform>();
