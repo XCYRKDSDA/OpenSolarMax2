@@ -1,3 +1,10 @@
+# 胜利判定相关
+
+[systems.victory]
+require_all_planets = false
+wave_max_interval = 0.1          # 胜利波纹动效：星球间最大触发间隔，秒
+wave_total_seconds = 2.5          # 胜利波纹动效：从胜利帧起所有星球播完的总时长上限，秒
+
 # 仿真系统相关
 
 [systems.simulate.jumping]

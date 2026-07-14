@@ -20,6 +20,8 @@ internal class LevelLoader(
         public JsonElement[] Entities { get; set; } = [];
 
         public JsonElement Player { get; set; }
+
+        public JsonElement? Configs { get; set; }
     }
 
     public LevelFile Load(IFileSystem fs, IAssetsManager assets, in UPath path)
@@ -63,7 +65,7 @@ internal class LevelLoader(
             )
         );
 
-        var level = new LevelFile();
+        var level = new LevelFile() { Configs = jsonLevel.Configs };
 
         // 解析模板语句
         foreach (var (templateKey, templateJsonElement) in jsonLevel.Templates)
