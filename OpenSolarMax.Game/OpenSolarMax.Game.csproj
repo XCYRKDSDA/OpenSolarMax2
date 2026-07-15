@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arch" Version="2.1.0" />
+    <PackageReference Include="Arch-Events" Version="2.1.0" />
     <PackageReference Include="Arch.System" Version="1.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CsToml.Extensions.Configuration" Version="1.8.0" />
