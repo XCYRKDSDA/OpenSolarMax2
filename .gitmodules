@@ -1,3 +1,6 @@
 [submodule "Nine"]
 	path = Third Party/Nine
 	url = https://github.com/XCYRKDSDA/Nine.git
+[submodule "Third Party/Arch.Extended"]
+	path = Third Party/Arch.Extended
+	url = https://github.com/XCYRKDSDA/Arch.Extended

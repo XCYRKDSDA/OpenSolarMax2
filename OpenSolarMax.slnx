@@ -2,6 +2,7 @@
   <Folder Name="/Third Party/">
     <Project Path="Third Party/FMOD/FMOD.csproj" />
     <Project Path="Third Party/Nine/Nine/Nine.MG.csproj" />
+    <Project Path="Third Party/Arch.Extended/Arch.System.SourceGenerator/Arch.System.SourceGenerator.csproj" />
   </Folder>
   <Project Path="OpenSolarMax.Game/OpenSolarMax.Game.csproj" />
   <Project Path="OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj" />

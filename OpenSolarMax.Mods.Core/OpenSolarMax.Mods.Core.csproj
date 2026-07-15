@@ -23,10 +23,6 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Arch.System.SourceGenerator" Version="2.1.0">
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <PrivateAssets>runtime</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
       <ExcludeAssets>runtime</ExcludeAssets>
       <PrivateAssets>runtime</PrivateAssets>
@@ -40,6 +36,11 @@
     </ProjectReference>
     <ProjectReference
       Include="..\OpenSolarMax.Mods.Core.SourceGenerators\OpenSolarMax.Mods.Core.SourceGenerators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="true"
+    />
+    <ProjectReference
+      Include="..\Third Party\Arch.Extended\Arch.System.SourceGenerator\Arch.System.SourceGenerator.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="true"
     />
