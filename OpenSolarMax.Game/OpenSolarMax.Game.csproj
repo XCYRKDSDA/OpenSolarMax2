@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="Arch-Events" Version="2.1.0" />
-    <PackageReference Include="Arch.System" Version="1.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CsToml.Extensions.Configuration" Version="1.8.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
@@ -31,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Third Party\Arch.Extended\Arch.System\Arch.System.csproj" />
     <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj" />
     <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj" />
   </ItemGroup>
