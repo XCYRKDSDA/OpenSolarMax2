@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -115,14 +114,24 @@ internal static class SystemsTopology
     }
 
     /// <summary>
-    /// 组合执行图：基于提取的系统执行声明进行验证、推导与合并，产出最终执行顺序关系图
+    /// 组合执行图：基于提取的系统执行声明进行验证、推导与合并，产出最终执行顺序关系集合，并为每条边标注来源
     /// </summary>
     /// <param name="declarations">从系统类型属性中提取的原始声明</param>
-    /// <returns>最终的执行顺序关系集合</returns>
-    public static HashSet<OrderedTypePair> ComposeExecutionGraph(
+    /// <returns>所有系统之间的执行顺序关系，每个键为有序对，每个值为该边来源集合</returns>
+    public static Dictionary<OrderedTypePair, HashSet<EdgeSource>> ComposeExecutionGraph(
         SystemExecutionDeclarations declarations
     )
     {
+        var edgeSources = new Dictionary<OrderedTypePair, HashSet<EdgeSource>>();
+
+        void RegisterEdge(OrderedTypePair pair, EdgeSource src)
+        {
+            if (edgeSources.TryGetValue(pair, out var sources))
+                sources.Add(src);
+            else
+                edgeSources[pair] = new HashSet<EdgeSource> { src };
+        }
+
         #region 推导所有系统类型
 
         var systemTypes = new HashSet<Type>();
@@ -178,15 +187,13 @@ internal static class SystemsTopology
             )
                 throw new Exception("A system shall belong to exactly one stage!");
 
-            if (systemType.GetCustomAttributes<BeforeStructuralChangesAttribute>().Any()) { }
-            else if (systemType.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any()) { }
-            else if (systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Any())
-            {
-                if (systemType.GetCustomAttributes<ChangeStructureAttribute>().Any())
-                    throw new Exception(
-                        "A after-structural-changes system shall not make structural changes!"
-                    );
-            }
+            if (
+                systemType.GetCustomAttributes<AfterStructuralChangesAttribute>().Any()
+                && systemType.GetCustomAttributes<ChangeStructureAttribute>().Any()
+            )
+                throw new Exception(
+                    "A after-structural-changes system shall not make structural changes!"
+                );
 
             // > 声明了结构化变更的系统必须继承 IXxxSystemWithStructuralChanges；反之亦然
             if (
@@ -237,6 +244,8 @@ internal static class SystemsTopology
         #region 显式执行顺序关系检查与合并
 
         var explicitOrders = declarations.ExplicitOrders.ToHashSet();
+        foreach (var pair in explicitOrders)
+            RegisterEdge(pair, EdgeSource.Explicit);
         var explicitFinePairs = declarations.FineWithPairs.ToHashSet();
 
         // 检测同一对系统是否有多个相互矛盾的显式关系
@@ -271,11 +280,9 @@ internal static class SystemsTopology
                 if (priority2 <= priority1)
                     break;
 
-                explicitOrders.UnionWith(
-                    from sys1 in group1
-                    from sys2 in group2
-                    select new OrderedTypePair(sys1, sys2)
-                );
+                foreach (var sys1 in group1)
+                foreach (var sys2 in group2)
+                    RegisterEdge(new OrderedTypePair(sys1, sys2), EdgeSource.Priority);
             }
         }
 
@@ -424,30 +431,23 @@ internal static class SystemsTopology
 
         #endregion
 
-        // 以显式顺序为基础
-        var finalOrders = explicitOrders.ToHashSet();
-
         // 添加所有组件读写关系
-        finalOrders.UnionWith(
-            readWriteOrders.Where(p =>
+        foreach (
+            var p in readWriteOrders.Where(p =>
                 !explicitOrders.Contains(p.Reverse()) && !explicitFinePairs.Contains(p.Unorder())
             )
-        );
-
-        // 构建并输出 graphviz 文本
-        var dotGraph = BuildSystemTopologyDotGraph(
-            systemTypes,
-            finalOrders,
-            beforeSystems,
-            reactSystems,
-            afterSystems
-        );
-        Debug.WriteLine(dotGraph);
+        )
+        {
+            RegisterEdge(p, EdgeSource.ReadWrite);
+        }
 
         // 添加所有结构化变更阶段关系
-        finalOrders.UnionWith(structuralChangeOrders);
+        foreach (var p in structuralChangeOrders)
+        {
+            RegisterEdge(p, EdgeSource.StructuralChange);
+        }
 
-        return finalOrders;
+        return edgeSources;
     }
 
     /// <summary>
@@ -496,42 +496,147 @@ internal static class SystemsTopology
     }
 
     /// <summary>
-    /// 构建系统拓扑的 Graphviz DOT 格式文本
+    /// 构建系统拓扑的 Graphviz DOT 格式文本，用于程序解析。节点带 stage/priority 属性，边带来源 label。
     /// </summary>
+    /// <param name="declarations">系统执行声明</param>
+    /// <param name="edgeSources">所有系统之间的执行顺序关系，每个键为有序对，每个值为该边来源集合</param>
     public static string BuildSystemTopologyDotGraph(
-        IReadOnlySet<Type> systemTypes,
-        IReadOnlySet<OrderedTypePair> orders,
-        IReadOnlySet<Type> beforeSystems,
-        IReadOnlySet<Type> reactSystems,
-        IReadOnlySet<Type> afterSystems
+        SystemExecutionDeclarations declarations,
+        Dictionary<OrderedTypePair, HashSet<EdgeSource>> edgeSources
     )
     {
         var dotsBuilder = new StringBuilder();
         dotsBuilder.AppendLine("strict digraph {");
         dotsBuilder.AppendLine("  rankdir=LR;");
-        // 添加三个阶段
-        dotsBuilder.AppendLine("  subgraph BeforeStructuralChanges {");
-        dotsBuilder.AppendLine("    cluster=true;");
-        dotsBuilder.AppendLine("    label=\"BeforeStructuralChanges\"");
-        foreach (var system in beforeSystems)
-            dotsBuilder.AppendLine($"    \"{system.Name}\";");
-        dotsBuilder.AppendLine("  }");
-        dotsBuilder.AppendLine("  subgraph ReactToStructuralChanges {");
-        dotsBuilder.AppendLine("    cluster=true;");
-        dotsBuilder.AppendLine("    label=\"ReactToStructuralChanges\"");
-        foreach (var system in reactSystems)
-            dotsBuilder.AppendLine($"    \"{system.Name}\";");
-        dotsBuilder.AppendLine("  }");
-        dotsBuilder.AppendLine("  subgraph AfterStructuralChanges {");
-        dotsBuilder.AppendLine("    cluster=true;");
-        dotsBuilder.AppendLine("    label=\"AfterStructuralChanges\"");
-        foreach (var system in afterSystems)
-            dotsBuilder.AppendLine($"    \"{system.Name}\";");
-        dotsBuilder.AppendLine("  }");
-        // 添加依赖关系
-        foreach (var (before, after) in orders)
-            dotsBuilder.AppendLine($"  \"{after.Name}\" -> \"{before.Name}\";");
+
+        // 节点声明: 所有系统 type, 标注 stage 和 priority
+        var allSystems = declarations
+            .BeforeStageSystems.Union(declarations.ReactStageSystems)
+            .Union(declarations.AfterStageSystems);
+        foreach (var type in allSystems)
+        {
+            string stage;
+            if (declarations.BeforeStageSystems.Contains(type))
+                stage = "before";
+            else if (declarations.ReactStageSystems.Contains(type))
+                stage = "react";
+            else
+                stage = "after";
+
+            if (declarations.Priorities.TryGetValue(type, out var priority))
+                dotsBuilder.AppendLine($"  \"{type.Name}\" [stage={stage}, priority={priority}];");
+            else
+                dotsBuilder.AppendLine($"  \"{type.Name}\" [stage={stage}];");
+        }
+
+        // 边声明: 遍历所有 edgeSources, 带来源 label, after -> before
+        foreach (var (pair, sources) in edgeSources)
+        {
+            var label = string.Join(
+                ";",
+                sources.OrderBy(s => s).Select(s => s.ToString().ToLowerInvariant())
+            );
+            dotsBuilder.AppendLine(
+                $"  \"{pair.After.Name}\" -> \"{pair.Before.Name}\" [label=\"{label}\"];"
+            );
+        }
+
         dotsBuilder.AppendLine("}");
         return dotsBuilder.ToString();
+    }
+
+    /// <summary>
+    /// 构建系统拓扑的 D2 格式文本，用于可视化。阶段用容器表示，结构变更用容器间宏边，过滤掉 Priority 和 StructuralChange 来源边。
+    /// </summary>
+    /// <param name="declarations">系统执行声明</param>
+    /// <param name="edgeSources">所有系统之间的执行顺序关系，每个键为有序对，每个值为该边来源集合</param>
+    public static string BuildSystemTopologyD2Graph(
+        SystemExecutionDeclarations declarations,
+        Dictionary<OrderedTypePair, HashSet<EdgeSource>> edgeSources
+    )
+    {
+        var d2Builder = new StringBuilder();
+        d2Builder.AppendLine("direction: left");
+        d2Builder.AppendLine();
+
+        // 3 个 stage 容器, 内嵌 priority 子容器
+        void WriteStageContainer(string name, IReadOnlySet<Type> types)
+        {
+            d2Builder.AppendLine($"{name}: {{");
+            // 按 priority 分组
+            var byPriority = types
+                .GroupBy(t => declarations.Priorities.TryGetValue(t, out var p) ? (int?)p : null)
+                .OrderByDescending(g => g.Key ?? int.MinValue);
+            foreach (var group in byPriority)
+            {
+                if (group.Key.HasValue)
+                {
+                    d2Builder.AppendLine($"  priority_{group.Key}: {{");
+                    foreach (var type in group)
+                        d2Builder.AppendLine($"    {type.Name}");
+                    d2Builder.AppendLine("  }");
+                }
+                else
+                {
+                    foreach (var type in group)
+                        d2Builder.AppendLine($"  {type.Name}");
+                }
+            }
+            d2Builder.AppendLine("}");
+            d2Builder.AppendLine();
+        }
+        WriteStageContainer("BeforeStructuralChanges", declarations.BeforeStageSystems);
+        WriteStageContainer("ReactToStructuralChanges", declarations.ReactStageSystems);
+        WriteStageContainer("AfterStructuralChanges", declarations.AfterStageSystems);
+
+        // 3 条 cluster 间宏边
+        d2Builder.AppendLine(
+            "ReactToStructuralChanges -> BeforeStructuralChanges: structuralChange"
+        );
+        d2Builder.AppendLine("AfterStructuralChanges -> BeforeStructuralChanges: structuralChange");
+        d2Builder.AppendLine(
+            "AfterStructuralChanges -> ReactToStructuralChanges: structuralChange"
+        );
+        d2Builder.AppendLine();
+
+        // 遍历 edgeSources, 过滤掉 Priority 和 StructuralChange 来源
+        foreach (var (pair, sources) in edgeSources)
+        {
+            var remaining = sources
+                .Where(s => s != EdgeSource.Priority && s != EdgeSource.StructuralChange)
+                .ToHashSet();
+            if (remaining.Count == 0)
+                continue;
+
+            var afterStage =
+                declarations.BeforeStageSystems.Contains(pair.After) ? 0
+                : declarations.ReactStageSystems.Contains(pair.After) ? 1
+                : 2;
+            var beforeStage =
+                declarations.BeforeStageSystems.Contains(pair.Before) ? 0
+                : declarations.ReactStageSystems.Contains(pair.Before) ? 1
+                : 2;
+            if (afterStage != beforeStage)
+                continue;
+
+            var label = string.Join(
+                ";",
+                remaining.OrderBy(s => s).Select(s => s.ToString().ToLowerInvariant())
+            );
+
+            string D2Path(Type t)
+            {
+                var stage =
+                    declarations.BeforeStageSystems.Contains(t) ? "BeforeStructuralChanges"
+                    : declarations.ReactStageSystems.Contains(t) ? "ReactToStructuralChanges"
+                    : "AfterStructuralChanges";
+                return declarations.Priorities.TryGetValue(t, out var p)
+                    ? $"{stage}.priority_{p}.{t.Name}"
+                    : $"{stage}.{t.Name}";
+            }
+            d2Builder.AppendLine($"  {D2Path(pair.After)} -> {D2Path(pair.Before)}: \"{label}\"");
+        }
+
+        return d2Builder.ToString();
     }
 }

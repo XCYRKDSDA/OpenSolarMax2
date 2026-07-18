@@ -50,3 +50,11 @@ internal record SystemExecutionDeclarations(
     ImmutableHashSet<Type> ReactStageSystems,
     ImmutableHashSet<Type> AfterStageSystems
 );
+
+internal enum EdgeSource
+{
+    Explicit,
+    Priority,
+    ReadWrite,
+    StructuralChange,
+}
