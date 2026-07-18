@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Reflection;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Declaration;
@@ -13,11 +14,19 @@ internal record BakedBehaviorsInfo(
     ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods
 )
 {
-    private static ImmutableSortedSystemTypes BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
+    private static ImmutableArray<Type> BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
     {
-        var orders = SystemsTopology.ExtractExecutionOrders(systemTypes);
-        var sorted = SystemsTopology.TopologicalSortSystems(systemTypes, orders);
-        return new ImmutableSortedSystemTypes([.. systemTypes], [.. orders], [.. sorted]);
+        var declarations = SystemsTopology.ExtractExecutionOrders(systemTypes);
+        var edgeSources = SystemsTopology.ComposeExecutionGraph(declarations);
+        Debug.WriteLine("=== DOT GRAPH (for programmatic parsing) ===");
+        Debug.WriteLine(SystemsTopology.BuildSystemTopologyDotGraph(declarations, edgeSources));
+        Debug.WriteLine("=== D2 GRAPH (for visualization) ===");
+        Debug.WriteLine(SystemsTopology.BuildSystemTopologyD2Graph(declarations, edgeSources));
+        var sorted = SystemsTopology.TopologicalSortSystems(
+            systemTypes,
+            edgeSources.Keys.ToHashSet()
+        );
+        return [.. sorted];
     }
 
     public static BakedBehaviorsInfo Bake(params BehaviorsInfo[] layers)

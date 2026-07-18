@@ -9,9 +9,6 @@ namespace OpenSolarMax.Game.Modding.ECS;
 /// <param name="After">要后执行的系统类型</param>
 internal record OrderedTypePair(Type Before, Type After)
 {
-    public override int GetHashCode() =>
-        HashCode.Combine(Before.GetHashCode(), After.GetHashCode());
-
     public OrderedTypePair Reverse() => new(After, Before);
 
     public UnorderedTypePair Unorder() => new(Before, After);
@@ -36,13 +33,25 @@ internal record UnorderedTypePair(Type Sys1, Type Sys2)
 }
 
 /// <summary>
-/// 包括执行顺序的系统类型
+/// 系统的执行声明集合，包括显式顺序、优先级、组件读写声明和执行阶段归属
 /// </summary>
-/// <param name="Types">所有系统类型</param>
-/// <param name="Orders">各个系统之间的执行顺序关系</param>
-/// <param name="Sorted">按照执行顺序要求完成排序的系统类型</param>
-internal record ImmutableSortedSystemTypes(
-    ImmutableHashSet<Type> Types,
-    ImmutableHashSet<OrderedTypePair> Orders,
-    ImmutableArray<Type> Sorted
+internal record SystemExecutionDeclarations(
+    ImmutableHashSet<OrderedTypePair> ExplicitOrders,
+    ImmutableHashSet<UnorderedTypePair> FineWithPairs,
+    ImmutableDictionary<Type, int> Priorities,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> PrevReaders,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> CurrReaders,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> Writers,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> Iterators,
+    ImmutableHashSet<Type> BeforeStageSystems,
+    ImmutableHashSet<Type> ReactStageSystems,
+    ImmutableHashSet<Type> AfterStageSystems
 );
+
+internal enum EdgeSource
+{
+    Explicit,
+    Priority,
+    ReadWrite,
+    StructuralChange,
+}
