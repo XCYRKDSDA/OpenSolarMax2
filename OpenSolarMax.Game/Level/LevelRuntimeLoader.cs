@@ -99,7 +99,7 @@ internal class LevelRuntimeLoader
         var world = World.Create();
         var inputSystem = new AggregateSystem(
             world,
-            _behaviors.SystemTypes.Input.Sorted,
+            _behaviors.SystemTypes.Input,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
@@ -113,7 +113,7 @@ internal class LevelRuntimeLoader
         );
         var aiSystem = new AggregateSystem(
             world,
-            _behaviors.SystemTypes.Ai.Sorted,
+            _behaviors.SystemTypes.Ai,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
@@ -127,7 +127,7 @@ internal class LevelRuntimeLoader
         );
         var simulateSystem = new AggregateSystem(
             world,
-            _behaviors.SystemTypes.Simulate.Sorted,
+            _behaviors.SystemTypes.Simulate,
             new Dictionary<Type, object>
             {
                 [typeof(IAssetsManager)] = _levelModContext.LocalAssets,
@@ -141,7 +141,7 @@ internal class LevelRuntimeLoader
         );
         var renderSystem = new AggregateSystem(
             world,
-            _behaviors.SystemTypes.Render.Sorted,
+            _behaviors.SystemTypes.Render,
             new Dictionary<Type, object>
             {
                 [typeof(GraphicsDevice)] = _game.GraphicsDevice,
