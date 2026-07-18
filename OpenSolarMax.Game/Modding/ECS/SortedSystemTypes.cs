@@ -9,9 +9,6 @@ namespace OpenSolarMax.Game.Modding.ECS;
 /// <param name="After">要后执行的系统类型</param>
 internal record OrderedTypePair(Type Before, Type After)
 {
-    public override int GetHashCode() =>
-        HashCode.Combine(Before.GetHashCode(), After.GetHashCode());
-
     public OrderedTypePair Reverse() => new(After, Before);
 
     public UnorderedTypePair Unorder() => new(Before, After);
