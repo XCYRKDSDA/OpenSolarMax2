@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -53,3 +55,5 @@ public sealed partial class TransitFromChargingToTravellingSystem(
 
     public void Update() => ProceedQuery(world);
 }
+
+#endif

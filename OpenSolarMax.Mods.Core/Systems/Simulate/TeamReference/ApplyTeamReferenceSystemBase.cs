@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -55,3 +57,5 @@ public abstract class ApplyTeamReferenceSystemBase<TTarget, TReference>(World wo
         ApplyTeamReferenceImpl(in reference, ref target);
     }
 }
+
+#endif

@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 // using Arch.Core;
 // using Arch.System;
 // using Arch.System.SourceGenerator;
@@ -28,3 +30,5 @@
 //
 //     public void Update() => SetHearer3DAttributesQuery(world);
 // }
+
+#endif

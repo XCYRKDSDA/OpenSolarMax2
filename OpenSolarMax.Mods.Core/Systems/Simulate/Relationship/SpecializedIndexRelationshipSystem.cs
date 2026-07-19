@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Core;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
@@ -82,3 +84,5 @@ public sealed class IndexPlanetSelectionRingSystem(World world)
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexViewSelectionRingSystem(World world)
     : IndexRelationshipSystemBase<ViewSelectionRing>(world) { }
+
+#endif

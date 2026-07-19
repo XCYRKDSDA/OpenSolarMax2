@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -52,3 +54,5 @@ public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFacto
 
     public void Update(CommandBuffer commandBuffer) => PlayEffectQuery(world, commandBuffer);
 }
+
+#endif

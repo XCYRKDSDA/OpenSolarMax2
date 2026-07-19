@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.System;
@@ -31,3 +33,5 @@ public sealed partial class UpdateRevolutionPhaseSystem(World world) : ITickSyst
 
     public void Update(GameTime gameTime) => UpdateRevolutionQuery(world, gameTime);
 }
+
+#endif

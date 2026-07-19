@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -43,3 +45,5 @@ public sealed partial class ExpireTimeoutEntitiesSystem(World world)
 
     public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }
+
+#endif

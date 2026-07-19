@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -55,3 +57,5 @@ public sealed partial class SynchronizeColorSystem(World world) : ICalcSystem
 
     public void Update() => SyncFromRootQuery(world);
 }
+
+#endif

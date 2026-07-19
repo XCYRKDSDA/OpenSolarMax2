@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using System.Runtime.CompilerServices;
 using Arch.Buffer;
 using Arch.Core;
@@ -483,3 +485,5 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
 
     public void Update(CommandBuffer commandBuffer) => HandleInputsQuery(world, commandBuffer);
 }
+
+#endif

@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
@@ -170,3 +172,5 @@ public sealed partial class StartJumpingSystem(
 
     public void Update(CommandBuffer commandBuffer) => StartJumpingQuery(world, commandBuffer);
 }
+
+#endif

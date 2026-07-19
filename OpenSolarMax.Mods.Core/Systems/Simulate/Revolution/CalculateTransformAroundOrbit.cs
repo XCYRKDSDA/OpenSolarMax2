@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -34,3 +36,5 @@ public sealed partial class CalculateTransformAroundOrbitSystem(World world) : I
 
     public void Update() => CalculateTransformQuery(world);
 }
+
+#endif

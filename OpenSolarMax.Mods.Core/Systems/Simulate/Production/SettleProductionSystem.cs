@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -70,3 +72,5 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
 
     public void Update(CommandBuffer commandBuffer) => SettleProductionQuery(world, commandBuffer);
 }
+
+#endif

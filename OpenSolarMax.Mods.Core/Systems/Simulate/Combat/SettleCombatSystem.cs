@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -54,3 +56,5 @@ public sealed partial class SettleCombatSystem(World world) : ICalcSystemWithStr
 
     public void Update(CommandBuffer commandBuffer) => SettleCombatQuery(world, commandBuffer);
 }
+
+#endif

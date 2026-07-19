@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding;
@@ -28,3 +30,5 @@ public sealed class ApplyTeamColorSystem(World world)
         target.Color = reference.Value;
     }
 }
+
+#endif

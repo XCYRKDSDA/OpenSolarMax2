@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -279,3 +281,5 @@ public partial class WarpSystem(World world, IAssetsManager assets, IConceptFact
         }
     }
 }
+
+#endif

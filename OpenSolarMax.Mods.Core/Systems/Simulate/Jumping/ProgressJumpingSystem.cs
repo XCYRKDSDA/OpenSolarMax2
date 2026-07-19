@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -32,3 +34,5 @@ public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 
     public void Update(GameTime gameTime) => ProceedQuery(world, gameTime);
 }
+
+#endif

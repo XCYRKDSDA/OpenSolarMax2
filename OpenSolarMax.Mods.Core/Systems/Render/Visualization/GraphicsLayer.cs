@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 namespace OpenSolarMax.Mods.Core.Systems;
 
 public enum GraphicsLayer
@@ -6,3 +8,5 @@ public enum GraphicsLayer
     Interface = 100,
     Debug = 200,
 }
+
+#endif

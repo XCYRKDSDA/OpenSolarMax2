@@ -1,3 +1,5 @@
+// 整文件禁用：ECS 框架层重构后待迁移
+#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -130,7 +132,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             friendPlanets.Select(info => info.Position).Aggregate(Vector2.Zero, (v1, v2) => v1 + v2)
             / friendPlanets.Count;
 
-        #region 防御
+#region 防御
 
         // 寻找目标防守星球
         var defendTargets = planetInfos
@@ -231,9 +233,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             }
         }
 
-        #endregion
+#endregion
 
-        #region 进攻
+#region 进攻
 
         // 寻找可进攻的天体
         var attackTargets = planetInfos
@@ -340,9 +342,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             }
         }
 
-        #endregion
+#endregion
 
-        #region 聚兵
+#region 聚兵
 
         var aiValues = planetInfos.ToDictionary(
             p => p.Key,
@@ -422,8 +424,10 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             }
         }
 
-        #endregion
+#endregion
     }
 
     public void Update(CommandBuffer commandBuffer) => ExecuteQuery(world, commandBuffer);
 }
+
+#endif
