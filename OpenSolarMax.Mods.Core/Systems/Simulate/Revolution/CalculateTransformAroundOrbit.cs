@@ -1,5 +1,4 @@
 // 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -13,13 +12,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相位计算实体绕其轨道的位姿变换的系统
 /// </summary>
-[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(RevolutionOrbit)),
     ReadCurr(typeof(RevolutionState)),
     Write(typeof(RelativeTransform))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateTransformAroundOrbitSystem(World world) : ICalcSystem
 {
     [Query]
@@ -36,5 +34,3 @@ public sealed partial class CalculateTransformAroundOrbitSystem(World world) : I
 
     public void Update() => CalculateTransformQuery(world);
 }
-
-#endif
