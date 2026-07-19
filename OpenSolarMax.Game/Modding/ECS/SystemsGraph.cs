@@ -33,19 +33,22 @@ internal record UnorderedTypePair(Type Sys1, Type Sys2)
 }
 
 /// <summary>
-/// 系统的执行声明集合，包括显式顺序、优先级、组件读写声明和执行阶段归属
+/// 一组同类型系统之间的原始依赖关系声明
 /// </summary>
 internal record SystemExecutionDeclarations(
+    ImmutableHashSet<Type> Systems,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> Readers,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> Writers,
+    ImmutableHashSet<Type> AllReaders,
+    ImmutableHashSet<Type> AllWriters,
     ImmutableHashSet<OrderedTypePair> ExplicitOrders,
     ImmutableHashSet<UnorderedTypePair> FineWithPairs,
-    ImmutableDictionary<Type, int> Priorities,
-    ImmutableDictionary<Type, ImmutableHashSet<Type>> PrevReaders,
-    ImmutableDictionary<Type, ImmutableHashSet<Type>> CurrReaders,
-    ImmutableDictionary<Type, ImmutableHashSet<Type>> Writers,
-    ImmutableDictionary<Type, ImmutableHashSet<Type>> Iterators,
-    ImmutableHashSet<Type> BeforeStageSystems,
-    ImmutableHashSet<Type> ReactStageSystems,
-    ImmutableHashSet<Type> AfterStageSystems
+    ImmutableDictionary<Type, int> Priorities
+);
+
+internal record DualStageSystemExecutionDeclarations(
+    SystemExecutionDeclarations Update,
+    SystemExecutionDeclarations PostUpdate
 );
 
 internal enum EdgeSource
@@ -53,5 +56,24 @@ internal enum EdgeSource
     Explicit,
     Priority,
     ReadWrite,
-    StructuralChange,
 }
+
+/// <summary>
+/// ComposeExecutionGraph 产出的四张子图，分别对应 Update / Pre / StructuralChange / Post 四段系统
+/// </summary>
+internal record FourStageSystemGraphs(
+    SystemsGraph Update,
+    SystemsGraph PreStructuralChange,
+    SystemsGraph StructuralChange,
+    SystemsGraph PostStructuralChange
+);
+
+/// <summary>
+/// 描述由系统组成的图
+/// </summary>
+/// <param name="Systems">图中的所有系统</param>
+/// <param name="Orders">图中的所有顺序边及其来源</param>
+internal record SystemsGraph(
+    ImmutableList<Type> Systems,
+    ImmutableDictionary<OrderedTypePair, ImmutableHashSet<EdgeSource>> Orders
+);

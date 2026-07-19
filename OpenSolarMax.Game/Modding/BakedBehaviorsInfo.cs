@@ -10,23 +10,33 @@ namespace OpenSolarMax.Game.Modding;
 internal record BakedBehaviorsInfo(
     ImmutableDictionary<string, DeclarationTranslatorInfo> TranslatorTypes,
     ImmutableDictionary<string, ConceptInfo> ConceptInfos,
-    ImmutableSortedSystemTypeCollection SystemTypes,
+    StageSystemTypesCollection SystemTypes,
     ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods
 )
 {
-    private static ImmutableArray<Type> BakeSortedSystemTypes(IReadOnlySet<Type> systemTypes)
+    private static ImmutableSortedSystemTypesCollection BakeSortedSystemTypes(
+        IReadOnlySet<Type> systemTypes
+    )
     {
         var declarations = SystemsTopology.ExtractExecutionOrders(systemTypes);
-        var edgeSources = SystemsTopology.ComposeExecutionGraph(declarations);
+        var graphs = SystemsTopology.ComposeExecutionGraph(declarations);
         Debug.WriteLine("=== DOT GRAPH (for programmatic parsing) ===");
-        Debug.WriteLine(SystemsTopology.BuildSystemTopologyDotGraph(declarations, edgeSources));
+        Debug.WriteLine(SystemsTopology.BuildSystemTopologyDotGraph(declarations, graphs));
         Debug.WriteLine("=== D2 GRAPH (for visualization) ===");
-        Debug.WriteLine(SystemsTopology.BuildSystemTopologyD2Graph(declarations, edgeSources));
-        var sorted = SystemsTopology.TopologicalSortSystems(
-            systemTypes,
-            edgeSources.Keys.ToHashSet()
+        Debug.WriteLine(SystemsTopology.BuildSystemTopologyD2Graph(declarations, graphs));
+
+        return new ImmutableSortedSystemTypesCollection(
+            UpdateSystems: SystemsTopology.TopologicalSortSystems(graphs.Update),
+            PreStructuralChangeSystems: SystemsTopology.TopologicalSortSystems(
+                graphs.PreStructuralChange
+            ),
+            StructuralChangeSystems: SystemsTopology.TopologicalSortSystems(
+                graphs.StructuralChange
+            ),
+            PostStructuralChangeSystems: SystemsTopology.TopologicalSortSystems(
+                graphs.PostStructuralChange
+            )
         );
-        return [.. sorted];
     }
 
     public static BakedBehaviorsInfo Bake(params BehaviorsInfo[] layers)
@@ -69,13 +79,19 @@ internal record BakedBehaviorsInfo(
         var mergedConceptInfos = conceptInfos.ToImmutableDictionary();
 
         // 合并系统类型。合并后完成拓扑排序
-        var mergedSystemTypes = new ImmutableSortedSystemTypeCollection(
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Input).ToImmutableHashSet()),
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Ai).ToImmutableHashSet()),
-            BakeSortedSystemTypes(
+        var mergedSystemTypes = new StageSystemTypesCollection(
+            Input: BakeSortedSystemTypes(
+                layers.SelectMany(l => l.SystemTypes.Input).ToImmutableHashSet()
+            ),
+            Ai: BakeSortedSystemTypes(
+                layers.SelectMany(l => l.SystemTypes.Ai).ToImmutableHashSet()
+            ),
+            Simulate: BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Simulate).ToImmutableHashSet()
             ),
-            BakeSortedSystemTypes(layers.SelectMany(l => l.SystemTypes.Render).ToImmutableHashSet())
+            Render: BakeSortedSystemTypes(
+                layers.SelectMany(l => l.SystemTypes.Render).ToImmutableHashSet()
+            )
         );
 
         // 合并钩子函数

@@ -8,11 +8,6 @@ public interface ITickSystem
     void Update(GameTime gameTime);
 }
 
-public interface ITickSystemWithStructuralChanges
-{
-    void Update(GameTime gameTime, CommandBuffer commandBuffer);
-}
-
 public interface ICalcSystem
 {
     void Update();

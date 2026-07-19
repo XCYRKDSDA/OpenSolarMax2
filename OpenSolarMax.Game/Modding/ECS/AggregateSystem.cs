@@ -8,6 +8,8 @@ namespace OpenSolarMax.Game.Modding.ECS;
 
 internal class AggregateSystem : IDisposable
 {
+    private const int MaxFixpointIterations = 32;
+
     private static void RegisterHook(
         IEnumerable<object> systems,
         IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos
@@ -40,77 +42,105 @@ internal class AggregateSystem : IDisposable
 
     private readonly World _world;
 
-    private readonly List<object> _beforeStructuralChangesSystems = [];
-    private readonly List<ICalcSystemWithStructuralChanges> _reactToStructuralChangeSystems = [];
-    private readonly List<ICalcSystem> _afterStructuralChangesSystems = [];
+    private readonly List<ITickSystem> _updateSystems = [];
+    private readonly List<ICalcSystem> _preStructuralChangeSystems = [];
+    private readonly List<ICalcSystemWithStructuralChanges> _structuralChangeSystems = [];
+    private readonly List<ICalcSystem> _postStructuralChangeSystems = [];
 
     private readonly CommandBuffer _commandBuffer = new();
 
     public AggregateSystem(
         World world,
-        IReadOnlyList<Type> sortedSystemTypes,
+        ImmutableSortedSystemTypesCollection sortedSystemTypes,
         IReadOnlyDictionary<Type, object> @params,
         IReadOnlyDictionary<string, IReadOnlyList<MethodInfo>> hookImplInfos
     )
     {
         _world = world;
 
-        var systems = sortedSystemTypes
-            .Select(t => PluginFactory.Instantiate(t, [(typeof(World), world)], @params))
+        var updateSystems = sortedSystemTypes
+            .UpdateSystems.Select(t =>
+                PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
+            )
             .ToList();
-        RegisterHook(systems, hookImplInfos);
+        var preStructuralChangeSystems = sortedSystemTypes
+            .PreStructuralChangeSystems.Select(t =>
+                PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
+            )
+            .ToList();
+        var structuralChangeSystems = sortedSystemTypes
+            .StructuralChangeSystems.Select(t =>
+                PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
+            )
+            .ToList();
+        var postStructuralChangeSystems = sortedSystemTypes
+            .PostStructuralChangeSystems.Select(t =>
+                PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
+            )
+            .ToList();
 
-        // 寻找响应式结构化变更的部分，根据其划分为三部分
-        foreach (var (type, system) in sortedSystemTypes.Zip(systems))
-        {
-            if (type.GetCustomAttributes<BeforeStructuralChangesAttribute>().Any())
-                _beforeStructuralChangesSystems.Add(system);
-            else if (type.GetCustomAttributes<ReactToStructuralChangesAttribute>().Any())
-                _reactToStructuralChangeSystems.Add((ICalcSystemWithStructuralChanges)system);
-            else if (type.GetCustomAttributes<AfterStructuralChangesAttribute>().Any())
-                _afterStructuralChangesSystems.Add((ICalcSystem)system);
-        }
-    }
+        // 注册挂载点（需所有系统实例）
+        RegisterHook(
+            updateSystems
+                .Concat(preStructuralChangeSystems)
+                .Concat(structuralChangeSystems)
+                .Concat(postStructuralChangeSystems),
+            hookImplInfos
+        );
 
-    private void LateUpdateImpl()
-    {
-        // 响应式结构化变更系统需要立刻执行
-        foreach (var system in _reactToStructuralChangeSystems)
-        {
-            system.Update(_commandBuffer);
-            _commandBuffer.Playback(_world);
-        }
-
-        foreach (var system in _afterStructuralChangesSystems)
-            system.Update();
+        _updateSystems.AddRange(updateSystems.Cast<ITickSystem>());
+        _preStructuralChangeSystems.AddRange(preStructuralChangeSystems.Cast<ICalcSystem>());
+        _structuralChangeSystems.AddRange(
+            structuralChangeSystems.Cast<ICalcSystemWithStructuralChanges>()
+        );
+        _postStructuralChangeSystems.AddRange(postStructuralChangeSystems.Cast<ICalcSystem>());
     }
 
     public void Update(GameTime gameTime)
     {
         Debug.Assert(_commandBuffer.Size == 0);
 
-        foreach (var system in _beforeStructuralChangesSystems)
-        {
-            if (system is ITickSystem s1)
-                s1.Update(gameTime);
-            else if (system is ITickSystemWithStructuralChanges s2)
-                s2.Update(gameTime, _commandBuffer);
-            else if (system is ICalcSystem s3)
-                s3.Update();
-            else if (system is ICalcSystemWithStructuralChanges s4)
-                s4.Update(_commandBuffer);
-            else
-                throw new Exception();
-        }
-        _commandBuffer.Playback(_world, dispose: true);
+        // 执行积分系统
+        foreach (var system in _updateSystems)
+            system.Update(gameTime);
 
-        LateUpdateImpl();
+        LateUpdate();
     }
 
     public void LateUpdate()
     {
         Debug.Assert(_commandBuffer.Size == 0);
-        LateUpdateImpl();
+
+        // 不动点迭代：随动系统反复执行直到无结构化变更
+        for (var iteration = 0; ; iteration++)
+        {
+            foreach (var system in _preStructuralChangeSystems)
+                system.Update();
+
+            foreach (var system in _structuralChangeSystems)
+                system.Update(_commandBuffer);
+
+            var hadStructuralChanges = _commandBuffer.Size > 0;
+            _commandBuffer.Playback(_world, dispose: true);
+
+            // 如果无结构化变更，则退出循环
+            if (!hadStructuralChanges)
+                break;
+
+            // 如果迭代次数太多，则抛异常
+            if (iteration >= MaxFixpointIterations)
+                throw new Exception(
+                    $"fixpoint did not converge within {MaxFixpointIterations} iterations"
+                );
+        }
+
+        Debug.Assert(_commandBuffer.Size == 0);
+
+        // 执行结构化变更后的随动系统
+        foreach (var system in _postStructuralChangeSystems)
+            system.Update();
+
+        Debug.Assert(_commandBuffer.Size == 0);
     }
 
     public void Dispose()
@@ -120,9 +150,10 @@ internal class AggregateSystem : IDisposable
 
         // 释放所有内部系统
         foreach (
-            var sys in _beforeStructuralChangesSystems
-                .Concat(_reactToStructuralChangeSystems)
-                .Concat(_afterStructuralChangesSystems)
+            var sys in _updateSystems
+                .Concat<object>(_preStructuralChangeSystems)
+                .Concat(_structuralChangeSystems)
+                .Concat(_postStructuralChangeSystems)
         )
         {
             if (sys is IDisposable disposable)
