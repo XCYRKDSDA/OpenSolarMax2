@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -11,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[RenderSystem, PostUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(Viewport)), ReadCurr(typeof(AbsoluteTransform))]
 [Write(typeof(Projection))]
 public sealed partial class CalculateCameraProjectionSystem(
@@ -84,5 +82,3 @@ public sealed partial class CalculateCameraProjectionSystem(
 
     public void Update() => CalculateQuery(world);
 }
-
-#endif

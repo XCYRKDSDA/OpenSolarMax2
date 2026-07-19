@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -16,7 +14,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[RenderSystem, PostUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(Projection)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
 public sealed partial class DrawSpritesSystem(
@@ -182,5 +180,3 @@ public sealed partial class DrawSpritesSystem(
         }
     }
 }
-
-#endif

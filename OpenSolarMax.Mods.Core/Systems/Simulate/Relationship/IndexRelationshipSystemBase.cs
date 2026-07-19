@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -24,7 +22,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world) : 
             (Entity _, ref TParticipant index) => index.Clear()
         );
 
-#region `ClearAllIndex` Cache
+    #region `ClearAllIndex` Cache
 
     private static readonly MethodInfo _clearerInfo =
         typeof(IndexRelationshipSystemBase<TRelationship>).GetMethod(
@@ -48,7 +46,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world) : 
         return clearer;
     }
 
-#endregion
+    #endregion
 
     protected static void BuildIndex<TParticipant>(Entity relationship, Entity participant)
         where TParticipant : IParticipantIndex
@@ -57,7 +55,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world) : 
             participant.Get<TParticipant>().Add(relationship);
     }
 
-#region `BuildIndex` Cache
+    #region `BuildIndex` Cache
 
     private static readonly MethodInfo _indexerInfo =
         typeof(IndexRelationshipSystemBase<TRelationship>).GetMethod(
@@ -81,7 +79,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world) : 
         return indexer;
     }
 
-#endregion
+    #endregion
 
     protected virtual void BuildIndex(Entity relationship, in TRelationship record)
     {
@@ -112,5 +110,3 @@ public abstract class IndexRelationshipSystemBase<TRelationship>(World world) : 
         }
     }
 }
-
-#endif

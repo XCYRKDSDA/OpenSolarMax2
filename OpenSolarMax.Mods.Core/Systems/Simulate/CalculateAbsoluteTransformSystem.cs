@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -13,14 +11,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相对变换<see cref="RelativeTransform"/>及其树型关系计算每个实体的绝对变换
 /// </summary>
-[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsParent)),
     ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild)),
     ReadCurr(typeof(RelativeTransform)),
     Write(typeof(AbsoluteTransform))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateAbsoluteTransformSystem(World world) : ICalcSystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(Entity entity)
@@ -64,5 +61,3 @@ public sealed partial class CalculateAbsoluteTransformSystem(World world) : ICal
 
     public void Update() => UpdateFromRootQuery(world);
 }
-
-#endif
