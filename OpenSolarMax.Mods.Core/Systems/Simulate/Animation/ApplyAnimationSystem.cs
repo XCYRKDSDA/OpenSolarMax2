@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -12,7 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据动画播放时间将动画应用于实体的系统
 /// </summary>
-[SimulateSystem, AfterStructuralChanges, Write(typeof(AllComponents))]
+[SimulateSystem, PostUpdate, Write(typeof(AllComponents))]
 public sealed partial class ApplyAnimationSystem(World world) : ICalcSystem
 {
     [Query]
@@ -35,5 +33,3 @@ public sealed partial class ApplyAnimationSystem(World world) : ICalcSystem
 
     public void Update() => AnimateQuery(world);
 }
-
-#endif

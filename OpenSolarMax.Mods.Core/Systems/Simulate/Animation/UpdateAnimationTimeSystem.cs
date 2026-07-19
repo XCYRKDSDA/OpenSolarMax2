@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -12,8 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新默认动画组件的播放时间的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges, Write(typeof(Animation))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
+[SimulateSystem, Update, Iterate(typeof(Animation))]
 public sealed partial class UpdateAnimationTimeSystem(World world) : ITickSystem
 {
     [Query]
@@ -29,5 +26,3 @@ public sealed partial class UpdateAnimationTimeSystem(World world) : ITickSystem
 
     public void Update(GameTime gameTime) => AnimateQuery(world, gameTime);
 }
-
-#endif

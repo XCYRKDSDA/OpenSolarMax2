@@ -17,7 +17,7 @@ public sealed class IndexDependenceSystem(World world)
 
 [SimulateSystem, PostUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(InTeam)), Write(typeof(InTeam.AsTeam)), Write(typeof(InTeam.AsAffiliate))]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTeamAffiliationSystem(World world)
     : IndexRelationshipSystemBase<InTeam>(world) { }
 
@@ -37,6 +37,7 @@ public sealed class IndexAnchorageSystem(World world)
     Write(typeof(TreeRelationship<RelativeTransform>.AsParent)),
     Write(typeof(TreeRelationship<RelativeTransform>.AsChild))
 ]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTransformTreeSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<RelativeTransform>>(world) { }
 
@@ -52,7 +53,7 @@ public sealed class IndexTrailAffiliationSystem(World world)
     Write(typeof(TreeRelationship<ColorSync>.AsParent)),
     Write(typeof(TreeRelationship<ColorSync>.AsChild))
 ]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexColorSyncTreeSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<ColorSync>>(world) { }
 

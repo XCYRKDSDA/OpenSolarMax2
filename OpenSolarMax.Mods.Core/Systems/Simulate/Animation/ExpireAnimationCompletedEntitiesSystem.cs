@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -9,7 +7,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, PostUpdate]
 [ReadCurr(typeof(ExpireAfterAnimationCompleted)), ReadCurr(typeof(Animation)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
@@ -36,5 +34,3 @@ public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
 
     public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }
-
-#endif

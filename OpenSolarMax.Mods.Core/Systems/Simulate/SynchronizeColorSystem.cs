@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -13,11 +11,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 递归遍历树结构，将父实体的 Sprite.Color 复制到所有子实体
 /// </summary>
-[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(TreeRelationship<ColorSync>.AsParent)),
     ReadCurr(typeof(TreeRelationship<ColorSync>.AsChild)),
-    Iterate(typeof(Sprite))
+    Write(typeof(Sprite))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class SynchronizeColorSystem(World world) : ICalcSystem
@@ -57,5 +55,3 @@ public sealed partial class SynchronizeColorSystem(World world) : ICalcSystem
 
     public void Update() => SyncFromRootQuery(world);
 }
-
-#endif

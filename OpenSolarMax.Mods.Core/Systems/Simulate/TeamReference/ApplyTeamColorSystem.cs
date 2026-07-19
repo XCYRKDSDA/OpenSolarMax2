@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding;
@@ -11,7 +9,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 将阵营参考颜色设置到属于阵营的实体的系统
 /// </summary>
-[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(InTeam.AsAffiliate)), ReadCurr(typeof(TeamReferenceColor)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem)), ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed class ApplyTeamColorSystem(World world)
@@ -30,5 +28,3 @@ public sealed class ApplyTeamColorSystem(World world)
         target.Color = reference.Value;
     }
 }
-
-#endif
