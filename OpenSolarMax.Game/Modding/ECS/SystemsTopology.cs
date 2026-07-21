@@ -67,6 +67,10 @@ internal static class SystemsTopology
             throw new Exception(
                 $"Integration system can only use ReadPrev+Iterate; found [ChangeStructure] on {systemType}"
             );
+        if (systemType.GetCustomAttributes<ConsumeAttribute>().Any())
+            throw new Exception(
+                $"Integration system can only use ReadPrev+Iterate; found [Consume] on {systemType}"
+            );
         if (readPrevAttrs.Count == 0 && iterateAttrs.Count == 0)
             throw new Exception(
                 $"Integration system must have at least one [ReadPrev] or [Iterate]; found none on {systemType}"
