@@ -43,12 +43,14 @@ internal record SystemExecutionDeclarations(
     ImmutableHashSet<Type> AllWriters,
     ImmutableHashSet<OrderedTypePair> ExplicitOrders,
     ImmutableHashSet<UnorderedTypePair> FineWithPairs,
-    ImmutableDictionary<Type, int> Priorities
+    ImmutableDictionary<Type, int> Priorities,
+    ImmutableDictionary<Type, ImmutableHashSet<Type>> Consumers,
+    ImmutableHashSet<Type> AllConsumers
 );
 
 internal record DualStageSystemExecutionDeclarations(
     SystemExecutionDeclarations Update,
-    SystemExecutionDeclarations PostUpdate
+    SystemExecutionDeclarations LateUpdate
 );
 
 internal enum EdgeSource
@@ -59,13 +61,12 @@ internal enum EdgeSource
 }
 
 /// <summary>
-/// ComposeExecutionGraph 产出的四张子图，分别对应 Update / Pre / StructuralChange / Post 四段系统
+/// ComposeExecutionGraph 产出的三张子图，分别对应 Update / LateUpdate1 / LateUpdate2 三段系统
 /// </summary>
-internal record FourStageSystemGraphs(
+internal record ThreeStageSystemGraphs(
     SystemsGraph Update,
-    SystemsGraph PreStructuralChange,
-    SystemsGraph StructuralChange,
-    SystemsGraph PostStructuralChange
+    SystemsGraph LateUpdate1,
+    SystemsGraph LateUpdate2
 );
 
 /// <summary>

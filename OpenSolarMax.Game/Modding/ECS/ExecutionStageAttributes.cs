@@ -4,4 +4,4 @@ namespace OpenSolarMax.Game.Modding.ECS;
 public class UpdateAttribute : Attribute { }
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class PostUpdateAttribute : Attribute { }
+public class LateUpdateAttribute : Attribute { }

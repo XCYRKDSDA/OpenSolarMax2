@@ -14,7 +14,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, PostUpdate, BothForGameplayAndPreview]
+[RenderSystem, LateUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(Projection)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
 public sealed partial class DrawSpritesSystem(

@@ -14,30 +14,30 @@ internal static class SystemsTopology
     )
     {
         var updateSystemsDeclarations = new MutableDeclarations();
-        var postUpdateSystemsDeclarations = new MutableDeclarations();
+        var lateUpdateSystemsDeclarations = new MutableDeclarations();
 
         foreach (var systemType in systemTypes)
         {
             var hasUpdate = systemType.GetCustomAttributes<UpdateAttribute>().Any();
-            var hasPostUpdate = systemType.GetCustomAttributes<PostUpdateAttribute>().Any();
+            var hasLateUpdate = systemType.GetCustomAttributes<LateUpdateAttribute>().Any();
 
-            if (hasUpdate && !hasPostUpdate)
+            if (hasUpdate && !hasLateUpdate)
                 ExtractUpdateSystem(systemType, updateSystemsDeclarations, systemTypes);
-            else if (hasPostUpdate && !hasUpdate)
-                ExtractPostUpdateSystem(systemType, postUpdateSystemsDeclarations, systemTypes);
+            else if (hasLateUpdate && !hasUpdate)
+                ExtractLateUpdateSystem(systemType, lateUpdateSystemsDeclarations, systemTypes);
             else
             {
                 throw new Exception(
                     "Every system must be marked with exactly one of"
-                        + $" UpdateAttribute or PostUpdateAttribute; {systemType} has"
-                        + (hasUpdate && hasPostUpdate ? " both" : " neither")
+                        + $" UpdateAttribute or LateUpdateAttribute; {systemType} has"
+                        + (hasUpdate && hasLateUpdate ? " both" : " neither")
                 );
             }
         }
 
         return new DualStageSystemExecutionDeclarations(
             Update: updateSystemsDeclarations.ToImmutable(),
-            PostUpdate: postUpdateSystemsDeclarations.ToImmutable()
+            LateUpdate: lateUpdateSystemsDeclarations.ToImmutable()
         );
     }
 
@@ -85,7 +85,7 @@ internal static class SystemsTopology
         AccumulateDeclarations(systemType, declarations, systemTypes);
     }
 
-    private static void ExtractPostUpdateSystem(
+    private static void ExtractLateUpdateSystem(
         Type systemType,
         MutableDeclarations declarations,
         IReadOnlySet<Type> systemTypes
@@ -99,34 +99,55 @@ internal static class SystemsTopology
         // 必须实现 ICalcSystem 或 ICalcSystemWithStructuralChanges
         if (!isCalc && !isCalcWithChanges)
             throw new Exception(
-                $"[PostUpdate] system {systemType} must implement ICalcSystem or ICalcSystemWithStructuralChanges."
+                $"[LateUpdate] system {systemType} must implement ICalcSystem or ICalcSystemWithStructuralChanges."
             );
 
         var readCurrAttrs = systemType.GetCustomAttributes<ReadCurrAttribute>().ToList();
         var writeAttrs = systemType.GetCustomAttributes<WriteAttribute>().ToList();
+        var consumeAttrs = systemType.GetCustomAttributes<ConsumeAttribute>().ToList();
 
-        // 仅允许 ReadCurr、Write 和 ChangeStructure
+        // 仅允许 ReadCurr、Write、Consume 和 ChangeStructure
         if (systemType.GetCustomAttributes<ReadPrevAttribute>().Any())
             throw new Exception(
-                $"Reactive system can only use ReadCurr+Write; found [ReadPrev] on {systemType}"
+                $"Reactive system can only use ReadCurr+Write+Consume; found [ReadPrev] on {systemType}"
             );
         if (systemType.GetCustomAttributes<IterateAttribute>().Any())
             throw new Exception(
-                $"Reactive system can only use ReadCurr+Write; found [Iterate] on {systemType}"
+                $"Reactive system can only use ReadCurr+Write+Consume; found [Iterate] on {systemType}"
             );
-        if (readCurrAttrs.Count == 0 && writeAttrs.Count == 0)
+        if (readCurrAttrs.Count == 0 && writeAttrs.Count == 0 && consumeAttrs.Count == 0)
             throw new Exception(
-                $"Reactive system must have at least one [ReadCurr] or [Write]; found none on {systemType}"
+                $"Reactive system must have at least one [ReadCurr], [Write] or [Consume]; found none on {systemType}"
             );
 
         // 禁止 ReadCurr + Write 同一组件
-        var overlap = readCurrAttrs
+        var readCurrOverlap = readCurrAttrs
             .Select(a => a.Type)
             .Intersect(writeAttrs.Select(a => a.Type))
             .ToArray();
-        if (overlap.Length != 0)
+        if (readCurrOverlap.Length != 0)
             throw new Exception(
-                $"[PostUpdate] system {systemType} shall not declare both [ReadCurr] and [Write] on the same component: {string.Join(", ", overlap.Select(t => t.Name))}."
+                $"[LateUpdate] system {systemType} shall not declare both [ReadCurr] and [Write] on the same component: {string.Join(", ", readCurrOverlap.Select(t => t.Name))}."
+            );
+
+        // 禁止 Consume + Write 同一组件（Consume 隐含读取，与 Write 互斥）
+        var consumeWriteOverlap = consumeAttrs
+            .Select(a => a.Type)
+            .Intersect(writeAttrs.Select(a => a.Type))
+            .ToArray();
+        if (consumeWriteOverlap.Length != 0)
+            throw new Exception(
+                $"[LateUpdate] system {systemType} shall not declare both [Consume] and [Write] on the same component: {string.Join(", ", consumeWriteOverlap.Select(t => t.Name))}. Consume implies ReadCurr."
+            );
+
+        // 禁止 Consume + ReadCurr 同一组件（Consume 隐含 ReadCurr）
+        var consumeReadCurrOverlap = consumeAttrs
+            .Select(a => a.Type)
+            .Intersect(readCurrAttrs.Select(a => a.Type))
+            .ToArray();
+        if (consumeReadCurrOverlap.Length != 0)
+            throw new Exception(
+                $"[LateUpdate] system {systemType} shall not declare both [Consume] and [ReadCurr] on the same component: {string.Join(", ", consumeReadCurrOverlap.Select(t => t.Name))}. Consume implies ReadCurr."
             );
 
         // ChangeStructure 声明需与 ICalcSystemWithStructuralChanges 接口匹配
@@ -160,7 +181,7 @@ internal static class SystemsTopology
         if (priorityAttr is not null)
             declarations.Priorities[systemType] = priorityAttr.Value;
 
-        // 记录读写声明：ReadPrev/ReadCurr → Readers，Write/Iterate → Writers
+        // 记录读写声明：ReadPrev/ReadCurr → Readers，Write/Iterate → Writers，Consume → Consumers
         foreach (var attr in systemType.GetCustomAttributes<ReadPrevAttribute>())
             RecordReader(attr.Type);
         foreach (var attr in systemType.GetCustomAttributes<ReadCurrAttribute>())
@@ -169,6 +190,8 @@ internal static class SystemsTopology
             RecordWriter(attr.Type);
         foreach (var attr in systemType.GetCustomAttributes<IterateAttribute>())
             RecordWriter(attr.Type);
+        foreach (var attr in systemType.GetCustomAttributes<ConsumeAttribute>())
+            RecordConsumer(attr.Type);
         return;
 
         void RecordReader(Type componentType)
@@ -193,6 +216,17 @@ internal static class SystemsTopology
                 set.Add(systemType);
             }
         }
+        void RecordConsumer(Type componentType)
+        {
+            if (componentType == typeof(AllComponents))
+                declarations.AllConsumers.Add(systemType);
+            else
+            {
+                if (!declarations.Consumers.TryGetValue(componentType, out var set))
+                    declarations.Consumers[componentType] = set = [];
+                set.Add(systemType);
+            }
+        }
     }
 
     private class MutableDeclarations
@@ -203,9 +237,13 @@ internal static class SystemsTopology
 
         public Dictionary<Type, HashSet<Type>> Writers { get; } = [];
 
+        public Dictionary<Type, HashSet<Type>> Consumers { get; } = [];
+
         public HashSet<Type> AllReaders { get; } = [];
 
         public HashSet<Type> AllWriters { get; } = [];
+
+        public HashSet<Type> AllConsumers { get; } = [];
 
         public HashSet<OrderedTypePair> ExplicitOrders { get; } = [];
 
@@ -228,47 +266,52 @@ internal static class SystemsTopology
                 AllWriters.ToImmutableHashSet(),
                 ExplicitOrders.ToImmutableHashSet(),
                 FineWithPairs.ToImmutableHashSet(),
-                Priorities.ToImmutableDictionary()
+                Priorities.ToImmutableDictionary(),
+                Consumers.ToImmutableDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToImmutableHashSet()
+                ),
+                AllConsumers.ToImmutableHashSet()
             );
     }
 
     /// <summary>
     /// 组合执行图：基于提取的系统执行声明进行跨阶段校验、随动系统图构造与分类，
-    /// 产出四张子图
+    /// 产出三张子图（Update / LateUpdate1 / LateUpdate2）
     /// </summary>
-    public static FourStageSystemGraphs ComposeExecutionGraph(
+    public static ThreeStageSystemGraphs ComposeExecutionGraph(
         DualStageSystemExecutionDeclarations declarations
     )
     {
-        // 跨 Update/PostUpdate 边界禁令
+        // 跨 Update/LateUpdate 边界禁令
         ValidateNoCrossStageExplicitOrders(declarations);
 
         // 构造 Update 图
-        var updateSystemsGraph = BuildGraph(declarations.Update, isPostUpdate: false);
+        var updateSystemsGraph = BuildGraph(declarations.Update, isLateUpdate: false);
 
-        // 构造 PostUpdate 图并分类
-        var postUpdateSystemsGraph = BuildGraph(declarations.PostUpdate, isPostUpdate: true);
-        var (preStructuralChangeSystems, structuralChangeSystems, postStructuralChangeSystems) =
-            ClassifyReactiveSystems(postUpdateSystemsGraph);
+        // 构造 LateUpdate 图并分类
+        var lateUpdateSystemsGraph = BuildGraph(declarations.LateUpdate, isLateUpdate: true);
+        var (lateUpdate1Systems, lateUpdate2Systems) = ClassifyLateUpdateSystems(
+            lateUpdateSystemsGraph
+        );
 
-        // 提取四张子图
+        // 提取三张子图
         var updateGraph = FilterGraph(updateSystemsGraph, declarations.Update.Systems);
-        var preGraph = FilterGraph(postUpdateSystemsGraph, preStructuralChangeSystems);
-        var structuralChangeGraph = FilterGraph(postUpdateSystemsGraph, structuralChangeSystems);
-        var postGraph = FilterGraph(postUpdateSystemsGraph, postStructuralChangeSystems);
+        var lateUpdate1Graph = FilterGraph(lateUpdateSystemsGraph, lateUpdate1Systems);
+        var lateUpdate2Graph = FilterGraph(lateUpdateSystemsGraph, lateUpdate2Systems);
 
-        return new FourStageSystemGraphs(updateGraph, preGraph, structuralChangeGraph, postGraph);
+        return new ThreeStageSystemGraphs(updateGraph, lateUpdate1Graph, lateUpdate2Graph);
     }
 
     /// <summary>
-    /// ExecuteBefore/After/FineWith 声明不得跨越 Update 和 PostUpdate 系统之间
+    /// ExecuteBefore/After/FineWith 声明不得跨越 Update 和 LateUpdate 系统之间
     /// </summary>
     private static void ValidateNoCrossStageExplicitOrders(
         DualStageSystemExecutionDeclarations declarations
     )
     {
         var updateSystems = declarations.Update.Systems;
-        var postUpdateSystems = declarations.PostUpdate.Systems;
+        var lateUpdateSystems = declarations.LateUpdate.Systems;
 
         foreach (var (before, after) in declarations.Update.ExplicitOrders)
         {
@@ -278,9 +321,9 @@ internal static class SystemsTopology
                 );
         }
 
-        foreach (var (before, after) in declarations.PostUpdate.ExplicitOrders)
+        foreach (var (before, after) in declarations.LateUpdate.ExplicitOrders)
         {
-            if (!postUpdateSystems.Contains(before) || !postUpdateSystems.Contains(after))
+            if (!lateUpdateSystems.Contains(before) || !lateUpdateSystems.Contains(after))
                 throw new Exception(
                     "Integration system and reactive system shall not declare execution order relationship between each other!"
                 );
@@ -294,9 +337,9 @@ internal static class SystemsTopology
                 );
         }
 
-        foreach (var pair in declarations.PostUpdate.FineWithPairs)
+        foreach (var pair in declarations.LateUpdate.FineWithPairs)
         {
-            if (!postUpdateSystems.Contains(pair.Sys1) || !postUpdateSystems.Contains(pair.Sys2))
+            if (!lateUpdateSystems.Contains(pair.Sys1) || !lateUpdateSystems.Contains(pair.Sys2))
                 throw new Exception(
                     "Integration system and reactive system shall not declare execution order relationship between each other!"
                 );
@@ -309,10 +352,10 @@ internal static class SystemsTopology
     /// 为单个执行阶段构造执行图：显式顺序 + 优先级分组 + 读写关系推导
     /// </summary>
     /// <param name="declarations">单个阶段的系统声明</param>
-    /// <param name="isPostUpdate">是否为随动阶段（PostUpdate），决定读写顺序方向：随动 reader 读 curr，editor 在前</param>
+    /// <param name="isLateUpdate">是否为随动阶段（LateUpdate），决定读写顺序方向：随动 reader 读 curr，editor 在前</param>
     private static SystemsGraph BuildGraph(
         SystemExecutionDeclarations declarations,
-        bool isPostUpdate
+        bool isLateUpdate
     )
     {
         var edgeSources = new Dictionary<OrderedTypePair, HashSet<EdgeSource>>();
@@ -396,16 +439,23 @@ internal static class SystemsTopology
             kvp => kvp.Key,
             kvp => kvp.Value.ToHashSet()
         );
+        var componentsConsumers = declarations.Consumers.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.ToHashSet()
+        );
 
-        // AllComponents 读写系统：从 AllReaders/AllWriters 取，并入各组件的读写集合
+        // AllComponents 读写系统：从 AllReaders/AllWriters/AllConsumers 取，并入各组件的读写集合
         var allReaders = declarations.AllReaders.ToHashSet();
         var allWriters = declarations.AllWriters.ToHashSet();
+        var allConsumers = declarations.AllConsumers.ToHashSet();
 
         // 将任意组件读写系统并入其他关系
         foreach (var (_, readers) in componentsReaders)
             readers.UnionWith(allReaders);
         foreach (var (_, writers) in componentsWriters)
             writers.UnionWith(allWriters);
+        foreach (var (_, consumers) in componentsConsumers)
+            consumers.UnionWith(allConsumers);
 
         // 检测同一个组件是否有多个 Writer 或 Iterator
         foreach (var (_, writers) in componentsWriters)
@@ -427,6 +477,26 @@ internal static class SystemsTopology
             }
         }
 
+        // 检测同一个组件是否有多个 Consumer
+        foreach (var (_, consumers) in componentsConsumers)
+        {
+            foreach (
+                var (consumer1, consumer2) in from c1 in consumers
+                from c2 in consumers.Where(c => c != c1)
+                select (c1, c2)
+            )
+            {
+                if (
+                    !explicitOrders.Contains(new OrderedTypePair(consumer1, consumer2))
+                    && !explicitOrders.Contains(new OrderedTypePair(consumer2, consumer1))
+                    && !explicitFinePairs.Contains(new UnorderedTypePair(consumer1, consumer2))
+                )
+                    throw new Exception(
+                        "Multiple consumers of one component must explicitly declare pairwise order!"
+                    );
+            }
+        }
+
         // 计算读写组件的顺序
         var readWriteOrders = new HashSet<OrderedTypePair>();
 
@@ -435,7 +505,7 @@ internal static class SystemsTopology
             if (!componentsWriters.TryGetValue(componentType, out var writers))
                 continue;
 
-            if (isPostUpdate)
+            if (isLateUpdate)
             {
                 // 随动阶段：reader 读 curr，editor 在前
                 readWriteOrders.UnionWith(
@@ -451,6 +521,33 @@ internal static class SystemsTopology
                     from reader in readers
                     from editor in writers.Where(t => t != reader)
                     select new OrderedTypePair(reader, editor)
+                );
+            }
+        }
+
+        // 随动阶段额外硬边：ReadCurr→Consume、Write→Consume
+        if (isLateUpdate)
+        {
+            // ReadCurr→Consume：reader 读 curr 后 consumer 消耗
+            foreach (var (componentType, readers) in componentsReaders)
+            {
+                if (!componentsConsumers.TryGetValue(componentType, out var consumers))
+                    continue;
+                readWriteOrders.UnionWith(
+                    from reader in readers
+                    from consumer in consumers.Where(t => t != reader)
+                    select new OrderedTypePair(reader, consumer)
+                );
+            }
+            // Write→Consume：editor 写入后 consumer 消耗
+            foreach (var (componentType, writers) in componentsWriters)
+            {
+                if (!componentsConsumers.TryGetValue(componentType, out var consumers))
+                    continue;
+                readWriteOrders.UnionWith(
+                    from writer in writers
+                    from consumer in consumers.Where(t => t != writer)
+                    select new OrderedTypePair(writer, consumer)
                 );
             }
         }
@@ -472,23 +569,24 @@ internal static class SystemsTopology
     }
 
     /// <summary>
-    /// 按照 graph 中描述的依赖关系，将随动系统为 pre / structuralChange / post 三组
+    /// 按照 graph 中描述的依赖关系，将随动系统分为 LateUpdate1 / LateUpdate2 二组。
+    /// 种子集 = 结构化变更系统 ∪ Consume 系统；反向 BFS 收集上游；上游 ∪ 种子归 LateUpdate1，其余归 LateUpdate2
     /// </summary>
     private static (
-        HashSet<Type> preStructuralChangeSystems,
-        HashSet<Type> structuralChangeGroup,
-        HashSet<Type> postStructuralChangeSystems
-    ) ClassifyReactiveSystems(SystemsGraph graph)
+        HashSet<Type> lateUpdate1Systems,
+        HashSet<Type> lateUpdate2Systems
+    ) ClassifyLateUpdateSystems(SystemsGraph graph)
     {
-        // 1. 识别结构化变更系统
-        var structuralChangeSystems = new HashSet<Type>();
+        // 1. 种子集 = ChangeStructure 系统 ∪ Consume 系统
+        var seedSystems = new HashSet<Type>();
         foreach (var sys in graph.Systems)
         {
             if (
                 sys.GetCustomAttributes<ChangeStructureAttribute>().Any()
                 || sys.GetInterfaces().Contains(typeof(ICalcSystemWithStructuralChanges))
+                || sys.GetCustomAttributes<ConsumeAttribute>().Any()
             )
-                structuralChangeSystems.Add(sys);
+                seedSystems.Add(sys);
         }
 
         // 2. 构建反向邻接：After → 上游 Before 集合
@@ -501,9 +599,9 @@ internal static class SystemsTopology
             set.Add(pair.Before);
         }
 
-        // 3. 从结构化变更系统出发反向 BFS，收集所有上游（直接+间接）
+        // 3. 从种子集出发反向 BFS，收集所有上游（直接+间接）
         var upstreamClosure = new HashSet<Type>();
-        var queue = new Queue<Type>(structuralChangeSystems);
+        var queue = new Queue<Type>(seedSystems);
         while (queue.Count > 0)
         {
             var current = queue.Dequeue();
@@ -516,15 +614,14 @@ internal static class SystemsTopology
             }
         }
 
-        // 4. 分类：上游归 pre（扣除结构化变更系统），结构化变更系统归结构化段，其余归 post
-        var preStructuralChangeSystems = new HashSet<Type>(upstreamClosure);
-        preStructuralChangeSystems.ExceptWith(structuralChangeSystems);
+        // 4. 分类：上游 ∪ 种子归 LateUpdate1，其余归 LateUpdate2
+        var lateUpdate1Systems = new HashSet<Type>(upstreamClosure);
+        lateUpdate1Systems.UnionWith(seedSystems);
 
-        var postStructuralChangeSystems = new HashSet<Type>(graph.Systems);
-        postStructuralChangeSystems.ExceptWith(structuralChangeSystems);
-        postStructuralChangeSystems.ExceptWith(preStructuralChangeSystems);
+        var lateUpdate2Systems = new HashSet<Type>(graph.Systems);
+        lateUpdate2Systems.ExceptWith(lateUpdate1Systems);
 
-        return (preStructuralChangeSystems, structuralChangeSystems, postStructuralChangeSystems);
+        return (lateUpdate1Systems, lateUpdate2Systems);
     }
 
     /// <summary>
@@ -589,11 +686,11 @@ internal static class SystemsTopology
 
     /// <summary>
     /// 构建系统拓扑的 Graphviz DOT 格式文本，用于程序解析。
-    /// 按 Update/Pre/StructuralChange/Post 四段子图输出，节点带 priority 属性，边带来源 label。
+    /// 按 Update/LateUpdate1/LateUpdate2 三段子图输出，节点带 priority 属性，边带来源 label。
     /// </summary>
     public static string BuildSystemTopologyDotGraph(
         DualStageSystemExecutionDeclarations declarations,
-        FourStageSystemGraphs graphs
+        ThreeStageSystemGraphs graphs
     )
     {
         var dotsBuilder = new StringBuilder();
@@ -605,7 +702,7 @@ internal static class SystemsTopology
         var priorities = new Dictionary<Type, int>();
         foreach (var (k, v) in declarations.Update.Priorities)
             priorities[k] = v;
-        foreach (var (k, v) in declarations.PostUpdate.Priorities)
+        foreach (var (k, v) in declarations.LateUpdate.Priorities)
             priorities[k] = v;
 
         // 从图收集节点
@@ -634,9 +731,8 @@ internal static class SystemsTopology
         }
 
         WriteSubgraph("Update", graphs.Update);
-        WriteSubgraph("Pre", graphs.PreStructuralChange);
-        WriteSubgraph("StructuralChange", graphs.StructuralChange);
-        WriteSubgraph("Post", graphs.PostStructuralChange);
+        WriteSubgraph("LateUpdate1", graphs.LateUpdate1);
+        WriteSubgraph("LateUpdate2", graphs.LateUpdate2);
 
         // 边声明：遍历所有图
         void WriteEdges(SystemsGraph graph)
@@ -654,21 +750,20 @@ internal static class SystemsTopology
         }
 
         WriteEdges(graphs.Update);
-        WriteEdges(graphs.PreStructuralChange);
-        WriteEdges(graphs.StructuralChange);
-        WriteEdges(graphs.PostStructuralChange);
+        WriteEdges(graphs.LateUpdate1);
+        WriteEdges(graphs.LateUpdate2);
 
         dotsBuilder.AppendLine("}");
         return dotsBuilder.ToString();
     }
 
     /// <summary>
-    /// 构建系统拓扑的 D2 格式文本，用于可视化。按 Update/Pre/StructuralChange/Post 四段分别输出，
-    /// 每段内按 priority 分组，过滤掉 Priority 和 StructuralChange 来源边。
+    /// 构建系统拓扑的 D2 格式文本，用于可视化。按 Update/LateUpdate1/LateUpdate2 三段分别输出，
+    /// 每段内按 priority 分组，过滤掉 Priority 来源边。
     /// </summary>
     public static string BuildSystemTopologyD2Graph(
         DualStageSystemExecutionDeclarations declarations,
-        FourStageSystemGraphs graphs
+        ThreeStageSystemGraphs graphs
     )
     {
         var d2Builder = new StringBuilder();
@@ -679,7 +774,7 @@ internal static class SystemsTopology
         var priorities = new Dictionary<Type, int>();
         foreach (var (k, v) in declarations.Update.Priorities)
             priorities[k] = v;
-        foreach (var (k, v) in declarations.PostUpdate.Priorities)
+        foreach (var (k, v) in declarations.LateUpdate.Priorities)
             priorities[k] = v;
 
         // 从图收集节点
@@ -716,9 +811,8 @@ internal static class SystemsTopology
         }
 
         WriteContainer("Update", graphs.Update);
-        WriteContainer("Pre", graphs.PreStructuralChange);
-        WriteContainer("StructuralChange", graphs.StructuralChange);
-        WriteContainer("Post", graphs.PostStructuralChange);
+        WriteContainer("LateUpdate1", graphs.LateUpdate1);
+        WriteContainer("LateUpdate2", graphs.LateUpdate2);
 
         // D2 路径辅助方法
         string D2Path(Type t, string container)
@@ -748,9 +842,8 @@ internal static class SystemsTopology
         }
 
         WriteEdges("Update", graphs.Update);
-        WriteEdges("Pre", graphs.PreStructuralChange);
-        WriteEdges("StructuralChange", graphs.StructuralChange);
-        WriteEdges("Post", graphs.PostStructuralChange);
+        WriteEdges("LateUpdate1", graphs.LateUpdate1);
+        WriteEdges("LateUpdate2", graphs.LateUpdate2);
 
         return d2Builder.ToString();
     }

@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相位计算实体绕其轨道的位姿变换的系统
 /// </summary>
-[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(RevolutionOrbit)),
     ReadCurr(typeof(RevolutionState)),

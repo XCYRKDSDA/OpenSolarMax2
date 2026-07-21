@@ -5,7 +5,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, PostUpdate]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(Dependence)),
     Write(typeof(Dependence.AsDependent)),
@@ -15,13 +15,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public sealed class IndexDependenceSystem(World world)
     : IndexRelationshipSystemBase<Dependence>(world) { }
 
-[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(InTeam)), Write(typeof(InTeam.AsTeam)), Write(typeof(InTeam.AsAffiliate))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTeamAffiliationSystem(World world)
     : IndexRelationshipSystemBase<InTeam>(world) { }
 
-[SimulateSystem, PostUpdate]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(TreeRelationship<Anchorage>)),
     Write(typeof(TreeRelationship<Anchorage>.AsParent)),
@@ -31,7 +31,7 @@ public sealed class IndexTeamAffiliationSystem(World world)
 public sealed class IndexAnchorageSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<Anchorage>>(world) { }
 
-[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(TreeRelationship<RelativeTransform>)),
     Write(typeof(TreeRelationship<RelativeTransform>.AsParent)),
@@ -41,13 +41,13 @@ public sealed class IndexAnchorageSystem(World world)
 public sealed class IndexTransformTreeSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<RelativeTransform>>(world) { }
 
-[SimulateSystem, PostUpdate]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(TrailOf)), Write(typeof(TrailOf.AsShip)), Write(typeof(TrailOf.AsTrail))]
 [Disable]
 public sealed class IndexTrailAffiliationSystem(World world)
     : IndexRelationshipSystemBase<TrailOf>(world) { }
 
-[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(TreeRelationship<ColorSync>)),
     Write(typeof(TreeRelationship<ColorSync>.AsParent)),
@@ -60,7 +60,7 @@ public sealed class IndexColorSyncTreeSystem(World world)
 /// <summary>
 /// 索引星球与选择圈的关系，维护 AsPlanet 和 AsRing 索引组件。
 /// </summary>
-[SimulateSystem, PostUpdate]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(PlanetSelectionRing)),
     Write(typeof(PlanetSelectionRing.AsPlanet)),
@@ -73,7 +73,7 @@ public sealed class IndexPlanetSelectionRingSystem(World world)
 /// <summary>
 /// 索引视图与选择圈的关系，维护 AsView 和 AsRing 索引组件。
 /// </summary>
-[SimulateSystem, PostUpdate]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(ViewSelectionRing)),
     Write(typeof(ViewSelectionRing.AsView)),

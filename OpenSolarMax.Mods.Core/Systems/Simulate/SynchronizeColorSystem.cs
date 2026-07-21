@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 递归遍历树结构，将父实体的 Sprite.Color 复制到所有子实体
 /// </summary>
-[SimulateSystem, PostUpdate, BothForGameplayAndPreview]
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(TreeRelationship<ColorSync>.AsParent)),
     ReadCurr(typeof(TreeRelationship<ColorSync>.AsChild)),

@@ -7,7 +7,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, PostUpdate]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ExpireAfterAnimationCompleted)), ReadCurr(typeof(Animation)), ChangeStructure]
 [ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)

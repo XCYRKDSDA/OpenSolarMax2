@@ -45,3 +45,13 @@ public class WriteAttribute(Type type) : Attribute, IReadWriteAttribute
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public class ChangeStructureAttribute : Attribute { }
+
+/// <summary>
+/// 该系统将消耗组件字段，消灭结构化变更的触发条件
+/// </summary>
+/// <param name="type">该系统将消耗的组件类型</param>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+public class ConsumeAttribute(Type type) : Attribute, IReadWriteAttribute
+{
+    public Type Type => type;
+}

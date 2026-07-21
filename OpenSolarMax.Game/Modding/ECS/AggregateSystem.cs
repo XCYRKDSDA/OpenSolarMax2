@@ -43,9 +43,8 @@ internal class AggregateSystem : IDisposable
     private readonly World _world;
 
     private readonly List<ITickSystem> _updateSystems = [];
-    private readonly List<ICalcSystem> _preStructuralChangeSystems = [];
-    private readonly List<ICalcSystemWithStructuralChanges> _structuralChangeSystems = [];
-    private readonly List<ICalcSystem> _postStructuralChangeSystems = [];
+    private readonly List<object> _lateUpdate1Systems = [];
+    private readonly List<ICalcSystem> _lateUpdate2Systems = [];
 
     private readonly CommandBuffer _commandBuffer = new();
 
@@ -63,37 +62,26 @@ internal class AggregateSystem : IDisposable
                 PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
             )
             .ToList();
-        var preStructuralChangeSystems = sortedSystemTypes
-            .PreStructuralChangeSystems.Select(t =>
+        var lateUpdate1Systems = sortedSystemTypes
+            .LateUpdate1Systems.Select(t =>
                 PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
             )
             .ToList();
-        var structuralChangeSystems = sortedSystemTypes
-            .StructuralChangeSystems.Select(t =>
-                PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
-            )
-            .ToList();
-        var postStructuralChangeSystems = sortedSystemTypes
-            .PostStructuralChangeSystems.Select(t =>
+        var lateUpdate2Systems = sortedSystemTypes
+            .LateUpdate2Systems.Select(t =>
                 PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
             )
             .ToList();
 
         // 注册挂载点（需所有系统实例）
         RegisterHook(
-            updateSystems
-                .Concat(preStructuralChangeSystems)
-                .Concat(structuralChangeSystems)
-                .Concat(postStructuralChangeSystems),
+            updateSystems.Concat(lateUpdate1Systems).Concat(lateUpdate2Systems),
             hookImplInfos
         );
 
         _updateSystems.AddRange(updateSystems.Cast<ITickSystem>());
-        _preStructuralChangeSystems.AddRange(preStructuralChangeSystems.Cast<ICalcSystem>());
-        _structuralChangeSystems.AddRange(
-            structuralChangeSystems.Cast<ICalcSystemWithStructuralChanges>()
-        );
-        _postStructuralChangeSystems.AddRange(postStructuralChangeSystems.Cast<ICalcSystem>());
+        _lateUpdate1Systems.AddRange(lateUpdate1Systems);
+        _lateUpdate2Systems.AddRange(lateUpdate2Systems.Cast<ICalcSystem>());
     }
 
     public void Update(GameTime gameTime)
@@ -114,11 +102,13 @@ internal class AggregateSystem : IDisposable
         // 不动点迭代：随动系统反复执行直到无结构化变更
         for (var iteration = 0; ; iteration++)
         {
-            foreach (var system in _preStructuralChangeSystems)
-                system.Update();
-
-            foreach (var system in _structuralChangeSystems)
-                system.Update(_commandBuffer);
+            foreach (var system in _lateUpdate1Systems)
+            {
+                if (system is ICalcSystemWithStructuralChanges withChanges)
+                    withChanges.Update(_commandBuffer);
+                else if (system is ICalcSystem calc)
+                    calc.Update();
+            }
 
             var hadStructuralChanges = _commandBuffer.Size > 0;
             _commandBuffer.Playback(_world, dispose: true);
@@ -136,8 +126,8 @@ internal class AggregateSystem : IDisposable
 
         Debug.Assert(_commandBuffer.Size == 0);
 
-        // 执行结构化变更后的随动系统
-        foreach (var system in _postStructuralChangeSystems)
+        // 执行 LateUpdate2 阶段系统
+        foreach (var system in _lateUpdate2Systems)
             system.Update();
 
         Debug.Assert(_commandBuffer.Size == 0);
@@ -151,9 +141,8 @@ internal class AggregateSystem : IDisposable
         // 释放所有内部系统
         foreach (
             var sys in _updateSystems
-                .Concat<object>(_preStructuralChangeSystems)
-                .Concat(_structuralChangeSystems)
-                .Concat(_postStructuralChangeSystems)
+                .Concat<object>(_lateUpdate1Systems)
+                .Concat(_lateUpdate2Systems)
         )
         {
             if (sys is IDisposable disposable)

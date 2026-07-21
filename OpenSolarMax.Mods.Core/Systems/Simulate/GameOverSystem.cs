@@ -16,7 +16,7 @@ using OpenSolarMax.Mods.Core.Concepts;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, BeforeStructuralChanges]
-// 按理说应当使用 ReadCurr，但是目前不支持 StructuralChange 位于 PostUpdate 后边，因此只能晚一帧生效
+// 按理说应当使用 ReadCurr，但是目前不支持 StructuralChange 位于 LateUpdate 后边，因此只能晚一帧生效
 [
     ReadPrev(typeof(Victory)),
     ReadPrev(typeof(InTeam.AsTeam)),
