@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -16,18 +14,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 考察移动进度，将舰船降落到目标星球的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[
-    Iterate(typeof(JumpingStatus)),
-    ReadPrev(typeof(TrailOf.AsShip)),
-    Write(typeof(SoundEffect)),
-    ChangeStructure
-]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 状态先量变才能质变
-[ExecuteAfter(typeof(UpdateShipsStateSystem))]
-// 以防一帧内抵达，要允许一帧内先从 Charging 到 Travelling，然后立刻降落
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(TrailOf.AsShip))]
+[Write(typeof(JumpingStatus))]
+[Write(typeof(SoundEffect))]
+[ChangeStructure]
 [ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class LandArrivedShipsSystem(
     World world,
     IAssetsManager assets,
@@ -113,5 +107,3 @@ public sealed partial class LandArrivedShipsSystem(
         _arrivedEntities.Clear();
     }
 }
-
-#endif

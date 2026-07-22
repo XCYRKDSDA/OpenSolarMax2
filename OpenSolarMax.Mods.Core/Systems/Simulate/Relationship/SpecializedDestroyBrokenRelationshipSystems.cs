@@ -1,33 +1,41 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, ReactToStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(InTeam)), ChangeStructure]
-[ExecuteAfter(typeof(ManageDependenceSystem))]
 public sealed class DestroyBrokenTeamRelationshipSystem(World world)
     : DestroyBrokenRelationshipsSystem<InTeam>(world) { }
 
-[SimulateSystem, ReactToStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(TreeRelationship<Anchorage>)), ChangeStructure]
-[ExecuteAfter(typeof(ManageDependenceSystem))]
 public sealed class DestroyBrokenAnchorageRelationshipSystem(World world)
     : DestroyBrokenRelationshipsSystem<TreeRelationship<Anchorage>>(world) { }
 
-[SimulateSystem, ReactToStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>)), ChangeStructure]
-[ExecuteAfter(typeof(ManageDependenceSystem))]
 public sealed class DestroyBrokenTransformRelationshipSystem(World world)
     : DestroyBrokenRelationshipsSystem<TreeRelationship<RelativeTransform>>(world) { }
 
-[SimulateSystem, ReactToStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(TrailOf)), ChangeStructure]
-[ExecuteAfter(typeof(ManageDependenceSystem))]
 public sealed class DestroyBrokenTrailRelationshipSystem(World world)
     : DestroyBrokenRelationshipsSystem<TrailOf>(world) { }
 
-#endif
+/// <summary>
+/// 清理已损坏的星球-选择圈关系。当星球或选择圈被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, LateUpdate]
+[ReadCurr(typeof(PlanetSelectionRing)), ChangeStructure]
+public sealed class DestroyBrokenPlanetSelectionRingsSystem(World world)
+    : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(world) { }
+
+/// <summary>
+/// 清理已损坏的视图-选择圈关系。当视图或选择圈被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, LateUpdate]
+[ReadCurr(typeof(ViewSelectionRing)), ChangeStructure]
+public sealed class DestroyBrokenViewSelectionRingsSystem(World world)
+    : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(world) { }

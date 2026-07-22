@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -14,11 +12,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 检查充能时间，从充能阶段切换到移动阶段的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[Iterate(typeof(JumpingStatus)), Write(typeof(SoundEffect))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 状态先量变才能质变
-[ExecuteAfter(typeof(UpdateShipsStateSystem))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(JumpingStatus))]
+[Write(typeof(SoundEffect))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class TransitFromChargingToTravellingSystem(
     World world,
     IAssetsManager assets,
@@ -55,5 +53,3 @@ public sealed partial class TransitFromChargingToTravellingSystem(
 
     public void Update() => ProceedQuery(world);
 }
-
-#endif

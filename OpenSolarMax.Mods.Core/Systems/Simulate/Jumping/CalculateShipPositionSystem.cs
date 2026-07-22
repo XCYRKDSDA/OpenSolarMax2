@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -12,9 +10,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 跳跃系统。根据跳跃时间计算舰船动画、位置和方向
 /// </summary>
-[SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(JumpingStatus)), Write(typeof(AbsoluteTransform))]
-[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 跳跃舰船应当不再有相对变换，因此和计算绝对位姿的系统无干扰
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(JumpingStatus))]
+[Write(typeof(AbsoluteTransform))]
+[FineWith(typeof(CalculateAbsoluteTransformSystem))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
 {
@@ -57,5 +57,3 @@ public sealed partial class CalculateShipPositionSystem(World world) : ICalcSyst
 
     public void Update() => CalculatePositionQuery(world);
 }
-
-#endif

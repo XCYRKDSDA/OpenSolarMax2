@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using System.Runtime.CompilerServices;
 using Arch.Buffer;
 using Arch.Core;
@@ -20,17 +18,17 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[InputSystem, BeforeStructuralChanges]
-[
-    ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(InTeam.AsAffiliate)),
-    ReadCurr(typeof(InputFocusState)),
-    ReadCurr(typeof(FleetSliderWidget)),
-    ReadCurr(typeof(ReachabilityRegistry)),
-    ReadCurr(typeof(Projection)),
-    Iterate(typeof(JumpingStatus)),
-    ChangeStructure
-]
+[LateUpdate]
+[InputSystem]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(InTeam.AsAffiliate))]
+[ReadCurr(typeof(InputFocusState))]
+[ReadCurr(typeof(FleetSliderWidget))]
+[ReadCurr(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(Projection))]
+[Write(typeof(ManeuveringShipsStatus))]
+[ChangeStructure]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
     World world,
     IConceptFactory factory,
@@ -485,5 +483,3 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
 
     public void Update(CommandBuffer commandBuffer) => HandleInputsQuery(world, commandBuffer);
 }
-
-#endif

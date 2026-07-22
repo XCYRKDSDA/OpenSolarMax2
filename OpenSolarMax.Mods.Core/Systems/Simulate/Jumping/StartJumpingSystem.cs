@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
@@ -21,28 +19,22 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 处理<see cref="StartJumpingRequest"/>来使舰船开始飞行的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[
-    ReadPrev(typeof(StartJumpingRequest)),
-    ReadPrev(typeof(AnchoredShipsRegistry)),
-    ReadPrev(typeof(Jumpable)),
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild)),
-    ReadPrev(typeof(RevolutionOrbit)),
-    ReadPrev(typeof(RevolutionState)),
-    ReadPrev(typeof(PlanetGeostationaryOrbit)),
-    Iterate(typeof(JumpingStatus)),
-    Write(typeof(SoundEffect)),
-    ChangeStructure
-]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 新出发的舰船无须更新移动状态，因此要在计算上一帧的移动变化之后发出舰船
-[
-    ExecuteAfter(typeof(UpdateShipsStateSystem)),
-    ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))
-]
-// 这一帧刚抵达的舰船不会立刻出发
-[ExecuteBefore(typeof(LandArrivedShipsSystem))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(AnchoredShipsRegistry))]
+[ReadCurr(typeof(Jumpable))]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
+[ReadCurr(typeof(RevolutionOrbit))]
+[ReadCurr(typeof(RevolutionState))]
+[ReadCurr(typeof(PlanetGeostationaryOrbit))]
+[ReadCurr(typeof(StartJumpingRequest))]
+[Consume(typeof(JumpingStatus))]
+[Write(typeof(SoundEffect))]
+[ChangeStructure]
+[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
+[ExecuteAfter(typeof(LandArrivedShipsSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class StartJumpingSystem(
     World world,
     IAssetsManager assets,
@@ -172,5 +164,3 @@ public sealed partial class StartJumpingSystem(
 
     public void Update(CommandBuffer commandBuffer) => StartJumpingQuery(world, commandBuffer);
 }
-
-#endif

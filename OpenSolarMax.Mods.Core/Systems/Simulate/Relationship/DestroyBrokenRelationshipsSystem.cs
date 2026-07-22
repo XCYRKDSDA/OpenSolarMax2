@@ -1,5 +1,4 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -21,6 +20,10 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World worl
         CommandBuffer commandBuffer
     )
     {
+        if (typeof(TRelationship) == typeof(PlanetSelectionRing))
+        {
+            Debug.WriteLine($"Check relationship {typeof(TRelationship).Name} {relationship.Id}");
+        }
         foreach (var group in record)
         {
             foreach (var participant in group)
@@ -28,6 +31,9 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World worl
                 if (!participant.IsAlive())
                 {
                     commandBuffer.Destroy(relationship);
+                    Debug.WriteLine(
+                        $"Destroy broken relationship {typeof(TRelationship).Name} {relationship.Id} because of {group.Key.Name} {participant.Id}"
+                    );
                     return;
                 }
             }
@@ -42,24 +48,6 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>(World worl
             foreach (var idx in chunk)
                 CheckRelationship(chunk.Entities[idx], recordSpan[idx], commandBuffer);
         }
-        commandBuffer.Playback(world);
+        // commandBuffer.Playback(world);
     }
 }
-
-/// <summary>
-/// 清理已损坏的星球-选择圈关系。当星球或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ChangeStructure]
-public sealed class DestroyBrokenPlanetSelectionRingsSystem(World world)
-    : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(world) { }
-
-/// <summary>
-/// 清理已损坏的视图-选择圈关系。当视图或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ChangeStructure]
-public sealed class DestroyBrokenViewSelectionRingsSystem(World world)
-    : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(world) { }
-
-#endif

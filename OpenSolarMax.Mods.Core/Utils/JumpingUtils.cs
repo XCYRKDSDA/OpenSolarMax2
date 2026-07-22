@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移（依赖已禁用的 Systems/）
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -211,5 +209,3 @@ public static class JumpingUtils
         }
     }
 }
-
-#endif
