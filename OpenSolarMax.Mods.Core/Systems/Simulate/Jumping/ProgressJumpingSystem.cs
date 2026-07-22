@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -12,9 +10,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新跳跃任务状态的系统。该系统作用于跳跃任务的所有阶段
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[Update]
+[SimulateSystem]
 [Iterate(typeof(JumpingStatus))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 {
     [Query]
@@ -34,5 +32,3 @@ public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 
     public void Update(GameTime gameTime) => ProceedQuery(world, gameTime);
 }
-
-#endif

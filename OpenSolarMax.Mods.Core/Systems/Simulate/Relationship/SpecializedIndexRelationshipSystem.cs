@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     Write(typeof(Dependence.AsDependent)),
     Write(typeof(Dependence.AsDependency))
 ]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexDependenceSystem(World world)
     : IndexRelationshipSystemBase<Dependence>(world) { }
 
@@ -27,7 +27,7 @@ public sealed class IndexTeamAffiliationSystem(World world)
     Write(typeof(TreeRelationship<Anchorage>.AsParent)),
     Write(typeof(TreeRelationship<Anchorage>.AsChild))
 ]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexAnchorageSystem(World world)
     : IndexRelationshipSystemBase<TreeRelationship<Anchorage>>(world) { }
 
@@ -43,7 +43,7 @@ public sealed class IndexTransformTreeSystem(World world)
 
 [SimulateSystem, LateUpdate]
 [ReadCurr(typeof(TrailOf)), Write(typeof(TrailOf.AsShip)), Write(typeof(TrailOf.AsTrail))]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexTrailAffiliationSystem(World world)
     : IndexRelationshipSystemBase<TrailOf>(world) { }
 
@@ -66,7 +66,7 @@ public sealed class IndexColorSyncTreeSystem(World world)
     Write(typeof(PlanetSelectionRing.AsPlanet)),
     Write(typeof(PlanetSelectionRing.AsRing))
 ]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexPlanetSelectionRingSystem(World world)
     : IndexRelationshipSystemBase<PlanetSelectionRing>(world) { }
 
@@ -79,6 +79,6 @@ public sealed class IndexPlanetSelectionRingSystem(World world)
     Write(typeof(ViewSelectionRing.AsView)),
     Write(typeof(ViewSelectionRing.AsRing))
 ]
-[Disable]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed class IndexViewSelectionRingSystem(World world)
     : IndexRelationshipSystemBase<ViewSelectionRing>(world) { }

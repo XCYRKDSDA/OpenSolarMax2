@@ -1,5 +1,4 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Arch.Buffer;
@@ -45,7 +44,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
         }
     }
 
-#region Subscriber
+    #region Subscriber
 
     private static readonly MethodInfo _subscriberInfo =
         typeof(DestroyBrokenRelationshipsSystem<TRelationship>).GetMethod(
@@ -69,7 +68,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
         return subscriber;
     }
 
-#endregion
+    #endregion
 
     /// <summary>
     /// 结构变更已由事件回调即时完成，Update 为空操作。
@@ -77,21 +76,3 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
     /// </summary>
     public void Update(CommandBuffer commandBuffer) { }
 }
-
-/// <summary>
-/// 清理已损坏的星球-选择圈关系。当星球或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ChangeStructure]
-public sealed class DestroyBrokenPlanetSelectionRingsSystem(World world)
-    : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(world) { }
-
-/// <summary>
-/// 清理已损坏的视图-选择圈关系。当视图或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ChangeStructure]
-public sealed class DestroyBrokenViewSelectionRingsSystem(World world)
-    : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(world) { }
-
-#endif

@@ -90,32 +90,39 @@ internal class AggregateSystem : IDisposable
 
         // 执行积分系统
         foreach (var system in _updateSystems)
+        {
+            // Debug.WriteLine($"Update {system.GetType().Name}");
             system.Update(gameTime);
+        }
 
         LateUpdate();
     }
 
     public void LateUpdate()
     {
-        Debug.Assert(_commandBuffer.Size == 0);
-
+        Debug.WriteLine("Start late update");
         // 不动点迭代：随动系统反复执行直到无结构化变更
         for (var iteration = 0; ; iteration++)
         {
+            Debug.Assert(_commandBuffer.Size == 0);
             foreach (var system in _lateUpdate1Systems)
             {
+                // Debug.WriteLine($"LateUpdate1 {system.GetType().Name}");
                 if (system is ICalcSystemWithStructuralChanges withChanges)
                     withChanges.Update(_commandBuffer);
                 else if (system is ICalcSystem calc)
                     calc.Update();
             }
 
+            var structuralChanges = _commandBuffer.Size;
             var hadStructuralChanges = _commandBuffer.Size > 0;
             _commandBuffer.Playback(_world, dispose: true);
 
             // 如果无结构化变更，则退出循环
             if (!hadStructuralChanges)
                 break;
+
+            Debug.WriteLine($"Continue iteration because of {structuralChanges} changes");
 
             // 如果迭代次数太多，则抛异常
             if (iteration >= MaxFixpointIterations)
@@ -128,7 +135,10 @@ internal class AggregateSystem : IDisposable
 
         // 执行 LateUpdate2 阶段系统
         foreach (var system in _lateUpdate2Systems)
+        {
+            // Debug.WriteLine($"LateUpdate2 {system.GetType().Name}");
             system.Update();
+        }
 
         Debug.Assert(_commandBuffer.Size == 0);
     }

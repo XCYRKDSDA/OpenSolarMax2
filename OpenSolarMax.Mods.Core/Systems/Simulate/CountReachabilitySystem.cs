@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.ECS;
@@ -16,12 +14,11 @@ public delegate bool? CheckPlanetReachabilityCallback(
     in AbsoluteTransform destinationPose
 );
 
-[SimulateSystem, AfterStructuralChanges]
-[
-    ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(InfiniteZBarrier)),
-    Write(typeof(ReachabilityRegistry))
-]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(InfiniteZBarrier))]
+[Write(typeof(ReachabilityRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public class CountReachabilitySystem(World world) : ICalcSystem
 {
@@ -96,5 +93,3 @@ public class CountReachabilitySystem(World world) : ICalcSystem
 
     public void Update() => CountReachability();
 }
-
-#endif

@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using System.Diagnostics;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -17,12 +15,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据跳跃任务执行的时间和阶段，应用舰船及其尾焰的动画
 /// </summary>
-[SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(TrailOf.AsShip)), ReadCurr(typeof(JumpingStatus)), Write(typeof(Sprite))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(JumpingStatus))]
+[ReadCurr(typeof(TrailOf.AsShip))]
+[Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
-[FineWith(typeof(ApplyTeamColorSystem))] // 该系统只改尾迹的颜色，尾迹不会与阵营直接挂钩
-[ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))] // 如果一个舰船刚出生就移动，则用移动动画覆盖其出生动画
 [ExecuteBefore(typeof(SynchronizeColorSystem))]
+[FineWith(typeof(ApplyTeamColorSystem))]
 public sealed partial class UpdateJumpingEffectSystem(
     World world,
     IAssetsManager assets,
@@ -175,5 +175,3 @@ public sealed partial class UpdateJumpingEffectSystem(
 
     public void Update() => CalculateAnimationQuery(world);
 }
-
-#endif

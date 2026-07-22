@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -9,7 +7,12 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[InputSystem, BeforeStructuralChanges, ChangeStructure]
+[Disable]
+[LateUpdate]
+[SimulateSystem]
+[Consume(typeof(InputEvent))]
+[ChangeStructure]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public partial class CleanEventsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
@@ -21,5 +24,3 @@ public partial class CleanEventsSystem(World world) : ICalcSystemWithStructuralC
 
     public void Update(CommandBuffer commandBuffer) => DestroyEventsQuery(world, commandBuffer);
 }
-
-#endif

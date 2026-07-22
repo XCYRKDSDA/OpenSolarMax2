@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -29,7 +30,10 @@ public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
             animation.Clip is not null
             && animation.TimeElapsed.TotalSeconds > animation.Clip.Length
         )
+        {
             commands.Destroy(entity);
+            Debug.WriteLine($"Destroy {entity.Id} due to animation completion");
+        }
     }
 
     public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
