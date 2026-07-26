@@ -34,7 +34,7 @@
     <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj" />
     <ProjectReference Include="..\Third Party\FMOD\FMOD.csproj" />
     <ProjectReference Include="..\Third Party\Arch\src\Arch\Arch.csproj">
-      <Properties>DefineConstants=$(DefineConstants);EVENTS</Properties>
+      <AdditionalProperties>DefineConstants=$(DefineConstants);EVENTS</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 

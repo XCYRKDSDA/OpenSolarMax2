@@ -56,7 +56,7 @@
     <ProjectReference Include="..\Third Party\Arch\src\Arch\Arch.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
-      <Properties>DefineConstants=$(DefineConstants);EVENTS</Properties>
+      <AdditionalProperties>DefineConstants=$(DefineConstants);EVENTS</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 
