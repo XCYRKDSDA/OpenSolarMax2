@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Mods.Core.Components;
@@ -8,24 +9,26 @@ namespace OpenSolarMax.Mods.Core.Utils;
 
 public static class AnchorageUtils
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static (Entity AnchorageRelationship, Entity TransformRelationship) AnchorShipToPlanet(
+        CommandBuffer commandBuffer,
         Entity ship,
         Entity planet
     )
     {
         Debug.Assert(ship.WorldId == planet.WorldId);
-        var world = World.Worlds[ship.WorldId];
 
-        // 设置停靠关系
-        var anchorageRelationship = world.Create(new TreeRelationship<Anchorage>(planet, ship));
+        var anchorageRelationship = commandBuffer.Create([typeof(TreeRelationship<Anchorage>)]);
+        commandBuffer.Set(in anchorageRelationship, new TreeRelationship<Anchorage>(planet, ship));
 
-        // 设置变换关系
-        var transformRelationship = world.Create(
-            new TreeRelationship<RelativeTransform>(planet, ship),
-            new RelativeTransform(),
-            new RevolutionOrbit(),
-            new RevolutionState()
+        var transformRelationship = commandBuffer.Create([
+            typeof(TreeRelationship<RelativeTransform>),
+            typeof(RelativeTransform),
+            typeof(RevolutionOrbit),
+            typeof(RevolutionState),
+        ]);
+        commandBuffer.Set(
+            in transformRelationship,
+            new TreeRelationship<RelativeTransform>(planet, ship)
         );
 
         return (anchorageRelationship, transformRelationship);

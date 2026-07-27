@@ -1,5 +1,5 @@
+using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -46,6 +46,7 @@ public static class RevolutionUtils
     private const float _defaultOrbitOffsetRange = 0.3f;
 
     public static void RandomlySetShipOrbitAroundPlanet(
+        CommandBuffer commandBuffer,
         Entity relationship,
         in PlanetGeostationaryOrbit planetOrbit,
         Random? random = null,
@@ -54,12 +55,11 @@ public static class RevolutionUtils
     {
         random ??= new();
 
-        relationship.Get<RevolutionOrbit>() = CreateRandomRevolutionOrbit(
-            in planetOrbit,
-            random,
-            orbitOffsetRange
+        commandBuffer.Set(
+            in relationship,
+            CreateRandomRevolutionOrbit(in planetOrbit, random, orbitOffsetRange)
         );
-        relationship.Get<RevolutionState>() = CreateRandomState(random);
+        commandBuffer.Set(in relationship, CreateRandomState(random));
     }
 
     /// <summary>
