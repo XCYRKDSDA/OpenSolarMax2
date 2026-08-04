@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
+    <PackageReference Include="Arch" Version="2.1.0" ExcludeAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

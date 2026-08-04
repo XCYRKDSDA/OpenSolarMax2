@@ -102,9 +102,16 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         // 占用一个人口
         commandBuffer.Set(in entity, new PopulationCost { Value = 1 });
 
-        // TODO 延迟化 设置所属星球
-        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(entity, desc.Planet);
-        RevolutionUtils.RandomlySetShipOrbitAroundPlanet(transformRelationship, desc.PlanetOrbit);
+        var (_, transformRelationship) = AnchorageUtils.AnchorShipToPlanet(
+            commandBuffer,
+            entity,
+            desc.Planet
+        );
+        RevolutionUtils.RandomlySetShipOrbitAroundPlanet(
+            commandBuffer,
+            transformRelationship,
+            desc.PlanetOrbit
+        );
 
         // 设置所属阵营
         factory.Make(
