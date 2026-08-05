@@ -61,6 +61,38 @@ internal enum EdgeSource
 }
 
 /// <summary>
+/// 图边上的标签，记录边的来源与涉及的组件
+/// </summary>
+/// <param name="Source">边的来源</param>
+/// <param name="Components">涉及的组件类型</param>
+internal sealed record EdgeLabel(EdgeSource Source, ImmutableHashSet<Type> Components)
+{
+    public static EdgeLabel Explicit { get; } = new(EdgeSource.Explicit, []);
+    public static EdgeLabel Priority { get; } = new(EdgeSource.Priority, []);
+
+    public static EdgeLabel ReadWrite(ImmutableHashSet<Type> components) =>
+        new(EdgeSource.ReadWrite, components);
+
+    public bool Equals(EdgeLabel? other)
+    {
+        if (other is null)
+            return false;
+        return Source == other.Source && Components.SetEquals(other.Components);
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var h = Source.GetHashCode();
+            foreach (var component in Components)
+                h += component.GetHashCode();
+            return h;
+        }
+    }
+}
+
+/// <summary>
 /// ComposeExecutionGraph 产出的三张子图，分别对应 Update / LateUpdate1 / LateUpdate2 三段系统
 /// </summary>
 internal record ThreeStageSystemGraphs(
@@ -73,8 +105,8 @@ internal record ThreeStageSystemGraphs(
 /// 描述由系统组成的图
 /// </summary>
 /// <param name="Systems">图中的所有系统</param>
-/// <param name="Orders">图中的所有顺序边及其来源</param>
+/// <param name="Orders">图中的所有顺序边及其来源与组件标签</param>
 internal record SystemsGraph(
     ImmutableList<Type> Systems,
-    ImmutableDictionary<OrderedTypePair, ImmutableHashSet<EdgeSource>> Orders
+    ImmutableDictionary<OrderedTypePair, ImmutableHashSet<EdgeLabel>> Orders
 );

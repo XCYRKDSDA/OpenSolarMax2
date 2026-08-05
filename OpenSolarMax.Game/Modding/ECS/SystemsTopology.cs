@@ -362,21 +362,21 @@ internal static class SystemsTopology
         bool isLateUpdate
     )
     {
-        var edgeSources = new Dictionary<OrderedTypePair, HashSet<EdgeSource>>();
+        var edgeSources = new Dictionary<OrderedTypePair, HashSet<EdgeLabel>>();
 
-        void RegisterEdge(OrderedTypePair pair, EdgeSource src)
+        void RegisterEdge(OrderedTypePair pair, EdgeLabel label)
         {
-            if (edgeSources.TryGetValue(pair, out var sources))
-                sources.Add(src);
+            if (edgeSources.TryGetValue(pair, out var labels))
+                labels.Add(label);
             else
-                edgeSources[pair] = [src];
+                edgeSources[pair] = [label];
         }
 
         #region 显式执行顺序关系检查与合并
 
         var explicitOrders = declarations.ExplicitOrders.ToHashSet();
         foreach (var pair in explicitOrders)
-            RegisterEdge(pair, EdgeSource.Explicit);
+            RegisterEdge(pair, EdgeLabel.Explicit);
         var explicitFinePairs = declarations.FineWithPairs.ToHashSet();
 
         // 检测同一对系统是否有多个相互矛盾的显式关系
@@ -412,7 +412,7 @@ internal static class SystemsTopology
 
                 foreach (var sys1 in group1)
                 foreach (var sys2 in group2)
-                    RegisterEdge(new OrderedTypePair(sys1, sys2), EdgeSource.Priority);
+                    RegisterEdge(new OrderedTypePair(sys1, sys2), EdgeLabel.Priority);
             }
         }
 
@@ -501,31 +501,29 @@ internal static class SystemsTopology
             }
         }
 
-        // 计算读写组件的顺序
-        var readWriteOrders = new HashSet<OrderedTypePair>();
+        // 计算读写组件的顺序，并按边累积涉及的组件集合
+        var readWriteOrders = new Dictionary<OrderedTypePair, HashSet<Type>>();
+
+        void AddReadWriteOrder(OrderedTypePair pair, Type componentType)
+        {
+            if (readWriteOrders.TryGetValue(pair, out var components))
+                components.Add(componentType);
+            else
+                readWriteOrders[pair] = [componentType];
+        }
 
         foreach (var (componentType, readers) in componentsReaders)
         {
             if (!componentsWriters.TryGetValue(componentType, out var writers))
                 continue;
 
-            if (isLateUpdate)
+            foreach (var reader in readers)
+            foreach (var editor in writers.Where(t => t != reader))
             {
-                // 随动阶段：reader 读 curr，editor 在前
-                readWriteOrders.UnionWith(
-                    from reader in readers
-                    from editor in writers.Where(t => t != reader)
-                    select new OrderedTypePair(editor, reader)
-                );
-            }
-            else
-            {
-                // 积分阶段：reader 读 prev，reader 在前
-                readWriteOrders.UnionWith(
-                    from reader in readers
-                    from editor in writers.Where(t => t != reader)
-                    select new OrderedTypePair(reader, editor)
-                );
+                var pair = isLateUpdate
+                    ? new OrderedTypePair(editor, reader)
+                    : new OrderedTypePair(reader, editor);
+                AddReadWriteOrder(pair, componentType);
             }
         }
 
@@ -537,22 +535,18 @@ internal static class SystemsTopology
             {
                 if (!componentsConsumers.TryGetValue(componentType, out var consumers))
                     continue;
-                readWriteOrders.UnionWith(
-                    from reader in readers
-                    from consumer in consumers.Where(t => t != reader)
-                    select new OrderedTypePair(reader, consumer)
-                );
+                foreach (var reader in readers)
+                foreach (var consumer in consumers.Where(t => t != reader))
+                    AddReadWriteOrder(new OrderedTypePair(reader, consumer), componentType);
             }
             // Write→Consume：editor 写入后 consumer 消耗
             foreach (var (componentType, writers) in componentsWriters)
             {
                 if (!componentsConsumers.TryGetValue(componentType, out var consumers))
                     continue;
-                readWriteOrders.UnionWith(
-                    from writer in writers
-                    from consumer in consumers.Where(t => t != writer)
-                    select new OrderedTypePair(writer, consumer)
-                );
+                foreach (var writer in writers)
+                foreach (var consumer in consumers.Where(t => t != writer))
+                    AddReadWriteOrder(new OrderedTypePair(writer, consumer), componentType);
             }
         }
 
@@ -560,11 +554,12 @@ internal static class SystemsTopology
 
         // 添加所有组件读写关系
         foreach (
-            var p in readWriteOrders.Where(p =>
-                !explicitOrders.Contains(p.Reverse()) && !explicitFinePairs.Contains(p.Unorder())
+            var (p, components) in readWriteOrders.Where(kvp =>
+                !explicitOrders.Contains(kvp.Key.Reverse())
+                && !explicitFinePairs.Contains(kvp.Key.Unorder())
             )
         )
-            RegisterEdge(p, EdgeSource.ReadWrite);
+            RegisterEdge(p, EdgeLabel.ReadWrite([.. components]));
 
         return new SystemsGraph(
             declarations.Systems.ToImmutableList(),
@@ -633,7 +628,7 @@ internal static class SystemsTopology
     /// </summary>
     private static SystemsGraph FilterGraph(SystemsGraph graph, IReadOnlySet<Type> members)
     {
-        var result = new Dictionary<OrderedTypePair, HashSet<EdgeSource>>();
+        var result = new Dictionary<OrderedTypePair, HashSet<EdgeLabel>>();
         foreach (var (pair, sources) in graph.Orders)
         {
             if (members.Contains(pair.Before) && members.Contains(pair.After))
@@ -689,8 +684,24 @@ internal static class SystemsTopology
     }
 
     /// <summary>
+    /// 将边标签格式化为图谱中的简写文本：e（显式顺序）、p（优先级）、rw(组件名...)（读写关系）
+    /// </summary>
+    private static string FormatEdgeLabel(EdgeLabel label) =>
+        label.Source switch
+        {
+            EdgeSource.Explicit => "e",
+            EdgeSource.Priority => "p",
+            EdgeSource.ReadWrite => $"rw({FormatComponents(label.Components)})",
+            _ => throw new ArgumentOutOfRangeException(nameof(label)),
+        };
+
+    private static string FormatComponents(IEnumerable<Type> components) =>
+        string.Join(",", components.OrderBy(c => c.Name).Select(c => c.Name));
+
+    /// <summary>
     /// 构建系统拓扑的 Graphviz DOT 格式文本，用于程序解析。
     /// 按 Update/LateUpdate1/LateUpdate2 三段子图输出，节点带 priority 属性，边带来源 label。
+    /// 边 label 为分号拼接的来源缩写：e（显式顺序）、p（优先级）、rw(组件名...)（读写关系）。
     /// </summary>
     public static string BuildSystemTopologyDotGraph(
         DualStageSystemExecutionDeclarations declarations,
@@ -741,12 +752,9 @@ internal static class SystemsTopology
         // 边声明：遍历所有图
         void WriteEdges(SystemsGraph graph)
         {
-            foreach (var (pair, sources) in graph.Orders)
+            foreach (var (pair, labels) in graph.Orders)
             {
-                var label = string.Join(
-                    ";",
-                    sources.OrderBy(s => s).Select(s => s.ToString().ToLowerInvariant())
-                );
+                var label = string.Join(";", labels.OrderBy(l => l.Source).Select(FormatEdgeLabel));
                 dotsBuilder.AppendLine(
                     $"  \"{pair.After.Name}\" -> \"{pair.Before.Name}\" [label=\"{label}\"];"
                 );
@@ -764,6 +772,7 @@ internal static class SystemsTopology
     /// <summary>
     /// 构建系统拓扑的 D2 格式文本，用于可视化。按 Update/LateUpdate1/LateUpdate2 三段分别输出，
     /// 每段内按 priority 分组，过滤掉 Priority 来源边。
+    /// 边 label 为分号拼接的来源缩写：e（显式顺序）、rw(组件名...)（读写关系）；Priority 来源边已被过滤。
     /// </summary>
     public static string BuildSystemTopologyD2Graph(
         DualStageSystemExecutionDeclarations declarations,
@@ -829,15 +838,15 @@ internal static class SystemsTopology
         // 遍历每个图的边，过滤掉 Priority 来源
         void WriteEdges(string container, SystemsGraph graph)
         {
-            foreach (var (pair, sources) in graph.Orders)
+            foreach (var (pair, labels) in graph.Orders)
             {
-                var remaining = sources.Where(s => s != EdgeSource.Priority).ToHashSet();
+                var remaining = labels.Where(l => l.Source != EdgeSource.Priority).ToHashSet();
                 if (remaining.Count == 0)
                     continue;
 
                 var label = string.Join(
                     ";",
-                    remaining.OrderBy(s => s).Select(s => s.ToString().ToLowerInvariant())
+                    remaining.OrderBy(l => l.Source).Select(FormatEdgeLabel)
                 );
                 d2Builder.AppendLine(
                     $"  {D2Path(pair.After, container)} -> {D2Path(pair.Before, container)}: \"{label}\""
