@@ -11,7 +11,6 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
@@ -32,9 +31,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Write(typeof(JumpingStatus))]
 [Write(typeof(SoundEffect))]
 [ChangeStructure]
-[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))] // Write JumpingStatus
-[FineWith(typeof(LandArrivedShipsSystem))] // Write SoundEffect
-// [ExecuteAfter(typeof(LandArrivedShipsSystem))]
+[ExecuteBefore(typeof(TransitFromChargingToTravellingSystem))] // Write SoundEffect
+[ExecuteBefore(typeof(LandArrivedShipsSystem))] // Write SoundEffect
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class StartJumpingSystem(
     World world,
@@ -154,9 +152,6 @@ public sealed partial class StartJumpingSystem(
             _chargingSoundEvent.Native.createInstance(out var instance);
             ship.Get<SoundEffect>().EventInstance = instance;
             instance.start();
-
-            // 创建舰船的尾迹
-            factory.Make(world, commandBuffer, new ShipTrailDescription() { Ship = ship });
         }
 
         // 移除任务

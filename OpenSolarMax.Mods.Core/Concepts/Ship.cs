@@ -31,6 +31,7 @@ public abstract class ShipDefinition : IDefinition
             typeof(InTeam.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(TrailOf.AsShip),
+            typeof(TreeRelationship<ColorSync>.AsParent),
             typeof(JumpingStatus),
             typeof(PopulationCost),
             typeof(WarpingStatus),
