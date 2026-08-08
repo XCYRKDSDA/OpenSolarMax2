@@ -50,7 +50,8 @@ internal record SystemExecutionDeclarations(
 
 internal record DualStageSystemExecutionDeclarations(
     SystemExecutionDeclarations Update,
-    SystemExecutionDeclarations LateUpdate
+    SystemExecutionDeclarations LateUpdate,
+    ImmutableHashSet<Type> Reactive
 );
 
 internal enum EdgeSource

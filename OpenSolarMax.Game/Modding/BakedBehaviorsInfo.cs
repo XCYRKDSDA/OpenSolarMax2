@@ -28,7 +28,8 @@ internal record BakedBehaviorsInfo(
         return new ImmutableSortedSystemTypesCollection(
             UpdateSystems: SystemsTopology.TopologicalSortSystems(graphs.Update),
             LateUpdate1Systems: SystemsTopology.TopologicalSortSystems(graphs.LateUpdate1),
-            LateUpdate2Systems: SystemsTopology.TopologicalSortSystems(graphs.LateUpdate2)
+            LateUpdate2Systems: SystemsTopology.TopologicalSortSystems(graphs.LateUpdate2),
+            ReactiveSystems: declarations.Reactive.ToImmutableArray()
         );
     }
 

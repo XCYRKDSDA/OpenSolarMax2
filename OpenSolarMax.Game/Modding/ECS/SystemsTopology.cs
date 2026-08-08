@@ -15,30 +15,78 @@ internal static class SystemsTopology
     {
         var updateSystemsDeclarations = new MutableDeclarations();
         var lateUpdateSystemsDeclarations = new MutableDeclarations();
+        var reactiveSystems = new HashSet<Type>();
 
         foreach (var systemType in systemTypes)
         {
+            var hasReactive = systemType.GetCustomAttributes<ReactiveAttribute>().Any();
             var hasUpdate = systemType.GetCustomAttributes<UpdateAttribute>().Any();
             var hasLateUpdate = systemType.GetCustomAttributes<LateUpdateAttribute>().Any();
 
-            if (hasUpdate && !hasLateUpdate)
+            if (hasReactive && !hasUpdate && !hasLateUpdate)
+                ExtractReactiveSystem(systemType, reactiveSystems);
+            else if (!hasReactive && hasUpdate && !hasLateUpdate)
                 ExtractUpdateSystem(systemType, updateSystemsDeclarations, systemTypes);
-            else if (hasLateUpdate && !hasUpdate)
+            else if (!hasReactive && hasLateUpdate && !hasUpdate)
                 ExtractLateUpdateSystem(systemType, lateUpdateSystemsDeclarations, systemTypes);
             else
             {
                 throw new Exception(
                     "Every system must be marked with exactly one of"
-                        + $" UpdateAttribute or LateUpdateAttribute; {systemType} has"
-                        + (hasUpdate && hasLateUpdate ? " both" : " neither")
+                        + $" ReactiveAttribute, UpdateAttribute or LateUpdateAttribute"
                 );
             }
         }
 
         return new DualStageSystemExecutionDeclarations(
             Update: updateSystemsDeclarations.ToImmutable(),
-            LateUpdate: lateUpdateSystemsDeclarations.ToImmutable()
+            LateUpdate: lateUpdateSystemsDeclarations.ToImmutable(),
+            Reactive: reactiveSystems.ToImmutableHashSet()
         );
+    }
+
+    private static void ExtractReactiveSystem(Type systemType, HashSet<Type> reactiveSystems)
+    {
+        // 必须实现 IReactiveSystem
+        if (!systemType.GetInterfaces().Contains(typeof(IReactiveSystem)))
+            throw new Exception(
+                $"[ReactiveSystem] system {systemType} must implement IReactiveSystem."
+            );
+
+        if (
+            systemType.GetCustomAttributes<ExecuteBeforeAttribute>().Any()
+            || systemType.GetCustomAttributes<ExecuteAfterAttribute>().Any()
+            || systemType.GetCustomAttributes<FineWithAttribute>().Any()
+        )
+            throw new Exception(
+                $"Reactive system must not declare execution order on {systemType}"
+            );
+
+        if (systemType.GetCustomAttributes<PriorityAttribute>().Any())
+            throw new Exception($"Reactive system must not declare [Priority] on {systemType}");
+
+        if (
+            systemType.GetCustomAttributes<ReadPrevAttribute>().Any()
+            || systemType.GetCustomAttributes<ReadCurrAttribute>().Any()
+            || systemType.GetCustomAttributes<WriteAttribute>().Any()
+            || systemType.GetCustomAttributes<IterateAttribute>().Any()
+            || systemType.GetCustomAttributes<ConsumeAttribute>().Any()
+            || systemType.GetCustomAttributes<ChangeStructureAttribute>().Any()
+        )
+            throw new Exception(
+                $"Reactive system must not declare read/write access on {systemType}"
+            );
+
+        if (
+            systemType.GetInterfaces().Contains(typeof(ITickSystem))
+            || systemType.GetInterfaces().Contains(typeof(ICalcSystem))
+            || systemType.GetInterfaces().Contains(typeof(ICalcSystemWithStructuralChanges))
+        )
+            throw new Exception(
+                $"Reactive system must not implement ITickSystem/ICalcSystem/ICalcSystemWithStructuralChanges on {systemType}"
+            );
+
+        reactiveSystems.Add(systemType);
     }
 
     private static void ExtractUpdateSystem(
@@ -113,16 +161,16 @@ internal static class SystemsTopology
         // 仅允许 ReadCurr、Write、Consume 和 ChangeStructure
         if (systemType.GetCustomAttributes<ReadPrevAttribute>().Any())
             throw new Exception(
-                $"Reactive system can only use ReadCurr+Write+Consume; found [ReadPrev] on {systemType}"
+                $"LateUpdate system can only use ReadCurr+Write+Consume; found [ReadPrev] on {systemType}"
             );
         if (systemType.GetCustomAttributes<IterateAttribute>().Any())
             throw new Exception(
-                $"Reactive system can only use ReadCurr+Write+Consume; found [Iterate] on {systemType}"
+                $"LateUpdate system can only use ReadCurr+Write+Consume; found [Iterate] on {systemType}"
             );
-        if (readCurrAttrs.Count == 0 && writeAttrs.Count == 0 && consumeAttrs.Count == 0)
-            throw new Exception(
-                $"Reactive system must have at least one [ReadCurr], [Write] or [Consume]; found none on {systemType}"
-            );
+        // if (readCurrAttrs.Count == 0 && writeAttrs.Count == 0 && consumeAttrs.Count == 0)
+        //     throw new Exception(
+        //         $"Reactive system must have at least one [ReadCurr], [Write] or [Consume]; found none on {systemType}"
+        //     );
 
         // 禁止 ReadCurr + Write 同一组件
         var readCurrOverlap = readCurrAttrs
@@ -321,7 +369,7 @@ internal static class SystemsTopology
         {
             if (!updateSystems.Contains(before) || !updateSystems.Contains(after))
                 throw new Exception(
-                    "Integration system and reactive system shall not declare execution order relationship between each other!"
+                    "Integration system and LateUpdate system shall not declare execution order relationship between each other!"
                 );
         }
 
@@ -329,7 +377,7 @@ internal static class SystemsTopology
         {
             if (!lateUpdateSystems.Contains(before) || !lateUpdateSystems.Contains(after))
                 throw new Exception(
-                    "Integration system and reactive system shall not declare execution order relationship between each other!"
+                    "Integration system and LateUpdate system shall not declare execution order relationship between each other!"
                 );
         }
 
@@ -337,7 +385,7 @@ internal static class SystemsTopology
         {
             if (!updateSystems.Contains(pair.Sys1) || !updateSystems.Contains(pair.Sys2))
                 throw new Exception(
-                    "Integration system and reactive system shall not declare execution order relationship between each other!"
+                    "Integration system and LateUpdate system shall not declare execution order relationship between each other!"
                 );
         }
 
@@ -345,7 +393,7 @@ internal static class SystemsTopology
         {
             if (!lateUpdateSystems.Contains(pair.Sys1) || !lateUpdateSystems.Contains(pair.Sys2))
                 throw new Exception(
-                    "Integration system and reactive system shall not declare execution order relationship between each other!"
+                    "Integration system and LateUpdate system shall not declare execution order relationship between each other!"
                 );
         }
 
@@ -749,6 +797,17 @@ internal static class SystemsTopology
         WriteSubgraph("LateUpdate1", graphs.LateUpdate1);
         WriteSubgraph("LateUpdate2", graphs.LateUpdate2);
 
+        // Reactive 系统组：仅输出节点，无任何边
+        if (declarations.Reactive.Count != 0)
+        {
+            dotsBuilder.AppendLine("  subgraph cluster_Reactive {");
+            dotsBuilder.AppendLine("    label=\"Reactive\";");
+            foreach (var type in declarations.Reactive)
+                dotsBuilder.AppendLine($"    \"{type.Name}\";");
+            dotsBuilder.AppendLine("  }");
+            dotsBuilder.AppendLine();
+        }
+
         // 边声明：遍历所有图
         void WriteEdges(SystemsGraph graph)
         {
@@ -826,6 +885,17 @@ internal static class SystemsTopology
         WriteContainer("Update", graphs.Update);
         WriteContainer("LateUpdate1", graphs.LateUpdate1);
         WriteContainer("LateUpdate2", graphs.LateUpdate2);
+
+        // Reactive 系统组：仅输出形状，无任何边
+        if (declarations.Reactive.Count != 0)
+        {
+            d2Builder.AppendLine("Reactive: {");
+            d2Builder.AppendLine("  label: \"Reactive\"");
+            foreach (var type in declarations.Reactive)
+                d2Builder.AppendLine($"  {type.Name}");
+            d2Builder.AppendLine("}");
+            d2Builder.AppendLine();
+        }
 
         // D2 路径辅助方法
         string D2Path(Type t, string container)

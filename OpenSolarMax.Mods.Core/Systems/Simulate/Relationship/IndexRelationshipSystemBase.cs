@@ -9,7 +9,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 通过 Arch 事件回调自动维护关系实体与各参与者索引组件的映射，替代每帧清空并重建。
 /// </summary>
-public abstract class IndexRelationshipSystemBase<TRelationship> : ICalcSystem
+public abstract class IndexRelationshipSystemBase<TRelationship> : IReactiveSystem
     where TRelationship : IRelationshipRecord
 {
     protected IndexRelationshipSystemBase(World world)
@@ -128,10 +128,4 @@ public abstract class IndexRelationshipSystemBase<TRelationship> : ICalcSystem
     }
 
     #endregion
-
-    /// <summary>
-    /// 索引已由事件回调增量维护，Update 为空操作。
-    /// 系统仍保留在此以承载 ECS 拓扑上的读写声明（[ReadCurr]/[Write] 等）和执行顺序约束。
-    /// </summary>
-    public void Update() { }
 }

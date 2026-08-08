@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.ECS;
@@ -13,8 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 通过订阅参与者索引组件的移除事件自动清理损坏的关系实体，
 /// 替代每帧 Query 轮询参与者存活状态。
 /// </summary>
-public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
-    : ICalcSystemWithStructuralChanges
+public abstract class DestroyBrokenRelationshipsSystem<TRelationship> : IReactiveSystem
     where TRelationship : IRelationshipRecord
 {
     protected DestroyBrokenRelationshipsSystem(World world)
@@ -69,10 +66,4 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
     }
 
     #endregion
-
-    /// <summary>
-    /// 结构变更已由事件回调即时完成，Update 为空操作。
-    /// 系统仍保留在此以承载 ECS 拓扑上的读写声明和执行顺序约束。
-    /// </summary>
-    public void Update(CommandBuffer commandBuffer) { }
 }

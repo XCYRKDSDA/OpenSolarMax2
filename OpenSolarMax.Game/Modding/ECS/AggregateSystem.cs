@@ -45,6 +45,7 @@ internal class AggregateSystem : IDisposable
     private readonly List<ITickSystem> _updateSystems = [];
     private readonly List<object> _lateUpdate1Systems = [];
     private readonly List<ICalcSystem> _lateUpdate2Systems = [];
+    private readonly List<IReactiveSystem> _reactiveSystems = [];
 
     private readonly CommandBuffer _commandBuffer = new();
 
@@ -72,16 +73,25 @@ internal class AggregateSystem : IDisposable
                 PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
             )
             .ToList();
+        var reactiveSystems = sortedSystemTypes
+            .ReactiveSystems.Select(t =>
+                (IReactiveSystem)PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
+            )
+            .ToList();
 
         // 注册挂载点（需所有系统实例）
         RegisterHook(
-            updateSystems.Concat(lateUpdate1Systems).Concat(lateUpdate2Systems),
+            updateSystems
+                .Concat(lateUpdate1Systems)
+                .Concat(lateUpdate2Systems)
+                .Concat(reactiveSystems),
             hookImplInfos
         );
 
         _updateSystems.AddRange(updateSystems.Cast<ITickSystem>());
         _lateUpdate1Systems.AddRange(lateUpdate1Systems);
         _lateUpdate2Systems.AddRange(lateUpdate2Systems.Cast<ICalcSystem>());
+        _reactiveSystems.AddRange(reactiveSystems);
     }
 
     public void Update(GameTime gameTime)
@@ -153,6 +163,7 @@ internal class AggregateSystem : IDisposable
             var sys in _updateSystems
                 .Concat<object>(_lateUpdate1Systems)
                 .Concat(_lateUpdate2Systems)
+                .Concat(_reactiveSystems)
         )
         {
             if (sys is IDisposable disposable)

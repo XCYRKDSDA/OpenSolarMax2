@@ -276,6 +276,7 @@ internal record BehaviorMod(
                         typeof(ITickSystem),
                         typeof(ICalcSystem),
                         typeof(ICalcSystemWithStructuralChanges),
+                        typeof(IReactiveSystem),
                     ])
                     .Any()
             )

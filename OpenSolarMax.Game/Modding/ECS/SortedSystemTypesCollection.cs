@@ -5,7 +5,8 @@ namespace OpenSolarMax.Game.Modding.ECS;
 internal record ImmutableSortedSystemTypesCollection(
     ImmutableArray<Type> UpdateSystems,
     ImmutableArray<Type> LateUpdate1Systems,
-    ImmutableArray<Type> LateUpdate2Systems
+    ImmutableArray<Type> LateUpdate2Systems,
+    ImmutableArray<Type> ReactiveSystems
 );
 
 internal record StageSystemTypesCollection(
