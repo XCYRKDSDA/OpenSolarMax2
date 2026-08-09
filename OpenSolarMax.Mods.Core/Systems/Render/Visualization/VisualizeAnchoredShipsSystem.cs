@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -18,7 +16,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredShipsSystem(
@@ -227,5 +225,3 @@ public sealed partial class VisualizeAnchoredShipsSystem(
         }
     }
 }
-
-#endif

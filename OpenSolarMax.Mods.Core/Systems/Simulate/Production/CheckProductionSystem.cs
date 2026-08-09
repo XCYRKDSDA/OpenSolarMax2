@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -9,11 +7,12 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(AnchoredShipsRegistry)),
     ReadCurr(typeof(ProductionAbility)),
+    ReadCurr(typeof(TeamPopulationRegistry)),
     Write(typeof(ProductionCondition))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
@@ -62,5 +61,3 @@ public sealed partial class CheckProductionSystem(World world) : ICalcSystem
 
     public void Update() => CheckProductionQuery(world);
 }
-
-#endif

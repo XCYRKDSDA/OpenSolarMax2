@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -17,18 +15,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 监测殖民进度，切换或者移除殖民状态，同时播放动画
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(ReferenceSize)),
-    ReadPrev(typeof(TeamReferenceColor)),
-    ReadPrev(typeof(InTeam.AsAffiliate)),
-    Iterate(typeof(ColonizationState)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(ReferenceSize)),
+    ReadCurr(typeof(TeamReferenceColor)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    Consume(typeof(ColonizationState)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 先计算进度，再判断是否完成殖民
-[ExecuteAfter(typeof(ProgressColonizationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class SettleColonizationSystem(
     World world,
     IAssetsManager assets,
@@ -86,10 +82,10 @@ public sealed partial class SettleColonizationSystem(
             if (planetTeam is not null)
                 commandBuffer.Destroy(asTeamAffiliate.Relationship!.Value.Ref);
         }
+
+        state.Event = ColonizationEvent.Idle;
     }
 
     public void Update(CommandBuffer commandBuffer) =>
         SettleColonizationQuery(world, commandBuffer);
 }
-
-#endif

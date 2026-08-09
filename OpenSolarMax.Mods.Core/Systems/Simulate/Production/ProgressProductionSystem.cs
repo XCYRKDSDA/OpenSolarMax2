@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -13,14 +11,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新生产系统. 在所有可生产部队的星球上推进生产
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [
     ReadPrev(typeof(ProductionAbility)),
     ReadPrev(typeof(Producible)),
     ReadPrev(typeof(ProductionCondition)),
+    ReadPrev(typeof(InTeam.AsAffiliate)),
     Iterate(typeof(ProductionState))
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ProgressProductionSystem(World world) : ITickSystem
 {
     [Query]
@@ -57,5 +55,3 @@ public sealed partial class ProgressProductionSystem(World world) : ITickSystem
 
     public void Update(GameTime gameTime) => UpdateProductionQuery(world, gameTime);
 }
-
-#endif

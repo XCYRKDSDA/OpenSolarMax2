@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -20,9 +18,8 @@ internal static class ShipPostBornEffectParams
     internal static readonly TimeSpan FadeOutDuration = PostBornDuration * 0.1;
 }
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [Iterate(typeof(ShipPostBornEffect))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
 {
     [Query]
@@ -35,9 +32,8 @@ public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
     public void Update(GameTime gameTime) => UpdateBlinkEffectQuery(world, gameTime);
 }
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipPostBornEffect)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
@@ -48,6 +44,7 @@ public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWi
         [Data] CommandBuffer commandBuffer
     )
     {
+        // TODO: 需要思考如何避免结构化变更来实现这一功能
         if (effect.TimeElapsed >= Params.PostBornDuration)
             commandBuffer.Remove<ShipPostBornEffect>(entity);
     }
@@ -56,10 +53,13 @@ public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWi
         RemoveShipPostBornEffectQuery(world, commandBuffer);
 }
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipPostBornEffect)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 [FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
+[FineWith(typeof(UpdateShipChargingEffectSystem))] // Write Sprite
+[FineWith(typeof(UpdateShipTravellingEffectSystem))] // Write Sprite
+[FineWith(typeof(UpdateShipTrailEffectSystem))] // Write Sprite
 public partial class ApplyShipPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     /// <summary>
@@ -102,5 +102,3 @@ public partial class ApplyShipPostBornEffectSystem(World world, IAssetsManager a
 
     public void Update() => ApplyBlinkEffectQuery(world);
 }
-
-#endif
