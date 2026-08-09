@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -11,14 +9,14 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(Sprite)),
-    Iterate(typeof(ShipDeathState)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(Sprite)),
+    Write(typeof(ShipDeathState)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
@@ -54,5 +52,3 @@ public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFacto
 
     public void Update(CommandBuffer commandBuffer) => PlayEffectQuery(world, commandBuffer);
 }
-
-#endif

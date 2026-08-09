@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -13,13 +11,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 战斗更新系统。对所有同在一个星球上的不同阵营部队更新战斗值
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [
     ReadPrev(typeof(AnchoredShipsRegistry)),
     ReadPrev(typeof(Combatable)),
     Iterate(typeof(Battlefield))
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ProgressCombatSystem(World world) : ITickSystem
 {
     [Query]
@@ -67,5 +64,3 @@ public sealed partial class ProgressCombatSystem(World world) : ITickSystem
 
     public void Update(GameTime gameTime) => ProgressCombatQuery(world, gameTime);
 }
-
-#endif

@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -9,9 +7,9 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipDeathState)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class DestroyDeadShipsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
@@ -30,5 +28,3 @@ public sealed partial class DestroyDeadShipsSystem(World world) : ICalcSystemWit
 
     public void Update(CommandBuffer commandBuffer) => DestroyDeadQuery(world, commandBuffer);
 }
-
-#endif

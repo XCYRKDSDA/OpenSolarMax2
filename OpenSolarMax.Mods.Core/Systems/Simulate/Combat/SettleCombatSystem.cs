@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -13,25 +11,20 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 战斗结算系统。根据星球上各阵营的战斗值进行战斗减员
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(AnchoredShipsRegistry)),
-    ReadPrev(typeof(Combatable)),
-    Iterate(typeof(Battlefield)),
-    ChangeStructure
+    ReadCurr(typeof(AnchoredShipsRegistry)),
+    ReadCurr(typeof(Combatable)),
+    Write(typeof(Battlefield)),
+    Write(typeof(ShipDeathState))
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 先量变再质变
-[ExecuteAfter(typeof(ProgressCombatSystem))]
-public sealed partial class SettleCombatSystem(World world) : ICalcSystemWithStructuralChanges
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteBefore(typeof(PlayShipDeathEffectSystem))] // Write ShipDeathState
+public sealed partial class SettleCombatSystem(World world) : ICalcSystem
 {
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
-    private void SettleCombat(
-        in AnchoredShipsRegistry shipsRegistry,
-        ref Battlefield battle,
-        [Data] CommandBuffer commandBuffer
-    )
+    private void SettleCombat(in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
     {
         // 考察各个阵营的破坏度
         foreach (var team in battle.FrontlineDamage.Keys)
@@ -54,7 +47,5 @@ public sealed partial class SettleCombatSystem(World world) : ICalcSystemWithStr
         }
     }
 
-    public void Update(CommandBuffer commandBuffer) => SettleCombatQuery(world, commandBuffer);
+    public void Update() => SettleCombatQuery(world);
 }
-
-#endif
