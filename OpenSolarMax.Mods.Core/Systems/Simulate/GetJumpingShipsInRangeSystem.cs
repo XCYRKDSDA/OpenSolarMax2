@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using System.Diagnostics;
 using Arch.Core;
 using Arch.System;
@@ -10,7 +8,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(JumpingStatus)),
@@ -73,5 +71,3 @@ public sealed partial class GetJumpingShipsInRangeSystem(World world) : ICalcSys
 
     public void Update() => GetJumpingShipsInRangeQuery(world);
 }
-
-#endif

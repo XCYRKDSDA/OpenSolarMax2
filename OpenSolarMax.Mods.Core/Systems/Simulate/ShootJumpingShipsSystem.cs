@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -13,19 +11,21 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(Tower)),
-    ReadPrev(typeof(InAttackRangeShipsRegistry)),
-    ReadPrev(typeof(AttackCooldown)),
-    ReadPrev(typeof(InTeam.AsAffiliate)),
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(TeamReferenceColor)),
-    Iterate(typeof(AttackTimer)),
+    ReadCurr(typeof(Tower)),
+    ReadCurr(typeof(InAttackRangeShipsRegistry)),
+    ReadCurr(typeof(AttackCooldown)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(TeamReferenceColor)),
+    Write(typeof(AttackTimer)),
+    Write(typeof(ShipDeathState)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
+[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(SettleCombatSystem))] // Write ShipDeathState
+[ExecuteBefore(typeof(PlayShipDeathEffectSystem))] // Write ShipDeathState
 public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
@@ -103,5 +103,3 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
 
     public void Update(CommandBuffer commandBuffer) => ShootQuery(world, commandBuffer);
 }
-
-#endif

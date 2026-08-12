@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -12,17 +10,19 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(InAttackRangeShipsRegistry)), Write(typeof(Sprite))]
 [ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在其他设置外观的系统之后执行以覆写
 [
-    ExecuteAfter(typeof(ApplyTeamColorSystem)),
-    ExecuteAfter(typeof(UpdateJumpingEffectSystem)),
-    ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))
+    ExecuteAfter(typeof(ApplyTeamColorSystem)), // Write Sprite
+    ExecuteAfter(typeof(ApplyShipPostBornEffectSystem)), // Write Sprite
+    ExecuteAfter(typeof(UpdateShipChargingEffectSystem)), // Write Sprite
+    ExecuteAfter(typeof(UpdateShipTravellingEffectSystem)), // Write Sprite
+    ExecuteAfter(typeof(UpdateShipTrailEffectSystem)) // Write Sprite
 ]
 // 在颜色同步系统之前执行, 这样子实体也能共享染色
-[ExecuteBefore(typeof(SynchronizeColorSystem))]
+[ExecuteBefore(typeof(SynchronizeColorSystem))] // Write Sprite
 public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets)
     : ICalcSystem
 {
@@ -41,5 +41,3 @@ public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager 
 
     public void Update() => SetColorQuery(world);
 }
-
-#endif
