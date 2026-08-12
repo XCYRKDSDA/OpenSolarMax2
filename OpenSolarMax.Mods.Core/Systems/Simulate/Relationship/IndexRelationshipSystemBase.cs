@@ -1,4 +1,5 @@
 using System.Reflection;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.ECS;
@@ -12,15 +13,32 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public abstract class IndexRelationshipSystemBase<TRelationship> : IReactiveSystem
     where TRelationship : IRelationshipRecord
 {
-    protected IndexRelationshipSystemBase(World world)
+    protected IndexRelationshipSystemBase(EventRegistry registry)
     {
-        world.SubscribeComponentAdded<TRelationship>(OnRelationshipAdded);
-        world.SubscribeComponentSet<TRelationship>(OnRelationshipSet);
-        world.SubscribeComponentRemoved<TRelationship>(OnRelationshipRemoved);
+        registry.SubscribeComponentAdded<TRelationship>(OnRelationshipAdded);
+        registry.SubscribeComponentSet<TRelationship>(OnRelationshipSet);
+        registry.SubscribeComponentRemoved<TRelationship>(OnRelationshipRemoved);
     }
 
-    private static void OnRelationshipAdded(in Entity entity, ref TRelationship record)
+    private static void OnRelationshipAdded(
+        in Entity entity,
+        ref TRelationship record,
+        CommandBuffer commandBuffer
+    )
     {
+        // 若任一参与者已死亡，则不建立索引，并延迟销毁关系实体本身
+        foreach (var group in (ILookup<Type, Entity>)record)
+        {
+            foreach (var participant in group)
+            {
+                if (!participant.IsAlive())
+                {
+                    commandBuffer.Destroy(entity);
+                    return;
+                }
+            }
+        }
+
         foreach (var group in (ILookup<Type, Entity>)record)
         {
             var indexer = GetIndexer(group.Key);
@@ -35,7 +53,8 @@ public abstract class IndexRelationshipSystemBase<TRelationship> : IReactiveSyst
     private static void OnRelationshipSet(
         in Entity entity,
         in TRelationship oldValue,
-        ref TRelationship newValue
+        ref TRelationship newValue,
+        CommandBuffer commandBuffer
     )
     {
         foreach (var group in (ILookup<Type, Entity>)oldValue)
@@ -47,7 +66,7 @@ public abstract class IndexRelationshipSystemBase<TRelationship> : IReactiveSyst
                     remover.Invoke(entity, participant);
             }
         }
-        OnRelationshipAdded(entity, ref newValue);
+        OnRelationshipAdded(entity, ref newValue, commandBuffer);
     }
 
     private static void OnRelationshipRemoved(in Entity entity, ref TRelationship record)

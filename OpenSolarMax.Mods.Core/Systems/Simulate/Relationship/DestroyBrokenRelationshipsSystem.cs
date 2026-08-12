@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Reflection;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.ECS;
@@ -14,21 +15,22 @@ namespace OpenSolarMax.Mods.Core.Systems;
 public abstract class DestroyBrokenRelationshipsSystem<TRelationship> : IReactiveSystem
     where TRelationship : IRelationshipRecord
 {
-    protected DestroyBrokenRelationshipsSystem(World world)
+    protected DestroyBrokenRelationshipsSystem(EventRegistry registry)
     {
         foreach (var participantType in TRelationship.ParticipantTypes)
-            GetSubscriber(participantType).Invoke(world);
+            GetSubscriber(participantType).Invoke(registry);
     }
 
-    private static void SubscribeTo<TParticipant>(World world)
+    private static void SubscribeTo<TParticipant>(EventRegistry registry)
         where TParticipant : IParticipantIndex
     {
-        world.SubscribeComponentRemoved<TParticipant>(OnParticipantIndexRemoved);
+        registry.SubscribeComponentRemoved<TParticipant>(OnParticipantIndexRemoved);
     }
 
     private static void OnParticipantIndexRemoved<TParticipant>(
         in Entity entity,
-        ref TParticipant index
+        ref TParticipant index,
+        CommandBuffer commandBuffer
     )
         where TParticipant : IParticipantIndex
     {
@@ -37,7 +39,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship> : IReactiv
         foreach (var relationship in relationships)
         {
             if (relationship.IsAlive())
-                World.Worlds[entity.WorldId].Destroy(relationship);
+                commandBuffer.Destroy(relationship);
         }
     }
 
@@ -49,7 +51,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship> : IReactiv
             BindingFlags.Static | BindingFlags.NonPublic
         )!;
 
-    private delegate void SubscriberDelegate(World world);
+    private delegate void SubscriberDelegate(EventRegistry registry);
 
     private static readonly Dictionary<Type, SubscriberDelegate> _subscriberCache = [];
 
