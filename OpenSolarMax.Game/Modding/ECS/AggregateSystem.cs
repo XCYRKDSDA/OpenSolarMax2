@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Arch.Buffer;
 using Arch.Core;
@@ -47,7 +48,8 @@ internal class AggregateSystem : IDisposable
     private readonly List<ICalcSystem> _lateUpdate2Systems = [];
     private readonly List<IReactiveSystem> _reactiveSystems = [];
 
-    private readonly CommandBuffer _commandBuffer = new();
+    private readonly CommandBuffer[] _buffers = [new(), new()];
+    private int _currentIndex;
 
     public AggregateSystem(
         World world,
@@ -57,6 +59,7 @@ internal class AggregateSystem : IDisposable
     )
     {
         _world = world;
+        var eventRegistry = new EventRegistry(world, this);
 
         var updateSystems = sortedSystemTypes
             .UpdateSystems.Select(t =>
@@ -75,7 +78,8 @@ internal class AggregateSystem : IDisposable
             .ToList();
         var reactiveSystems = sortedSystemTypes
             .ReactiveSystems.Select(t =>
-                (IReactiveSystem)PluginFactory.Instantiate(t, [(typeof(World), world)], @params)
+                (IReactiveSystem)
+                    PluginFactory.Instantiate(t, [(typeof(EventRegistry), eventRegistry)], @params)
             )
             .ToList();
 
@@ -94,9 +98,11 @@ internal class AggregateSystem : IDisposable
         _reactiveSystems.AddRange(reactiveSystems);
     }
 
+    internal CommandBuffer CurrentCommandBuffer => _buffers[_currentIndex];
+
     public void Update(GameTime gameTime)
     {
-        Debug.Assert(_commandBuffer.Size == 0);
+        Debug.Assert(_buffers.All(b => b.Size == 0));
 
         // 执行积分系统
         foreach (var system in _updateSystems)
@@ -110,44 +116,62 @@ internal class AggregateSystem : IDisposable
     public void LateUpdate()
     {
         // 不动点迭代：随动系统反复执行直到无结构化变更
+        // 外循环：执行 LateUpdate1 系统，若产生结构变更则经内循环排空后再次执行
         for (var iteration = 0; ; iteration++)
         {
-            Debug.Assert(_commandBuffer.Size == 0);
-            foreach (var system in _lateUpdate1Systems)
-            {
-                if (system is ICalcSystemWithStructuralChanges withChanges)
-                    withChanges.Update(_commandBuffer);
-                else if (system is ICalcSystem calc)
-                    calc.Update();
-            }
-
-            var hadStructuralChanges = _commandBuffer.Size > 0;
-            _commandBuffer.Playback(_world, dispose: true);
-
-            // 如果无结构化变更，则退出循环
-            if (!hadStructuralChanges)
-                break;
-
-            // 如果迭代次数太多，则抛异常
+            // 如果迭代次数太多，则抛异常（上限 32 次系统执行）
             if (iteration >= MaxFixpointIterations)
                 throw new Exception(
                     $"fixpoint did not converge within {MaxFixpointIterations} iterations"
                 );
+
+            Debug.Assert(_buffers[_currentIndex ^ 1].Size == 0);
+
+            // 执行 LateUpdate1 阶段系统：带结构变更的系统写入 Buffered，其余直接执行
+            foreach (var system in _lateUpdate1Systems)
+            {
+                if (system is ICalcSystemWithStructuralChanges withChanges)
+                    withChanges.Update(CurrentCommandBuffer);
+                else if (system is ICalcSystem calc)
+                    calc.Update();
+            }
+
+            // 若系统没有写入任何结构变更，则已收敛，退出循环
+            if (_buffers[_currentIndex].Size == 0)
+                break;
+
+            // 内循环：反复 Playback 直到 Buffered 排空（上限 32 次执行）
+            for (var playbackIteration = 0; _buffers[_currentIndex].Size > 0; playbackIteration++)
+            {
+                // 如果迭代次数太多，则抛异常
+                if (playbackIteration >= MaxFixpointIterations)
+                    throw new Exception(
+                        $"fixpoint did not converge within {MaxFixpointIterations} iterations"
+                    );
+
+                // 切换当前写入目标：播放期间回调写入另一个 buffer
+                // （_currentIndex 在 0/1 间切换，^ 1 即取另一个 buffer）
+                _currentIndex ^= 1;
+                _buffers[_currentIndex ^ 1].Playback(_world, dispose: true);
+            }
+
+            // 退出时两个 buffer 必空
+            Debug.Assert(_buffers.All(b => b.Size == 0));
         }
 
-        Debug.Assert(_commandBuffer.Size == 0);
+        Debug.Assert(_buffers.All(b => b.Size == 0));
 
         // 执行 LateUpdate2 阶段系统
         foreach (var system in _lateUpdate2Systems)
             system.Update();
 
-        Debug.Assert(_commandBuffer.Size == 0);
+        Debug.Assert(_buffers.All(b => b.Size == 0));
     }
 
     public void Dispose()
     {
-        // 释放 CommandBuffer
-        _commandBuffer.Dispose();
+        _buffers[0].Dispose();
+        _buffers[1].Dispose();
 
         // 释放所有内部系统
         foreach (
