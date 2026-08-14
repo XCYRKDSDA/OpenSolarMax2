@@ -20,7 +20,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Write(typeof(SoundEffect))]
 [Consume(typeof(JumpingStatus))]
 [ChangeStructure]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class TransitFromChargingToTravellingSystem(
     World world,
     IAssetsManager assets,

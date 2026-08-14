@@ -23,9 +23,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
     Write(typeof(ShipDeathState)),
     ChangeStructure
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(SettleCombatSystem))] // Write ShipDeathState
-[ExecuteBefore(typeof(PlayShipDeathEffectSystem))] // Write ShipDeathState
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(AttackTimer),
+    typeof(ShipDeathState)
+)]
+[FineWith(typeof(SettleCombatSystem), "地面战斗与空中炮塔攻击互不冲突", typeof(ShipDeathState))]
 public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

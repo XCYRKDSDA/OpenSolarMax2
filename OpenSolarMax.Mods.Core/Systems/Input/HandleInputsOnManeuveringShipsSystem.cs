@@ -28,7 +28,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Projection))]
 [Write(typeof(ManeuveringShipsStatus))]
 [ChangeStructure]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ManeuveringShipsStatus))]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
     World world,
     IConceptFactory factory,

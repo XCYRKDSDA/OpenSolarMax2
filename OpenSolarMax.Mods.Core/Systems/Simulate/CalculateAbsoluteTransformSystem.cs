@@ -18,7 +18,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(RelativeTransform)),
     Write(typeof(AbsoluteTransform))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(AbsoluteTransform))]
 public sealed partial class CalculateAbsoluteTransformSystem(World world) : ICalcSystem
 {
     private static void RecursivelyUpdateAbsoluteTransform(Entity entity)

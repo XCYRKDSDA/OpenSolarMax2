@@ -11,7 +11,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(InTeam.AsAffiliate)), ReadCurr(typeof(TeamReferenceColor)), Write(typeof(Sprite))]
-[ExecuteAfter(typeof(ApplyAnimationSystem)), ExecuteBefore(typeof(SynchronizeColorSystem))] // Write Sprite
+[
+    ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
+    ExecuteBefore(
+        typeof(SynchronizeColorSystem),
+        "先设置队伍颜色，颜色同步再传播给子实体",
+        typeof(Sprite)
+    )
+]
 public sealed class ApplyTeamColorSystem(World world)
     : ApplyTeamReferenceSystemBase<Sprite, TeamReferenceColor>(world)
 {

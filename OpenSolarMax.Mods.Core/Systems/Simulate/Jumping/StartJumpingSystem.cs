@@ -31,9 +31,19 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Write(typeof(JumpingStatus))]
 [Write(typeof(SoundEffect))]
 [ChangeStructure]
-[ExecuteBefore(typeof(TransitFromChargingToTravellingSystem))] // Write SoundEffect
-[ExecuteBefore(typeof(LandArrivedShipsSystem))] // Write SoundEffect
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[FineWith(typeof(TransitFromChargingToTravellingSystem), "飞行状态是互斥的", typeof(SoundEffect))]
+[FineWith(typeof(LandArrivedShipsSystem), "飞行状态是互斥的", typeof(SoundEffect))]
+[ExecuteAfter(
+    typeof(CalculateShipPositionSystem),
+    "新起飞的飞船继承其当前绝对位置，与飞行中的飞船位置计算逻辑互斥",
+    typeof(JumpingStatus)
+)]
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(JumpingStatus),
+    typeof(SoundEffect)
+)]
 public sealed partial class StartJumpingSystem(
     World world,
     IAssetsManager assets,

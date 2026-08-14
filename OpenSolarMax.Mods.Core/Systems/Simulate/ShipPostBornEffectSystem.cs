@@ -55,11 +55,34 @@ public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWi
 
 [SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipPostBornEffect)), Write(typeof(Sprite))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
-[FineWith(typeof(UpdateShipChargingEffectSystem))] // Write Sprite
-[FineWith(typeof(UpdateShipTravellingEffectSystem))] // Write Sprite
-[FineWith(typeof(UpdateShipTrailEffectSystem))] // Write Sprite
+[
+    ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
+    FineWith(
+        typeof(ApplyTeamColorSystem),
+        "当前系统仅设置透明度和缩放，与应用颜色不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(SynchronizeColorSystem),
+        "当前系统仅设置透明度和缩放，与应用颜色不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipChargingEffectSystem),
+        "飞船出生后动画和飞行动画互不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipTravellingEffectSystem),
+        "飞船出生后动画和飞行动画互不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipTrailEffectSystem),
+        "飞船出生后动画和飞行动画互不冲突",
+        typeof(Sprite)
+    )
+]
 public partial class ApplyShipPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     /// <summary>

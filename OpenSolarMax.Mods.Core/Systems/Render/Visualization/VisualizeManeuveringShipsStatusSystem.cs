@@ -31,7 +31,6 @@ public delegate bool? CheckLocationReachabilityCallback(
 [ReadCurr(typeof(Projection))]
 [ReadCurr(typeof(SelectionRingVisual))]
 [ReadCurr(typeof(PlanetSelectionRing.AsPlanet))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
     GraphicsDevice graphicsDevice,

@@ -13,10 +13,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(Sprite)),
-    Write(typeof(ShipDeathState)),
+    Consume(typeof(ShipDeathState)),
     ChangeStructure
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

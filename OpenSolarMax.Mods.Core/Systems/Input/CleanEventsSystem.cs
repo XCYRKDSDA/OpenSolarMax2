@@ -12,7 +12,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem]
 [Consume(typeof(InputEvent))]
 [ChangeStructure]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public partial class CleanEventsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]

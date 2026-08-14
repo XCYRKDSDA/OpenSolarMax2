@@ -21,7 +21,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(PlanetGeostationaryOrbit)),
     ChangeStructure
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class SettleProductionSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

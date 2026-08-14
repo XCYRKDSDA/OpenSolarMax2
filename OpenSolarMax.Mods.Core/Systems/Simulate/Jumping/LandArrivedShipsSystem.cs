@@ -20,8 +20,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Consume(typeof(JumpingStatus))]
 [Write(typeof(SoundEffect))]
 [ChangeStructure]
-[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))] // Write JumpingStatus
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(
+    typeof(TransitFromChargingToTravellingSystem),
+    "允许同一帧刚起飞就落地",
+    typeof(SoundEffect),
+    typeof(JumpingStatus)
+)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class LandArrivedShipsSystem(
     World world,
     IAssetsManager assets,

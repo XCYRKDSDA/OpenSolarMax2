@@ -223,12 +223,43 @@ internal static class SystemsTopology
         // 提取显式顺序、FineWith、优先级
         foreach (var attr in systemType.GetCustomAttributes<ExecuteAfterAttribute>())
             if (systemTypes.Contains(attr.TheOther))
-                declarations.ExplicitOrders.Add(new OrderedTypePair(attr.TheOther, systemType));
+            {
+                ValidateOrderAttribute(systemType, attr.TheOther, attr.Reason, attr.Components);
+                declarations.ExplicitOrders.Add(
+                    new ExplicitOrderDeclaration(
+                        attr.TheOther,
+                        systemType,
+                        [.. attr.Components],
+                        attr.Reason
+                    )
+                );
+            }
         foreach (var attr in systemType.GetCustomAttributes<ExecuteBeforeAttribute>())
             if (systemTypes.Contains(attr.TheOther))
-                declarations.ExplicitOrders.Add(new OrderedTypePair(systemType, attr.TheOther));
+            {
+                ValidateOrderAttribute(systemType, attr.TheOther, attr.Reason, attr.Components);
+                declarations.ExplicitOrders.Add(
+                    new ExplicitOrderDeclaration(
+                        systemType,
+                        attr.TheOther,
+                        [.. attr.Components],
+                        attr.Reason
+                    )
+                );
+            }
         foreach (var attr in systemType.GetCustomAttributes<FineWithAttribute>())
-            declarations.FineWithPairs.Add(new UnorderedTypePair(systemType, attr.TheOther));
+            if (systemTypes.Contains(attr.TheOther))
+            {
+                ValidateOrderAttribute(systemType, attr.TheOther, attr.Reason, attr.Components);
+                declarations.FineWithPairs.Add(
+                    new FineWithDeclaration(
+                        systemType,
+                        attr.TheOther,
+                        [.. attr.Components],
+                        attr.Reason
+                    )
+                );
+            }
         var priorityAttr = systemType.GetCustomAttributes<PriorityAttribute>().FirstOrDefault();
         if (priorityAttr is not null)
             declarations.Priorities[systemType] = priorityAttr.Value;
@@ -281,6 +312,33 @@ internal static class SystemsTopology
         }
     }
 
+    /// <summary>
+    /// 顺序属性级校验：reason 非空白、components 非空、禁止 AllComponents。
+    /// 对 Update/LateUpdate 两阶段共享生效。
+    /// </summary>
+    private static void ValidateOrderAttribute(
+        Type systemType,
+        Type theOther,
+        string reason,
+        ImmutableArray<Type> components
+    )
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new Exception(
+                $"Execution order between {systemType.Name} and {theOther.Name} must provide a non-empty reason."
+            );
+
+        if (components.Length == 0)
+            throw new Exception(
+                $"Execution order between {systemType.Name} and {theOther.Name} must list at least one component type."
+            );
+
+        if (components.Any(c => c == typeof(AllComponents)))
+            throw new Exception(
+                $"Execution order between {systemType.Name} and {theOther.Name} must list specific components, not AllComponents."
+            );
+    }
+
     private class MutableDeclarations
     {
         public HashSet<Type> Systems { get; } = [];
@@ -297,9 +355,9 @@ internal static class SystemsTopology
 
         public HashSet<Type> AllConsumers { get; } = [];
 
-        public HashSet<OrderedTypePair> ExplicitOrders { get; } = [];
+        public HashSet<ExplicitOrderDeclaration> ExplicitOrders { get; } = [];
 
-        public HashSet<UnorderedTypePair> FineWithPairs { get; } = [];
+        public HashSet<FineWithDeclaration> FineWithPairs { get; } = [];
 
         public Dictionary<Type, int> Priorities { get; } = [];
 
@@ -365,17 +423,20 @@ internal static class SystemsTopology
         var updateSystems = declarations.Update.Systems;
         var lateUpdateSystems = declarations.LateUpdate.Systems;
 
-        foreach (var (before, after) in declarations.Update.ExplicitOrders)
+        foreach (var order in declarations.Update.ExplicitOrders)
         {
-            if (!updateSystems.Contains(before) || !updateSystems.Contains(after))
+            if (!updateSystems.Contains(order.Before) || !updateSystems.Contains(order.After))
                 throw new Exception(
                     "Integration system and LateUpdate system shall not declare execution order relationship between each other!"
                 );
         }
 
-        foreach (var (before, after) in declarations.LateUpdate.ExplicitOrders)
+        foreach (var order in declarations.LateUpdate.ExplicitOrders)
         {
-            if (!lateUpdateSystems.Contains(before) || !lateUpdateSystems.Contains(after))
+            if (
+                !lateUpdateSystems.Contains(order.Before)
+                || !lateUpdateSystems.Contains(order.After)
+            )
                 throw new Exception(
                     "Integration system and LateUpdate system shall not declare execution order relationship between each other!"
                 );
@@ -423,10 +484,16 @@ internal static class SystemsTopology
         #region 显式执行顺序关系检查与合并
 
         var explicitOrders = declarations.ExplicitOrders.ToHashSet();
-        foreach (var pair in explicitOrders)
-            RegisterEdge(pair, EdgeLabel.Explicit);
         var explicitFinePairs = declarations.FineWithPairs.ToHashSet();
+        var explicitFinePairsUnordered = explicitFinePairs
+            .Select(f => new UnorderedTypePair(f.Sys1, f.Sys2))
+            .ToHashSet();
 
+        foreach (var order in explicitOrders)
+            RegisterEdge(
+                new OrderedTypePair(order.Before, order.After),
+                EdgeLabel.Explicit(order.Components, order.Reason)
+            );
         // 检测同一对系统是否有多个相互矛盾的显式关系
         foreach (
             var group in explicitOrders.ToLookup(
@@ -435,7 +502,7 @@ internal static class SystemsTopology
             )
         )
         {
-            if (group.Count() > 1 || explicitFinePairs.Contains(group.Key))
+            if (group.Count() > 1 || explicitFinePairsUnordered.Contains(group.Key))
                 throw new Exception(
                     $"Conflicted explicit execution order between {group.Key.Sys1} and {group.Key.Sys2}"
                 );
@@ -510,7 +577,7 @@ internal static class SystemsTopology
             consumers.UnionWith(allConsumers);
 
         // 检测同一个组件是否有多个 Writer 或 Iterator
-        foreach (var (_, writers) in componentsWriters)
+        foreach (var (componentType, writers) in componentsWriters)
         {
             foreach (
                 var (editor1, editor2) in from w1 in writers
@@ -519,18 +586,24 @@ internal static class SystemsTopology
             )
             {
                 if (
-                    !explicitOrders.Contains(new OrderedTypePair(editor1, editor2))
-                    && !explicitOrders.Contains(new OrderedTypePair(editor2, editor1))
-                    && !explicitFinePairs.Contains(new UnorderedTypePair(editor1, editor2))
+                    !HasDeclaredOrder(
+                        explicitOrders,
+                        explicitFinePairs,
+                        editor1,
+                        editor2,
+                        componentType
+                    )
                 )
                     throw new Exception(
-                        "Multiple writers of one component must explicitly declare pairwise order!"
+                        "Multiple writers of one component must explicitly declare pairwise order! "
+                            + $"Component {componentType.Name} between {editor1.Name} and {editor2.Name} "
+                            + "requires an order declaration listing this component."
                     );
             }
         }
 
         // 检测同一个组件是否有多个 Consumer
-        foreach (var (_, consumers) in componentsConsumers)
+        foreach (var (componentType, consumers) in componentsConsumers)
         {
             foreach (
                 var (consumer1, consumer2) in from c1 in consumers
@@ -539,15 +612,47 @@ internal static class SystemsTopology
             )
             {
                 if (
-                    !explicitOrders.Contains(new OrderedTypePair(consumer1, consumer2))
-                    && !explicitOrders.Contains(new OrderedTypePair(consumer2, consumer1))
-                    && !explicitFinePairs.Contains(new UnorderedTypePair(consumer1, consumer2))
+                    !HasDeclaredOrder(
+                        explicitOrders,
+                        explicitFinePairs,
+                        consumer1,
+                        consumer2,
+                        componentType
+                    )
                 )
                     throw new Exception(
-                        "Multiple consumers of one component must explicitly declare pairwise order!"
+                        "Multiple consumers of one component must explicitly declare pairwise order! "
+                            + $"Component {componentType.Name} between {consumer1.Name} and {consumer2.Name} "
+                            + "requires an order declaration listing this component."
                     );
             }
         }
+
+        // 相关性校验：声明列出的每个组件必须被双方系统读写或消费
+        foreach (var order in explicitOrders)
+            ValidateRelevantComponents(
+                componentsReaders,
+                allReaders,
+                componentsWriters,
+                allWriters,
+                componentsConsumers,
+                allConsumers,
+                order.Before,
+                order.After,
+                order.Components
+            );
+        foreach (var finePair in explicitFinePairs)
+            ValidateRelevantComponents(
+                componentsReaders,
+                allReaders,
+                componentsWriters,
+                allWriters,
+                componentsConsumers,
+                allConsumers,
+                finePair.Sys1,
+                finePair.Sys2,
+                finePair.Components
+            );
 
         // 计算读写组件的顺序，并按边累积涉及的组件集合
         var readWriteOrders = new Dictionary<OrderedTypePair, HashSet<Type>>();
@@ -600,19 +705,127 @@ internal static class SystemsTopology
 
         #endregion
 
-        // 添加所有组件读写关系
-        foreach (
-            var (p, components) in readWriteOrders.Where(kvp =>
-                !explicitOrders.Contains(kvp.Key.Reverse())
-                && !explicitFinePairs.Contains(kvp.Key.Unorder())
-            )
-        )
-            RegisterEdge(p, EdgeLabel.ReadWrite([.. components]));
+        // 添加所有组件读写关系：按组件粒度取消被显式顺序/FineWith 覆盖的自动边
+        // 反向显式顺序（Before==p.After 且 After==p.Before）列出双方系统都触碰的组件即取消该组件的
+        // 写→读自动边，用于打破循环；被取消的边意味着读者可能读到上一帧的值
+        foreach (var (p, components) in readWriteOrders)
+        {
+            var remaining = new HashSet<Type>();
+            foreach (var componentType in components)
+            {
+                var cancelledByExplicit = explicitOrders.Any(o =>
+                    o.Before == p.After
+                    && o.After == p.Before
+                    && o.Components.Contains(componentType)
+                );
+                var cancelledByFineWith = explicitFinePairs.Any(f =>
+                    (
+                        (f.Sys1 == p.Before && f.Sys2 == p.After)
+                        || (f.Sys1 == p.After && f.Sys2 == p.Before)
+                    ) && f.Components.Contains(componentType)
+                );
+                if (!cancelledByExplicit && !cancelledByFineWith)
+                    remaining.Add(componentType);
+            }
+            if (remaining.Count != 0)
+                RegisterEdge(p, EdgeLabel.ReadWrite(remaining.ToImmutableHashSet()));
+        }
 
         return new SystemsGraph(
             declarations.Systems.ToImmutableList(),
             edgeSources.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.ToImmutableHashSet())
         );
+    }
+
+    /// <summary>
+    /// 判断两个系统之间（任一方向）是否存在针对某组件的显式顺序或 FineWith 声明。
+    /// </summary>
+    private static bool HasDeclaredOrder(
+        HashSet<ExplicitOrderDeclaration> explicitOrders,
+        HashSet<FineWithDeclaration> explicitFinePairs,
+        Type system1,
+        Type system2,
+        Type componentType
+    ) =>
+        explicitOrders.Any(o =>
+            (
+                (o.Before == system1 && o.After == system2)
+                || (o.Before == system2 && o.After == system1)
+            ) && o.Components.Contains(componentType)
+        )
+        || explicitFinePairs.Any(f =>
+            ((f.Sys1 == system1 && f.Sys2 == system2) || (f.Sys1 == system2 && f.Sys2 == system1))
+            && f.Components.Contains(componentType)
+        );
+
+    /// <summary>
+    /// 判断某系统是否"触碰"某组件（读∨写∨消费），含 AllComponents 读写消费者兜底。
+    /// </summary>
+    private static bool TouchesComponent(
+        Dictionary<Type, HashSet<Type>> componentsReaders,
+        HashSet<Type> allReaders,
+        Dictionary<Type, HashSet<Type>> componentsWriters,
+        HashSet<Type> allWriters,
+        Dictionary<Type, HashSet<Type>> componentsConsumers,
+        HashSet<Type> allConsumers,
+        Type system,
+        Type componentType
+    ) =>
+        (componentsReaders.TryGetValue(componentType, out var readers) && readers.Contains(system))
+        || allReaders.Contains(system)
+        || (
+            componentsWriters.TryGetValue(componentType, out var writers)
+            && writers.Contains(system)
+        )
+        || allWriters.Contains(system)
+        || (
+            componentsConsumers.TryGetValue(componentType, out var consumers)
+            && consumers.Contains(system)
+        )
+        || allConsumers.Contains(system);
+
+    /// <summary>
+    /// 校验顺序声明列出的每个组件必须被两系统双方读写或消费，否则抛异常。
+    /// </summary>
+    private static void ValidateRelevantComponents(
+        Dictionary<Type, HashSet<Type>> componentsReaders,
+        HashSet<Type> allReaders,
+        Dictionary<Type, HashSet<Type>> componentsWriters,
+        HashSet<Type> allWriters,
+        Dictionary<Type, HashSet<Type>> componentsConsumers,
+        HashSet<Type> allConsumers,
+        Type system1,
+        Type system2,
+        ImmutableHashSet<Type> components
+    )
+    {
+        foreach (var componentType in components)
+        {
+            var touchedBySystem1 = TouchesComponent(
+                componentsReaders,
+                allReaders,
+                componentsWriters,
+                allWriters,
+                componentsConsumers,
+                allConsumers,
+                system1,
+                componentType
+            );
+            var touchedBySystem2 = TouchesComponent(
+                componentsReaders,
+                allReaders,
+                componentsWriters,
+                allWriters,
+                componentsConsumers,
+                allConsumers,
+                system2,
+                componentType
+            );
+            if (!touchedBySystem1 || !touchedBySystem2)
+                throw new Exception(
+                    $"component {componentType.Name} in order between {system1.Name} and {system2.Name} is not read, written or consumed by both systems"
+                );
+        }
     }
 
     /// <summary>
@@ -732,12 +945,13 @@ internal static class SystemsTopology
     }
 
     /// <summary>
-    /// 将边标签格式化为图谱中的简写文本：e（显式顺序）、p（优先级）、rw(组件名...)（读写关系）
+    /// 将边标签格式化为图谱中的简写文本：e（显式顺序）、p（优先级）、f（FineWith）、rw(组件名...)（读写关系）
     /// </summary>
     private static string FormatEdgeLabel(EdgeLabel label) =>
         label.Source switch
         {
             EdgeSource.Explicit => "e",
+            EdgeSource.FineWith => "f",
             EdgeSource.Priority => "p",
             EdgeSource.ReadWrite => $"rw({FormatComponents(label.Components)})",
             _ => throw new ArgumentOutOfRangeException(nameof(label)),

@@ -24,7 +24,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
     Consume(typeof(ColonizationState)),
     ChangeStructure
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class SettleColonizationSystem(
     World world,
     IAssetsManager assets,

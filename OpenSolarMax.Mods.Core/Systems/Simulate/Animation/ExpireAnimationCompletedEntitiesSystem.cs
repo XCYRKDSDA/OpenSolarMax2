@@ -10,7 +10,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ExpireAfterAnimationCompleted)), ReadCurr(typeof(Animation)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
     : ICalcSystemWithStructuralChanges
 {

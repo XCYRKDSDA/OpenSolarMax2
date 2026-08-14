@@ -9,7 +9,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipDeathState)), ChangeStructure]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 public sealed partial class DestroyDeadShipsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]

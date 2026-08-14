@@ -41,8 +41,8 @@ internal record SystemExecutionDeclarations(
     ImmutableDictionary<Type, ImmutableHashSet<Type>> Writers,
     ImmutableHashSet<Type> AllReaders,
     ImmutableHashSet<Type> AllWriters,
-    ImmutableHashSet<OrderedTypePair> ExplicitOrders,
-    ImmutableHashSet<UnorderedTypePair> FineWithPairs,
+    ImmutableHashSet<ExplicitOrderDeclaration> ExplicitOrders,
+    ImmutableHashSet<FineWithDeclaration> FineWithPairs,
     ImmutableDictionary<Type, int> Priorities,
     ImmutableDictionary<Type, ImmutableHashSet<Type>> Consumers,
     ImmutableHashSet<Type> AllConsumers
@@ -59,26 +59,67 @@ internal enum EdgeSource
     Explicit,
     Priority,
     ReadWrite,
+    FineWith,
 }
+
+/// <summary>
+/// 一组同类型系统之间显式声明的执行顺序
+/// </summary>
+/// <param name="Before">要先执行的系统类型</param>
+/// <param name="After">要后执行的系统类型</param>
+/// <param name="Components">声明涉及的组件类型</param>
+/// <param name="Reason">声明原因说明</param>
+internal sealed record ExplicitOrderDeclaration(
+    Type Before,
+    Type After,
+    ImmutableHashSet<Type> Components,
+    string Reason
+);
+
+/// <summary>
+/// 一组同类型系统之间声明的「无关系」约定
+/// </summary>
+/// <param name="Sys1">系统类型 1</param>
+/// <param name="Sys2">系统类型 2</param>
+/// <param name="Components">声明涉及的组件类型</param>
+/// <param name="Reason">声明原因说明</param>
+internal sealed record FineWithDeclaration(
+    Type Sys1,
+    Type Sys2,
+    ImmutableHashSet<Type> Components,
+    string Reason
+);
 
 /// <summary>
 /// 图边上的标签，记录边的来源与涉及的组件
 /// </summary>
 /// <param name="Source">边的来源</param>
 /// <param name="Components">涉及的组件类型</param>
-internal sealed record EdgeLabel(EdgeSource Source, ImmutableHashSet<Type> Components)
+/// <param name="Reason">边的来源说明（仅 Explicit/FineWith 有，Priority/ReadWrite 为 null）</param>
+internal sealed record EdgeLabel(
+    EdgeSource Source,
+    ImmutableHashSet<Type> Components,
+    string? Reason
+)
 {
-    public static EdgeLabel Explicit { get; } = new(EdgeSource.Explicit, []);
-    public static EdgeLabel Priority { get; } = new(EdgeSource.Priority, []);
+    public static EdgeLabel Explicit(ImmutableHashSet<Type> components, string reason) =>
+        new(EdgeSource.Explicit, components, reason);
+
+    public static EdgeLabel Priority { get; } = new(EdgeSource.Priority, [], null);
+
+    public static EdgeLabel FineWith(ImmutableHashSet<Type> components, string reason) =>
+        new(EdgeSource.FineWith, components, reason);
 
     public static EdgeLabel ReadWrite(ImmutableHashSet<Type> components) =>
-        new(EdgeSource.ReadWrite, components);
+        new(EdgeSource.ReadWrite, components, null);
 
     public bool Equals(EdgeLabel? other)
     {
         if (other is null)
             return false;
-        return Source == other.Source && Components.SetEquals(other.Components);
+        return Source == other.Source
+            && Components.SetEquals(other.Components)
+            && Reason == other.Reason;
     }
 
     public override int GetHashCode()
@@ -86,6 +127,7 @@ internal sealed record EdgeLabel(EdgeSource Source, ImmutableHashSet<Type> Compo
         unchecked
         {
             var h = Source.GetHashCode();
+            h += Reason?.GetHashCode() ?? 0;
             foreach (var component in Components)
                 h += component.GetHashCode();
             return h;

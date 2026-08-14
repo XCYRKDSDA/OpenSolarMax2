@@ -20,11 +20,21 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(TrailOf.AsTrail))]
 [ReadCurr(typeof(JumpingStatus))]
 [Write(typeof(Sprite))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[FineWith(typeof(SynchronizeColorSystem))] // Write Sprite
-[FineWith(typeof(ApplyTeamColorSystem))] // Write Sprite
-[FineWith(typeof(UpdateShipChargingEffectSystem))] // Write Sprite
-[FineWith(typeof(UpdateShipTravellingEffectSystem))] // Write Sprite
+[
+    ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
+    FineWith(typeof(SynchronizeColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite)),
+    FineWith(typeof(ApplyTeamColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite)),
+    FineWith(
+        typeof(UpdateShipChargingEffectSystem),
+        "飞船和尾迹是不同实体，无冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipTravellingEffectSystem),
+        "飞船和尾迹是不同实体，无冲突",
+        typeof(Sprite)
+    )
+]
 public sealed partial class UpdateShipTrailEffectSystem(
     World world,
     IAssetsManager assets,

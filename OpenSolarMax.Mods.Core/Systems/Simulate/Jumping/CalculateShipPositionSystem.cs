@@ -14,9 +14,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem]
 [ReadCurr(typeof(JumpingStatus))]
 [Write(typeof(AbsoluteTransform))]
-[FineWith(typeof(CalculateAbsoluteTransformSystem))] // Write AbsoluteTransform
-[ExecuteAfter(typeof(StartJumpingSystem))] // Write AbsoluteTransform
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteBefore(
+    typeof(CalculateAbsoluteTransformSystem),
+    "先计算飞行的飞船的位置，然后通过变换树计算尾迹位置",
+    typeof(AbsoluteTransform)
+)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(AbsoluteTransform))]
 public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
 {
     [Query]

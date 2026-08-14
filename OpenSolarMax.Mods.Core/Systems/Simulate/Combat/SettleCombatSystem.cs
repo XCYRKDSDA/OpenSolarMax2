@@ -18,8 +18,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
     Write(typeof(Battlefield)),
     Write(typeof(ShipDeathState))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteBefore(typeof(PlayShipDeathEffectSystem))] // Write ShipDeathState
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(Battlefield),
+    typeof(ShipDeathState)
+)]
 public sealed partial class SettleCombatSystem(World world) : ICalcSystem
 {
     [Query]

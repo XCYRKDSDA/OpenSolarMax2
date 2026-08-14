@@ -17,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(TreeRelationship<ColorSync>.AsChild)),
     Write(typeof(Sprite))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite))]
 public sealed partial class SynchronizeColorSystem(World world) : ICalcSystem
 {
     private static void RecursivelySyncColor(Entity entity)

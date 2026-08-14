@@ -19,7 +19,7 @@ public delegate bool? CheckPlanetReachabilityCallback(
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(InfiniteZBarrier))]
 [Write(typeof(ReachabilityRegistry))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ReachabilityRegistry))]
 public class CountReachabilitySystem(World world) : ICalcSystem
 {
     private static readonly QueryDescription _planetDesc = new QueryDescription().WithAll<

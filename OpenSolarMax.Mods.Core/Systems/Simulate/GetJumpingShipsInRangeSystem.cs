@@ -16,7 +16,11 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(AttackRange)),
     Write(typeof(InAttackRangeShipsRegistry))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(InAttackRangeShipsRegistry)
+)]
 public sealed partial class GetJumpingShipsInRangeSystem(World world) : ICalcSystem
 {
     [Query]
