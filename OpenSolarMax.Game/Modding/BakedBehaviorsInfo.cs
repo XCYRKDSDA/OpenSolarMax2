@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Reflection;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Declaration;
@@ -14,25 +13,6 @@ internal record BakedBehaviorsInfo(
     ImmutableDictionary<string, ImmutableArray<MethodInfo>> HookImplMethods
 )
 {
-    private static ImmutableSortedSystemTypesCollection BakeSortedSystemTypes(
-        IReadOnlySet<Type> systemTypes
-    )
-    {
-        var declarations = SystemsTopology.ExtractExecutionOrders(systemTypes);
-        var graphs = SystemsTopology.ComposeExecutionGraph(declarations);
-        Debug.WriteLine("=== DOT GRAPH (for programmatic parsing) ===");
-        Debug.WriteLine(SystemsTopology.BuildSystemTopologyDotGraph(declarations, graphs));
-        Debug.WriteLine("=== D2 GRAPH (for visualization) ===");
-        Debug.WriteLine(SystemsTopology.BuildSystemTopologyD2Graph(declarations, graphs));
-
-        return new ImmutableSortedSystemTypesCollection(
-            UpdateSystems: SystemsTopology.TopologicalSortSystems(graphs.Update),
-            LateUpdate1Systems: SystemsTopology.TopologicalSortSystems(graphs.LateUpdate1),
-            LateUpdate2Systems: SystemsTopology.TopologicalSortSystems(graphs.LateUpdate2),
-            ReactiveSystems: declarations.Reactive.ToImmutableArray()
-        );
-    }
-
     public static BakedBehaviorsInfo Bake(params BehaviorsInfo[] layers)
     {
         // 合并声明翻译器
@@ -74,16 +54,16 @@ internal record BakedBehaviorsInfo(
 
         // 合并系统类型。合并后完成拓扑排序
         var mergedSystemTypes = new StageSystemTypesCollection(
-            Input: BakeSortedSystemTypes(
+            Input: SystemsTopology.BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Input).ToImmutableHashSet()
             ),
-            Ai: BakeSortedSystemTypes(
+            Ai: SystemsTopology.BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Ai).ToImmutableHashSet()
             ),
-            Simulate: BakeSortedSystemTypes(
+            Simulate: SystemsTopology.BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Simulate).ToImmutableHashSet()
             ),
-            Render: BakeSortedSystemTypes(
+            Render: SystemsTopology.BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Render).ToImmutableHashSet()
             )
         );
