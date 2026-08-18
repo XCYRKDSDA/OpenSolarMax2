@@ -1,12 +1,9 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Nine.Animations;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
@@ -14,120 +11,26 @@ using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
 
-namespace OpenSolarMax.Mods.Core.Systems.Warping;
+namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges, Iterate(typeof(WarpingStatus))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-public partial class ProgressShipsWarpingSystem(World world) : ITickSystem
-{
-    [Query]
-    [All<WarpingStatus>]
-    private static void ProgressEffect(ref WarpingStatus status, [Data] GameTime time)
-    {
-        if (status.State == WarpingState.PreWarp)
-            status.PreWarp.ElapsedTime += time.ElapsedGameTime;
-        else if (status.State == WarpingState.PostWarp)
-            status.PostWarp.ElapsedTime += time.ElapsedGameTime;
-    }
-
-    public void Update(GameTime gameTime) => ProgressEffectQuery(world, gameTime);
-}
-
-[SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(WarpingStatus)), Write(typeof(AbsoluteTransform)), Write(typeof(Sprite))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-// 在自动计算绝对位姿系统之后以覆盖位姿
-[ExecuteAfter(typeof(CalculateAbsoluteTransformSystem))]
-// 与普通运输系统完全不相干
-[FineWith(typeof(CalculateShipPositionSystem)), FineWith(typeof(UpdateJumpingEffectSystem))]
-// 动画不会设置颜色，因此和阵营颜色应用系统不相干
-[FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))]
-// 覆盖新生舰船动画
-[ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))]
-public partial class ApplyShipsWarpingEffectSystem(World world, IAssetsManager assets) : ICalcSystem
-{
-    private readonly AnimationClip<Entity> _shipPreWarpAnimationClip = assets.Load<
-        AnimationClip<Entity>
-    >("Animations/ShipPreWarp.json");
-
-    private readonly AnimationClip<Entity> _shipPostWarpAnimationClip = assets.Load<
-        AnimationClip<Entity>
-    >("Animations/ShipPostWarp.json");
-
-    [Query]
-    [All<WarpingStatus, Sprite, AbsoluteTransform>]
-    private void ApplyEffect(Entity ship, in WarpingStatus status, ref AbsoluteTransform pose)
-    {
-        if (status.State == WarpingState.PreWarp)
-        {
-            // 面向目标位置
-            var head = ship.Get<AbsoluteTransform>().Translation;
-
-            var destinationPlanetPose = status
-                .Task.DestinationPlanet.Get<AbsoluteTransform>()
-                .TransformToRoot;
-            var expectedPoseInDestination = RevolutionUtils
-                .CalculateTransform(
-                    status.Task.ExpectedRevolutionOrbit,
-                    status.Task.ExpectedRevolutionState
-                )
-                .TransformToParent;
-            var tail = (expectedPoseInDestination * destinationPlanetPose).Translation;
-
-            pose.Rotation = TransformProjection.UprightAim(tail - head);
-
-            // 播放动画
-            var animationTime = (float)status.PreWarp.ElapsedTime.TotalSeconds;
-
-            if (animationTime < 0.25f) // 用0.5秒渐入
-                AnimationEvaluator<Entity>.TweenAndSet(
-                    ref ship,
-                    null,
-                    float.NaN,
-                    _shipPreWarpAnimationClip,
-                    animationTime,
-                    null,
-                    animationTime / 0.25f
-                );
-            else
-                AnimationEvaluator<Entity>.EvaluateAndSet(
-                    ref ship,
-                    _shipPreWarpAnimationClip,
-                    animationTime
-                );
-        }
-        else if (status.State == WarpingState.PostWarp)
-        {
-            // 播放动画
-            var animationTime = (float)status.PostWarp.ElapsedTime.TotalSeconds;
-
-            AnimationEvaluator<Entity>.TweenAndSet(
-                ref ship,
-                _shipPostWarpAnimationClip,
-                animationTime,
-                null,
-                float.NaN,
-                null,
-                animationTime
-            );
-        }
-    }
-
-    public void Update() => ApplyEffectQuery(world);
-}
-
-[SimulateSystem, BeforeStructuralChanges]
-[
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(Sprite)),
-    ReadPrev(typeof(TeamReferenceColor)),
-    ReadPrev(typeof(TreeRelationship<AbsoluteTransform>.AsChild)),
-    ReadPrev(typeof(InTeam.AsAffiliate))
-]
-[Iterate(typeof(WarpingStatus)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(ProgressShipsWarpingSystem))]
-public partial class WarpSystem(World world, IAssetsManager assets, IConceptFactory factory)
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(Sprite))]
+[ReadCurr(typeof(TeamReferenceColor))]
+[ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
+[ReadCurr(typeof(InTeam.AsAffiliate))]
+[Write(typeof(WarpingStatus))]
+[ChangeStructure]
+[ExecuteBefore(
+    typeof(ApplyShipsWarpingEffectSystem),
+    "AfterImage 继承的是飞船折跃前的位姿和颜色，因此要在飞船应用折跃效果前执行",
+    typeof(Sprite),
+    typeof(AbsoluteTransform)
+)]
+[ExecuteAfter(typeof(StartWarpingSystem), "一帧内先启动再跃迁", typeof(WarpingStatus))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(WarpingStatus))]
+public sealed partial class WarpSystem(World world, IAssetsManager assets, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private readonly SafeFmodEventDescription _warpingSoundEffect =
@@ -281,5 +184,3 @@ public partial class WarpSystem(World world, IAssetsManager assets, IConceptFact
         }
     }
 }
-
-#endif
