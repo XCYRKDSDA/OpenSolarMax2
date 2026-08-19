@@ -1,6 +1,4 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
-﻿using Arch.Core;
+using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using OpenSolarMax.Game.Modding.ECS;
@@ -8,14 +6,14 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(TreeRelationship<Anchorage>.AsChild)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(JumpingStatus)),
     Write(typeof(JumpingShipsRegistry))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(JumpingShipsRegistry))]
 public sealed partial class CountJumpingShipsSystem(World world) : ICalcSystem
 {
     [Query]
@@ -65,5 +63,3 @@ public sealed partial class CountJumpingShipsSystem(World world) : ICalcSystem
         UpdateJumpingShipsRegistryQuery(world, jumpingShips);
     }
 }
-
-#endif
