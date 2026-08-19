@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -13,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 设置所有音效的3D属性的系统,
 /// 负责将音效的位置同步到Fmod体系中
 /// </summary>
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [ReadCurr(typeof(AbsoluteTransform)), Write(typeof(SoundEffect))]
 public sealed partial class UpdateSoundEffect3DAttributesSystem(World world) : ICalcSystem
 {
@@ -54,5 +52,3 @@ public sealed partial class UpdateSoundEffect3DAttributesSystem(World world) : I
 
     public void Update() => Set3DAttributesQuery(world);
 }
-
-#endif
