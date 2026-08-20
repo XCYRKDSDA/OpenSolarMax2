@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -11,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(TeamPopulationRegistry)),
     ReadCurr(typeof(InTeam.AsTeam)),
@@ -19,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(Colonizable)),
     Write(typeof(Victory))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Victory))]
 public sealed partial class DetectVictorySystem(
     World world,
     [Section("systems:victory")] IConfiguration configs
@@ -91,5 +89,3 @@ public sealed partial class DetectVictorySystem(
         winner.Get<Victory>().HasWon = true;
     }
 }
-
-#endif
