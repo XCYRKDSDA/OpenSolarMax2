@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -15,7 +13,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [Priority((int)GraphicsLayer.Interface)]
 [
     ReadCurr(typeof(AbsoluteTransform)),
@@ -99,5 +97,3 @@ public sealed partial class VisualizeSelectionRingsSystem(
         }
     }
 }
-
-#endif

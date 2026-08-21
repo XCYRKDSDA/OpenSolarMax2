@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -10,9 +8,8 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [Iterate(typeof(ExpiredAfterTimeout))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSystem
 {
     [Query]
@@ -25,9 +22,8 @@ public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSy
     public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
 }
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ExpiredAfterTimeout)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireTimeoutEntitiesSystem(World world)
     : ICalcSystemWithStructuralChanges
 {
@@ -45,5 +41,3 @@ public sealed partial class ExpireTimeoutEntitiesSystem(World world)
 
     public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
 }
-
-#endif

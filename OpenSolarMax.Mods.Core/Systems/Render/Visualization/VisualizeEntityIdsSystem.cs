@@ -1,5 +1,3 @@
-// 整文件禁用：ECS 框架层重构后待迁移
-#if false
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
@@ -17,7 +15,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(
@@ -80,5 +78,3 @@ public sealed partial class VisualizeEntityIdsSystem(
         VisualizeQuery(world, in projection.WorldToScreen);
     }
 }
-
-#endif
