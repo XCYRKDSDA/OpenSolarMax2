@@ -21,6 +21,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(ReferenceSize)),
     ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(Victory)),
     Consume(typeof(ColonizationState)),
     ChangeStructure
 ]
@@ -47,11 +48,20 @@ public sealed partial class SettleColonizationSystem(
     }
 
     [Query]
+    [All<InTeam.AsTeam, Victory>]
+    private static void CheckAnyTeamWon(ref Victory victory, [Data] ref bool hasWon)
+    {
+        if (victory.HasWon)
+            hasWon = true;
+    }
+
+    [Query]
     [All<ColonizationState, InTeam.AsAffiliate>]
     private void SettleColonization(
         Entity planet,
         ref ColonizationState state,
         in InTeam.AsAffiliate asTeamAffiliate,
+        [Data] bool hasWon,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -59,8 +69,13 @@ public sealed partial class SettleColonizationSystem(
 
         if (state.Event == ColonizationEvent.Finished)
         {
-            // 不管怎样，先开香槟
-            CreateHaloExplosion(commandBuffer, planet, state.Team.Get<TeamReferenceColor>().Value);
+            // 胜利已判定时不播放殖民完成特效，归属变更照常执行
+            if (!hasWon)
+                CreateHaloExplosion(
+                    commandBuffer,
+                    planet,
+                    state.Team.Get<TeamReferenceColor>().Value
+                );
 
             // 完成殖民
             if (planetTeam is null)
@@ -74,8 +89,9 @@ public sealed partial class SettleColonizationSystem(
         }
         else if (state.Event == ColonizationEvent.Destroyed)
         {
-            // 开香槟
-            CreateHaloExplosion(commandBuffer, planet, Color.White);
+            // 胜利已判定时不播放解除特效，归属变更照常执行
+            if (!hasWon)
+                CreateHaloExplosion(commandBuffer, planet, Color.White);
 
             // 解除当前阵营的殖民
             if (planetTeam is not null)
@@ -85,6 +101,10 @@ public sealed partial class SettleColonizationSystem(
         state.Event = ColonizationEvent.Idle;
     }
 
-    public void Update(CommandBuffer commandBuffer) =>
-        SettleColonizationQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer)
+    {
+        var hasWon = false;
+        CheckAnyTeamWonQuery(world, ref hasWon);
+        SettleColonizationQuery(world, hasWon, commandBuffer);
+    }
 }
