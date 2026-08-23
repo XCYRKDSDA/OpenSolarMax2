@@ -10,17 +10,42 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(InAttackRangeShipsRegistry)), Write(typeof(Sprite))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
 // 在其他设置外观的系统之后执行以覆写
 [
-    ExecuteAfter(typeof(ApplyTeamColorSystem)),
-    ExecuteAfter(typeof(UpdateJumpingEffectSystem)),
-    ExecuteAfter(typeof(ApplyShipPostBornEffectSystem))
+    ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
+    ExecuteAfter(
+        typeof(ApplyTeamColorSystem),
+        "在其他设置外观的系统之后执行以覆写",
+        typeof(Sprite)
+    ),
+    ExecuteAfter(
+        typeof(ApplyShipPostBornEffectSystem),
+        "在其他设置外观的系统之后执行以覆写",
+        typeof(Sprite)
+    ),
+    ExecuteAfter(
+        typeof(UpdateShipChargingEffectSystem),
+        "在其他设置外观的系统之后执行以覆写",
+        typeof(Sprite)
+    ),
+    ExecuteAfter(
+        typeof(UpdateShipTravellingEffectSystem),
+        "在其他设置外观的系统之后执行以覆写",
+        typeof(Sprite)
+    ),
+    ExecuteAfter(
+        typeof(UpdateShipTrailEffectSystem),
+        "在其他设置外观的系统之后执行以覆写",
+        typeof(Sprite)
+    ),
+    ExecuteBefore(
+        typeof(SynchronizeColorSystem),
+        "在颜色同步系统之前执行，子实体也能共享染色",
+        typeof(Sprite)
+    )
 ]
-// 在颜色同步系统之前执行, 这样子实体也能共享染色
-[ExecuteBefore(typeof(SynchronizeColorSystem))]
 public sealed partial class ColorInRangeShipsSystem(World world, IAssetsManager assets)
     : ICalcSystem
 {

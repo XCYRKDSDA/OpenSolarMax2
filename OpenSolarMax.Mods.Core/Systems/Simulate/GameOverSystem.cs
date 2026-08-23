@@ -13,19 +13,18 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
-// 按理说应当使用 ReadCurr，但是目前不支持 StructuralChange 位于 PostUpdate 后边，因此只能晚一帧生效
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(Victory)),
-    ReadPrev(typeof(InTeam.AsTeam)),
-    ReadPrev(typeof(InTeam.AsAffiliate)),
-    ReadPrev(typeof(Colonizable)),
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(ReferenceSize)),
-    ReadPrev(typeof(VictoryEffectMarker)),
+    ReadCurr(typeof(Victory)),
+    ReadCurr(typeof(InTeam.AsTeam)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(Colonizable)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(ReferenceSize)),
+    ReadCurr(typeof(VictoryEffectMarker)),
+    ReadCurr(typeof(TeamReferenceColor)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class GameOverSystem(
     World world,
     IConceptFactory factory,

@@ -11,7 +11,6 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
@@ -19,28 +18,32 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 处理<see cref="StartJumpingRequest"/>来使舰船开始飞行的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[
-    ReadPrev(typeof(StartJumpingRequest)),
-    ReadPrev(typeof(AnchoredShipsRegistry)),
-    ReadPrev(typeof(Jumpable)),
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild)),
-    ReadPrev(typeof(RevolutionOrbit)),
-    ReadPrev(typeof(RevolutionState)),
-    ReadPrev(typeof(PlanetGeostationaryOrbit)),
-    Iterate(typeof(JumpingStatus)),
-    Write(typeof(SoundEffect)),
-    ChangeStructure
-]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 新出发的舰船无须更新移动状态，因此要在计算上一帧的移动变化之后发出舰船
-[
-    ExecuteAfter(typeof(UpdateShipsStateSystem)),
-    ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))
-]
-// 这一帧刚抵达的舰船不会立刻出发
-[ExecuteBefore(typeof(LandArrivedShipsSystem))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(AnchoredShipsRegistry))]
+[ReadCurr(typeof(Jumpable))]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
+[ReadCurr(typeof(RevolutionOrbit))]
+[ReadCurr(typeof(RevolutionState))]
+[ReadCurr(typeof(PlanetGeostationaryOrbit))]
+[Consume(typeof(StartJumpingRequest))]
+[Write(typeof(JumpingStatus))]
+[Write(typeof(SoundEffect))]
+[ChangeStructure]
+[FineWith(typeof(TransitFromChargingToTravellingSystem), "飞行状态是互斥的", typeof(SoundEffect))]
+[FineWith(typeof(LandArrivedShipsSystem), "飞行状态是互斥的", typeof(SoundEffect))]
+[ExecuteAfter(
+    typeof(CalculateShipPositionSystem),
+    "新起飞的飞船继承其当前绝对位置，与飞行中的飞船位置计算逻辑互斥",
+    typeof(JumpingStatus)
+)]
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(JumpingStatus),
+    typeof(SoundEffect)
+)]
 public sealed partial class StartJumpingSystem(
     World world,
     IAssetsManager assets,
@@ -159,9 +162,6 @@ public sealed partial class StartJumpingSystem(
             _chargingSoundEvent.Native.createInstance(out var instance);
             ship.Get<SoundEffect>().EventInstance = instance;
             instance.start();
-
-            // 创建舰船的尾迹
-            factory.Make(world, commandBuffer, new ShipTrailDescription() { Ship = ship });
         }
 
         // 移除任务

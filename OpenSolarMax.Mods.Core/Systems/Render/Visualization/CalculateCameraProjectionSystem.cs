@@ -9,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[RenderSystem, LateUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(Camera)), ReadCurr(typeof(Viewport)), ReadCurr(typeof(AbsoluteTransform))]
 [Write(typeof(Projection))]
 public sealed partial class CalculateCameraProjectionSystem(

@@ -9,14 +9,13 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(Sprite)),
-    Iterate(typeof(ShipDeathState)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(Sprite)),
+    Consume(typeof(ShipDeathState)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

@@ -5,7 +5,6 @@ using OpenSolarMax.Mods.Core.Systems.Timing;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[AiSystem, Update]
 [Iterate(typeof(AiTimer))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public class AiCountDownSystem(World world) : CountDownSystemBase<AiTimer>(world), ITickSystem { }

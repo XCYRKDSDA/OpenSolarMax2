@@ -9,27 +9,25 @@ using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 using OpenSolarMax.Mods.Core.Concepts;
 
-namespace OpenSolarMax.Mods.Core.Systems.Warping;
+namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
 /// 处理<see cref="StartJumpingRequest"/>使传送门上舰船开始传送的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[
-    ReadPrev(typeof(StartJumpingRequest)),
-    ReadPrev(typeof(AnchoredShipsRegistry)),
-    ReadPrev(typeof(TreeRelationship<RelativeTransform>.AsChild)),
-    ReadPrev(typeof(RevolutionOrbit)),
-    ReadPrev(typeof(RevolutionState)),
-    ReadPrev(typeof(PlanetGeostationaryOrbit)),
-    ReadPrev(typeof(ReferenceSize)),
-    ReadPrev(typeof(TeamReferenceColor)),
-    Write(typeof(WarpingStatus)),
-    ChangeStructure
-]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 新出发的舰船无须更新移动状态，因此要在计算上一帧的移动变化之后发出舰船
-[ExecuteAfter(typeof(ProgressShipsWarpingSystem)), ExecuteAfter(typeof(WarpSystem))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(AnchoredShipsRegistry))]
+[ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
+[ReadCurr(typeof(RevolutionOrbit))]
+[ReadCurr(typeof(RevolutionState))]
+[ReadCurr(typeof(PlanetGeostationaryOrbit))]
+[ReadCurr(typeof(ReferenceSize))]
+[ReadCurr(typeof(TeamReferenceColor))]
+[Consume(typeof(StartJumpingRequest))]
+[Write(typeof(WarpingStatus))]
+[ChangeStructure]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(WarpingStatus))]
+[FineWith(typeof(StartJumpingSystem), "跃迁和飞行完全不相干", typeof(StartJumpingRequest))]
 public sealed partial class StartWarpingSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
@@ -109,6 +107,9 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
                 Color = request.Team.Get<TeamReferenceColor>().Value,
             }
         );
+
+        // 移除请求实体，避免下一轮不动点循环重复触发（CleanEventsSystem 已禁用）
+        commandBuffer.Destroy(in requestEntity);
     }
 
     public void Update(CommandBuffer commandBuffer) => StartWarpingQuery(world, commandBuffer);

@@ -13,14 +13,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 结算生产系统. 在所有推进了生产的星球上计算是否产生新舰船
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadCurr(typeof(ProductionState)),
-    ReadPrev(typeof(InTeam.AsAffiliate)),
-    ReadPrev(typeof(TeamReferenceColor)),
+    Consume(typeof(ProductionState)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(TeamReferenceColor)),
+    ReadCurr(typeof(PlanetGeostationaryOrbit)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class SettleProductionSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
@@ -28,7 +28,7 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
     [All<ProductionState, InTeam.AsAffiliate>]
     private void SettleProduction(
         Entity planet,
-        in ProductionState state,
+        ref ProductionState state,
         in InTeam.AsAffiliate teamRelationship,
         [Data] CommandBuffer commandBuffer
     )
@@ -66,6 +66,8 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
                 }
             );
         }
+
+        state.ShipsProducedThisFrame = 0;
     }
 
     public void Update(CommandBuffer commandBuffer) => SettleProductionQuery(world, commandBuffer);

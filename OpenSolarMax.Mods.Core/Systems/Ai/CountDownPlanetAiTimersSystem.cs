@@ -7,9 +7,8 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[AiSystem, Update]
 [Iterate(typeof(PlanetAiTimers))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
 {
     [Query]
@@ -23,10 +22,9 @@ public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
     public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
 }
 
-[SimulateSystem, AfterStructuralChanges]
-[Iterate(typeof(PlanetAiTimers))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(CountDownPlanetAiTimersSystem))]
+[AiSystem, LateUpdate]
+[ReadCurr(typeof(InTeam.AsTeam))]
+[Write(typeof(PlanetAiTimers))]
 public partial class CleanPlanetAiTimerEntry(World world) : ICalcSystem
 {
     [Query]

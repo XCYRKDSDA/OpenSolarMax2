@@ -12,25 +12,25 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 通过订阅参与者索引组件的移除事件自动清理损坏的关系实体，
 /// 替代每帧 Query 轮询参与者存活状态。
 /// </summary>
-public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
-    : ICalcSystemWithStructuralChanges
+public abstract class DestroyBrokenRelationshipsSystem<TRelationship> : IReactiveSystem
     where TRelationship : IRelationshipRecord
 {
-    protected DestroyBrokenRelationshipsSystem(World world)
+    protected DestroyBrokenRelationshipsSystem(EventRegistry registry)
     {
         foreach (var participantType in TRelationship.ParticipantTypes)
-            GetSubscriber(participantType).Invoke(world);
+            GetSubscriber(participantType).Invoke(registry);
     }
 
-    private static void SubscribeTo<TParticipant>(World world)
+    private static void SubscribeTo<TParticipant>(EventRegistry registry)
         where TParticipant : IParticipantIndex
     {
-        world.SubscribeComponentRemoved<TParticipant>(OnParticipantIndexRemoved);
+        registry.SubscribeComponentRemoved<TParticipant>(OnParticipantIndexRemoved);
     }
 
     private static void OnParticipantIndexRemoved<TParticipant>(
         in Entity entity,
-        ref TParticipant index
+        ref TParticipant index,
+        CommandBuffer commandBuffer
     )
         where TParticipant : IParticipantIndex
     {
@@ -39,7 +39,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
         foreach (var relationship in relationships)
         {
             if (relationship.IsAlive())
-                World.Worlds[entity.WorldId].Destroy(relationship);
+                commandBuffer.Destroy(relationship);
         }
     }
 
@@ -51,7 +51,7 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
             BindingFlags.Static | BindingFlags.NonPublic
         )!;
 
-    private delegate void SubscriberDelegate(World world);
+    private delegate void SubscriberDelegate(EventRegistry registry);
 
     private static readonly Dictionary<Type, SubscriberDelegate> _subscriberCache = [];
 
@@ -68,26 +68,4 @@ public abstract class DestroyBrokenRelationshipsSystem<TRelationship>
     }
 
     #endregion
-
-    /// <summary>
-    /// 结构变更已由事件回调即时完成，Update 为空操作。
-    /// 系统仍保留在此以承载 ECS 拓扑上的读写声明和执行顺序约束。
-    /// </summary>
-    public void Update(CommandBuffer commandBuffer) { }
 }
-
-/// <summary>
-/// 清理已损坏的星球-选择圈关系。当星球或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ChangeStructure]
-public sealed class DestroyBrokenPlanetSelectionRingsSystem(World world)
-    : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(world) { }
-
-/// <summary>
-/// 清理已损坏的视图-选择圈关系。当视图或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ChangeStructure]
-public sealed class DestroyBrokenViewSelectionRingsSystem(World world)
-    : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(world) { }

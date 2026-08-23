@@ -1,9 +1,6 @@
-using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.System;
-using Arch.System.SourceGenerator;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
 
@@ -13,53 +10,77 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 依赖管理系统。当被依赖的父实体死亡后，依赖其的子实体也需要一并销毁。<br/>
 /// 注意：该系统仅仅处理由<see cref="Dependence"/>定义的依赖关系，且在销毁实体时不提供hook。有个性化需求的请自行实现系统
 /// </summary>
-[SimulateSystem, ReactToStructuralChanges]
-[ReadCurr(typeof(Dependence)), ChangeStructure]
-public sealed partial class ManageDependenceSystem(World world) : ICalcSystemWithStructuralChanges
+[SimulateSystem, Reactive]
+public sealed class ManageDependenceSystem : IReactiveSystem
 {
-    private readonly HashSet<Entity> _entitiesToDestroy = [];
+    public ManageDependenceSystem(EventRegistry registry)
+    {
+        registry.SubscribeComponentRemoved<Dependence.AsDependency>(OnDependencyDestroyed);
+        registry.SubscribeComponentRemoved<Dependence.AsDependent>(OnDependentDestroyed);
+        registry.SubscribeComponentAdded<Dependence>(OnDependenceAdded);
+        registry.SubscribeComponentSet<Dependence>(OnDependenceSet);
+    }
 
-    [Query]
-    [All<Dependence>]
-    private static void FindBrokenDependence(
-        Entity relationship,
-        in Dependence record,
-        [Data] HashSet<Entity> entitiesToDestroy
+    // 被依赖方销毁时，销毁关系和依赖方
+    private static void OnDependencyDestroyed(
+        in Entity dependency,
+        ref Dependence.AsDependency index,
+        CommandBuffer commandBuffer
     )
     {
-        if (entitiesToDestroy.Contains(relationship))
-            return;
-
-        if (!record.Dependency.IsAlive() || entitiesToDestroy.Contains(record.Dependency))
+        foreach (var (relationship, record) in index.Relationships.ToArray())
         {
-            // 如果上游依赖消失，则移除关系本身和下游实体
-            entitiesToDestroy.Add(relationship);
+            if (relationship.IsAlive())
+                commandBuffer.Destroy(relationship);
             if (record.Dependent.IsAlive())
-                entitiesToDestroy.Add(record.Dependent);
-        }
-        else if (!record.Dependent.IsAlive() || entitiesToDestroy.Contains(record.Dependent))
-        {
-            // 如果下游实体消失，则只移除关系本身
-            entitiesToDestroy.Add(relationship);
+                commandBuffer.Destroy(record.Dependent);
         }
     }
 
-    public void Update(CommandBuffer commandBuffer)
+    // 依赖方销毁时，销毁关系
+    private static void OnDependentDestroyed(
+        in Entity dependent,
+        ref Dependence.AsDependent index,
+        CommandBuffer commandBuffer
+    )
     {
-        Debug.Assert(_entitiesToDestroy.Count == 0);
-        var previousEntitiesToDestroy = 0;
-
-        while (true)
+        foreach (var relationship in index.Relationships.Keys.ToArray())
         {
-            FindBrokenDependenceQuery(world, _entitiesToDestroy);
-
-            if (_entitiesToDestroy.Count == previousEntitiesToDestroy)
-                break;
-            previousEntitiesToDestroy = _entitiesToDestroy.Count;
+            if (relationship.IsAlive())
+                commandBuffer.Destroy(relationship);
         }
+    }
 
-        foreach (var entity in _entitiesToDestroy)
-            commandBuffer.Destroy(entity);
-        _entitiesToDestroy.Clear();
+    // 新增依赖关系但被依赖方已死亡，销毁关系和依赖方
+    private static void OnDependenceAdded(
+        in Entity relationship,
+        ref Dependence record,
+        CommandBuffer commandBuffer
+    )
+    {
+        if (!record.Dependency.IsAlive())
+        {
+            if (relationship.IsAlive())
+                commandBuffer.Destroy(relationship); // 先销毁 R
+            if (record.Dependent.IsAlive())
+                commandBuffer.Destroy(record.Dependent); // 再销毁 Dependent
+        }
+    }
+
+    // 设置依赖关系但被依赖方已死亡，销毁关系和依赖方
+    private static void OnDependenceSet(
+        in Entity relationship,
+        in Dependence oldValue,
+        ref Dependence newValue,
+        CommandBuffer commandBuffer
+    )
+    {
+        if (!newValue.Dependency.IsAlive())
+        {
+            if (relationship.IsAlive())
+                commandBuffer.Destroy(relationship);
+            if (newValue.Dependent.IsAlive())
+                commandBuffer.Destroy(newValue.Dependent);
+        }
     }
 }

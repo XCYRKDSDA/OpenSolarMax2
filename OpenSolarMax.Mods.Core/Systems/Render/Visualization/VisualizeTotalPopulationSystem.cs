@@ -7,7 +7,7 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(TeamPopulationRegistry)),

@@ -14,18 +14,19 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 考察移动进度，将舰船降落到目标星球的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[
-    Iterate(typeof(JumpingStatus)),
-    ReadPrev(typeof(TrailOf.AsShip)),
-    Write(typeof(SoundEffect)),
-    ChangeStructure
-]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 状态先量变才能质变
-[ExecuteAfter(typeof(UpdateShipsStateSystem))]
-// 以防一帧内抵达，要允许一帧内先从 Charging 到 Travelling，然后立刻降落
-[ExecuteAfter(typeof(TransitFromChargingToTravellingSystem))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(TrailOf.AsShip))]
+[Consume(typeof(JumpingStatus))]
+[Write(typeof(SoundEffect))]
+[ChangeStructure]
+[ExecuteAfter(
+    typeof(TransitFromChargingToTravellingSystem),
+    "允许同一帧刚起飞就落地",
+    typeof(SoundEffect),
+    typeof(JumpingStatus)
+)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class LandArrivedShipsSystem(
     World world,
     IAssetsManager assets,

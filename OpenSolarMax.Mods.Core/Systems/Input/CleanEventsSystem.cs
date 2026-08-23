@@ -7,7 +7,11 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[InputSystem, BeforeStructuralChanges, ChangeStructure]
+[Disable]
+[LateUpdate]
+[SimulateSystem]
+[Consume(typeof(InputEvent))]
+[ChangeStructure]
 public partial class CleanEventsSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]

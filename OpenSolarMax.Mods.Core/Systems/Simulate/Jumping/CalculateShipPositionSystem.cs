@@ -10,10 +10,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 跳跃系统。根据跳跃时间计算舰船动画、位置和方向
 /// </summary>
-[SimulateSystem, AfterStructuralChanges]
-[ReadCurr(typeof(JumpingStatus)), Write(typeof(AbsoluteTransform))]
-[FineWith(typeof(CalculateAbsoluteTransformSystem))] // 跳跃舰船应当不再有相对变换，因此和计算绝对位姿的系统无干扰
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(JumpingStatus))]
+[Write(typeof(AbsoluteTransform))]
+[ExecuteBefore(
+    typeof(CalculateAbsoluteTransformSystem),
+    "先计算飞行的飞船的位置，然后通过变换树计算尾迹位置",
+    typeof(AbsoluteTransform)
+)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(AbsoluteTransform))]
 public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
 {
     [Query]

@@ -11,13 +11,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 根据相位计算实体绕其轨道的位姿变换的系统
 /// </summary>
-[SimulateSystem, AfterStructuralChanges, BothForGameplayAndPreview]
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
 [
     ReadCurr(typeof(RevolutionOrbit)),
     ReadCurr(typeof(RevolutionState)),
     Write(typeof(RelativeTransform))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(RelativeTransform))]
 public sealed partial class CalculateTransformAroundOrbitSystem(World world) : ICalcSystem
 {
     [Query]

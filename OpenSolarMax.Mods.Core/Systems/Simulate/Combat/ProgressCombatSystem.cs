@@ -11,13 +11,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 战斗更新系统。对所有同在一个星球上的不同阵营部队更新战斗值
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [
     ReadPrev(typeof(AnchoredShipsRegistry)),
     ReadPrev(typeof(Combatable)),
     Iterate(typeof(Battlefield))
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ProgressCombatSystem(World world) : ITickSystem
 {
     [Query]

@@ -18,17 +18,17 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[InputSystem, BeforeStructuralChanges]
-[
-    ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(InTeam.AsAffiliate)),
-    ReadCurr(typeof(InputFocusState)),
-    ReadCurr(typeof(FleetSliderWidget)),
-    ReadCurr(typeof(ReachabilityRegistry)),
-    ReadCurr(typeof(Projection)),
-    Iterate(typeof(JumpingStatus)),
-    ChangeStructure
-]
+[LateUpdate]
+[InputSystem]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(InTeam.AsAffiliate))]
+[ReadCurr(typeof(InputFocusState))]
+[ReadCurr(typeof(FleetSliderWidget))]
+[ReadCurr(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(Projection))]
+[Write(typeof(ManeuveringShipsStatus))]
+[ChangeStructure]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ManeuveringShipsStatus))]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
     World world,
     IConceptFactory factory,

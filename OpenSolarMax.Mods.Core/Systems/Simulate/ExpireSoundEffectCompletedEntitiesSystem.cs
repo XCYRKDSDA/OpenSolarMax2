@@ -8,9 +8,8 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(SoundEffect)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireSoundEffectCompletedEntitiesSystem(World world)
     : ICalcSystemWithStructuralChanges
 {

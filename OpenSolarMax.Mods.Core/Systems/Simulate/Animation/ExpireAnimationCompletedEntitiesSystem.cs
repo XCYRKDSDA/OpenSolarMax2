@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
@@ -7,9 +8,8 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ExpireAfterAnimationCompleted)), ReadCurr(typeof(Animation)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class ExpireAnimationCompletedEntitiesSystem(World world)
     : ICalcSystemWithStructuralChanges
 {

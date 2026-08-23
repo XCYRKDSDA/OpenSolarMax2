@@ -10,9 +10,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新跳跃任务状态的系统。该系统作用于跳跃任务的所有阶段
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[Update]
+[SimulateSystem]
 [Iterate(typeof(JumpingStatus))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 {
     [Query]

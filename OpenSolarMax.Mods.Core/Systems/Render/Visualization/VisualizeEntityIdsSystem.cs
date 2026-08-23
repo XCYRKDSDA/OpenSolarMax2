@@ -15,7 +15,7 @@ using OpenSolarMax.Mods.Core.Utils;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Debug)]
 public sealed partial class VisualizeEntityIdsSystem(

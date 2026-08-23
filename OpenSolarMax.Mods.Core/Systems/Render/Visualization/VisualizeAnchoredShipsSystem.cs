@@ -16,7 +16,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [ReadCurr(typeof(Projection))]
 [Priority((int)GraphicsLayer.Interface)]
 public sealed partial class VisualizeAnchoredShipsSystem(

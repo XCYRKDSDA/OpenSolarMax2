@@ -1,27 +1,32 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Nine.Assets;
+using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
 /// <summary>
 /// 检查充能时间，从充能阶段切换到移动阶段的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
-[Iterate(typeof(JumpingStatus)), Write(typeof(SoundEffect))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-// 状态先量变才能质变
-[ExecuteAfter(typeof(UpdateShipsStateSystem))]
+[LateUpdate]
+[SimulateSystem]
+[Write(typeof(SoundEffect))]
+[Consume(typeof(JumpingStatus))]
+[ChangeStructure]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class TransitFromChargingToTravellingSystem(
     World world,
     IAssetsManager assets,
+    IConceptFactory factory,
     [Section("systems:simulate:jumping")] IConfiguration configs
-) : ICalcSystem
+) : ICalcSystemWithStructuralChanges
 {
     private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
 
@@ -30,7 +35,12 @@ public sealed partial class TransitFromChargingToTravellingSystem(
 
     [Query]
     [All<JumpingStatus, SoundEffect>]
-    private void Proceed(ref JumpingStatus status, ref SoundEffect soundEffect)
+    private void Proceed(
+        Entity ship,
+        ref JumpingStatus status,
+        ref SoundEffect soundEffect,
+        [Data] CommandBuffer commandBuffer
+    )
     {
         // 只考察Charging状态
         if (status.State != JumpingState.Charging)
@@ -48,8 +58,11 @@ public sealed partial class TransitFromChargingToTravellingSystem(
             _travelBegunSoundEvent.Native.createInstance(out var instance);
             soundEffect.EventInstance = instance;
             instance.start();
+
+            // 创建舰船的尾迹
+            factory.Make(world, commandBuffer, new ShipTrailDescription() { Ship = ship });
         }
     }
 
-    public void Update() => ProceedQuery(world);
+    public void Update(CommandBuffer commandBuffer) => ProceedQuery(world, commandBuffer);
 }

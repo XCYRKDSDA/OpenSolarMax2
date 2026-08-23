@@ -12,22 +12,24 @@ using OpenSolarMax.Mods.Core.Systems.Timing;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [Iterate(typeof(PendingVictoryEffect))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class PendingVictoryEffectCountDownSystem(World world)
     : CountDownSystemBase<PendingVictoryEffect>(world) { }
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(PendingVictoryEffect)),
     ReadCurr(typeof(VictoryEffectTarget)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(ReferenceSize)),
+    ReadCurr(typeof(TeamReferenceColor)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(Colonizable)),
     Write(typeof(ColonizationState)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ProgressColonizationSystem))]
-[ExecuteBefore(typeof(SettleColonizationSystem))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ColonizationState))]
 public sealed partial class FirePendingVictoryEffectSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

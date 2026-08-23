@@ -13,7 +13,7 @@ using OpenSolarMax.Mods.Core.Utils;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[RenderSystem, AfterStructuralChanges]
+[RenderSystem, LateUpdate]
 [Priority((int)GraphicsLayer.Interface)]
 [
     ReadCurr(typeof(AbsoluteTransform)),

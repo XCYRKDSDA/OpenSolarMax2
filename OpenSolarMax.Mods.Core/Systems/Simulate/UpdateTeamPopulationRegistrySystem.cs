@@ -7,14 +7,14 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ProductionAbility)),
     ReadCurr(typeof(PopulationCost)),
     Write(typeof(TeamPopulationRegistry))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(TeamPopulationRegistry))]
 public sealed partial class UpdateTeamPopulationRegistrySystem(World world) : ICalcSystem
 {
     [Query]

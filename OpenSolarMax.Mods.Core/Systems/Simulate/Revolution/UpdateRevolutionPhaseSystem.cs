@@ -11,9 +11,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// <summary>
 /// 更新公转相位的系统
 /// </summary>
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [ReadPrev(typeof(RevolutionOrbit)), Iterate(typeof(RevolutionState))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public sealed partial class UpdateRevolutionPhaseSystem(World world) : ITickSystem
 {
     [Query]

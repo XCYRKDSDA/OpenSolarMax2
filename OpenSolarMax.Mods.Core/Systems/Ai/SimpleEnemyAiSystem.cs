@@ -11,8 +11,22 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[AiSystem, BeforeStructuralChanges, ChangeStructure]
-// 不记录另一个域的组件读写
+[AiSystem, LateUpdate]
+[ReadCurr(typeof(InTeam.AsAffiliate))]
+[ReadCurr(typeof(InTeam.AsTeam))]
+[ReadCurr(typeof(Battlefield))]
+[ReadCurr(typeof(ProductionCondition))]
+[ReadCurr(typeof(Colonizable))]
+[ReadCurr(typeof(AnchoredShipsRegistry))]
+[ReadCurr(typeof(JumpingShipsRegistry))]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(Ai))]
+[ReadCurr(typeof(AiCooldown))]
+[ReadCurr(typeof(TeamPopulationRegistry))]
+[ReadCurr(typeof(ReachabilityRegistry))]
+[Consume(typeof(AiTimer))]
+[Consume(typeof(PlanetAiTimers))]
+[ChangeStructure]
 public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

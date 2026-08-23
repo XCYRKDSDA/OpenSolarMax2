@@ -11,19 +11,25 @@ using OpenSolarMax.Mods.Core.Concepts;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
-    ReadPrev(typeof(Tower)),
-    ReadPrev(typeof(InAttackRangeShipsRegistry)),
-    ReadPrev(typeof(AttackCooldown)),
-    ReadPrev(typeof(InTeam.AsAffiliate)),
-    ReadPrev(typeof(AbsoluteTransform)),
-    ReadPrev(typeof(TeamReferenceColor)),
-    Iterate(typeof(AttackTimer)),
+    ReadCurr(typeof(Tower)),
+    ReadCurr(typeof(InAttackRangeShipsRegistry)),
+    ReadCurr(typeof(AttackCooldown)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(AbsoluteTransform)),
+    ReadCurr(typeof(TeamReferenceColor)),
+    Write(typeof(AttackTimer)),
+    Write(typeof(ShipDeathState)),
     ChangeStructure
 ]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
-[ExecuteAfter(typeof(CooldownAttackTimerSystem))] // 先计算上一帧时间变化，再确认是否执行攻击
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(AttackTimer),
+    typeof(ShipDeathState)
+)]
+[FineWith(typeof(SettleCombatSystem), "地面战斗与空中炮塔攻击互不冲突", typeof(ShipDeathState))]
 public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {

@@ -7,14 +7,15 @@ using OpenSolarMax.Mods.Core.Components;
 
 namespace OpenSolarMax.Mods.Core.Systems;
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(AnchoredShipsRegistry)),
     ReadCurr(typeof(ProductionAbility)),
+    ReadCurr(typeof(TeamPopulationRegistry)),
     Write(typeof(ProductionCondition))
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ProductionCondition))]
 public sealed partial class CheckProductionSystem(World world) : ICalcSystem
 {
     private static bool CanProduce(

@@ -22,16 +22,14 @@ public delegate bool? CheckLocationReachabilityCallback(
     in Vector3 destinationPose
 );
 
-[RenderSystem, AfterStructuralChanges]
-[Priority((int)GraphicsLayer.Interface)]
-[
-    ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(ManeuveringShipsStatus)),
-    ReadCurr(typeof(Projection)),
-    ReadCurr(typeof(SelectionRingVisual)),
-    ReadCurr(typeof(PlanetSelectionRing.AsPlanet))
-]
+[LateUpdate]
+[RenderSystem]
+[ReadCurr(typeof(AbsoluteTransform))]
+[ReadCurr(typeof(ReferenceSize))]
+[ReadCurr(typeof(ManeuveringShipsStatus))]
+[ReadCurr(typeof(Projection))]
+[ReadCurr(typeof(SelectionRingVisual))]
+[ReadCurr(typeof(PlanetSelectionRing.AsPlanet))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
     GraphicsDevice graphicsDevice,
@@ -267,7 +265,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                 {
                     // 检查该星球是否有正在淡出的选择圈实体，如果有则跳过预览圈
                     var hasFadingRing = false;
-                    if (pointingPlanet.Has<PlanetSelectionRing.AsPlanet>())
+                    if (pointingPlanet.Has<PlanetSelectionRing.AsPlanet>()) // TODO: 不要检查，不可能没有
                     {
                         foreach (
                             var (_, record) in pointingPlanet
@@ -277,7 +275,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
                         {
                             var ring = record.Ring;
                             if (
-                                ring.Has<SelectionRingVisual>()
+                                ring.Has<SelectionRingVisual>() // TODO: 不要检查，不可能没有
                                 && ring.Get<SelectionRingVisual>().Alpha > 0
                             )
                             {

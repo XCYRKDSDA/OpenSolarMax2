@@ -18,9 +18,8 @@ internal static class ShipPostBornEffectParams
     internal static readonly TimeSpan FadeOutDuration = PostBornDuration * 0.1;
 }
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, Update]
 [Iterate(typeof(ShipPostBornEffect))]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
 {
     [Query]
@@ -33,9 +32,8 @@ public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
     public void Update(GameTime gameTime) => UpdateBlinkEffectQuery(world, gameTime);
 }
 
-[SimulateSystem, BeforeStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipPostBornEffect)), ChangeStructure]
-[ExecuteBefore(typeof(ApplyAnimationSystem))]
 public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
 {
     [Query]
@@ -46,6 +44,7 @@ public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWi
         [Data] CommandBuffer commandBuffer
     )
     {
+        // TODO: 需要思考如何避免结构化变更来实现这一功能
         if (effect.TimeElapsed >= Params.PostBornDuration)
             commandBuffer.Remove<ShipPostBornEffect>(entity);
     }
@@ -54,10 +53,36 @@ public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWi
         RemoveShipPostBornEffectQuery(world, commandBuffer);
 }
 
-[SimulateSystem, AfterStructuralChanges]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(ShipPostBornEffect)), Write(typeof(Sprite))]
-[ExecuteAfter(typeof(ApplyAnimationSystem))]
-[FineWith(typeof(ApplyTeamColorSystem)), FineWith(typeof(SynchronizeColorSystem))] // 当前系统仅设置透明度和缩放，和应用颜色不冲突
+[
+    ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
+    FineWith(
+        typeof(ApplyTeamColorSystem),
+        "当前系统仅设置透明度和缩放，与应用颜色不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(SynchronizeColorSystem),
+        "当前系统仅设置透明度和缩放，与应用颜色不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipChargingEffectSystem),
+        "飞船出生后动画和飞行动画互不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipTravellingEffectSystem),
+        "飞船出生后动画和飞行动画互不冲突",
+        typeof(Sprite)
+    ),
+    FineWith(
+        typeof(UpdateShipTrailEffectSystem),
+        "飞船出生后动画和飞行动画互不冲突",
+        typeof(Sprite)
+    )
+]
 public partial class ApplyShipPostBornEffectSystem(World world, IAssetsManager assets) : ICalcSystem
 {
     /// <summary>
