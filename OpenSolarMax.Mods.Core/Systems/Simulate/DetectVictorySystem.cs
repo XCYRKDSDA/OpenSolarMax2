@@ -15,6 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(InTeam.AsTeam)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(Colonizable)),
+    ReadCurr(typeof(ColonizationState)),
     Write(typeof(Victory))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Victory))]
@@ -46,24 +47,31 @@ public sealed partial class DetectVictorySystem(
     }
 
     [Query]
-    [All<InTeam.AsAffiliate, Colonizable>]
+    [All<InTeam.AsAffiliate, Colonizable, ColonizationState>]
     private void FindEnemyNodes(
         Entity _, // Arch.System.SourceGenerators 对 [Data] Entity 支持有问题，此处强行占位
         in InTeam.AsAffiliate affiliation,
+        ref ColonizationState state,
         [Data] Entity winnerTeam,
         [Data] List<Entity> enemyNodes
     )
     {
-        if (affiliation.Relationship is null)
+        var settledTeam = state.Event switch
+        {
+            ColonizationEvent.Finished => state.Team,
+            ColonizationEvent.Destroyed => null,
+            _ => affiliation.Relationship?.Copy.Team,
+        };
+
+        if (settledTeam is null)
         {
             if (_requireAllPlanets)
                 enemyNodes.Add(Entity.Null);
             return;
         }
 
-        var team = affiliation.Relationship.Value.Copy.Team;
-        if (team != winnerTeam)
-            enemyNodes.Add(team);
+        if (settledTeam.Value != winnerTeam)
+            enemyNodes.Add(settledTeam.Value);
     }
 
     public void Update()
