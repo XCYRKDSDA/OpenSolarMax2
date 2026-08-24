@@ -64,6 +64,17 @@ public sealed partial class FirePendingVictoryEffectSystem(World world, IConcept
             }
         );
 
+        // 创建 ColonizationFlare 特效
+        factory.Make(
+            world,
+            commandBuffer,
+            new ColonizationFlareDescription
+            {
+                Planet = planet,
+                AfterColor = winner.Get<TeamReferenceColor>().Value,
+            }
+        );
+
         ref var affiliation = ref planet.Get<InTeam.AsAffiliate>();
         if (affiliation.Relationship is null)
         {

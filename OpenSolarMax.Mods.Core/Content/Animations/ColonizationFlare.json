@@ -1,0 +1,10 @@
+{
+    "duration": 0.75,
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": 0, "value": 0 },
+            { "time": 0.25, "value": 1 },
+            { "time": 0.75, "value": 0 }
+        ]
+    }
+}
