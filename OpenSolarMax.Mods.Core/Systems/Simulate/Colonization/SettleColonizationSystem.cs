@@ -45,6 +45,11 @@ public sealed partial class SettleColonizationSystem(
                 PlanetRadius = refSize.Radius,
             }
         );
+        factory.Make(
+            world,
+            commandBuffer,
+            new ColonizationFlareDescription() { Planet = planet, AfterColor = color }
+        );
     }
 
     [Query]
