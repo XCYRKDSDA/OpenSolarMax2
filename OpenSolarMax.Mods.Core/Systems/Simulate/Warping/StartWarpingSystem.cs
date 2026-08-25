@@ -96,17 +96,20 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
             );
         }
 
-        // 创建传送门特效
-        factory.Make(
-            world,
-            commandBuffer,
-            new WarpChargingEffectDescription()
-            {
-                Warp = request.Departure,
-                WarpRadius = request.Departure.Get<ReferenceSize>().Radius,
-                Color = request.Team.Get<TeamReferenceColor>().Value,
-            }
-        );
+        // 仅在实际有舰船进入传送时创建蓄能特效，避免 0 艘舰船也播放特效与音效
+        if (request.ExpectedNum - shipsRemain >= 1)
+        {
+            factory.Make(
+                world,
+                commandBuffer,
+                new WarpChargingEffectDescription()
+                {
+                    Warp = request.Departure,
+                    WarpRadius = request.Departure.Get<ReferenceSize>().Radius,
+                    Color = request.Team.Get<TeamReferenceColor>().Value,
+                }
+            );
+        }
 
         // 移除请求实体，避免下一轮不动点循环重复触发（CleanEventsSystem 已禁用）
         commandBuffer.Destroy(in requestEntity);
