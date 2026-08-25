@@ -226,6 +226,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 条件：没有经过攻击天体或出兵天体强度高于估损的一半
                 if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
                     continue;
+                // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+                if (shipsToSend <= 0)
+                    continue;
 
                 // 创建舰船移动请求
                 factory.Make(
@@ -336,6 +339,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 出兵天体强度低于估损的一半时不派兵
                 if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
                     continue;
+                // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+                if (shipsToSend <= 0)
+                    continue;
 
                 // 创建舰船移动请求
                 factory.Make(
@@ -417,6 +423,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     continue;
                 // 出兵天体强度低于估损的一半时不派兵
                 if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
+                    continue;
+                // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+                if (shipsToSend <= 0)
                     continue;
 
                 // 创建舰船移动请求
