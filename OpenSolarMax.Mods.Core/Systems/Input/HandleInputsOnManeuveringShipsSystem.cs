@@ -235,6 +235,14 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                     if (!CheckReachability(departure, selection.SimpleSelecting.TappingDestination))
                         continue;
 
+                    // 排除选兵数量为零的情况
+                    var expectedNum = (int)
+                        MathF.Round(
+                            departure.Get<AnchoredShipsRegistry>().Ships[team].Count() * percentage
+                        );
+                    if (expectedNum == 0)
+                        continue;
+
                     factory.Make(
                         world,
                         commandBuffer,
@@ -243,11 +251,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                             Departure = departure,
                             Destination = selection.SimpleSelecting.TappingDestination,
                             Team = team,
-                            ExpectedNum = (int)
-                                MathF.Round(
-                                    departure.Get<AnchoredShipsRegistry>().Ships[team].Count()
-                                        * percentage
-                                ),
+                            ExpectedNum = expectedNum,
                         }
                     );
                 }
@@ -312,6 +316,15 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                         )
                             continue;
 
+                        // 排除选兵数量为零的情况
+                        var expectedNum = (int)
+                            MathF.Round(
+                                departure.Get<AnchoredShipsRegistry>().Ships[team].Count()
+                                    * percentage
+                            );
+                        if (expectedNum == 0)
+                            continue;
+
                         factory.Make(
                             world,
                             commandBuffer,
@@ -320,11 +333,7 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
                                 Departure = departure,
                                 Destination = selection.DraggingToDestination.CandidateDestination,
                                 Team = team,
-                                ExpectedNum = (int)
-                                    MathF.Round(
-                                        departure.Get<AnchoredShipsRegistry>().Ships[team].Count()
-                                            * percentage
-                                    ),
+                                ExpectedNum = expectedNum,
                             }
                         );
                     }

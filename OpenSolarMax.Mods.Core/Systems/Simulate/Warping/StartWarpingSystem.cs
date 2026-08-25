@@ -48,6 +48,13 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
         if (!request.Departure.Has<WarpTerminal>())
             return;
 
+        // 零数量请求直接销毁，避免下一轮不动点循环重复触发
+        if (request.ExpectedNum <= 0)
+        {
+            commandBuffer.Destroy(in requestEntity);
+            return;
+        }
+
         // 设置舰船传送状态
         var shipsRemain = request.ExpectedNum;
         var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
