@@ -76,6 +76,13 @@ public sealed partial class StartJumpingSystem(
         if (!request.Departure.Has<DefaultLaunchPad>())
             return;
 
+        // 零数量请求直接销毁，避免下一轮不动点循环重复触发
+        if (request.ExpectedNum <= 0)
+        {
+            commandBuffer.Destroy(in requestEntity);
+            return;
+        }
+
         var shipsRemain = request.ExpectedNum;
         var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
 
