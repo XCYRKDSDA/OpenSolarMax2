@@ -63,6 +63,13 @@ line.round = 1
 line.color = "white"
 line.blocked.color = "red"
 
+# 悬停发光半径系数 radius_multiplier 必须与上方 maneuvering_ships_status 的 ring.radius_multiplier 保持一致，保证发光外缘与细环重合
+[systems.visualization.hover_glow]
+minimal_hit_pixels = 10
+radius_multiplier = 1.6
+inner_factor = 1.0
+alpha = 0.5
+
 # 概念构造相关
 
 [applier.celestial_body]

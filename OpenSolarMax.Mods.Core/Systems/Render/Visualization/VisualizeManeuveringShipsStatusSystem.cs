@@ -24,6 +24,7 @@ public delegate bool? CheckLocationReachabilityCallback(
 
 [LateUpdate]
 [RenderSystem]
+[Priority((int)GraphicsLayer.Interface - 1)]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize))]
 [ReadCurr(typeof(ManeuveringShipsStatus))]
