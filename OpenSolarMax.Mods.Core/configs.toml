@@ -2,8 +2,8 @@
 
 [systems.victory]
 require_all_planets = false
-wave_max_interval = 0.1          # 胜利波纹动效：星球间最大触发间隔，秒
-wave_total_seconds = 2.5          # 胜利波纹动效：从胜利帧起所有星球播完的总时长上限，秒
+wave_max_interval = 0.1     # 胜利波纹动效：星球间最大触发间隔，秒
+wave_total_seconds = 2.5    # 胜利波纹动效：从胜利帧起所有星球播完的总时长上限，秒
 
 # 仿真系统相关
 
@@ -12,7 +12,7 @@ charging_duration = 0.5
 landing_duration = 0.5
 fading_in_duration = 0.1
 fading_out_duration = 0.25
-arrival_time_offset = 0.5           # 抵达时间的绝对偏差（半边）
+arrival_time_offset = -8.5          # 抵达时间的绝对偏差（半边）
 arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间的最大比例
 
 # 输入系统相关
@@ -28,9 +28,9 @@ text.template = "{0}"
 shadow.distance = 2
 shadow.density = 0.6
 label.offset_multipliers = { x = 0.6, y = 0.72 }
-ring.radius_multiplier = 1.8
+ring.radius_multiplier = 2.4
 ring.thickness = 3
-ring.label.radius_multiplier = 2.25
+ring.label.radius_multiplier = 3
 ring.gap.deg = 3
 
 [systems.visualization.barriers]
@@ -42,7 +42,7 @@ edge.gap_length = 3
 edge.color = "pink"
 
 [systems.visualization.colonization]
-ring.radius_multiplier = 1.8
+ring.radius_multiplier = 2.4
 ring.thickness = 3
 ring.default_alpha = 0.2
 
@@ -51,22 +51,23 @@ text.size = 18
 text.color = "red"
 
 [systems.visualization.maneuvering_ships_status]
-ring.radius_multiplier = 1.6
-ring.thickness = 3
-ring.hovered.color = "white * 0.5"
+ring.radius_multiplier = 2.4
+ring.offset = -8
+ring.thickness = 4
 ring.blocked.color = "red"
 ring.selected.color = "white"
-box.thickness = 3
+box.thickness = 4
 box.color = "white * 0.5"
-line.thickness = 3
+line.thickness = 4
 line.round = 1
 line.color = "white"
 line.blocked.color = "red"
 
-# 悬停发光半径系数 radius_multiplier 必须与上方 maneuvering_ships_status 的 ring.radius_multiplier 保持一致，保证发光外缘与细环重合
+# 悬停发光的 radius_multiplier 与 offset 必须与上方 maneuvering_ships_status 的 ring.radius_multiplier、ring.offset 保持一致，保证发光外缘与细环重合
 [systems.visualization.hover_glow]
 minimal_hit_pixels = 10
-radius_multiplier = 1.6
+radius_multiplier = 2.4
+offset = -8
 inner_factor = 1.0
 alpha = 0.5
 

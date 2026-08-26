@@ -30,6 +30,7 @@ public sealed partial class VisualizeHoverGlowSystem(
 {
     private readonly int _minimalHitPixels = configs.RequireValue<int>("minimal_hit_pixels");
     private readonly float _radiusMultiplier = configs.RequireValue<float>("radius_multiplier");
+    private readonly float _offset = configs.RequireValue<float>("offset");
     private readonly float _innerFactor = configs.RequireValue<float>("inner_factor");
     private readonly float _alpha = configs.RequireValue<float>("alpha");
 
@@ -67,10 +68,10 @@ public sealed partial class VisualizeHoverGlowSystem(
         ref readonly var pose = ref compos.t1;
         ref readonly var sprite = ref compos.t2;
 
-        // 发光带外缘必须与细环同一半径公式，保证完全重合
+        // 发光带外缘必须与细环同一半径公式（含 offset），保证完全重合
         var scale2D = Vector2.TransformNormal(Vector2.One, projection.WorldToScreen);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
-        var outerRadius = refSize.Radius * _radiusMultiplier * scale;
+        var outerRadius = refSize.Radius * _radiusMultiplier * scale + _offset;
         var innerRadius = refSize.Radius * _innerFactor * scale;
 
         var ringInScreen = TransformProjection.To2D(
