@@ -24,12 +24,11 @@ public delegate bool? CheckLocationReachabilityCallback(
 
 [LateUpdate]
 [RenderSystem]
+[Priority((int)GraphicsLayer.Interface - 1)]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize))]
 [ReadCurr(typeof(ManeuveringShipsStatus))]
 [ReadCurr(typeof(Projection))]
-[ReadCurr(typeof(SelectionRingVisual))]
-[ReadCurr(typeof(PlanetSelectionRing.AsPlanet))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
     GraphicsDevice graphicsDevice,
@@ -40,7 +39,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         "ring:radius_multiplier"
     );
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
-    private readonly Color _hoveredRingColor = configs.RequireValue<Color>("ring:hovered:color");
+    private readonly float _ringOffset = configs.RequireValue<float>("ring:offset");
     private readonly Color _blockedRingColor = configs.RequireValue<Color>("ring:blocked:color");
     private readonly Color _selectedRingColor = configs.RequireValue<Color>("ring:selected:color");
 
@@ -72,7 +71,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         // 计算选择环的尺寸
         var scale2D = Vector2.TransformNormal(Vector2.One, worldToScreen);
         var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
-        var ringRadius = refSize.Radius * _ringRadiusFactor * scale;
+        var ringRadius = refSize.Radius * _ringRadiusFactor * scale + _ringOffset;
 
         // 计算选择环的位置
         var ringInScreen = TransformProjection.To2D(
@@ -125,7 +124,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         var targetInScreen = TransformProjection.To2D(
             Vector3.Transform(targetPose.Translation, worldToScreen)
         );
-        var targetRingRadius = targetRefSize.Radius * _ringRadiusFactor * scale;
+        var targetRingRadius = targetRefSize.Radius * _ringRadiusFactor * scale + _ringOffset;
 
         foreach (var (source, color) in Enumerable.Zip(sources, colors))
         {
@@ -137,7 +136,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceInScreen = TransformProjection.To2D(
                 Vector3.Transform(pose.Translation, worldToScreen)
             );
-            var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
+            var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale + _ringOffset;
 
             // 计算线段起止点
             var shipDirection = targetInScreen - sourceInScreen;
@@ -176,7 +175,7 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             var sourceInScreen = TransformProjection.To2D(
                 Vector3.Transform(pose.Translation, worldToScreen)
             );
-            var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale;
+            var sourceRingRadius = refSize.Radius * _ringRadiusFactor * scale + _ringOffset;
 
             // 计算线段起止点
             var shipDirection = tailInScreen - sourceInScreen;
@@ -257,44 +256,6 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
         // 当处于默认状态时，绘制所有点选和正在选的星球
         if (selection.State == ShipsSelection_State.SimpleSelecting)
         {
-            // 如果当前没有点选星球，且此时鼠标位于某个星球上，则进行预览
-            if (mouse.LeftButton != ButtonState.Pressed)
-            {
-                var pointingPlanet = selection.SimpleSelecting.PointingPlanet;
-                if (pointingPlanet != Entity.Null)
-                {
-                    // 检查该星球是否有正在淡出的选择圈实体，如果有则跳过预览圈
-                    var hasFadingRing = false;
-                    if (pointingPlanet.Has<PlanetSelectionRing.AsPlanet>()) // TODO: 不要检查，不可能没有
-                    {
-                        foreach (
-                            var (_, record) in pointingPlanet
-                                .Get<PlanetSelectionRing.AsPlanet>()
-                                .Relationships
-                        )
-                        {
-                            var ring = record.Ring;
-                            if (
-                                ring.Has<SelectionRingVisual>() // TODO: 不要检查，不可能没有
-                                && ring.Get<SelectionRingVisual>().Alpha > 0
-                            )
-                            {
-                                hasFadingRing = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!hasFadingRing)
-                        DrawSelected(
-                            pointingPlanet,
-                            in projection.WorldToScreen,
-                            _hoveredRingColor,
-                            _ringThickness
-                        );
-                }
-            }
-
             // 绘制所有选中的星球
             // TappingSource已经包含在SelectedSources中了，故不重复绘制
             DrawSelected(

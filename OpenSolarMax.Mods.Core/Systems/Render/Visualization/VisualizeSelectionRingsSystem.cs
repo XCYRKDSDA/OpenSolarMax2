@@ -32,6 +32,7 @@ public sealed partial class VisualizeSelectionRingsSystem(
     private readonly float _ringRadiusFactor = configs.RequireValue<float>(
         "ring:radius_multiplier"
     );
+    private readonly float _ringOffset = configs.RequireValue<float>("ring:offset");
     private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
     private readonly Color _selectedRingColor = configs.RequireValue<Color>("ring:selected:color");
 
@@ -85,7 +86,8 @@ public sealed partial class VisualizeSelectionRingsSystem(
 
             var scale2D = Vector2.TransformNormal(Vector2.One, projection.WorldToScreen);
             var screenScale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
-            var ringRadius = refSize.Radius * _ringRadiusFactor * visual.Scale * screenScale;
+            var ringRadius =
+                refSize.Radius * _ringRadiusFactor * visual.Scale * screenScale + _ringOffset;
 
             var ringInScreen = TransformProjection.To2D(
                 Vector3.Transform(pose.Translation, projection.WorldToScreen)
