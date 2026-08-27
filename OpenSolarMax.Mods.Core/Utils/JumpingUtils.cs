@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Concepts;
 using OpenSolarMax.Mods.Core.Systems;
 
 namespace OpenSolarMax.Mods.Core.Utils;
@@ -93,7 +94,7 @@ public static class JumpingUtils
     private static (World, Entity) ExtractBareTransforms(Entity tail)
     {
         var virtualWorld = World.Create();
-        var tailProxy = virtualWorld.Construct(in Signatures.Transformable);
+        var tailProxy = virtualWorld.Construct(TransformableDefinition.Signature);
         tailProxy.Get<AbsoluteTransform>() = tail.Get<AbsoluteTransform>();
 
         var child = tail;
@@ -110,7 +111,7 @@ public static class JumpingUtils
             var parent = asChild.Relationship.Value.Copy.Parent;
 
             // 创建虚拟世界中关于原世界父对象的代理对象
-            var parentProxy = virtualWorld.Construct(in Signatures.Transformable);
+            var parentProxy = virtualWorld.Construct(TransformableDefinition.Signature);
             parentProxy.Get<AbsoluteTransform>() = parent.Get<AbsoluteTransform>();
 
             // 创建子实体代理和父实体代理之间的关系
