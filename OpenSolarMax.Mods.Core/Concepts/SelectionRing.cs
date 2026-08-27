@@ -21,9 +21,16 @@ public static partial class ConceptNames
 public abstract class SelectionRingDefinition : IDefinition
 {
     /// <summary>
-    /// 选择圈实体的组件签名。
+    /// 选择圈实体的组件签名。选择圈不需要位置组件（位置从关联的星球获取）。
     /// </summary>
-    public static Signature Signature { get; } = Signatures.SelectionRing;
+    public static Signature Signature { get; } =
+        new(
+            typeof(SelectionRingVisual),
+            typeof(Animation),
+            typeof(ExpireAfterAnimationCompleted),
+            typeof(PlanetSelectionRing.AsRing),
+            typeof(ViewSelectionRing.AsRing)
+        );
 }
 
 /// <summary>
