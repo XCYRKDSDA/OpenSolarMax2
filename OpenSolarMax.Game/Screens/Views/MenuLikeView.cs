@@ -42,6 +42,9 @@ internal class MenuLikeView
     private int? _lastThumbnailsOffset = null;
     private float _targetBackgroundLeft = 0;
 
+    // 各模组相对总偏移的背景偏移量, 按轮播索引记录
+    private readonly Dictionary<int, float> _relativeBackgroundOffsets = [];
+
     #region 曝光相关
 
     private SpriteBatch? _exposureSpriteBatch;
@@ -274,6 +277,13 @@ internal class MenuLikeView
             ? null
             : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
 
+        // 已不再被绘制的模组, 其相对偏移归零
+        foreach (var index in _relativeBackgroundOffsets.Keys)
+        {
+            if (index != ViewModel.PrimaryItemIndex && index != ViewModel.SecondaryItemIndex)
+                _relativeBackgroundOffsets[index] = 0;
+        }
+
         _primaryPreview.FadeIn = MathF.Max(
             1 - int.Abs(_scrollViewer.Offset) / (_scrollViewer.ThumbnailsInterval / 2f),
             0
@@ -335,11 +345,15 @@ internal class MenuLikeView
         // 应用背景偏移
         _pageBackground.Left = _actualBackgroundLeft;
         _primaryBackground.Left =
-            _actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+            _actualBackgroundLeft
+            + _relativeBackgroundOffsets.GetValueOrDefault(ViewModel.PrimaryItemIndex)
+            + ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
         if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
         {
             _secondaryBackground.Left =
-                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
+                _actualBackgroundLeft
+                + _relativeBackgroundOffsets.GetValueOrDefault(secondaryItemIndex)
+                + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
         }
 
         _pageBackground.Draw();
@@ -474,9 +488,11 @@ internal class MenuLikeView
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
 
-        // 渐出时, 以第一预览偏移为准
-        _targetBackgroundLeft = _actualBackgroundLeft =
-            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+        // 渐出时, 以第一预览偏移为准, 写入当前模组的相对偏移
+        _relativeBackgroundOffsets[ViewModel.PrimaryItemIndex] =
+            state.BackgroundOffset
+            - _actualBackgroundLeft
+            - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
     }
 
     #endregion
