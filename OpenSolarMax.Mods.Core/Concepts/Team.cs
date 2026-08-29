@@ -28,11 +28,7 @@ public abstract class TeamDefinition : IDefinition
             typeof(InTeam.AsTeam),
             typeof(TeamPopulationRegistry),
             // 胜利状态
-            typeof(Victory),
-            // Ai
-            typeof(Ai),
-            typeof(AiTimer),
-            typeof(AiCooldown)
+            typeof(Victory)
         );
 }
 
@@ -58,6 +54,11 @@ public class TeamDescription : IDescription
     /// 每个该阵营的舰船最多可以承受的伤害
     /// </summary>
     public required float Health { get; set; }
+
+    /// <summary>
+    /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
+    /// </summary>
+    public string? AiProfile { get; set; }
 }
 
 [Apply(ConceptNames.Team)]
@@ -84,8 +85,24 @@ public class TeamApplier : IApplier<TeamDescription>
 
         commandBuffer.Set(in entity, new Victory { HasWon = false });
 
-        commandBuffer.Set(in entity, new Ai { Enabled = false });
-        commandBuffer.Set(in entity, new AiCooldown { Duration = TimeSpan.FromSeconds(3) });
-        commandBuffer.Set(in entity, new AiTimer { TimeLeft = TimeSpan.FromSeconds(2) });
+        // AI 预设：仅当关卡为该阵营指定 ai 选档时挂载（Ai 组件存在即启用）
+        if (desc.AiProfile is not null)
+        {
+            var ai = desc.AiProfile switch
+            {
+                "simple" => Ai.Simple,
+                "smart" => Ai.Smart,
+                "dark" => Ai.Dark,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(desc.AiProfile),
+                    $"未知 AI 预设: {desc.AiProfile}"
+                ),
+            };
+            commandBuffer.Add(in entity, ai);
+            commandBuffer.Add(
+                in entity,
+                new AiTimer { TimeLeft = TimeSpan.FromSeconds(ai.InitialDelaySeconds) }
+            );
+        }
     }
 }

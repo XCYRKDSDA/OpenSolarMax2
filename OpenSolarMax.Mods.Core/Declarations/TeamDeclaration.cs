@@ -17,6 +17,11 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
 
     public float? Health { get; set; }
 
+    /// <summary>
+    /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
+    /// </summary>
+    public string? Ai { get; set; }
+
     public TeamDeclaration Aggregate(TeamDeclaration newCfg)
     {
         return new TeamDeclaration()
@@ -25,6 +30,7 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
             Workload = newCfg.Workload ?? Workload,
             Attack = newCfg.Attack ?? Attack,
             Health = newCfg.Health ?? Health,
+            Ai = newCfg.Ai ?? Ai,
         };
     }
 }
@@ -51,6 +57,7 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
             Workload = declaration.Workload.Value,
             Attack = declaration.Attack.Value,
             Health = declaration.Health.Value,
+            AiProfile = declaration.Ai,
         };
 
         return desc;
