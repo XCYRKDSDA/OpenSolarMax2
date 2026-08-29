@@ -156,9 +156,6 @@ public struct Ai
     /// 聚兵决策参数
     public AiGatherParameters Gather;
 
-    /// 临时保留的启用开关，后续移除
-    public bool Enabled;
-
     /// 预设：仅防御与进攻，节奏较慢
     public static readonly Ai Simple = new()
     {
@@ -172,7 +169,6 @@ public struct Ai
         DefenseEnabled = true,
         AttackEnabled = true,
         GatherEnabled = false,
-        Enabled = true,
         Defense = new AiDefenseParameters
         {
             RequiresEnemy = false,
@@ -221,7 +217,6 @@ public struct Ai
         DefenseEnabled = true,
         AttackEnabled = true,
         GatherEnabled = true,
-        Enabled = true,
         Defense = new AiDefenseParameters
         {
             RequiresEnemy = true,
@@ -270,7 +265,6 @@ public struct Ai
         DefenseEnabled = false,
         AttackEnabled = true,
         GatherEnabled = true,
-        Enabled = true,
         Defense = new AiDefenseParameters
         {
             RequiresEnemy = false,

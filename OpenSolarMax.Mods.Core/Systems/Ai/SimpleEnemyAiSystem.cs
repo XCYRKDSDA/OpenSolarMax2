@@ -127,6 +127,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         [Data] CommandBuffer commandBuffer
     )
     {
+        // lambda 内无法捕获 in 参数，值拷贝后供查询表达式使用
+        var aiParams = ai;
         if (timer.TimeLeft > TimeSpan.Zero)
             return;
         var jitterFactor =
@@ -154,310 +156,411 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             friendPlanets.Select(info => info.Position).Aggregate(Vector2.Zero, (v1, v2) => v1 + v2)
             / friendPlanets.Count;
 
-        #region 防御
-
-        // 寻找目标防守星球
-        var defendTargets = planetInfos
-            .Values.Where(info =>
-            {
-                // 条件1：为己方天体或有己方飞船（包括飞行中的）
-                if (info.Team != team && info.PredictedFriendShips == 0)
-                    return false;
-                // 条件2：有敌方
-                if (info.PredictedEnemyShips == 0)
-                    return false;
-                // 条件3：预测己方强度低于敌方两倍（即可能打不过敌方
-                if (info.PredictedFriendShips > info.PredictedEnemyShips * 2)
-                    return false;
-                return true;
-            })
-            .OrderBy(info =>
-            {
-                // 该天体到己方天体几何中心的距离
-                var distance = Vector2.Distance(info.Position, friendPlanetsCenter); // TODO: 归一化; TODO: 随机化
-                // 己方势力强度减去非己方势力强度
-                var relativeStrength = info.PredictedFriendShips - info.PredictedEnemyShips;
-                // 计算防守价值
-                return distance + relativeStrength;
-            })
-            .ToList();
-
-        // 寻找可出兵防御的天体
-        var defendSenders = planetInfos
-            .Values.Where(info =>
-            {
-                // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
-                if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
-                    return false;
-                // 条件：是己方天体或预测己方强度低于敌方
-                if (info.Team != team && info.PredictedFriendShips > info.PredictedEnemyShips)
-                    return false;
-                // 条件：没有敌方或预测己方强度低于敌方
-                if (
-                    info.PredictedEnemyShips > 0
-                    && info.PredictedFriendShips > info.PredictedEnemyShips
-                )
-                    return false;
-                return true;
-            })
-            .OrderBy(info =>
-            {
-                // 将该天体己方强度记为飞船数的相反数
-                return -info.ActualFriendShips;
-            })
-            .ToList();
-
-        foreach (var target in defendTargets)
+        if (ai.DefenseEnabled)
         {
-            foreach (var sender in defendSenders)
-            {
-                // 基本条件：出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target))
-                    continue;
-                // 出兵条件：出兵天体的强度和目标天体的预测强度之和高于目标天体的预测敌方强度
-                if (
-                    sender.ActualFriendShips + target.PredictedFriendShips
-                    <= target.PredictedEnemyShips
-                )
-                    continue;
+            #region 防御
 
-                // 飞船数：目标天体上预测敌方强度的二倍减去预测己方强度
-                var shipsToSend = target.PredictedEnemyShips * 2 - target.PredictedFriendShips;
+            // 寻找目标防守星球
+            var defendTargets = planetInfos
+                .Values.Where(info =>
+                {
+                    // 条件1：为己方天体或有己方飞船（包括飞行中的）
+                    if (info.Team != team && info.PredictedFriendShips == 0)
+                        return false;
+                    // 条件2：有敌方（RequiresEnemy 时启用）
+                    if (aiParams.Defense.RequiresEnemy && info.PredictedEnemyShips == 0)
+                        return false;
+                    // 条件3：排除己方强度高于敌方 × EnemyCoefficient 的安全天体（己方足够强，无需防守）
+                    if (
+                        info.PredictedFriendShips
+                        > info.PredictedEnemyShips * aiParams.Defense.EnemyCoefficient
+                    )
+                        return false;
+                    return true;
+                })
+                .OrderBy(info =>
+                {
+                    // 该天体到己方天体几何中心的距离（带随机抖动）
+                    var distance =
+                        Vector2.Distance(info.Position, friendPlanetsCenter)
+                        + Random.NextDouble() * aiParams.Defense.DistanceJitter;
+                    // 己方势力强度减去非己方势力强度
+                    var relativeStrength = info.PredictedFriendShips - info.PredictedEnemyShips;
+                    // 计算防守价值
+                    return distance + relativeStrength;
+                })
+                .ToList();
 
-                // TODO: 估损
-                var towerAttack = 0;
-                shipsToSend += towerAttack; // 为飞船数加上估损
-
-                // 条件：没有经过攻击天体或总兵力多于估损
-                if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
-                    continue;
-                // 条件：没有经过攻击天体或出兵天体强度高于估损的一半
-                if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
-                    continue;
-                // 飞船数为零或负值时跳过该组合，继续尝试后续组合
-                if (shipsToSend <= 0)
-                    continue;
-
-                // 创建舰船移动请求
-                factory.Make(
-                    world,
-                    commandBuffer,
-                    new JumpingRequestDescription()
+            // 寻找可出兵防御的天体
+            var defendSenders = planetInfos
+                .Values.Where(info =>
+                {
+                    // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
+                    if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
+                        return false;
+                    // 出兵来源筛选方式：Conflict 战斗中且己方占优则不出兵，Numeric 数值比较
+                    if (aiParams.Defense.SenderGate == AiSenderGateStyle.Conflict)
                     {
-                        Departure = sender.Entity,
-                        Destination = target.Entity,
-                        Team = team,
-                        ExpectedNum = shipsToSend,
+                        if (info.Battle && info.PredictedFriendShips > info.PredictedEnemyShips)
+                            return false;
                     }
-                );
-                sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
-                    ai.PlanetCooldownSeconds
-                ); // TODO 随机化
-
-                return;
-            }
-        }
-
-        #endregion
-
-        #region 进攻
-
-        // 寻找可进攻的天体
-        var attackTargets = planetInfos
-            .Values.Where(info =>
-            {
-                // 基本条件：不为己方天体
-                if (info.Team == team)
-                    return false;
-                // 条件：排除己方强度足够且无敌方的天体
-                if (info.PredictedEnemyShips == 0 && info.PredictedFriendShips > info.Volume)
-                    return false;
-                return true;
-            })
-            .OrderBy(info =>
-            {
-                // 该天体到己方天体几何中心的距离
-                var distance = Vector2.Distance(info.Position, friendPlanetsCenter); // TODO: 归一化; TODO: 随机化
-                // 预测敌方强度减去预测己方强度
-                var relativeStrength = info.PredictedEnemyShips - info.PredictedFriendShips;
-                // 计算防守价值
-                return distance + relativeStrength;
-            })
-            .ToList();
-
-        // 寻找可出兵进攻的天体
-        var attackSenders = planetInfos
-            .Values.Where(info =>
-            {
-                // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
-                if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
-                    return false;
-                // 条件：天体不被己方占据
-                if (info.PredictedEnemyShips == 0 && info.Team != team)
-                    return false;
-                // 条件：是己方天体或预测己方强度低于敌方
-                if (info.Team != team && info.PredictedFriendShips > info.PredictedEnemyShips)
-                    return false;
-                // 条件：没有敌方或预测己方强度低于敌方
-                if (
-                    info.PredictedEnemyShips > 0
-                    && info.PredictedFriendShips > info.PredictedEnemyShips
-                )
-                    return false;
-                return true;
-            })
-            .OrderBy(info =>
-            {
-                // 将该天体己方强度记为飞船数的相反数
-                return -info.ActualFriendShips;
-            })
-            .ToList();
-
-        foreach (var target in attackTargets)
-        {
-            foreach (var sender in attackSenders)
-            {
-                // 基本条件：出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target))
-                    continue;
-                // 出兵条件：出兵天体和目标天体的己方综合强度高于目标天体的预测敌方强度
-                if (
-                    sender.ActualFriendShips + target.PredictedFriendShips
-                    <= target.PredictedEnemyShips
-                )
-                    continue;
-
-                // 基本飞船数：目标天体上预测敌方强度的二倍减去预测己方强度一半
-                var shipsToSend = target.PredictedEnemyShips * 2 - target.PredictedFriendShips / 2;
-
-                // 预测敌方强度大于己方时，派出全部飞船
-                if (sender.PredictedEnemyShips > sender.PredictedFriendShips)
-                    shipsToSend = sender.ActualFriendShips;
-                // 飞船数不应低于目标的二倍标准兵力
-                if (shipsToSend < target.Volume * 2)
-                    shipsToSend = (int)(target.Volume * 2);
-
-                // TODO: 估损
-                var towerAttack = 0;
-                shipsToSend += towerAttack; // 为飞船数加上估损
-
-                // 总兵力不足估损时不派兵
-                if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
-                    continue;
-                // 出兵天体强度低于估损的一半时不派兵
-                if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
-                    continue;
-                // 飞船数为零或负值时跳过该组合，继续尝试后续组合
-                if (shipsToSend <= 0)
-                    continue;
-
-                // 创建舰船移动请求
-                factory.Make(
-                    world,
-                    commandBuffer,
-                    new JumpingRequestDescription()
+                    else
                     {
-                        Departure = sender.Entity,
-                        Destination = target.Entity,
-                        Team = team,
-                        ExpectedNum = shipsToSend,
+                        // 条件：是己方天体或预测己方强度低于敌方
+                        if (
+                            info.Team != team
+                            && info.PredictedFriendShips > info.PredictedEnemyShips
+                        )
+                            return false;
+                        // 条件：没有敌方或预测己方强度低于敌方
+                        if (
+                            info.PredictedEnemyShips > 0
+                            && info.PredictedFriendShips > info.PredictedEnemyShips
+                        )
+                            return false;
                     }
-                );
-                sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
-                    ai.PlanetCooldownSeconds
-                );
-                return;
-            }
-        }
+                    return true;
+                })
+                .OrderBy(info =>
+                {
+                    // 将该天体己方强度记为飞船数的相反数
+                    return -info.ActualFriendShips;
+                })
+                .ToList();
 
-        #endregion
-
-        #region 聚兵
-
-        var aiValues = planetInfos.ToDictionary(
-            p => p.Key,
-            pair =>
+            foreach (var target in defendTargets)
             {
-                ref readonly var reachabilityRegistry = ref pair.Key.Get<ReachabilityRegistry>();
-                var value = reachabilityRegistry
-                    .FromHereTo.Where(p => p.Value)
-                    .Count(p =>
-                        planetInfos[p.Key].Team != team
-                        || planetInfos[p.Key].PredictedEnemyShips > 0
+                foreach (var sender in defendSenders)
+                {
+                    // 基本条件：出兵天体和目标天体不为同一个，且二者之间没有被拦截
+                    if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                        continue;
+                    // 出兵条件：出兵天体和目标天体的己方综合强度须达到目标预测敌方强度（StrengthComparison）
+                    var combined = sender.ActualFriendShips + target.PredictedFriendShips;
+                    var pass =
+                        ai.Defense.StrengthComparison == AiStrengthComparison.StrictGreater
+                            ? combined > target.PredictedEnemyShips
+                            : combined >= target.PredictedEnemyShips;
+                    if (!pass)
+                        continue;
+
+                    // 飞船数：目标预测敌方强度 × EnemyCoefficient − 预测己方强度 × AllyCoefficient
+                    var shipsToSend = (int)(
+                        target.PredictedEnemyShips * ai.Defense.EnemyCoefficient
+                        - target.PredictedFriendShips * ai.Defense.AllyCoefficient
                     );
-                return value;
+
+                    // TODO: 估损（DamageEstimateCoefficient 占位，等 Tower 实装后按 getLengthInTowerRange/4.5 实现）
+                    var towerAttack = 0;
+                    shipsToSend += towerAttack; // 为飞船数加上估损
+
+                    // 条件：没有经过攻击天体或总兵力多于估损
+                    if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
+                        continue;
+                    // 条件：没有经过攻击天体或出兵天体强度高于估损的一半
+                    if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
+                        continue;
+                    // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+                    if (shipsToSend <= 0)
+                        continue;
+
+                    // 创建舰船移动请求
+                    factory.Make(
+                        world,
+                        commandBuffer,
+                        new JumpingRequestDescription()
+                        {
+                            Departure = sender.Entity,
+                            Destination = target.Entity,
+                            Team = team,
+                            ExpectedNum = shipsToSend,
+                        }
+                    );
+                    sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
+                        ai.PlanetCooldownSeconds
+                    ); // TODO 随机化
+
+                    return;
+                }
             }
-        );
 
-        var gatherSender = planetInfos
-            .Values.Where(info =>
-            {
-                // 条件：没在锁星
-                if (info.Team != team && info is { PredictedEnemyShips: 0, ActualFriendShips: > 0 })
-                    return false;
-                // 条件：无敌方或打不过敌方
-                if (
-                    info.PredictedEnemyShips > 0
-                    && info.PredictedFriendShips > info.PredictedEnemyShips
-                )
-                    return false;
-                return true;
-            })
-            .OrderBy(info =>
-            {
-                // 将该天体己方强度记为飞船数的相反数
-                return -info.ActualFriendShips;
-            })
-            .ToList();
-
-        foreach (var target in planetInfos.Values)
-        {
-            foreach (var sender in gatherSender)
-            {
-                // 基本条件：出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target))
-                    continue;
-                // 条件：目标天体价值高于出兵天体价值
-                if (aiValues[target.Entity] >= aiValues[sender.Entity])
-                    continue;
-
-                // 派出全部飞船
-                var shipsToSend = sender.ActualFriendShips;
-
-                // TODO: 估损
-                var towerAttack = 0;
-                shipsToSend += towerAttack; // 为飞船数加上估损
-
-                // 总兵力不足估损时不派兵
-                if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
-                    continue;
-                // 出兵天体强度低于估损的一半时不派兵
-                if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
-                    continue;
-                // 飞船数为零或负值时跳过该组合，继续尝试后续组合
-                if (shipsToSend <= 0)
-                    continue;
-
-                // 创建舰船移动请求
-                factory.Make(
-                    world,
-                    commandBuffer,
-                    new JumpingRequestDescription()
-                    {
-                        Departure = sender.Entity,
-                        Destination = target.Entity,
-                        Team = team,
-                        ExpectedNum = shipsToSend,
-                    }
-                );
-                sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
-                    ai.PlanetCooldownSeconds
-                ); // TODO 随机化
-                return;
-            }
+            #endregion
         }
 
-        #endregion
+        if (ai.AttackEnabled)
+        {
+            #region 进攻
+
+            // 寻找可进攻的天体
+            var attackTargets = planetInfos
+                .Values.Where(info =>
+                {
+                    // 基本条件：不为己方天体
+                    if (info.Team == team)
+                        return false;
+                    // 条件：排除已占据且兵力充足的天体（ExclusionScopeNeutralOnly 时仅限中立）
+                    if (
+                        info.PredictedEnemyShips == 0
+                        && info.PredictedFriendShips
+                            > info.Volume * aiParams.Attack.ExclusionThresholdMultiplier
+                        && (
+                            aiParams.Attack.ExclusionScopeNeutralOnly
+                                ? info.Team == Entity.Null
+                                : true
+                        )
+                    )
+                        return false;
+                    // 条件：敌方不足己方一半不打（ExcludeWeakEnemy）
+                    if (
+                        aiParams.Attack.ExcludeWeakEnemy
+                        && info.PredictedEnemyShips > 0
+                        && info.PredictedFriendShips * 0.5 > info.PredictedEnemyShips
+                    )
+                        return false;
+                    return true;
+                })
+                .OrderBy(info =>
+                {
+                    // 该天体到己方天体几何中心的距离（带随机抖动）
+                    var distance =
+                        Vector2.Distance(info.Position, friendPlanetsCenter)
+                        + Random.NextDouble() * aiParams.Attack.DistanceJitter;
+                    // 预测敌方强度减去预测己方强度
+                    var relativeStrength = info.PredictedEnemyShips - info.PredictedFriendShips;
+                    // 计算进攻价值
+                    return distance + relativeStrength;
+                })
+                .ToList();
+
+            // 寻找可出兵进攻的天体
+            var attackSenders = planetInfos
+                .Values.Where(info =>
+                {
+                    // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
+                    if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
+                        return false;
+                    // 条件：排除锁星中的天体（ExcludeCapturingSenders）
+                    if (
+                        aiParams.Attack.ExcludeCapturingSenders
+                        && info.PredictedEnemyShips == 0
+                        && info.Team != team
+                    )
+                        return false;
+                    // 出兵来源筛选方式：Conflict 战斗中且己方占优则不出兵，Numeric 数值比较
+                    if (aiParams.Attack.SenderGate == AiSenderGateStyle.Conflict)
+                    {
+                        if (info.Battle && info.PredictedFriendShips > info.PredictedEnemyShips)
+                            return false;
+                    }
+                    else
+                    {
+                        // 条件：是己方天体或预测己方强度低于敌方
+                        if (
+                            info.Team != team
+                            && info.PredictedFriendShips > info.PredictedEnemyShips
+                        )
+                            return false;
+                        // 条件：没有敌方或预测己方强度低于敌方
+                        if (
+                            info.PredictedEnemyShips > 0
+                            && info.PredictedFriendShips > info.PredictedEnemyShips
+                        )
+                            return false;
+                    }
+                    return true;
+                })
+                .OrderBy(info =>
+                {
+                    // 将该天体己方强度记为飞船数的相反数
+                    return -info.ActualFriendShips;
+                })
+                .ToList();
+
+            foreach (var target in attackTargets)
+            {
+                foreach (var sender in attackSenders)
+                {
+                    // 基本条件：出兵天体和目标天体不为同一个，且二者之间没有被拦截
+                    if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                        continue;
+                    // 出兵条件：出兵天体和目标天体的己方综合强度须达到目标预测敌方强度（StrengthComparison）
+                    var combined = sender.ActualFriendShips + target.PredictedFriendShips;
+                    var pass =
+                        ai.Attack.StrengthComparison == AiStrengthComparison.StrictGreater
+                            ? combined > target.PredictedEnemyShips
+                            : combined >= target.PredictedEnemyShips;
+                    if (!pass)
+                        continue;
+
+                    // 基本飞船数：目标预测敌方强度 × EnemyCoefficient − 预测己方强度 × AllyCoefficient
+                    var shipsToSend = (int)(
+                        target.PredictedEnemyShips * ai.Attack.EnemyCoefficient
+                        - target.PredictedFriendShips * ai.Attack.AllyCoefficient
+                    );
+                    // 出兵天体受威胁（预测敌方强度大于己方）时倾巢
+                    var threatened = sender.PredictedEnemyShips > sender.PredictedFriendShips;
+                    if (ai.Attack.AllOutPriority == AiAllOutPriority.AllOutFirst)
+                    {
+                        // S2 Simple：先下限后倾巢，倾巢覆盖下限
+                        if (shipsToSend < target.Volume * ai.Attack.LowerBoundMultiplier)
+                            shipsToSend = (int)(target.Volume * ai.Attack.LowerBoundMultiplier);
+                        if (threatened)
+                            shipsToSend = sender.ActualFriendShips;
+                    }
+                    else // LowerBoundFirst：S2 Smart/Dark 先倾巢后下限，下限覆盖倾巢
+                    {
+                        if (threatened)
+                            shipsToSend = sender.ActualFriendShips;
+                        if (shipsToSend < target.Volume * ai.Attack.LowerBoundMultiplier)
+                            shipsToSend = (int)(target.Volume * ai.Attack.LowerBoundMultiplier);
+                    }
+
+                    // TODO: 估损（DamageEstimateCoefficient 占位，等 Tower 实装后按 getLengthInTowerRange/4.5 实现）
+                    var towerAttack = 0;
+                    shipsToSend += towerAttack; // 为飞船数加上估损
+
+                    // 总兵力不足估损时不派兵
+                    if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
+                        continue;
+                    // 出兵天体强度低于估损的一半时不派兵
+                    if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
+                        continue;
+                    // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+                    if (shipsToSend <= 0)
+                        continue;
+
+                    // 创建舰船移动请求
+                    factory.Make(
+                        world,
+                        commandBuffer,
+                        new JumpingRequestDescription()
+                        {
+                            Departure = sender.Entity,
+                            Destination = target.Entity,
+                            Team = team,
+                            ExpectedNum = shipsToSend,
+                        }
+                    );
+                    sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
+                        ai.PlanetCooldownSeconds
+                    );
+                    return;
+                }
+            }
+
+            #endregion
+        }
+
+        if (ai.GatherEnabled)
+        {
+            #region 聚兵
+
+            var aiValues = planetInfos.ToDictionary(
+                p => p.Key,
+                pair =>
+                {
+                    ref readonly var reachabilityRegistry =
+                        ref pair.Key.Get<ReachabilityRegistry>();
+                    var value = reachabilityRegistry
+                        .FromHereTo.Where(p => p.Value)
+                        .Count(p =>
+                            planetInfos[p.Key].Team != team
+                            || planetInfos[p.Key].PredictedEnemyShips > 0
+                        );
+                    return value;
+                }
+            );
+            // TODO: 传送门价值加成（WarpValueBonus 参数占位，等 Warp 实装后按 S2 语义减 1）
+
+            var gatherSender = planetInfos
+                .Values.Where(info =>
+                {
+                    // 条件：仅己方出兵来源（OwnTeamSendersOnly）
+                    if (aiParams.Gather.OwnTeamSendersOnly && info.Team != team)
+                        return false;
+                    // 条件：没在锁星（非仅己方出兵来源时启用）
+                    if (
+                        !aiParams.Gather.OwnTeamSendersOnly
+                        && info is { PredictedEnemyShips: 0, ActualFriendShips: > 0 }
+                    )
+                        return false;
+                    // 出兵来源筛选方式：Conflict 战斗中的天体不出兵，Numeric 数值比较
+                    if (aiParams.Gather.SenderGate == AiSenderGateStyle.Conflict)
+                    {
+                        if (info.Battle)
+                            return false;
+                    }
+                    else
+                    {
+                        // 条件：无敌方或打不过敌方
+                        if (
+                            info.PredictedEnemyShips > 0
+                            && info.PredictedFriendShips > info.PredictedEnemyShips
+                        )
+                            return false;
+                    }
+                    return true;
+                })
+                .OrderBy(info =>
+                {
+                    // 己方强度（SortAddsStrongestEnemy 时叠加最强敌方驻留）的相反数
+                    var friendStrength = info.ActualFriendShips;
+                    var strongestEnemy = aiParams.Gather.SortAddsStrongestEnemy
+                        ? info.ActualEnemyShips
+                        : 0;
+                    return -(friendStrength + strongestEnemy);
+                })
+                .ToList();
+
+            foreach (var target in planetInfos.Values)
+            {
+                foreach (var sender in gatherSender)
+                {
+                    // 基本条件：出兵天体和目标天体不为同一个，且二者之间没有被拦截
+                    if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                        continue;
+                    // 条件：目标天体价值高于出兵天体价值
+                    if (aiValues[target.Entity] >= aiValues[sender.Entity])
+                        continue;
+
+                    // 派出全部飞船
+                    var shipsToSend = sender.ActualFriendShips;
+
+                    // TODO: 估损（DamageEstimateCoefficient 占位，等 Tower 实装后按 getLengthInTowerRange/4.5 实现）
+                    var towerAttack = 0;
+                    shipsToSend += towerAttack; // 为飞船数加上估损
+
+                    // 总兵力不足估损时不派兵
+                    if (towerAttack > 0 && populationRegistry.CurrentPopulation < towerAttack)
+                        continue;
+                    // 出兵天体强度低于估损的一半时不派兵
+                    if (towerAttack > 0 && sender.ActualFriendShips < towerAttack / 2)
+                        continue;
+                    // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+                    if (shipsToSend <= 0)
+                        continue;
+
+                    // 创建舰船移动请求
+                    factory.Make(
+                        world,
+                        commandBuffer,
+                        new JumpingRequestDescription()
+                        {
+                            Departure = sender.Entity,
+                            Destination = target.Entity,
+                            Team = team,
+                            ExpectedNum = shipsToSend,
+                        }
+                    );
+                    sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
+                        ai.PlanetCooldownSeconds
+                    ); // TODO 随机化
+                    return;
+                }
+            }
+
+            #endregion
+        }
     }
 
     public void Update(CommandBuffer commandBuffer) => ExecuteQuery(world, commandBuffer);
