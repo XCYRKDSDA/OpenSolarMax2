@@ -1,15 +1,5 @@
 namespace OpenSolarMax.Mods.Core.Components;
 
-/// 出兵来源的准入方式
-public enum AiSenderGateStyle
-{
-    /// 出兵来源未在战斗才允许派兵；战斗中守得住的天体抽兵会失守，兵力不动
-    Conflict,
-
-    /// 出兵来源无对抗威胁（含在途敌船）才允许派兵；被争夺且守得住的天体兵力不动
-    Numeric,
-}
-
 /// 出兵条件的比较方式
 public enum AiStrengthComparison
 {
@@ -39,8 +29,8 @@ public struct AiDefenseParameters
     /// 目标按距离排序时叠加的随机抖动（世界距离），值越大目标选择越分散
     public float DistanceJitter;
 
-    /// 出兵来源的准入方式
-    public AiSenderGateStyle SenderGate;
+    /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
+    public bool ConsiderIncomingEnemies;
 
     /// 出兵来源与目标的己方综合兵力须达到目标预测敌方兵力的多少
     public AiStrengthComparison StrengthComparison;
@@ -73,8 +63,8 @@ public struct AiAttackParameters
     /// 出兵来源若正在锁星（殖民中）则排除
     public bool ExcludeCapturingSenders;
 
-    /// 出兵来源的准入方式
-    public AiSenderGateStyle SenderGate;
+    /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
+    public bool ConsiderIncomingEnemies;
 
     /// 出兵来源与目标的己方综合兵力须达到目标预测敌方兵力的多少
     public AiStrengthComparison StrengthComparison;
@@ -104,8 +94,8 @@ public struct AiGatherParameters
     /// 出兵来源按己方兵力排序时是否叠加最强敌方的兵力
     public bool SortAddsStrongestEnemy;
 
-    /// 出兵来源的准入方式
-    public AiSenderGateStyle SenderGate;
+    /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
+    public bool ConsiderIncomingEnemies;
 
     /// 传送门对目标价值的加成（占位，等 Warp 实装后启用）
     public float WarpValueBonus;
@@ -173,7 +163,7 @@ public struct Ai
         {
             RequiresEnemy = false,
             DistanceJitter = 0,
-            SenderGate = AiSenderGateStyle.Conflict,
+            ConsiderIncomingEnemies = false,
             StrengthComparison = AiStrengthComparison.StrictGreater,
             EnemyCoefficient = 2,
             AllyCoefficient = 1,
@@ -186,7 +176,7 @@ public struct Ai
             ExcludeWeakEnemy = false,
             DistanceJitter = 32,
             ExcludeCapturingSenders = false,
-            SenderGate = AiSenderGateStyle.Conflict,
+            ConsiderIncomingEnemies = false,
             StrengthComparison = AiStrengthComparison.StrictGreater,
             EnemyCoefficient = 2,
             AllyCoefficient = 0.5f,
@@ -198,7 +188,7 @@ public struct Ai
         {
             OwnTeamSendersOnly = false,
             SortAddsStrongestEnemy = false,
-            SenderGate = AiSenderGateStyle.Conflict,
+            ConsiderIncomingEnemies = false,
             WarpValueBonus = 0,
             DamageEstimateCoefficient = 0,
         },
@@ -221,7 +211,7 @@ public struct Ai
         {
             RequiresEnemy = true,
             DistanceJitter = 32,
-            SenderGate = AiSenderGateStyle.Numeric,
+            ConsiderIncomingEnemies = true,
             StrengthComparison = AiStrengthComparison.GreaterOrEqual,
             EnemyCoefficient = 2,
             AllyCoefficient = 1,
@@ -234,7 +224,7 @@ public struct Ai
             ExcludeWeakEnemy = false,
             DistanceJitter = 32,
             ExcludeCapturingSenders = true,
-            SenderGate = AiSenderGateStyle.Numeric,
+            ConsiderIncomingEnemies = true,
             StrengthComparison = AiStrengthComparison.StrictGreater,
             EnemyCoefficient = 2,
             AllyCoefficient = 0.5f,
@@ -246,7 +236,7 @@ public struct Ai
         {
             OwnTeamSendersOnly = false,
             SortAddsStrongestEnemy = true,
-            SenderGate = AiSenderGateStyle.Numeric,
+            ConsiderIncomingEnemies = true,
             WarpValueBonus = 0,
             DamageEstimateCoefficient = 1f / 4.5f,
         },
@@ -269,7 +259,7 @@ public struct Ai
         {
             RequiresEnemy = false,
             DistanceJitter = 0,
-            SenderGate = AiSenderGateStyle.Conflict,
+            ConsiderIncomingEnemies = false,
             StrengthComparison = AiStrengthComparison.StrictGreater,
             EnemyCoefficient = 0,
             AllyCoefficient = 0,
@@ -282,7 +272,7 @@ public struct Ai
             ExcludeWeakEnemy = true,
             DistanceJitter = 32,
             ExcludeCapturingSenders = true,
-            SenderGate = AiSenderGateStyle.Numeric,
+            ConsiderIncomingEnemies = true,
             StrengthComparison = AiStrengthComparison.GreaterOrEqual,
             EnemyCoefficient = 2,
             AllyCoefficient = 0.5f,
@@ -294,7 +284,7 @@ public struct Ai
         {
             OwnTeamSendersOnly = true,
             SortAddsStrongestEnemy = false,
-            SenderGate = AiSenderGateStyle.Conflict,
+            ConsiderIncomingEnemies = false,
             WarpValueBonus = 0,
             DamageEstimateCoefficient = 1f / 4.5f,
         },

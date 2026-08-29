@@ -198,8 +198,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     // 基本条件：该天体己方ai倒计时为0且该天体己方强度不为0
                     if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
                         return false;
-                    // 出兵来源筛选方式：Conflict 战斗中且己方占优则不出兵，Numeric 数值比较
-                    if (aiParams.Defense.SenderGate == AiSenderGateStyle.Conflict)
+                    // 出兵来源准入：false 时未在战斗才允许派兵，战斗中且己方占优则排除；true 时无对抗威胁（含在途敌船）才允许派兵
+                    if (!aiParams.Defense.ConsiderIncomingEnemies)
                     {
                         if (info.Battle && info.PredictedFriendShips > info.PredictedEnemyShips)
                             return false;
@@ -346,8 +346,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                         && info.Team != team
                     )
                         return false;
-                    // 出兵来源筛选方式：Conflict 战斗中且己方占优则不出兵，Numeric 数值比较
-                    if (aiParams.Attack.SenderGate == AiSenderGateStyle.Conflict)
+                    // 出兵来源准入：false 时未在战斗才允许派兵，战斗中且己方占优则排除；true 时无对抗威胁（含在途敌船）才允许派兵
+                    if (!aiParams.Attack.ConsiderIncomingEnemies)
                     {
                         if (info.Battle && info.PredictedFriendShips > info.PredictedEnemyShips)
                             return false;
@@ -484,8 +484,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                         && info is { PredictedEnemyShips: 0, ActualFriendShips: > 0 }
                     )
                         return false;
-                    // 出兵来源筛选方式：Conflict 战斗中的天体不出兵，Numeric 数值比较
-                    if (aiParams.Gather.SenderGate == AiSenderGateStyle.Conflict)
+                    // 出兵来源准入：false 时未在战斗才允许派兵，战斗中则排除；true 时无对抗威胁（含在途敌船）才允许派兵
+                    if (!aiParams.Gather.ConsiderIncomingEnemies)
                     {
                         if (info.Battle)
                             return false;
