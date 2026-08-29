@@ -87,9 +87,6 @@ public struct AiGatherParameters
     /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
     public bool ConsiderIncomingEnemies;
 
-    /// 传送门对目标价值的加成（占位，等 Warp 实装后启用）
-    public float WarpValueBonus;
-
     /// 估损系数（占位，等 Tower 实装后启用）
     public float DamageEstimateCoefficient;
 }
@@ -179,7 +176,6 @@ public struct Ai
             OwnTeamSendersOnly = false,
             SortAddsStrongestEnemy = false,
             ConsiderIncomingEnemies = false,
-            WarpValueBonus = 0,
             DamageEstimateCoefficient = 0,
         },
     };
@@ -227,7 +223,6 @@ public struct Ai
             OwnTeamSendersOnly = false,
             SortAddsStrongestEnemy = true,
             ConsiderIncomingEnemies = true,
-            WarpValueBonus = 0,
             DamageEstimateCoefficient = 1f / 4.5f,
         },
     };
@@ -275,7 +270,6 @@ public struct Ai
             OwnTeamSendersOnly = true,
             SortAddsStrongestEnemy = false,
             ConsiderIncomingEnemies = false,
-            WarpValueBonus = 0,
             DamageEstimateCoefficient = 1f / 4.5f,
         },
     };

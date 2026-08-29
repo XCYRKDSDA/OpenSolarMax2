@@ -22,7 +22,8 @@ public abstract class WarpDefinition : IDefinition
         CelestialBodyDefinition.Signature
         + new Signature(
             // 传送终端标记
-            typeof(WarpTerminal)
+            typeof(WarpTerminal),
+            typeof(AiValueBonus)
         );
 }
 
@@ -92,5 +93,8 @@ public class WarpApplier(
 
         // 初始化传送任务
         commandBuffer.Set(in entity, new WarpTerminal());
+
+        // 聚兵目标价值加成
+        commandBuffer.Set(in entity, new AiValueBonus { Value = 1 });
     }
 }

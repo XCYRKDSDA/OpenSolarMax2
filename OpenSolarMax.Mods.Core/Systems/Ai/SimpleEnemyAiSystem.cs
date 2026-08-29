@@ -22,6 +22,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(Ai))]
 [ReadCurr(typeof(TeamPopulationRegistry))]
 [ReadCurr(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(AiValueBonus))]
 [Consume(typeof(AiTimer))]
 [Consume(typeof(PlanetAiTimers))]
 [ChangeStructure]
@@ -547,25 +548,27 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
     #region 聚兵
 
     /// <summary>
-    /// 计算各天体的聚兵价值：可达目标中非己方或有敌情的数量的负数，值越小越优先作为目标。
+    /// 计算各天体的聚兵价值：可达目标中非己方或有敌情的数量的负数（传送门目标再减价值加成），值越小越优先作为目标。
     /// </summary>
     private static Dictionary<Entity, int> CalculateGatherValues(
         Dictionary<Entity, PlanetInfo> planetInfos,
         Entity team
     )
     {
-        // TODO: 传送门价值加成（WarpValueBonus 参数占位，等 Warp 实装后按 S2 语义减 1）
         return planetInfos.ToDictionary(
             pair => pair.Key,
             pair =>
             {
                 ref readonly var reachabilityRegistry = ref pair.Key.Get<ReachabilityRegistry>();
-                return -reachabilityRegistry
+                var value = -reachabilityRegistry
                     .FromHereTo.Where(entry => entry.Value)
                     .Count(entry =>
                         planetInfos[entry.Key].Team != team
                         || planetInfos[entry.Key].PredictedEnemyShips > 0
                     );
+                if (pair.Key.Has<AiValueBonus>())
+                    value -= pair.Key.Get<AiValueBonus>().Value;
+                return value;
             }
         );
     }
