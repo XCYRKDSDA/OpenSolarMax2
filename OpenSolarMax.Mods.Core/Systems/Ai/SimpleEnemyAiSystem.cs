@@ -15,7 +15,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(InTeam.AsTeam))]
 [ReadCurr(typeof(Battlefield))]
-[ReadCurr(typeof(ProductionCondition))]
 [ReadCurr(typeof(Colonizable))]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(JumpingShipsRegistry))]
@@ -49,7 +48,6 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         public int PredictedEnemyShips;
 
         public bool Battle;
-        public bool CanProduce;
     }
 
     #region 共享工具
@@ -186,7 +184,6 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
     [All<
         InTeam.AsAffiliate,
         Battlefield,
-        ProductionCondition,
         Colonizable,
         AnchoredShipsRegistry,
         JumpingShipsRegistry,
@@ -197,7 +194,6 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         Entity planet,
         in InTeam.AsAffiliate asAffiliate,
         in Battlefield battlefield,
-        in ProductionCondition productionCondition,
         in Colonizable colonizable,
         in AnchoredShipsRegistry anchoredShipsRegistry,
         in JumpingShipsRegistry jumpingShipsRegistry,
@@ -240,7 +236,6 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     .DefaultIfEmpty(0)
                     .Max(),
                 Battle = battlefield.FrontlineDamage.Count > 0,
-                CanProduce = productionCondition.IsMet,
             }
         );
     }
