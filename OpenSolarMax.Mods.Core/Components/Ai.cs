@@ -1,15 +1,5 @@
 namespace OpenSolarMax.Mods.Core.Components;
 
-/// 出兵条件的比较方式
-public enum AiStrengthComparison
-{
-    /// 出兵来源与目标的己方综合兵力须严格大于目标预测敌方兵力
-    StrictGreater,
-
-    /// 己方综合兵力大于等于目标预测敌方兵力即可
-    GreaterOrEqual,
-}
-
 /// 出兵来源受威胁时派兵数量的决定顺序
 public enum AiAllOutPriority
 {
@@ -32,8 +22,8 @@ public struct AiDefenseParameters
     /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
     public bool ConsiderIncomingEnemies;
 
-    /// 出兵来源与目标的己方综合兵力须达到目标预测敌方兵力的多少
-    public AiStrengthComparison StrengthComparison;
+    /// true：出兵来源与目标的己方综合兵力大于等于目标预测敌方兵力即可；false：须严格大于
+    public bool AllowEqual;
 
     /// 敌方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
     public float EnemyCoefficient;
@@ -66,8 +56,8 @@ public struct AiAttackParameters
     /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
     public bool ConsiderIncomingEnemies;
 
-    /// 出兵来源与目标的己方综合兵力须达到目标预测敌方兵力的多少
-    public AiStrengthComparison StrengthComparison;
+    /// true：出兵来源与目标的己方综合兵力大于等于目标预测敌方兵力即可；false：须严格大于
+    public bool AllowEqual;
 
     /// 敌方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
     public float EnemyCoefficient;
@@ -164,7 +154,7 @@ public struct Ai
             RequiresEnemy = false,
             DistanceJitter = 0,
             ConsiderIncomingEnemies = false,
-            StrengthComparison = AiStrengthComparison.StrictGreater,
+            AllowEqual = false,
             EnemyCoefficient = 2,
             AllyCoefficient = 1,
             DamageEstimateCoefficient = 0,
@@ -177,7 +167,7 @@ public struct Ai
             DistanceJitter = 32,
             ExcludeCapturingSenders = false,
             ConsiderIncomingEnemies = false,
-            StrengthComparison = AiStrengthComparison.StrictGreater,
+            AllowEqual = false,
             EnemyCoefficient = 2,
             AllyCoefficient = 0.5f,
             LowerBoundMultiplier = 2,
@@ -212,7 +202,7 @@ public struct Ai
             RequiresEnemy = true,
             DistanceJitter = 32,
             ConsiderIncomingEnemies = true,
-            StrengthComparison = AiStrengthComparison.GreaterOrEqual,
+            AllowEqual = true,
             EnemyCoefficient = 2,
             AllyCoefficient = 1,
             DamageEstimateCoefficient = 1f / 4.5f,
@@ -225,7 +215,7 @@ public struct Ai
             DistanceJitter = 32,
             ExcludeCapturingSenders = true,
             ConsiderIncomingEnemies = true,
-            StrengthComparison = AiStrengthComparison.StrictGreater,
+            AllowEqual = false,
             EnemyCoefficient = 2,
             AllyCoefficient = 0.5f,
             LowerBoundMultiplier = 2,
@@ -260,7 +250,7 @@ public struct Ai
             RequiresEnemy = false,
             DistanceJitter = 0,
             ConsiderIncomingEnemies = false,
-            StrengthComparison = AiStrengthComparison.StrictGreater,
+            AllowEqual = false,
             EnemyCoefficient = 0,
             AllyCoefficient = 0,
             DamageEstimateCoefficient = 0,
@@ -273,7 +263,7 @@ public struct Ai
             DistanceJitter = 32,
             ExcludeCapturingSenders = true,
             ConsiderIncomingEnemies = true,
-            StrengthComparison = AiStrengthComparison.GreaterOrEqual,
+            AllowEqual = true,
             EnemyCoefficient = 2,
             AllyCoefficient = 0.5f,
             LowerBoundMultiplier = 2,
