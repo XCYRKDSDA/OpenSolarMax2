@@ -552,7 +552,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
     #region 聚兵
 
     /// <summary>
-    /// 计算各天体的聚兵价值：可达目标中非己方或有敌情的数量。
+    /// 计算各天体的聚兵价值：可达目标中非己方或有敌情的数量的负数，值越小越优先作为目标。
     /// </summary>
     private static Dictionary<Entity, int> CalculateGatherValues(
         Dictionary<Entity, PlanetInfo> planetInfos,
@@ -565,7 +565,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             pair =>
             {
                 ref readonly var reachabilityRegistry = ref pair.Key.Get<ReachabilityRegistry>();
-                return reachabilityRegistry
+                return -reachabilityRegistry
                     .FromHereTo.Where(entry => entry.Value)
                     .Count(entry =>
                         planetInfos[entry.Key].Team != team
