@@ -23,6 +23,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(TeamPopulationRegistry))]
 [ReadCurr(typeof(ReachabilityRegistry))]
 [ReadCurr(typeof(AiValueBonus))]
+[ReadCurr(typeof(ProductionCondition))]
+[ReadCurr(typeof(JumpingStatus))]
+[ReadCurr(typeof(Jumpable))]
 [Consume(typeof(AiTimer))]
 [Consume(typeof(PlanetAiTimers))]
 [ChangeStructure]
@@ -49,6 +52,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         public int PredictedEnemyShips;
 
         public bool Battle;
+
+        public bool CanProduce;
     }
 
     #region 共享工具
@@ -207,15 +212,25 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         // 在途舰队注册表（lambda 内无法捕获 in 参数，转存为局部变量）
         var incomingShips = jumpingShipsRegistry.IncomingShips;
 
+        var bodyTeam = asAffiliate.Relationship is null
+            ? Entity.Null
+            : asAffiliate.Relationship.Value.Copy.Team;
+        var canProduce = planet.Has<ProductionCondition>();
+
+        // 己方在途含 Charging（充能中）舰船，S2 仅计飞行中（state==3）；
+        // 本游戏跳跃系统比 S2 多一个充能阶段，此处口径略宽，属有意保留的已知偏差，影响极小
+        var friendStrength =
+            anchoredShipsRegistry.Ships[team].Count() + incomingShips[team].Count();
+        if (canProduce && bodyTeam == team)
+            friendStrength = (int)(friendStrength * 1.25f);
+
         planetInfos.Add(
             planet,
             new PlanetInfo()
             {
                 Entity = planet,
                 AiTimeLeft = planetAiTimers.TimeLeft[team],
-                Team = asAffiliate.Relationship is null
-                    ? Entity.Null
-                    : asAffiliate.Relationship.Value.Copy.Team,
+                Team = bodyTeam,
                 Position =
                 {
                     X = absoluteTransform.Translation.X,
@@ -223,9 +238,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 },
                 Volume = colonizable.Volume,
                 ActualFriendShips = anchoredShipsRegistry.Ships[team].Count(),
-                PredictedFriendShips =
-                    anchoredShipsRegistry.Ships[team].Count()
-                    + jumpingShipsRegistry.IncomingShips[team].Count(),
+                PredictedFriendShips = friendStrength,
                 ActualEnemyShips = anchoredShipsRegistry
                     .Ships.Where(g => g.Key != team)
                     .Select(g => g.Count())
@@ -233,10 +246,24 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                     .Max(),
                 PredictedEnemyShips = anchoredShipsRegistry
                     .Ships.Where(g => g.Key != team)
-                    .Select(g => g.Count() + incomingShips[g.Key].Count())
+                    .Select(g =>
+                    {
+                        var enemyIncoming = incomingShips[g.Key]
+                            .Count(ship =>
+                                ship.Get<JumpingStatus>().State == JumpingState.Travelling
+                                && ship.Get<JumpingStatus>().Travelling.ElapsedTime
+                                    * g.Key.Get<Jumpable>().Speed
+                                    > 50f
+                            );
+                        var s = g.Count() + enemyIncoming;
+                        if (canProduce && bodyTeam == g.Key)
+                            s = (int)(s * 1.25f);
+                        return s;
+                    })
                     .DefaultIfEmpty(0)
                     .Max(),
                 Battle = battlefield.FrontlineDamage.Count > 0,
+                CanProduce = canProduce,
             }
         );
     }
