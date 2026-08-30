@@ -649,8 +649,9 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         var gatherValues = CalculateGatherValues(planetInfos, team);
         // 寻找可出兵聚兵的天体
         var gatherSenders = ExtractGatherSenders(planetInfos, team, ai.Gather);
-
-        foreach (var target in planetInfos.Values)
+        // 聚兵目标按价值升序排序
+        var gatherTargets = planetInfos.Values.OrderBy(t => gatherValues[t.Entity]).ToList();
+        foreach (var target in gatherTargets)
         {
             foreach (var sender in gatherSenders)
             {
