@@ -29,7 +29,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Consume(typeof(AiTimer))]
 [Consume(typeof(PlanetAiTimers))]
 [ChangeStructure]
-public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
+public partial class EnemyAiSystem(World world, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
     private static readonly Random Random = new();
