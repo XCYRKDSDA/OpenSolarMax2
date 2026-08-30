@@ -289,8 +289,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 条件1：为己方天体或有己方飞船（包括飞行中的）
                 if (info.Team != team && info.PredictedFriendShips == 0)
                     return false;
-                // 条件2：有敌方（RequiresEnemy 时启用）
-                if (defense.RequiresEnemy && info.PredictedEnemyShips == 0)
+                // 条件2：有敌方
+                if (info.PredictedEnemyShips == 0)
                     return false;
                 // 条件3：排除己方强度高于敌方 × 敌方兵力系数的安全天体（己方足够强，无需防守）
                 if (info.PredictedFriendShips > info.PredictedEnemyShips * defense.EnemyCoefficient)
@@ -460,12 +460,8 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 基本条件：该天体己方 AI 冷却为 0 且该天体己方强度不为 0
                 if (info.AiTimeLeft > TimeSpan.Zero || info.ActualFriendShips <= 0)
                     return false;
-                // 条件：排除锁星中的天体（ExcludeCapturingSenders）
-                if (
-                    attack.ExcludeCapturingSenders
-                    && info.PredictedEnemyShips == 0
-                    && info.Team != team
-                )
+                // 条件：排除锁星中的天体
+                if (info.PredictedEnemyShips == 0 && info.Team != team)
                     return false;
                 // 出兵来源准入：未在战斗才允许派兵，战斗中且己方占优则排除（抽兵会失守）
                 return IsSenderAdmissible(

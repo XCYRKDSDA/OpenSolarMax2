@@ -13,9 +13,6 @@ public enum AiAllOutPriority
 /// 防御参数
 public struct AiDefenseParameters
 {
-    /// 目标须有敌方兵力才考虑防守
-    public bool RequiresEnemy;
-
     /// 目标按距离排序时叠加的随机抖动（世界距离），值越大目标选择越分散
     public float DistanceJitter;
 
@@ -49,9 +46,6 @@ public struct AiAttackParameters
 
     /// 目标按距离排序时叠加的随机抖动（世界距离），值越大目标选择越分散
     public float DistanceJitter;
-
-    /// 出兵来源若正在锁星（殖民中）则排除
-    public bool ExcludeCapturingSenders;
 
     /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
     public bool ConsiderIncomingEnemies;
@@ -148,7 +142,6 @@ public struct Ai
         GatherEnabled = false,
         Defense = new AiDefenseParameters
         {
-            RequiresEnemy = false,
             DistanceJitter = 0,
             ConsiderIncomingEnemies = false,
             AllowEqual = false,
@@ -162,7 +155,6 @@ public struct Ai
             ExclusionScopeNeutralOnly = true,
             ExcludeWeakEnemy = false,
             DistanceJitter = 32,
-            ExcludeCapturingSenders = false,
             ConsiderIncomingEnemies = false,
             AllowEqual = false,
             EnemyCoefficient = 2,
@@ -195,7 +187,6 @@ public struct Ai
         GatherEnabled = true,
         Defense = new AiDefenseParameters
         {
-            RequiresEnemy = true,
             DistanceJitter = 32,
             ConsiderIncomingEnemies = true,
             AllowEqual = true,
@@ -209,7 +200,6 @@ public struct Ai
             ExclusionScopeNeutralOnly = false,
             ExcludeWeakEnemy = false,
             DistanceJitter = 32,
-            ExcludeCapturingSenders = true,
             ConsiderIncomingEnemies = true,
             AllowEqual = false,
             EnemyCoefficient = 2,
@@ -242,7 +232,6 @@ public struct Ai
         GatherEnabled = true,
         Defense = new AiDefenseParameters
         {
-            RequiresEnemy = false,
             DistanceJitter = 0,
             ConsiderIncomingEnemies = false,
             AllowEqual = false,
@@ -256,7 +245,6 @@ public struct Ai
             ExclusionScopeNeutralOnly = false,
             ExcludeWeakEnemy = true,
             DistanceJitter = 32,
-            ExcludeCapturingSenders = true,
             ConsiderIncomingEnemies = true,
             AllowEqual = true,
             EnemyCoefficient = 2,
