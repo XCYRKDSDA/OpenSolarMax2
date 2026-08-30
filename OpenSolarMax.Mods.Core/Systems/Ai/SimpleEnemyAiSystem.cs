@@ -149,7 +149,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         if (routeDamage > 0 && populationRegistry.CurrentPopulation < routeDamage)
             return false;
         // 出兵天体强度低于估损的一半时不派兵
-        if (routeDamage > 0 && sender.ActualFriendShips < routeDamage / 2)
+        if (routeDamage > 0 && sender.ActualFriendShips < routeDamage * 0.5f)
             return false;
         return true;
     }
