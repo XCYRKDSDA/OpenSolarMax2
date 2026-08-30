@@ -292,7 +292,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 基本条件：该天体己方 AI 冷却为 0 且该天体己方强度不为 0
-                if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
+                if (info.AiTimeLeft > TimeSpan.Zero || info.ActualFriendShips <= 0)
                     return false;
                 // 出兵来源准入：未在战斗才允许派兵，战斗中且己方占优则排除（抽兵会失守）
                 return IsSenderAdmissible(
@@ -430,7 +430,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
             .Values.Where(info =>
             {
                 // 基本条件：该天体己方 AI 冷却为 0 且该天体己方强度不为 0
-                if (info.AiTimeLeft > TimeSpan.Zero || info.PredictedFriendShips <= 0)
+                if (info.AiTimeLeft > TimeSpan.Zero || info.ActualFriendShips <= 0)
                     return false;
                 // 条件：排除锁星中的天体（ExcludeCapturingSenders）
                 if (
