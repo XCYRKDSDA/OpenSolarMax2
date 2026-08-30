@@ -591,6 +591,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 // 条件：没在锁星（非仅己方出兵来源时启用）
                 if (
                     !gather.OwnTeamSendersOnly
+                    && info.Team != team
                     && info is { PredictedEnemyShips: 0, ActualFriendShips: > 0 }
                 )
                     return false;
