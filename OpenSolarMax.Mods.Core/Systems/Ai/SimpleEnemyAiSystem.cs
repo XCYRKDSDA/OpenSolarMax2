@@ -62,7 +62,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
         !departure.Entity.Get<ReachabilityRegistry>().FromHereTo[destination.Entity];
 
     /// <summary>
-    /// 出兵来源准入：未在战斗才允许派兵。防御/进攻段战斗中且己方占优则排除（抽兵会失守），聚兵段战斗中即排除。
+    /// 出兵来源准入：未在战斗才允许派兵。防御/进攻段战斗中且己方占优则排除（抽兵会失守），聚兵段战斗中即排除。原版 S2 在难度 1/2 下有「teamStrength &lt; 10 的低兵力出兵来源门槛」（currentDifficulty &lt; 3 时排除），难度 3 时该门槛失效；本游戏对应难度 3，故未实现。
     /// </summary>
     private static bool IsSenderAdmissible(
         PlanetInfo info,
@@ -177,6 +177,7 @@ public partial class SimpleEnemyAiSystem(World world, IConceptFactory factory)
                 ExpectedNum = shipsToSend,
             }
         );
+        // 原版 S2 有「充能中舰船冻结出兵冷却」的机制（Ship state==1 期间逐帧将冷却顶在难度值），本游戏未实现，冷却固定为 PlanetCooldownSeconds 秒。
         sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
             planetCooldownSeconds
         ); // TODO 随机化

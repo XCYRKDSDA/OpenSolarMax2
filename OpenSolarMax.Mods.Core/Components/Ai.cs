@@ -94,16 +94,16 @@ public struct AiGatherParameters
 /// AI 参数
 public struct Ai
 {
-    /// 两次决策之间的基准间隔（秒），实际间隔 = 基准 × [抖动下限, 抖动上限)
+    /// 两次决策之间的基准间隔（秒），实际间隔 = 基准 × [抖动下限, 抖动上限)。原版 S2 节奏由难度驱动：难度 1/2/3 的基准分别为 4/2.5/1 秒（团队 6 另有 2/0.5/0.25 秒特判），重置公式为「基准 + 随机×基准」（即 ×[1,2)）。本游戏无难度系统，统一对应最高难度（难度 3）的非团队 6 档。
     public float ActionIntervalSeconds;
 
-    /// 部署后首次决策前的等待时间（秒）
+    /// 部署后首次决策前的等待时间（秒）。原版由难度驱动：难度 1/2/3 分别为 2.5/2/1.5 秒（团队 6 另有 1/0.5/0.25 秒）。本游戏对应难度 3 非团队 6 档的 1.5 秒。
     public float InitialDelaySeconds;
 
-    /// 抖动下限系数：实际间隔 = 基准 × [抖动下限, 抖动上限)
+    /// 抖动下限系数：实际间隔 = 基准 × [抖动下限, 抖动上限)。原版重置公式为「基准 + 随机×基准」（= ×[1,2)），故下限取 1。
     public float JitterMinFactor;
 
-    /// 抖动上限系数：实际间隔 = 基准 × [抖动下限, 抖动上限)
+    /// 抖动上限系数：实际间隔 = 基准 × [抖动下限, 抖动上限)。原版重置公式为「基准 + 随机×基准」（= ×[1,2)），故上限取 2。
     public float JitterMaxFactor;
 
     /// 是否启用挂机：人口上限为 0 且当前兵力低于阈值时停止决策
@@ -112,7 +112,7 @@ public struct Ai
     /// 挂机判定所用的兵力阈值
     public int IdlePopulationThreshold;
 
-    /// 出兵来源派兵后进入冷却的时长（秒），冷却期内不再从此派兵
+    /// 出兵来源派兵后进入冷却的时长（秒），冷却期内不再从此派兵。原版 S2 冷却由难度驱动（难度 1/2/3 → 4/2/1 秒，取 max(当前, 难度值)），本游戏对应难度 3 的 1 秒。
     public float PlanetCooldownSeconds;
 
     /// 是否执行防御决策
@@ -136,10 +136,10 @@ public struct Ai
     /// 预设：仅防御与进攻，节奏较慢
     public static readonly Ai Simple = new()
     {
-        ActionIntervalSeconds = 3,
-        InitialDelaySeconds = 3,
-        JitterMinFactor = 0.25f,
-        JitterMaxFactor = 0.5f,
+        ActionIntervalSeconds = 1,
+        InitialDelaySeconds = 1.5f,
+        JitterMinFactor = 1,
+        JitterMaxFactor = 2,
         IdleCheckEnabled = true,
         IdlePopulationThreshold = 40,
         PlanetCooldownSeconds = 1,
@@ -183,10 +183,10 @@ public struct Ai
     /// 预设：防御/进攻/聚兵全部启用，节奏适中
     public static readonly Ai Smart = new()
     {
-        ActionIntervalSeconds = 1.5f,
+        ActionIntervalSeconds = 1,
         InitialDelaySeconds = 1.5f,
-        JitterMinFactor = 0.25f,
-        JitterMaxFactor = 0.5f,
+        JitterMinFactor = 1,
+        JitterMaxFactor = 2,
         IdleCheckEnabled = true,
         IdlePopulationThreshold = 40,
         PlanetCooldownSeconds = 1,
@@ -230,10 +230,10 @@ public struct Ai
     /// 预设：仅进攻与聚兵，节奏最快
     public static readonly Ai Dark = new()
     {
-        ActionIntervalSeconds = 0.25f,
-        InitialDelaySeconds = 0.25f,
-        JitterMinFactor = 0.25f,
-        JitterMaxFactor = 0.5f,
+        ActionIntervalSeconds = 1,
+        InitialDelaySeconds = 1.5f,
+        JitterMinFactor = 1,
+        JitterMaxFactor = 2,
         IdleCheckEnabled = true,
         IdlePopulationThreshold = 40,
         PlanetCooldownSeconds = 1,
