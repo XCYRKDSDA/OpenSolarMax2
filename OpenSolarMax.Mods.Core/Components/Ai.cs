@@ -28,7 +28,7 @@ public struct AiDefenseParameters
     /// 己方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
     public float AllyCoefficient;
 
-    /// 估损系数（占位，等 Tower 实装后启用）
+    /// 估损系数（AI 行为倍数）：估损船数 = Σ(危险航程长度 × 塔射速) ÷ 舰船速度 × 此系数。0 = 不做估损；S2 各档统一为 20/9（由原版 4.5 剥离物理基础 5/50 得出）
     public float DamageEstimateCoefficient;
 }
 
@@ -65,7 +65,7 @@ public struct AiAttackParameters
     /// 出兵来源受威胁时派兵数量的决定顺序
     public AiAllOutPriority AllOutPriority;
 
-    /// 估损系数（占位，等 Tower 实装后启用）
+    /// 估损系数（AI 行为倍数）：估损船数 = Σ(危险航程长度 × 塔射速) ÷ 舰船速度 × 此系数。0 = 不做估损；S2 各档统一为 20/9（由原版 4.5 剥离物理基础 5/50 得出）
     public float DamageEstimateCoefficient;
 }
 
@@ -81,7 +81,7 @@ public struct AiGatherParameters
     /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
     public bool ConsiderIncomingEnemies;
 
-    /// 估损系数（占位，等 Tower 实装后启用）
+    /// 估损系数（AI 行为倍数）：估损船数 = Σ(危险航程长度 × 塔射速) ÷ 舰船速度 × 此系数。0 = 不做估损；S2 各档统一为 20/9（由原版 4.5 剥离物理基础 5/50 得出）
     public float DamageEstimateCoefficient;
 }
 
@@ -192,7 +192,7 @@ public struct Ai
             AllowEqual = true,
             EnemyCoefficient = 2,
             AllyCoefficient = 1,
-            DamageEstimateCoefficient = 1f / 4.5f,
+            DamageEstimateCoefficient = 20f / 9f,
         },
         Attack = new AiAttackParameters
         {
@@ -206,14 +206,14 @@ public struct Ai
             AllyCoefficient = 0.5f,
             LowerBoundMultiplier = 2,
             AllOutPriority = AiAllOutPriority.LowerBoundFirst,
-            DamageEstimateCoefficient = 1f / 4.5f,
+            DamageEstimateCoefficient = 20f / 9f,
         },
         Gather = new AiGatherParameters
         {
             OwnTeamSendersOnly = false,
             SortAddsStrongestEnemy = true,
             ConsiderIncomingEnemies = true,
-            DamageEstimateCoefficient = 1f / 4.5f,
+            DamageEstimateCoefficient = 20f / 9f,
         },
     };
 
@@ -251,14 +251,14 @@ public struct Ai
             AllyCoefficient = 0.5f,
             LowerBoundMultiplier = 2,
             AllOutPriority = AiAllOutPriority.LowerBoundFirst,
-            DamageEstimateCoefficient = 1f / 4.5f,
+            DamageEstimateCoefficient = 20f / 9f,
         },
         Gather = new AiGatherParameters
         {
             OwnTeamSendersOnly = true,
             SortAddsStrongestEnemy = false,
             ConsiderIncomingEnemies = false,
-            DamageEstimateCoefficient = 1f / 4.5f,
+            DamageEstimateCoefficient = 20f / 9f,
         },
     };
 }

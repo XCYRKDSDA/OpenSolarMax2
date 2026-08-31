@@ -25,6 +25,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(AiValueBonus))]
 [ReadCurr(typeof(ProductionCondition))]
 [ReadCurr(typeof(JumpingStatus))]
+[ReadCurr(typeof(AttackCooldown))]
+[ReadCurr(typeof(AttackRange))]
 [ReadCurr(typeof(Jumpable))]
 [Consume(typeof(AiTimer))]
 [Consume(typeof(PlanetAiTimers))]
@@ -44,6 +46,12 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
 
         public Vector2 Position;
         public float Volume;
+
+        /// null = 非攻击源；非 null = 攻击源及其攻击范围
+        public float? AttackRange;
+
+        /// null = 非攻击源；非 null = 攻击源及其攻击冷却时长（秒），射速 = 1 / 冷却时长
+        public float? AttackCooldownSeconds;
 
         public int ActualFriendShips;
         public int PredictedFriendShips;
@@ -122,18 +130,89 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
     ) => Vector2.Distance(position, center) + Random.NextDouble() * jitter;
 
     /// <summary>
+    /// 计算线段落在圆内的长度：估算舰队直线飞行途中穿过敌方炮塔攻击圆的总航程。
+    /// 将线段参数化为 P(t) = start + t·(end − start)（t ∈ [0,1]），代入 |P(t) − center|² = radius² 解二次方程。
+    /// </summary>
+    private static float LineCircleIntersectionLength(
+        Vector2 start,
+        Vector2 end,
+        Vector2 center,
+        float radius
+    )
+    {
+        // 退化输入早退：半径非正或线段近似零长
+        var d = end - start;
+        if (radius <= 0 || d.LengthSquared() <= float.Epsilon)
+            return 0f;
+
+        // 二次方程系数：|f + t·d|² = r²，其中 f = start − center
+        var f = start - center;
+        var a = d.LengthSquared();
+        var b = 2f * Vector2.Dot(f, d);
+        var c = f.LengthSquared() - radius * radius;
+        var discriminant = b * b - 4f * a * c;
+        var segmentLength = MathF.Sqrt(a);
+
+        // 无实根：二次函数 |f + t·d|² − r² 恒大于 0（a > 0 开口向上），直线上所有点到圆心距离均大于半径，线段必然完全在圆外
+        if (discriminant < 0)
+            return 0f;
+
+        // 有实根：交点参数与线段区间 [0,1] 取交集，交集参数差 × 线段长度即圆内航程
+        var sqrtDiscriminant = MathF.Sqrt(discriminant);
+        var t1 = (-b - sqrtDiscriminant) / (2f * a);
+        var t2 = (-b + sqrtDiscriminant) / (2f * a);
+        var tLow = MathF.Max(t1, 0f);
+        var tHigh = MathF.Min(t2, 1f);
+        return tHigh > tLow ? (tHigh - tLow) * segmentLength : 0f;
+    }
+
+    /// <summary>
     /// 出兵来源排序键：-(己方兵力 + (叠加最强敌方 ? 最强敌方驻留兵力 : 0))，值越小越先派兵。
     /// </summary>
     private static int CalculateSenderOrderKey(PlanetInfo info, bool addsStrongestEnemy) =>
         -(info.ActualFriendShips + (addsStrongestEnemy ? info.ActualEnemyShips : 0));
 
     /// <summary>
-    /// 估算派兵航线上的路上损耗（占位，等 Tower 实装后按 getLengthInTowerRange/4.5 实现）。
+    /// 估算派兵航线上的路上损耗：物理基础 Σ(各塔危险航程 × 塔射速) ÷ 舰船速度，再乘 AI 估损系数。
+    /// 系数非正时无估损；遍历所有天体信息，跳过非攻击源、己方与中立攻击实体。
     /// </summary>
-    private static int EstimateRouteDamage(in PlanetInfo sender, in PlanetInfo target)
+    private static int EstimateRouteDamage(
+        in PlanetInfo sender,
+        in PlanetInfo target,
+        Entity team,
+        float shipSpeed,
+        float coefficient,
+        Dictionary<Entity, PlanetInfo> planetInfos
+    )
     {
-        // TODO: 估损（DamageEstimateCoefficient 占位，等 Tower 实装后按 getLengthInTowerRange/4.5 实现）
-        return 0;
+        // 系数非正时短路，保持无估损行为（Simple 预设为 0）
+        if (coefficient <= 0)
+            return 0;
+
+        // 基础损失舰船数：Σ(塔内飞行时间 × 塔射速) = Σ(危险航程 ÷ 舰船速度 ÷ 冷却时长)
+        var loss = 0f;
+        foreach (var info in planetInfos.Values)
+        {
+            // 跳过非攻击源（Planet/Warp 等）、己方与中立的攻击实体
+            if (
+                info.AttackRange is null
+                || info.AttackCooldownSeconds is null
+                || info.Team == team
+                || info.Team == Entity.Null
+            )
+                continue;
+            var length = LineCircleIntersectionLength(
+                sender.Position,
+                target.Position,
+                info.Position,
+                info.AttackRange.Value
+            );
+            // 塔内飞行时间 × 塔射速 = 该塔造成的基础损失
+            loss += length / shipSpeed / info.AttackCooldownSeconds.Value;
+        }
+
+        // 再乘 AI 行为系数，截断取整
+        return (int)(loss * coefficient);
     }
 
     /// <summary>
@@ -265,6 +344,10 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                     .Max(),
                 Battle = battlefield.FrontlineDamage.Count > 0,
                 CanProduce = canProduce,
+                AttackRange = planet.Has<AttackRange>() ? planet.Get<AttackRange>().Range : null,
+                AttackCooldownSeconds = planet.Has<AttackCooldown>()
+                    ? (float?)planet.Get<AttackCooldown>().Duration.TotalSeconds
+                    : null,
             }
         );
     }
@@ -376,7 +459,14 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                     ai.Defense.AllyCoefficient
                 );
                 // 加上路上损耗，损耗过大时放弃
-                var routeDamage = EstimateRouteDamage(in sender, in target);
+                var routeDamage = EstimateRouteDamage(
+                    in sender,
+                    in target,
+                    team,
+                    world.Get<Jumpable>(team).Speed,
+                    ai.Defense.DamageEstimateCoefficient,
+                    planetInfos
+                );
                 shipsToSend += routeDamage;
                 if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
                     continue;
@@ -544,7 +634,14 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 // 出兵来源受威胁时决定是否派出全部兵力
                 shipsToSend = ApplyAllOutPriority(shipsToSend, in sender, in target, ai.Attack);
                 // 加上路上损耗，损耗过大时放弃
-                var routeDamage = EstimateRouteDamage(in sender, in target);
+                var routeDamage = EstimateRouteDamage(
+                    in sender,
+                    in target,
+                    team,
+                    world.Get<Jumpable>(team).Speed,
+                    ai.Attack.DamageEstimateCoefficient,
+                    planetInfos
+                );
                 shipsToSend += routeDamage;
                 if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
                     continue;
@@ -662,7 +759,14 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 // 派出全部飞船
                 var shipsToSend = sender.ActualFriendShips;
                 // 加上路上损耗，损耗过大时放弃
-                var routeDamage = EstimateRouteDamage(in sender, in target);
+                var routeDamage = EstimateRouteDamage(
+                    in sender,
+                    in target,
+                    team,
+                    world.Get<Jumpable>(team).Speed,
+                    ai.Gather.DamageEstimateCoefficient,
+                    planetInfos
+                );
                 shipsToSend += routeDamage;
                 if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
                     continue;
