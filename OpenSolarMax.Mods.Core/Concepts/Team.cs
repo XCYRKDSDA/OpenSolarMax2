@@ -79,9 +79,9 @@ public class TeamApplier : IApplier<TeamDescription>
             }
         );
 
-        commandBuffer.Set(in entity, new Jumpable { Speed = 100 });
+        commandBuffer.Set(in entity, new Jumpable { Speed = 50 });
 
-        commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 1 });
+        commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 0.1f });
 
         commandBuffer.Set(in entity, new Victory { HasWon = false });
 

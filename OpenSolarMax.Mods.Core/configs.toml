@@ -81,11 +81,11 @@ orbit.roll.max.deg = 7.5
 
 [applier.warp]
 reference_radius = 25.6 # 128 / 2 * 0.4 : 以 1024px 等级纹理为基础, 乘上固定系数 0.4
-volume = 400
+volume = 40
 
 [applier.tower]
 reference_radius = 19.2 # 128 / 2 * 0.3 : 以 1024px 等级纹理为基础, 乘上固定系数 0.3
-volume = 600
+volume = 60             # 原版 S2 中为 30，但占领速度有 0.5 的 debuf
 
 [applier.barrier]
 node.size = { x = 27, y = 27 }

@@ -52,12 +52,12 @@ public class TowerDescription : IDescription
     /// <summary>
     /// 攻击距离
     /// </summary>
-    public float AttackRange { get; set; } = 500;
+    public float AttackRange { get; set; } = 180;
 
     /// <summary>
     /// 炮塔冷却时间
     /// </summary>
-    public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.25);
+    public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.2);
 
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
 }

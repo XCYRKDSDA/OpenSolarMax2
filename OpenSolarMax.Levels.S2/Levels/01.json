@@ -4,8 +4,8 @@
     },
 
     "templates": {
-        "planet50": { "$base": "planet", "radius": 32.0, "volume": 500, "population": 50, "produceSpeed": 1.0 },
-        "planet60": { "$base": "planet", "radius": 38.4, "volume": 600, "population": 60, "produceSpeed": 1.2 },
+        "planet50": { "$base": "planet", "radius": 32.0, "volume": 50, "population": 50, "produceSpeed": 1.0 },
+        "planet60": { "$base": "planet", "radius": 38.4, "volume": 60, "population": 60, "produceSpeed": 1.2 },
         "blue": { "$base": "team", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
     },
 
