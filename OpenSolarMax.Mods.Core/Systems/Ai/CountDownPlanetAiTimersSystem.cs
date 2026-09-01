@@ -16,7 +16,11 @@ public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
     private static void CountDown(ref PlanetAiTimers aiTimers, [Data] GameTime gameTime)
     {
         foreach (var key in aiTimers.TimeLeft.Keys)
-            aiTimers.TimeLeft[key] += gameTime.ElapsedGameTime;
+        {
+            aiTimers.TimeLeft[key] -= gameTime.ElapsedGameTime;
+            if (aiTimers.TimeLeft[key] < TimeSpan.Zero)
+                aiTimers.TimeLeft[key] = TimeSpan.Zero;
+        }
     }
 
     public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);

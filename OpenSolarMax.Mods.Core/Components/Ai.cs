@@ -1,6 +1,264 @@
 namespace OpenSolarMax.Mods.Core.Components;
 
+/// 出兵来源受威胁时派兵数量的决定顺序
+public enum AiAllOutPriority
+{
+    /// 先按下限派兵，出兵来源受威胁时改为派出全部兵力（全出覆盖下限）
+    AllOutFirst,
+
+    /// 先判断是否派出全部兵力，再按下限保证出兵数（下限覆盖全出）
+    LowerBoundFirst,
+}
+
+/// 防御参数
+public struct AiDefenseParameters
+{
+    /// 目标按距离排序时叠加的随机抖动（世界距离），值越大目标选择越分散
+    public float DistanceJitter;
+
+    /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
+    public bool ConsiderIncomingEnemies;
+
+    /// true：出兵来源与目标的己方综合兵力大于等于目标预测敌方兵力即可；false：须严格大于
+    public bool AllowEqual;
+
+    /// 敌方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
+    public float EnemyCoefficient;
+
+    /// 己方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
+    public float AllyCoefficient;
+
+    /// 估损系数（AI 行为倍数）：估损船数 = Σ(危险航程长度 × 塔射速) ÷ 舰船速度 × 此系数。0 = 不做估损；S2 各档统一为 20/9（由原版 4.5 剥离物理基础 5/50 得出）
+    public float DamageEstimateCoefficient;
+}
+
+/// 进攻参数
+public struct AiAttackParameters
+{
+    /// 目标预测己方兵力须小于目标体积 × 可攻兵力阈值系数才视为可攻
+    public float ExclusionThresholdMultiplier;
+
+    /// 可攻目标的排除范围是否仅限中立天体
+    public bool ExclusionScopeNeutralOnly;
+
+    /// 目标敌方兵力不足己方一半时不进攻
+    public bool ExcludeWeakEnemy;
+
+    /// 目标按距离排序时叠加的随机抖动（世界距离），值越大目标选择越分散
+    public float DistanceJitter;
+
+    /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
+    public bool ConsiderIncomingEnemies;
+
+    /// true：出兵来源与目标的己方综合兵力大于等于目标预测敌方兵力即可；false：须严格大于
+    public bool AllowEqual;
+
+    /// 敌方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
+    public float EnemyCoefficient;
+
+    /// 己方兵力系数：派兵数 = 目标预测敌方兵力 × 敌方兵力系数 − 目标预测己方兵力 × 己方兵力系数
+    public float AllyCoefficient;
+
+    /// 出兵下限系数：派兵数下限 = 目标体积 × 出兵下限系数
+    public float LowerBoundMultiplier;
+
+    /// 出兵来源受威胁时派兵数量的决定顺序
+    public AiAllOutPriority AllOutPriority;
+
+    /// 估损系数（AI 行为倍数）：估损船数 = Σ(危险航程长度 × 塔射速) ÷ 舰船速度 × 此系数。0 = 不做估损；S2 各档统一为 20/9（由原版 4.5 剥离物理基础 5/50 得出）
+    public float DamageEstimateCoefficient;
+}
+
+/// 聚兵参数
+public struct AiGatherParameters
+{
+    /// 出兵来源是否仅限己方天体
+    public bool OwnTeamSendersOnly;
+
+    /// 出兵来源按己方兵力排序时是否叠加最强敌方的兵力
+    public bool SortAddsStrongestEnemy;
+
+    /// true：出兵来源无对抗威胁（敌船驻留或在途都算）才允许派兵；false：出兵来源未在战斗才允许派兵
+    public bool ConsiderIncomingEnemies;
+
+    /// 估损系数（AI 行为倍数）：估损船数 = Σ(危险航程长度 × 塔射速) ÷ 舰船速度 × 此系数。0 = 不做估损；S2 各档统一为 20/9（由原版 4.5 剥离物理基础 5/50 得出）
+    public float DamageEstimateCoefficient;
+}
+
+/// AI 参数
 public struct Ai
 {
-    public bool Enabled;
+    /// 两次决策之间的基准间隔（秒），实际间隔 = 基准 × [抖动下限, 抖动上限)。原版 S2 节奏由难度驱动：难度 1/2/3 的基准分别为 4/2.5/1 秒（团队 6 另有 2/0.5/0.25 秒特判），重置公式为「基准 + 随机×基准」（即 ×[1,2)）。本游戏无难度系统，统一对应最高难度（难度 3）的非团队 6 档。
+    public float ActionIntervalSeconds;
+
+    /// 部署后首次决策前的等待时间（秒）。原版由难度驱动：难度 1/2/3 分别为 2.5/2/1.5 秒（团队 6 另有 1/0.5/0.25 秒）。本游戏对应难度 3 非团队 6 档的 1.5 秒。
+    public float InitialDelaySeconds;
+
+    /// 抖动下限系数：实际间隔 = 基准 × [抖动下限, 抖动上限)。原版重置公式为「基准 + 随机×基准」（= ×[1,2)），故下限取 1。
+    public float JitterMinFactor;
+
+    /// 抖动上限系数：实际间隔 = 基准 × [抖动下限, 抖动上限)。原版重置公式为「基准 + 随机×基准」（= ×[1,2)），故上限取 2。
+    public float JitterMaxFactor;
+
+    /// 是否启用挂机：人口上限为 0 且当前兵力低于阈值时停止决策
+    public bool IdleCheckEnabled;
+
+    /// 挂机判定所用的兵力阈值
+    public int IdlePopulationThreshold;
+
+    /// 出兵来源派兵后进入冷却的时长（秒），冷却期内不再从此派兵。原版 S2 冷却由难度驱动（难度 1/2/3 → 4/2/1 秒，取 max(当前, 难度值)），本游戏对应难度 3 的 1 秒。
+    public float PlanetCooldownSeconds;
+
+    /// 是否执行防御决策
+    public bool DefenseEnabled;
+
+    /// 是否执行进攻决策
+    public bool AttackEnabled;
+
+    /// 是否执行聚兵决策
+    public bool GatherEnabled;
+
+    /// 防御决策参数
+    public AiDefenseParameters Defense;
+
+    /// 进攻决策参数
+    public AiAttackParameters Attack;
+
+    /// 聚兵决策参数
+    public AiGatherParameters Gather;
+
+    /// 预设：仅防御与进攻，节奏较慢
+    public static readonly Ai Simple = new()
+    {
+        ActionIntervalSeconds = 1,
+        InitialDelaySeconds = 1.5f,
+        JitterMinFactor = 1,
+        JitterMaxFactor = 2,
+        IdleCheckEnabled = true,
+        IdlePopulationThreshold = 40,
+        PlanetCooldownSeconds = 1,
+        DefenseEnabled = true,
+        AttackEnabled = true,
+        GatherEnabled = false,
+        Defense = new AiDefenseParameters
+        {
+            DistanceJitter = 0,
+            ConsiderIncomingEnemies = false,
+            AllowEqual = false,
+            EnemyCoefficient = 2,
+            AllyCoefficient = 1,
+            DamageEstimateCoefficient = 0,
+        },
+        Attack = new AiAttackParameters
+        {
+            ExclusionThresholdMultiplier = 1.0f,
+            ExclusionScopeNeutralOnly = true,
+            ExcludeWeakEnemy = false,
+            DistanceJitter = 32,
+            ConsiderIncomingEnemies = false,
+            AllowEqual = false,
+            EnemyCoefficient = 2,
+            AllyCoefficient = 0.5f,
+            LowerBoundMultiplier = 2,
+            AllOutPriority = AiAllOutPriority.AllOutFirst,
+            DamageEstimateCoefficient = 0,
+        },
+        Gather = new AiGatherParameters
+        {
+            OwnTeamSendersOnly = false,
+            SortAddsStrongestEnemy = false,
+            ConsiderIncomingEnemies = false,
+            DamageEstimateCoefficient = 0,
+        },
+    };
+
+    /// 预设：防御/进攻/聚兵全部启用，节奏适中
+    public static readonly Ai Smart = new()
+    {
+        ActionIntervalSeconds = 1,
+        InitialDelaySeconds = 1.5f,
+        JitterMinFactor = 1,
+        JitterMaxFactor = 2,
+        IdleCheckEnabled = true,
+        IdlePopulationThreshold = 40,
+        PlanetCooldownSeconds = 1,
+        DefenseEnabled = true,
+        AttackEnabled = true,
+        GatherEnabled = true,
+        Defense = new AiDefenseParameters
+        {
+            DistanceJitter = 32,
+            ConsiderIncomingEnemies = true,
+            AllowEqual = true,
+            EnemyCoefficient = 2,
+            AllyCoefficient = 1,
+            DamageEstimateCoefficient = 20f / 9f,
+        },
+        Attack = new AiAttackParameters
+        {
+            ExclusionThresholdMultiplier = 1.5f,
+            ExclusionScopeNeutralOnly = false,
+            ExcludeWeakEnemy = false,
+            DistanceJitter = 32,
+            ConsiderIncomingEnemies = true,
+            AllowEqual = false,
+            EnemyCoefficient = 2,
+            AllyCoefficient = 0.5f,
+            LowerBoundMultiplier = 2,
+            AllOutPriority = AiAllOutPriority.LowerBoundFirst,
+            DamageEstimateCoefficient = 20f / 9f,
+        },
+        Gather = new AiGatherParameters
+        {
+            OwnTeamSendersOnly = false,
+            SortAddsStrongestEnemy = true,
+            ConsiderIncomingEnemies = true,
+            DamageEstimateCoefficient = 20f / 9f,
+        },
+    };
+
+    /// 预设：仅进攻与聚兵，节奏最快
+    public static readonly Ai Dark = new()
+    {
+        ActionIntervalSeconds = 1,
+        InitialDelaySeconds = 1.5f,
+        JitterMinFactor = 1,
+        JitterMaxFactor = 2,
+        IdleCheckEnabled = true,
+        IdlePopulationThreshold = 40,
+        PlanetCooldownSeconds = 1,
+        DefenseEnabled = false,
+        AttackEnabled = true,
+        GatherEnabled = true,
+        Defense = new AiDefenseParameters
+        {
+            DistanceJitter = 0,
+            ConsiderIncomingEnemies = false,
+            AllowEqual = false,
+            EnemyCoefficient = 0,
+            AllyCoefficient = 0,
+            DamageEstimateCoefficient = 0,
+        },
+        Attack = new AiAttackParameters
+        {
+            ExclusionThresholdMultiplier = 2.0f,
+            ExclusionScopeNeutralOnly = false,
+            ExcludeWeakEnemy = true,
+            DistanceJitter = 32,
+            ConsiderIncomingEnemies = true,
+            AllowEqual = true,
+            EnemyCoefficient = 2,
+            AllyCoefficient = 0.5f,
+            LowerBoundMultiplier = 2,
+            AllOutPriority = AiAllOutPriority.LowerBoundFirst,
+            DamageEstimateCoefficient = 20f / 9f,
+        },
+        Gather = new AiGatherParameters
+        {
+            OwnTeamSendersOnly = true,
+            SortAddsStrongestEnemy = false,
+            ConsiderIncomingEnemies = false,
+            DamageEstimateCoefficient = 20f / 9f,
+        },
+    };
 }
