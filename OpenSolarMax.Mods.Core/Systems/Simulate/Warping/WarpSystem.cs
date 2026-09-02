@@ -20,16 +20,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(TeamReferenceColor))]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
-[Write(typeof(WarpingStatus))]
+[ReadCurr(typeof(WarpingStatus))]
 [ChangeStructure]
-[ExecuteBefore(
-    typeof(ApplyShipsWarpingEffectSystem),
-    "AfterImage 继承的是飞船折跃前的位姿和颜色，因此要在飞船应用折跃效果前执行",
-    typeof(Sprite),
-    typeof(AbsoluteTransform)
-)]
-[ExecuteAfter(typeof(StartWarpingSystem), "一帧内先启动再跃迁", typeof(WarpingStatus))]
-[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(WarpingStatus))]
 public sealed partial class WarpSystem(World world, IAssetsManager assets, IConceptFactory factory)
     : ICalcSystemWithStructuralChanges
 {
@@ -46,7 +38,7 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
     >]
     private void Warp(
         Entity ship,
-        ref WarpingStatus status,
+        in WarpingStatus status,
         in AbsoluteTransform pose,
         in Sprite sprite,
         in TreeRelationship<RelativeTransform>.AsChild asChild,
@@ -118,8 +110,14 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
                 }
             );
 
-            status.State = WarpingState.PostWarp;
-            status.PostWarp = new() { ElapsedTime = TimeSpan.Zero };
+            commandBuffer.Set(
+                ship,
+                new WarpingStatus()
+                {
+                    State = WarpingState.PostWarp,
+                    PostWarp = new() { ElapsedTime = TimeSpan.Zero },
+                }
+            );
 
             jobs.Add((departure, destination));
             arrivals.Add((destination, asAffiliate.Relationship!.Value.Copy.Team));
@@ -129,7 +127,7 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
             && status.PostWarp.ElapsedTime > TimeSpan.FromSeconds(1)
         )
         {
-            status.State = WarpingState.Idle;
+            commandBuffer.Set(ship, new WarpingStatus() { State = WarpingState.Idle });
         }
     }
 
