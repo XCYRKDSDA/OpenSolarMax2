@@ -27,6 +27,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(RevolutionOrbit))]
 [ReadCurr(typeof(RevolutionState))]
 [ReadCurr(typeof(PlanetGeostationaryOrbit))]
+[ReadCurr(typeof(InTeam.AsAffiliate))]
 [Consume(typeof(StartJumpingRequest))]
 [Write(typeof(JumpingStatus))]
 [Write(typeof(SoundEffect))]
@@ -73,7 +74,16 @@ public sealed partial class StartJumpingSystem(
                 && requestEntity.WorldId == request.Team.WorldId
         );
 
-        if (!request.Departure.Has<DefaultLaunchPad>())
+        // 即使没有默认发射台，如果出发方声明了“回退到普通飞行”（FallsBackToDefaultJumping），
+        // 且请求阵营与出发方阵营不同时，则仍然触发起飞流程
+        var fallsBackToDefaultJumping =
+            request.Departure.Has<FallsBackToDefaultJumping>()
+            && (
+                request.Departure.Get<InTeam.AsAffiliate>().Relationship
+                    is not { Copy.Team: var team }
+                || team != request.Team
+            );
+        if (!request.Departure.Has<DefaultLaunchPad>() && !fallsBackToDefaultJumping)
             return;
 
         // 零数量请求直接销毁，避免下一轮不动点循环重复触发
