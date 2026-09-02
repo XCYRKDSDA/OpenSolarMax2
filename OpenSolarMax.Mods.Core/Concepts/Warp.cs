@@ -23,6 +23,8 @@ public abstract class WarpDefinition : IDefinition
         + new Signature(
             // 传送终端标记
             typeof(WarpTerminal),
+            // 异阵营请求回退到普通飞行的标记
+            typeof(FallsBackToDefaultJumping),
             typeof(AiValueBonus)
         );
 }
@@ -93,6 +95,7 @@ public class WarpApplier(
 
         // 初始化传送任务
         commandBuffer.Set(in entity, new WarpTerminal());
+        commandBuffer.Set(in entity, new FallsBackToDefaultJumping());
 
         // 聚兵目标价值加成
         commandBuffer.Set(in entity, new AiValueBonus { Value = 1 });

@@ -23,6 +23,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(PlanetGeostationaryOrbit))]
 [ReadCurr(typeof(ReferenceSize))]
 [ReadCurr(typeof(TeamReferenceColor))]
+[ReadCurr(typeof(InTeam.AsAffiliate))]
 [Consume(typeof(StartJumpingRequest))]
 [Write(typeof(WarpingStatus))]
 [ChangeStructure]
@@ -46,6 +47,13 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
         );
 
         if (!request.Departure.Has<WarpTerminal>())
+            return;
+
+        // 出发方无阵营或与请求阵营不同时不进行跃迁
+        if (
+            request.Departure.Get<InTeam.AsAffiliate>().Relationship is not { Copy.Team: var team }
+            || team != request.Team
+        )
             return;
 
         // 零数量请求直接销毁，避免下一轮不动点循环重复触发
