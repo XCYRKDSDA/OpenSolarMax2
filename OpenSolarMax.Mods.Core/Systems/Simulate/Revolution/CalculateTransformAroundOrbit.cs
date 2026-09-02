@@ -29,7 +29,7 @@ public sealed partial class CalculateTransformAroundOrbitSystem(World world) : I
     )
     {
         // 更新相对位姿
-        transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;
+        transform = RevolutionUtils.CalculateTransform(in orbit, in state);
     }
 
     public void Update() => CalculateTransformQuery(world);
