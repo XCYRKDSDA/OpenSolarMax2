@@ -154,6 +154,11 @@ internal class ChapterTransitionScreen(
             _stage = Stage.Second;
             _duration = _secondStageDuration;
             nextScreenTask.Result.EnterConfigurationMode();
+
+            // 倒放时, 以退出时目标界面的背景偏移为准, 保证背景连续
+            var exitOffset = nextScreenTask.Result.GetDefaultVisualState()!.BackgroundOffset;
+            _sourceDefaultState = _sourceDefaultState! with { BackgroundOffset = exitOffset };
+            _background.Left = exitOffset;
         }
         else if (_stage == Stage.Second && _duration <= TimeSpan.Zero)
         {
