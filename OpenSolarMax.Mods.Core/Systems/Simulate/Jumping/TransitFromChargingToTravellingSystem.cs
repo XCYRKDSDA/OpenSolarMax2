@@ -18,7 +18,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdate]
 [SimulateSystem]
 [Write(typeof(SoundEffect))]
-[Consume(typeof(JumpingStatus))]
+[ReadCurr(typeof(JumpingStatus))]
 [ChangeStructure]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class TransitFromChargingToTravellingSystem(
@@ -37,7 +37,7 @@ public sealed partial class TransitFromChargingToTravellingSystem(
     [All<JumpingStatus, SoundEffect>]
     private void Proceed(
         Entity ship,
-        ref JumpingStatus status,
+        in JumpingStatus status,
         ref SoundEffect soundEffect,
         [Data] CommandBuffer commandBuffer
     )
@@ -48,12 +48,20 @@ public sealed partial class TransitFromChargingToTravellingSystem(
 
         if (status.Charging.ElapsedTime > _chargingDuration)
         {
-            status.State = JumpingState.Travelling;
-            status.Travelling = new JumpingStatus_Travelling()
-            {
-                DelayedTime = status.Charging.ElapsedTime,
-                ElapsedTime = 0,
-            };
+            // 状态切换经命令缓冲延迟到回放时生效，任务字段需随新状态一并保留
+            commandBuffer.Set(
+                ship,
+                new JumpingStatus()
+                {
+                    State = JumpingState.Travelling,
+                    Task = status.Task,
+                    Travelling = new JumpingStatus_Travelling()
+                    {
+                        DelayedTime = status.Charging.ElapsedTime,
+                        ElapsedTime = 0,
+                    },
+                }
+            );
 
             _travelBegunSoundEvent.Native.createInstance(out var instance);
             soundEffect.EventInstance = instance;
