@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdate]
 [SimulateSystem]
 [ReadCurr(typeof(JumpingStatus))]
-[Write(typeof(AbsoluteTransform))]
+[Calc(typeof(AbsoluteTransform))]
 [ExecuteBefore(
     typeof(CalculateAbsoluteTransformSystem),
     "先计算飞行的飞船的位置，然后通过变换树计算尾迹位置",

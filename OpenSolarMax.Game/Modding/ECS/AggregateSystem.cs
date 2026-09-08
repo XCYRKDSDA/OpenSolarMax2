@@ -115,8 +115,8 @@ internal class AggregateSystem : IDisposable
 
     public void LateUpdate()
     {
-        // 不动点迭代：随动系统反复执行直到无结构化变更
-        // 外循环：执行 LateUpdate1 系统，若产生结构变更则经内循环排空后再次执行
+        // 不动点迭代：反复执行参与环路的随动系统，直到本轮没有任何延迟操作
+        // 外循环：执行 LateUpdate1 系统并检查是否有延迟操作，有则经内循环一次性播放后继续循环
         for (var iteration = 0; ; iteration++)
         {
             // 如果迭代次数太多，则抛异常（上限 32 次系统执行）
@@ -127,16 +127,16 @@ internal class AggregateSystem : IDisposable
 
             Debug.Assert(_buffers[_currentIndex ^ 1].Size == 0);
 
-            // 执行 LateUpdate1 阶段系统：带结构变更的系统写入 Buffered，其余直接执行
+            // 执行 LateUpdate1 系统：声明延迟操作的系统把操作写入 CommandBuffer 缓存，其余直接执行
             foreach (var system in _lateUpdate1Systems)
             {
-                if (system is ICalcSystemWithStructuralChanges withChanges)
-                    withChanges.Update(CurrentCommandBuffer);
+                if (system is IDelayedCalcSystem delayedCalc)
+                    delayedCalc.Update(CurrentCommandBuffer);
                 else if (system is ICalcSystem calc)
                     calc.Update();
             }
 
-            // 若系统没有写入任何结构变更，则已收敛，退出循环
+            // 若本轮没有任何系统缓存延迟操作，则不动点迭代收敛，退出循环
             if (_buffers[_currentIndex].Size == 0)
                 break;
 

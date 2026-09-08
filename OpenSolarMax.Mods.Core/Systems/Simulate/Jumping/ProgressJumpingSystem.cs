@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [Update]
 [SimulateSystem]
-[Iterate(typeof(JumpingStatus))]
+[Tick(typeof(JumpingStatus))]
 public sealed partial class UpdateShipsStateSystem(World world) : ITickSystem
 {
     [Query]

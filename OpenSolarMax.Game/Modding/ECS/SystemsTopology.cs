@@ -26,7 +26,7 @@ internal static class SystemsTopology
         var updateGraph = SystemGraph.BuildFrom(updateDeclarations);
         var lateUpdateGraph = SystemGraph.BuildFrom(lateUpdateDeclarations);
 
-        // 按照 ChangeStructure 和 Consume 标签，拆分 LateUpdate 图为 LateUpdate1 / LateUpdate2
+        // 按照 DelayedCalc 声明，拆分 LateUpdate 图为 LateUpdate1（延迟操作系统及其上游）/ LateUpdate2（其余）
         var (lateUpdate1Graph, lateUpdate2Graph) = SplitLateUpdate(
             lateUpdateGraph,
             lateUpdateDeclarations
@@ -61,25 +61,24 @@ internal static class SystemsTopology
     }
 
     /// <summary>
-    /// 把 LateUpdate 图按声明拆分为 LateUpdate1（结构化变更/消费系统及其上游）与 LateUpdate2（其余）。
+    /// 把 LateUpdate 图按声明拆分为 LateUpdate1（延迟操作系统及其上游）与 LateUpdate2（其余）。
     /// </summary>
     private static (SystemGraph LateUpdate1, SystemGraph LateUpdate2) SplitLateUpdate(
         SystemGraph graph,
         IReadOnlyCollection<SystemDeclaration> lateUpdateDeclarations
     )
     {
-        // 种子集 = ChangeStructure 系统 ∪ 访问表含 Consume 阶段条目的系统
+        // 种子集 = 声明 [DelayedCalc] 的系统，即会发生延迟操作、必然参与不动点迭代的系统
         var seedSystems = lateUpdateDeclarations
-            .Where(d =>
-                d.ChangeStructure || d.Accesses.Values.Any(a => a.Phase == AccessPhase.Consume)
-            )
+            .Where(d => d.DelayedCalc)
             .Select(d => d.SystemType)
             .ToHashSet();
 
         // 构建反向邻接表：After -> Before
         var upstreamMap = graph.Orders.ToLookup(kv => kv.Key.After, kv => kv.Key.Before);
 
-        // 从种子集出发反向 BFS，收集所有上游（直接 + 间接）
+        // 从种子集出发反向 BFS，收集所有上游（直接 + 间接）。
+        // 上游的输出是延迟操作的输入，因而被拖入不动点迭代，须与种子一同反复执行
         var upstreamClosure = new HashSet<Type>();
         var queue = new Queue<Type>(seedSystems);
         while (queue.Count > 0)
@@ -92,7 +91,8 @@ internal static class SystemsTopology
             }
         }
 
-        // 上游 + 种子归 LateUpdate1，其余归 LateUpdate2
+        // LateUpdate1 = 种子 ∪ 其上游（参与不动点迭代的系统）；
+        // 其余系统的输出不进入环路，在不动点循环收敛后归入 LateUpdate2 执行
         var lateUpdate1Systems = new HashSet<Type>(upstreamClosure);
         lateUpdate1Systems.UnionWith(seedSystems);
         var lateUpdate2Systems = new HashSet<Type>(graph.Systems);

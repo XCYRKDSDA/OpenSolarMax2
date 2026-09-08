@@ -14,7 +14,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(JumpingStatus)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(AttackRange)),
-    Write(typeof(InAttackRangeShipsRegistry))
+    Calc(typeof(InAttackRangeShipsRegistry))
 ]
 [ExecuteAfter(
     typeof(ApplyAnimationSystem),

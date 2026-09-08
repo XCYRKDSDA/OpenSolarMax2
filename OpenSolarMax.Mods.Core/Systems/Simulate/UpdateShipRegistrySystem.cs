@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(TreeRelationship<Anchorage>.AsParent)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
-    Write(typeof(AnchoredShipsRegistry))
+    Calc(typeof(AnchoredShipsRegistry))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(AnchoredShipsRegistry))]
 public sealed partial class UpdateShipRegistrySystem(World world) : ICalcSystem

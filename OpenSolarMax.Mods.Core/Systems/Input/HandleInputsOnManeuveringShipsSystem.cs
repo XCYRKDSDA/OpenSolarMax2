@@ -26,15 +26,15 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(FleetSliderWidget))]
 [ReadCurr(typeof(ReachabilityRegistry))]
 [ReadCurr(typeof(Projection))]
-[Write(typeof(ManeuveringShipsStatus))]
-[ChangeStructure]
+[Calc(typeof(ManeuveringShipsStatus))]
+[DelayedCalc]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ManeuveringShipsStatus))]
 public sealed partial class HandleInputsOnManeuveringShipsSystem(
     World world,
     IConceptFactory factory,
     IAssetsManager assets,
     [Section("systems:input:maneuvering")] IConfiguration configs
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private readonly int _minimalSelectPixels = configs.RequireValue<int>("minimal_select_pixels");
     private ButtonState _lastLeftButton = ButtonState.Released;

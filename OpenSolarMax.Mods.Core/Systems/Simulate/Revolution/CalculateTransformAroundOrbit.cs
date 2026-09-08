@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(RevolutionOrbit)),
     ReadCurr(typeof(RevolutionState)),
-    Write(typeof(RelativeTransform))
+    Calc(typeof(RelativeTransform))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(RelativeTransform))]
 public sealed partial class CalculateTransformAroundOrbitSystem(World world) : ICalcSystem
@@ -29,7 +29,7 @@ public sealed partial class CalculateTransformAroundOrbitSystem(World world) : I
     )
     {
         // 更新相对位姿
-        transform.Translation = RevolutionUtils.CalculateTransform(in orbit, in state).Translation;
+        transform = RevolutionUtils.CalculateTransform(in orbit, in state);
     }
 
     public void Update() => CalculateTransformQuery(world);

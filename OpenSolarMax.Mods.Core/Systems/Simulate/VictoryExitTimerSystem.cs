@@ -10,19 +10,19 @@ using OpenSolarMax.Mods.Core.Systems.Timing;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, Update]
-[Iterate(typeof(VictoryExitTimer))]
+[Tick(typeof(VictoryExitTimer))]
 public sealed partial class VictoryExitCountDownSystem(World world)
     : CountDownSystemBase<VictoryExitTimer>(world) { }
 
 [SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(VictoryExitTimer)),
-    Write(typeof(GameState)),
+    Calc(typeof(GameState)),
     ReadCurr(typeof(ViewTag)),
-    ChangeStructure
+    DelayedCalc
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(GameState))]
-public sealed partial class VictoryExitSystem(World world) : ICalcSystemWithStructuralChanges
+public sealed partial class VictoryExitSystem(World world) : IDelayedCalcSystem
 {
     [Query]
     [All<VictoryExitTimer>]

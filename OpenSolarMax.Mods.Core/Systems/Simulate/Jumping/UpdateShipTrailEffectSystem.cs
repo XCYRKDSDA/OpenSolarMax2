@@ -19,7 +19,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem]
 [ReadCurr(typeof(TrailOf.AsTrail))]
 [ReadCurr(typeof(JumpingStatus))]
-[Write(typeof(Sprite))]
+[Calc(typeof(Sprite))]
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
     FineWith(typeof(SynchronizeColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite)),

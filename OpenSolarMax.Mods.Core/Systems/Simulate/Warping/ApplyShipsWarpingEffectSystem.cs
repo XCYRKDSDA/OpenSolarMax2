@@ -16,8 +16,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdate]
 [SimulateSystem]
 [ReadCurr(typeof(WarpingStatus))]
-[Write(typeof(AbsoluteTransform))]
-[Write(typeof(Sprite))]
+[Calc(typeof(AbsoluteTransform))]
+[Calc(typeof(Sprite))]
 [ExecuteAfter(
     typeof(ApplyAnimationSystem),
     "默认动画系统优先执行",
@@ -31,7 +31,6 @@ namespace OpenSolarMax.Mods.Core.Systems;
 )]
 [ExecuteAfter(typeof(ApplyShipPostBornEffectSystem), "覆盖新生舰船动画", typeof(Sprite))]
 [FineWith(typeof(CalculateShipPositionSystem), "跃迁和飞行完全不相干", typeof(AbsoluteTransform))]
-[FineWith(typeof(StartJumpingSystem), "跃迁和飞行完全不相干", typeof(AbsoluteTransform))]
 [FineWith(typeof(UpdateShipChargingEffectSystem), "跃迁和飞行完全不相干", typeof(Sprite))]
 [FineWith(typeof(UpdateShipTrailEffectSystem), "跃迁和飞行完全不相干", typeof(Sprite))]
 [FineWith(typeof(UpdateShipTravellingEffectSystem), "跃迁和飞行完全不相干", typeof(Sprite))]

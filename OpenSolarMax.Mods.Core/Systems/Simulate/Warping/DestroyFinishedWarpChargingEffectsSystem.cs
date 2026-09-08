@@ -21,10 +21,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(WarpChargingEffectAssignment)),
     ReadCurr(typeof(SoundEffect)),
     ReadCurr(typeof(Animation)),
-    ChangeStructure
+    DelayedCalc
 ]
 public sealed partial class DestroyFinishedWarpChargingEffectsSystem(World world)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     private static bool AnimationDone(in Animation animation)
     {

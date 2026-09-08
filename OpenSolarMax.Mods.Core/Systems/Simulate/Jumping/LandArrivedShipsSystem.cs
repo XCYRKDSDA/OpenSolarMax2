@@ -17,21 +17,20 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [LateUpdate]
 [SimulateSystem]
 [ReadCurr(typeof(TrailOf.AsShip))]
-[Consume(typeof(JumpingStatus))]
-[Write(typeof(SoundEffect))]
-[ChangeStructure]
-[ExecuteAfter(
+[ReadCurr(typeof(JumpingStatus))]
+[Calc(typeof(SoundEffect))]
+[DelayedCalc]
+[FineWith(
     typeof(TransitFromChargingToTravellingSystem),
-    "允许同一帧刚起飞就落地",
-    typeof(SoundEffect),
-    typeof(JumpingStatus)
+    "状态切换均经命令缓冲延迟生效，同帧内两系统互不可见，起飞与落地顺序无关",
+    typeof(SoundEffect)
 )]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class LandArrivedShipsSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private readonly List<Entity> _arrivedEntities = [];
 
@@ -61,13 +60,13 @@ public sealed partial class LandArrivedShipsSystem(
 
     private void LandShip(
         Entity ship,
-        ref JumpingStatus status,
+        in JumpingStatus status,
         ref SoundEffect soundEffect,
         CommandBuffer commandBuffer
     )
     {
-        // 结束飞行
-        status.State = JumpingState.Idle;
+        // 结束飞行。状态切换经命令缓冲延迟到回放时生效
+        commandBuffer.Set(ship, new JumpingStatus() { State = JumpingState.Idle });
 
         // 将舰船挂载到目标星球
         factory.Make(
@@ -107,7 +106,7 @@ public sealed partial class LandArrivedShipsSystem(
         foreach (var entity in _arrivedEntities)
         {
             var refs = entity.Get<JumpingStatus, SoundEffect>();
-            LandShip(entity, ref refs.t0, ref refs.t1, commandBuffer);
+            LandShip(entity, in refs.t0, ref refs.t1, commandBuffer);
         }
         _arrivedEntities.Clear();
     }

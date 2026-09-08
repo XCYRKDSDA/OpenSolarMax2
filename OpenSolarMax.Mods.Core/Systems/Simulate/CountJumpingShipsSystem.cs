@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(TreeRelationship<Anchorage>.AsChild)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(JumpingStatus)),
-    Write(typeof(JumpingShipsRegistry))
+    Calc(typeof(JumpingShipsRegistry))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(JumpingShipsRegistry))]
 public sealed partial class CountJumpingShipsSystem(World world) : ICalcSystem

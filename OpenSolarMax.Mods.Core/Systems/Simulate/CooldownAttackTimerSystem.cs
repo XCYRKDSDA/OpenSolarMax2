@@ -6,6 +6,6 @@ using OpenSolarMax.Mods.Core.Systems.Timing;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, Update]
-[Iterate(typeof(AttackTimer))]
+[Tick(typeof(AttackTimer))]
 public sealed partial class CooldownAttackTimerSystem(World world)
     : CountDownSystemBase<AttackTimer>(world) { }

@@ -19,7 +19,7 @@ internal static class ShipPostBornEffectParams
 }
 
 [SimulateSystem, Update]
-[Iterate(typeof(ShipPostBornEffect))]
+[Tick(typeof(ShipPostBornEffect))]
 public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
 {
     [Query]
@@ -33,8 +33,8 @@ public partial class UpdateShipPostBornEffectSystem(World world) : ITickSystem
 }
 
 [SimulateSystem, LateUpdate]
-[ReadCurr(typeof(ShipPostBornEffect)), ChangeStructure]
-public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWithStructuralChanges
+[ReadCurr(typeof(ShipPostBornEffect)), DelayedCalc]
+public partial class RemoveShipPostBornEffectSystem(World world) : IDelayedCalcSystem
 {
     [Query]
     [All<ShipPostBornEffect>]
@@ -54,7 +54,7 @@ public partial class RemoveShipPostBornEffectSystem(World world) : ICalcSystemWi
 }
 
 [SimulateSystem, LateUpdate]
-[ReadCurr(typeof(ShipPostBornEffect)), Write(typeof(Sprite))]
+[ReadCurr(typeof(ShipPostBornEffect)), Calc(typeof(Sprite))]
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
     FineWith(

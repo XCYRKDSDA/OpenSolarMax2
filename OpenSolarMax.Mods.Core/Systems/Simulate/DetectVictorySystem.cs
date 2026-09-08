@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(Colonizable)),
     ReadCurr(typeof(ColonizationState)),
-    Write(typeof(Victory))
+    Calc(typeof(Victory))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Victory))]
 public sealed partial class DetectVictorySystem(

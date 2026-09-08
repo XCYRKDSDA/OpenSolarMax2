@@ -28,29 +28,18 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(RevolutionState))]
 [ReadCurr(typeof(PlanetGeostationaryOrbit))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
-[Consume(typeof(StartJumpingRequest))]
-[Write(typeof(JumpingStatus))]
-[Write(typeof(SoundEffect))]
-[ChangeStructure]
+[ReadCurr(typeof(StartJumpingRequest))]
+[Calc(typeof(SoundEffect))]
+[DelayedCalc]
 [FineWith(typeof(TransitFromChargingToTravellingSystem), "飞行状态是互斥的", typeof(SoundEffect))]
 [FineWith(typeof(LandArrivedShipsSystem), "飞行状态是互斥的", typeof(SoundEffect))]
-[ExecuteAfter(
-    typeof(CalculateShipPositionSystem),
-    "新起飞的飞船继承其当前绝对位置，与飞行中的飞船位置计算逻辑互斥",
-    typeof(JumpingStatus)
-)]
-[ExecuteAfter(
-    typeof(ApplyAnimationSystem),
-    "默认动画系统优先执行",
-    typeof(JumpingStatus),
-    typeof(SoundEffect)
-)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class StartJumpingSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory,
     [Section("systems:simulate:jumping")] IConfiguration configs
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private readonly SafeFmodEventDescription _chargingSoundEvent =
         assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipCharging");
@@ -151,21 +140,26 @@ public sealed partial class StartJumpingSystem(
                 _maxOffsetRatio * expectedTravelDuration / 2
             );
 
-            ref var jumpingStatus = ref ship.Get<JumpingStatus>();
-
-            // 设置任务
-            jumpingStatus.Task = new()
-            {
-                DestinationPlanet = request.Destination,
-                ExpectedTravelDuration = expectedTravelDuration + dt,
-                DeparturePosition = pose.Translation,
-                ExpectedArrivalPosition = expectedPosition + arrivalPlanetPositionDerivative * dt,
-                ExpectedRevolutionOrbit = expectedOrbit,
-                ExpectedRevolutionState = revolutionState,
-            };
-            // 初始化状态
-            jumpingStatus.State = JumpingState.Charging;
-            jumpingStatus.Charging.ElapsedTime = 0;
+            // 设置任务并初始化状态。JumpingStatus 的写入经命令缓冲延迟生效，
+            // 用于打破 StartJumpingSystem 与 CalculateShipPositionSystem 之间的读写环
+            commandBuffer.Set(
+                ship,
+                new JumpingStatus()
+                {
+                    State = JumpingState.Charging,
+                    Task = new()
+                    {
+                        DestinationPlanet = request.Destination,
+                        ExpectedTravelDuration = expectedTravelDuration + dt,
+                        DeparturePosition = pose.Translation,
+                        ExpectedArrivalPosition =
+                            expectedPosition + arrivalPlanetPositionDerivative * dt,
+                        ExpectedRevolutionOrbit = expectedOrbit,
+                        ExpectedRevolutionState = revolutionState,
+                    },
+                    Charging = new() { ElapsedTime = 0 },
+                }
+            );
 
             // 解除到星球的锚定
             commandBuffer.Destroy(

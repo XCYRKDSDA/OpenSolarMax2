@@ -83,8 +83,7 @@ internal sealed record SystemGraph(
 
     private static (
         HashSet<(OrderedTypePair, Type)> ReadWriteOrders,
-        HashSet<(UnorderedTypePair, Type)> WriterConflicts, // TODO: 考虑用 AccessPhase 为键的映射
-        HashSet<(UnorderedTypePair, Type)> ConsumerConflicts
+        HashSet<(UnorderedTypePair, Type)> WriterConflicts // TODO: 考虑用 AccessPhase 为键的映射
     ) ExtractReadWriteOrdersAndConflicts(IReadOnlyCollection<SystemDeclaration> declarations)
     {
         // 记录合法的读写顺序边
@@ -92,7 +91,6 @@ internal sealed record SystemGraph(
 
         // 记录双写的冲突边。这些冲突边每个都需要被后续显式顺序声明覆盖才行
         var writerConflicts = new HashSet<(UnorderedTypePair, Type)>();
-        var consumerConflicts = new HashSet<(UnorderedTypePair, Type)>();
 
         // 获取所有涉及到的组件类型（不含通配符）
         var allComponents = declarations
@@ -103,8 +101,8 @@ internal sealed record SystemGraph(
         // 逐个组件类型处理
         foreach (var componentType in allComponents)
         {
-            // 访问该组件的所有系统，按照访问的阶段分为四部分
-            var buckets = new HashSet<Type>[] { [], [], [], [] }; // TODO: 考虑复用
+            // 访问该组件的所有系统，按照访问的阶段分为三部分
+            var buckets = new HashSet<Type>[] { [], [], [] }; // TODO: 考虑复用
             foreach (var decl in declarations)
             {
                 if (
@@ -116,8 +114,8 @@ internal sealed record SystemGraph(
             }
 
             // 为同一组件不同阶段的访问者两两创建顺序读写边
-            for (var before = 0; before < 4; before++)
-            for (var after = before + 1; after < 4; after++)
+            for (var before = 0; before < 3; before++)
+            for (var after = before + 1; after < 3; after++)
             {
                 foreach (var sys1 in buckets[before])
                 foreach (var sys2 in buckets[after])
@@ -143,10 +141,9 @@ internal sealed record SystemGraph(
                     conflicts.Add((new UnorderedTypePair(set[i], set[j]), componentType));
             }
             AddConflicts(writerConflicts, componentType, buckets[(int)AccessPhase.Write]);
-            AddConflicts(consumerConflicts, componentType, buckets[(int)AccessPhase.Consume]);
         }
 
-        return (readWriteOrders, writerConflicts, consumerConflicts);
+        return (readWriteOrders, writerConflicts);
     }
 
     private static HashSet<(OrderedTypePair, Type)> ExtractExplicitOrders(
@@ -197,9 +194,7 @@ internal sealed record SystemGraph(
     }
 
     private static bool CancelOutConflictsByExplicitOrders(
-        HashSet<(OrderedTypePair, Type)> readWriteOrders,
         HashSet<(UnorderedTypePair, Type)> writerConflicts,
-        HashSet<(UnorderedTypePair, Type)> consumerConflicts,
         IReadOnlySet<(OrderedTypePair, Type)> explicitOrders,
         List<string> errors
     )
@@ -207,34 +202,16 @@ internal sealed record SystemGraph(
         bool pass = true;
         foreach (var (order, type) in explicitOrders)
         {
-            bool necessary = false;
-
             // 是否抵消了冲突？
-            necessary |= writerConflicts.Remove((order.Unorder(), type));
-            necessary |= consumerConflicts.Remove((order.Unorder(), type));
-            // 是否覆盖了现有读写边？
-            necessary |= readWriteOrders.Remove((order.Reverse(), type));
-            if (necessary)
+            if (writerConflicts.Remove((order.Unorder(), type)))
                 continue;
 
-            // 如果没有抵消冲突或覆盖现有边，说明不必要。分析具体情况
-            if (readWriteOrders.Contains((order, type)))
-            {
-                // 如果现有读写边中有同向边
-                errors.Add(
-                    $"Explicit order between {order.Before.Name} and {order.After.Name} on component {type.Name} "
-                        + "is invalid: it follows the same direction as the automatic read-write edge"
-                );
-            }
-            else
-            {
-                // 既没有反向读写边，也没有同向读写边，只可能这个组件类型根本没有读写边
-                Debug.Assert(readWriteOrders.All(p => p.Item2 != type));
-                errors.Add(
-                    $"Explicit order declaration between {order.Before.Name} and {order.After.Name} on component {type.Name} "
-                        + "is invalid: the two systems have neither a conflict edge nor a read-write edge on it"
-                );
-            }
+            // 如果没有抵消冲突，说明不必要
+            errors.Add(
+                $"Explicit order between {order.Before.Name} and {order.After.Name} on component {type.Name} "
+                    + "is invalid: an order declaration requires both systems to write the component, "
+                    + "but at least one of them does not"
+            );
 
             // 总之校验失败
             pass = false;
@@ -244,9 +221,7 @@ internal sealed record SystemGraph(
     }
 
     private static bool CancelOutConflictsByFineWithPairs(
-        HashSet<(OrderedTypePair, Type)> readWriteOrders,
         HashSet<(UnorderedTypePair, Type)> writerConflicts,
-        HashSet<(UnorderedTypePair, Type)> consumerConflicts,
         IReadOnlySet<(UnorderedTypePair, Type)> fineWithPairs,
         List<string> errors
     )
@@ -254,21 +229,15 @@ internal sealed record SystemGraph(
         bool pass = true;
         foreach (var (pair, type) in fineWithPairs)
         {
-            bool necessary = false;
-
             // 是否抵消了冲突？
-            necessary |= writerConflicts.Remove((pair, type));
-            necessary |= consumerConflicts.Remove((pair, type));
-            // 是否覆盖了现有读写边？
-            necessary |= readWriteOrders.Remove((new(pair.Sys1, pair.Sys2), type));
-            necessary |= readWriteOrders.Remove((new(pair.Sys2, pair.Sys1), type));
-            if (necessary)
+            if (writerConflicts.Remove((pair, type)))
                 continue;
 
-            // 如果没有抵消冲突或覆盖现有边，说明不必要
+            // 如果没有抵消冲突，说明不必要
             errors.Add(
                 $"FineWith declaration between {pair.Sys1.Name} and {pair.Sys2.Name} on component {type.Name} "
-                    + "is invalid: the two systems have neither a conflict edge nor a read-write edge on it"
+                    + "is invalid: an order declaration requires both systems to write the component, "
+                    + "but at least one of them does not"
             );
 
             // 总之校验失败
@@ -281,21 +250,18 @@ internal sealed record SystemGraph(
     private static void CancelOutConflictsByPriorityOrders(
         HashSet<(OrderedTypePair, Type)> readWriteOrders,
         HashSet<(UnorderedTypePair, Type)> writerConflicts,
-        HashSet<(UnorderedTypePair, Type)> consumerConflicts,
         IReadOnlySet<OrderedTypePair> priorityOrders
     )
     {
         foreach (var order in priorityOrders)
         {
             writerConflicts.RemoveWhere(p => p.Item1 == order.Unorder());
-            consumerConflicts.RemoveWhere(p => p.Item1 == order.Unorder());
             readWriteOrders.RemoveWhere(p => p.Item1 == order);
         }
     }
 
     private static bool ValidateReadWriteConflicts(
         IReadOnlySet<(UnorderedTypePair, Type)> writerConflicts,
-        IReadOnlySet<(UnorderedTypePair, Type)> consumerConflicts,
         List<string> errors
     )
     {
@@ -305,16 +271,6 @@ internal sealed record SystemGraph(
         {
             errors.Add(
                 "Multiple writers of one component must explicitly declare pairwise order! "
-                    + $"Component {type.Name} between {pair.Sys1.Name} and {pair.Sys2.Name} "
-                    + "requires an order declaration listing this component."
-            );
-            pass = false;
-        }
-
-        foreach (var (pair, type) in consumerConflicts)
-        {
-            errors.Add(
-                "Multiple consumers of one component must explicitly declare pairwise order! "
                     + $"Component {type.Name} between {pair.Sys1.Name} and {pair.Sys2.Name} "
                     + "requires an order declaration listing this component."
             );
@@ -337,9 +293,8 @@ internal sealed record SystemGraph(
         // 同一对系统不得同时有 FineWith 和 ExecuteAfter/Before
         ValidateExplicitOrdersSelfConsistency(declarations);
 
-        // 提取读写边与读写冲突
-        var (readWriteOrders, writerConflicts, consumerConflicts) =
-            ExtractReadWriteOrdersAndConflicts(declarations);
+        // 提取读写边与双写冲突
+        var (readWriteOrders, writerConflicts) = ExtractReadWriteOrdersAndConflicts(declarations);
 
         // 提取显式顺序边、FineWith 对、优先级边
         var explicitOrders = ExtractExplicitOrders(declarations);
@@ -347,29 +302,12 @@ internal sealed record SystemGraph(
         var priorityOrders = ExtractPriorityOrders(declarations);
 
         // 消除冲突
-        CancelOutConflictsByExplicitOrders(
-            readWriteOrders,
-            writerConflicts,
-            consumerConflicts,
-            explicitOrders,
-            errors
-        );
-        CancelOutConflictsByFineWithPairs(
-            readWriteOrders,
-            writerConflicts,
-            consumerConflicts,
-            fineWithPairs,
-            errors
-        );
-        CancelOutConflictsByPriorityOrders(
-            readWriteOrders,
-            writerConflicts,
-            consumerConflicts,
-            priorityOrders
-        );
+        CancelOutConflictsByExplicitOrders(writerConflicts, explicitOrders, errors);
+        CancelOutConflictsByFineWithPairs(writerConflicts, fineWithPairs, errors);
+        CancelOutConflictsByPriorityOrders(readWriteOrders, writerConflicts, priorityOrders);
 
         // 校验仍未抵消的多写冲突
-        ValidateReadWriteConflicts(writerConflicts, consumerConflicts, errors);
+        ValidateReadWriteConflicts(writerConflicts, errors);
 
         // 批量报错
         if (errors.Count > 0)
@@ -379,7 +317,6 @@ internal sealed record SystemGraph(
             );
         }
         Debug.Assert(writerConflicts.Count == 0);
-        Debug.Assert(consumerConflicts.Count == 0);
 
         // 组装所有边
         var readWriteEdges = readWriteOrders.Select(p =>

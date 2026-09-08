@@ -18,7 +18,7 @@ public delegate bool? CheckPlanetReachabilityCallback(
 [SimulateSystem]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(InfiniteZBarrier))]
-[Write(typeof(ReachabilityRegistry))]
+[Calc(typeof(ReachabilityRegistry))]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ReachabilityRegistry))]
 public class CountReachabilitySystem(World world) : ICalcSystem
 {

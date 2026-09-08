@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 根据关卡边界和相机视域尺寸，同步 FMOD 核心系统的 3D 设置（听者距离因子）
 /// </summary>
 [RenderSystem, LateUpdate]
-[ReadCurr(typeof(Camera)), ReadCurr(typeof(Viewport)), Write(typeof(FmodSystem))]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(Viewport)), Calc(typeof(FmodSystem))]
 public sealed partial class UpdateFmod3DSettingsSystem(World world) : ICalcSystem
 {
     [Query]

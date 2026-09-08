@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(TeamPopulationRegistry)),
-    Write(typeof(TotalPopulationWidget))
+    Calc(typeof(TotalPopulationWidget))
 ]
 public sealed partial class VisualizeTotalPopulationSystem(World world) : ICalcSystem
 {

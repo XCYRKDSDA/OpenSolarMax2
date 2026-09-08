@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 更新公转相位的系统
 /// </summary>
 [SimulateSystem, Update]
-[ReadPrev(typeof(RevolutionOrbit)), Iterate(typeof(RevolutionState))]
+[ReadPrev(typeof(RevolutionOrbit)), Tick(typeof(RevolutionState))]
 public sealed partial class UpdateRevolutionPhaseSystem(World world) : ITickSystem
 {
     [Query]

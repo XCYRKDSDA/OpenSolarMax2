@@ -8,8 +8,8 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, LateUpdate]
-[ReadCurr(typeof(ShipDeathState)), ChangeStructure]
-public sealed partial class DestroyDeadShipsSystem(World world) : ICalcSystemWithStructuralChanges
+[ReadCurr(typeof(ShipDeathState)), DelayedCalc]
+public sealed partial class DestroyDeadShipsSystem(World world) : IDelayedCalcSystem
 {
     [Query]
     [All<ShipDeathState>]

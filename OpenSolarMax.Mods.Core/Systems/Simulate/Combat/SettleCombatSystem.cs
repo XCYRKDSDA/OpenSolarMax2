@@ -15,22 +15,24 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [
     ReadCurr(typeof(AnchoredShipsRegistry)),
     ReadCurr(typeof(Combatable)),
-    Write(typeof(Battlefield)),
-    Write(typeof(ShipDeathState))
+    ReadCurr(typeof(Battlefield)),
+    Calc(typeof(ShipDeathState)),
+    DelayedCalc
 ]
-[ExecuteAfter(
-    typeof(ApplyAnimationSystem),
-    "默认动画系统优先执行",
-    typeof(Battlefield),
-    typeof(ShipDeathState)
-)]
-public sealed partial class SettleCombatSystem(World world) : ICalcSystem
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ShipDeathState))]
+public sealed partial class SettleCombatSystem(World world) : IDelayedCalcSystem
 {
     [Query]
     [All<AnchoredShipsRegistry, Battlefield>]
-    private void SettleCombat(in AnchoredShipsRegistry shipsRegistry, ref Battlefield battle)
+    private void SettleCombat(
+        Entity battlefieldEntity,
+        in AnchoredShipsRegistry shipsRegistry,
+        in Battlefield battle,
+        [Data] CommandBuffer commandBuffer
+    )
     {
         // 考察各个阵营的破坏度
+        Dictionary<Entity, float>? updatedFrontlineDamage = null;
         foreach (var team in battle.FrontlineDamage.Keys)
         {
             ref readonly var teamCombatAbility = ref team.Get<Combatable>();
@@ -47,9 +49,25 @@ public sealed partial class SettleCombatSystem(World world) : ICalcSystem
                 ref var deathState = ref ship.Get<ShipDeathState>();
                 deathState.State = DeathState.Dying;
             }
-            battle.FrontlineDamage[team] = damage;
+
+            // 仅当余量较本轮初始值有变化时才记录，避免下一轮不动点循环重复入缓冲
+            if (damage != battle.FrontlineDamage[team])
+            {
+                updatedFrontlineDamage ??= new Dictionary<Entity, float>();
+                updatedFrontlineDamage[team] = damage;
+            }
+        }
+
+        // 延迟战线回写
+        if (updatedFrontlineDamage is not null)
+        {
+            var nextFrontlineDamage = new Dictionary<Entity, float>(battle.FrontlineDamage);
+            foreach (var (team, damage) in updatedFrontlineDamage)
+                nextFrontlineDamage[team] = damage;
+
+            commandBuffer.Set(battlefieldEntity, new Battlefield(nextFrontlineDamage));
         }
     }
 
-    public void Update() => SettleCombatQuery(world);
+    public void Update(CommandBuffer commandBuffer) => SettleCombatQuery(world, commandBuffer);
 }

@@ -275,7 +275,7 @@ internal record BehaviorMod(
                     .Intersect([
                         typeof(ITickSystem),
                         typeof(ICalcSystem),
-                        typeof(ICalcSystemWithStructuralChanges),
+                        typeof(IDelayedCalcSystem),
                         typeof(IReactiveSystem),
                     ])
                     .Any()
