@@ -13,7 +13,7 @@ using OpenSolarMax.Mods.Core.Systems.Timing;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, Update]
-[Iterate(typeof(PendingVictoryEffect))]
+[Tick(typeof(PendingVictoryEffect))]
 public sealed partial class PendingVictoryEffectCountDownSystem(World world)
     : CountDownSystemBase<PendingVictoryEffect>(world) { }
 
@@ -26,12 +26,12 @@ public sealed partial class PendingVictoryEffectCountDownSystem(World world)
     ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(Colonizable)),
-    Write(typeof(ColonizationState)),
-    ChangeStructure
+    Calc(typeof(ColonizationState)),
+    DelayedCalc
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ColonizationState))]
 public sealed partial class FirePendingVictoryEffectSystem(World world, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     [Query]
     [All<PendingVictoryEffect>]

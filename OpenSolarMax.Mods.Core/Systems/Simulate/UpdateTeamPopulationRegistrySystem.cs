@@ -12,7 +12,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(ProductionAbility)),
     ReadCurr(typeof(PopulationCost)),
-    Write(typeof(TeamPopulationRegistry))
+    Calc(typeof(TeamPopulationRegistry))
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(TeamPopulationRegistry))]
 public sealed partial class UpdateTeamPopulationRegistrySystem(World world) : ICalcSystem

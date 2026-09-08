@@ -17,7 +17,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadPrev(typeof(Producible)),
     ReadPrev(typeof(ProductionCondition)),
     ReadPrev(typeof(InTeam.AsAffiliate)),
-    Iterate(typeof(ProductionState))
+    Tick(typeof(ProductionState))
 ]
 public sealed partial class ProgressProductionSystem(World world) : ITickSystem
 {

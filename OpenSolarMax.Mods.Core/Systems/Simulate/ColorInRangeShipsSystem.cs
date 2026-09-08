@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 
 [Disable]
 [SimulateSystem, LateUpdate]
-[ReadCurr(typeof(InAttackRangeShipsRegistry)), Write(typeof(Sprite))]
+[ReadCurr(typeof(InAttackRangeShipsRegistry)), Calc(typeof(Sprite))]
 // 在其他设置外观的系统之后执行以覆写
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),

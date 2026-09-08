@@ -23,13 +23,13 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(ReferenceSize)),
     ReadCurr(typeof(VictoryEffectMarker)),
     ReadCurr(typeof(TeamReferenceColor)),
-    ChangeStructure
+    DelayedCalc
 ]
 public sealed partial class GameOverSystem(
     World world,
     IConceptFactory factory,
     [Section("systems:victory")] IConfiguration configs
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private readonly float _waveMaxInterval = configs.GetValue<float>("wave_max_interval");
     private readonly float _waveTotalSeconds = configs.GetValue<float>("wave_total_seconds");

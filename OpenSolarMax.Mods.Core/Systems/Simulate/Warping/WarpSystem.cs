@@ -21,9 +21,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(WarpingStatus))]
-[ChangeStructure]
+[DelayedCalc]
 public sealed partial class WarpSystem(World world, IAssetsManager assets, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     private readonly SafeFmodEventDescription _warpingSoundEffect =
         assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/Warping");

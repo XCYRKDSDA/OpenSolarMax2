@@ -19,19 +19,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(TeamReferenceColor)),
-    Write(typeof(AttackTimer)),
-    Write(typeof(ShipDeathState)),
-    ChangeStructure
+    ReadCurr(typeof(AttackTimer)),
+    Calc(typeof(ShipDeathState)),
+    DelayedCalc
 ]
-[ExecuteAfter(
-    typeof(ApplyAnimationSystem),
-    "默认动画系统优先执行",
-    typeof(AttackTimer),
-    typeof(ShipDeathState)
-)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(ShipDeathState))]
 [FineWith(typeof(SettleCombatSystem), "地面战斗与空中炮塔攻击互不冲突", typeof(ShipDeathState))]
 public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     private static Entity? SelectTarget(in InAttackRangeShipsRegistry registry, in Entity myTeam)
     {
@@ -55,7 +50,7 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
         Entity entity,
         in Tower tower,
         in InAttackRangeShipsRegistry registry,
-        ref AttackTimer timer,
+        in AttackTimer timer,
         in AttackCooldown cooldown,
         in InTeam.AsAffiliate asAffiliate,
         [Data] CommandBuffer commandBuffer
@@ -72,7 +67,8 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
         if (target is null)
             return;
 
-        timer.TimeLeft = cooldown.Duration;
+        // 冷却倒计时回写经命令缓冲延迟生效
+        commandBuffer.Set(entity, timer with { TimeLeft = cooldown.Duration });
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
         var towerColor = towerTeam.Get<TeamReferenceColor>().Value;

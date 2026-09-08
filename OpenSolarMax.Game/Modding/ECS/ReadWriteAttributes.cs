@@ -11,11 +11,11 @@ public class ReadPrevAttribute(Type type) : Attribute, IReadWriteAttribute
 }
 
 /// <summary>
-/// 该系统将在读取上一帧组件的状态后，迭代修改组件
+/// 该系统将对组件进行积分（[Update] 积分阶段使用）
 /// </summary>
-/// <param name="type">该系统将迭代的组件类型</param>
+/// <param name="type">该系统将积分的组件类型</param>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-public class IterateAttribute(Type type) : Attribute, IReadWriteAttribute
+public class TickAttribute(Type type) : Attribute, IReadWriteAttribute
 {
     public Type Type => type;
 }
@@ -31,27 +31,19 @@ public class ReadCurrAttribute(Type type) : Attribute, IReadWriteAttribute
 }
 
 /// <summary>
-/// 该系统将写入组件
+/// 该系统将计算并写入这一帧组件值（[LateUpdate] 随动阶段使用）
 /// </summary>
-/// <param name="type">该系统将写入的组件类型</param>
+/// <param name="type">该系统将计算并写入的组件类型</param>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-public class WriteAttribute(Type type) : Attribute, IReadWriteAttribute
+public class CalcAttribute(Type type) : Attribute, IReadWriteAttribute
 {
     public Type Type => type;
 }
 
 /// <summary>
-/// 该系统将执行结构化变更
+/// 该系统将进行延迟操作（[LateUpdate] 随动阶段使用）。
+/// 延迟操作应写入实现 <see cref="IDelayedCalcSystem"/> 时传入的 CommandBuffer，
+/// 在随动系统的立即操作全部执行完毕后一次性播放
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class ChangeStructureAttribute : Attribute { }
-
-/// <summary>
-/// 该系统将消耗组件字段，消灭结构化变更的触发条件
-/// </summary>
-/// <param name="type">该系统将消耗的组件类型</param>
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-public class ConsumeAttribute(Type type) : Attribute, IReadWriteAttribute
-{
-    public Type Type => type;
-}
+public class DelayedCalcAttribute : Attribute { }

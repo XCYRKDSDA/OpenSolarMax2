@@ -15,20 +15,20 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [SimulateSystem, LateUpdate]
 [
-    Consume(typeof(ProductionState)),
+    ReadCurr(typeof(ProductionState)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(PlanetGeostationaryOrbit)),
-    ChangeStructure
+    DelayedCalc
 ]
 public sealed partial class SettleProductionSystem(World world, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     [Query]
     [All<ProductionState, InTeam.AsAffiliate>]
     private void SettleProduction(
         Entity planet,
-        ref ProductionState state,
+        in ProductionState state,
         in InTeam.AsAffiliate teamRelationship,
         [Data] CommandBuffer commandBuffer
     )
@@ -67,7 +67,8 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
             );
         }
 
-        state.ShipsProducedThisFrame = 0;
+        if (state.ShipsProducedThisFrame != 0)
+            commandBuffer.Set(planet, state with { ShipsProducedThisFrame = 0 });
     }
 
     public void Update(CommandBuffer commandBuffer) => SettleProductionQuery(world, commandBuffer);

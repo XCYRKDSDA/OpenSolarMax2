@@ -5,15 +5,15 @@ namespace OpenSolarMax.Game.Modding.ECS;
 
 /// <summary>
 /// 组件访问阶段。
-/// 其 int 大小值描述了执行时的顺序：ReadPrev → Write → ReadCurr → Consume，
-/// 这样可以方便排序
+/// 其 int 大小值描述了执行时的顺序：ReadPrev → Write → ReadCurr，
+/// 这样可以方便排序。内部相位名 Write 为 [Tick] 与 [Calc] 共用：
+/// 积分系统的 [Tick] 与随动系统的 [Calc] 都声明对该相位组件的写入
 /// </summary>
 internal enum AccessPhase
 {
     ReadPrev = 0,
     Write = 1,
     ReadCurr = 2,
-    Consume = 3,
 }
 
 /// <summary>
@@ -84,9 +84,9 @@ internal sealed record SystemDeclaration
     public ImmutableDictionary<Type, AccessEntry> Accesses { get; }
 
     /// <summary>
-    /// 是否声明了 [ChangeStructure]
+    /// 是否声明了 [DelayedCalc]
     /// </summary>
-    public bool ChangeStructure { get; }
+    public bool DelayedCalc { get; }
 
     /// <summary>
     /// 显式执行顺序声明列表（ExecuteBefore/ExecuteAfter）
@@ -107,7 +107,7 @@ internal sealed record SystemDeclaration
         Type systemType,
         SystemStage stage,
         ImmutableDictionary<Type, AccessEntry> accesses,
-        bool changeStructure,
+        bool delayedCalc,
         ImmutableArray<ExplicitOrderDeclaration> explicitOrders,
         ImmutableArray<FineWithDeclaration> fineWithPairs,
         int? priority
@@ -116,7 +116,7 @@ internal sealed record SystemDeclaration
         SystemType = systemType;
         Stage = stage;
         Accesses = accesses;
-        ChangeStructure = changeStructure;
+        DelayedCalc = delayedCalc;
         ExplicitOrders = explicitOrders;
         FineWithPairs = fineWithPairs;
         Priority = priority;
@@ -185,10 +185,9 @@ internal sealed record SystemDeclaration
             [
                 typeof(ReadPrevAttribute),
                 typeof(ReadCurrAttribute),
-                typeof(WriteAttribute),
-                typeof(IterateAttribute),
-                typeof(ConsumeAttribute),
-                typeof(ChangeStructureAttribute),
+                typeof(TickAttribute),
+                typeof(CalcAttribute),
+                typeof(DelayedCalcAttribute),
             ]
         );
 
@@ -196,10 +195,10 @@ internal sealed record SystemDeclaration
         if (
             systemType.GetInterfaces().Contains(typeof(ITickSystem))
             || systemType.GetInterfaces().Contains(typeof(ICalcSystem))
-            || systemType.GetInterfaces().Contains(typeof(ICalcSystemWithStructuralChanges))
+            || systemType.GetInterfaces().Contains(typeof(IDelayedCalcSystem))
         )
             throw new Exception(
-                $"Reactive system must not implement ITickSystem/ICalcSystem/ICalcSystemWithStructuralChanges on {systemType}"
+                $"Reactive system must not implement ITickSystem/ICalcSystem/IDelayedCalcSystem on {systemType}"
             );
 
         return new SystemDeclaration(
@@ -220,31 +219,30 @@ internal sealed record SystemDeclaration
             throw new Exception($"[Update] system {systemType} must implement ITickSystem.");
 
         var readPrevAttrs = systemType.GetCustomAttributes<ReadPrevAttribute>().ToList();
-        var iterateAttrs = systemType.GetCustomAttributes<IterateAttribute>().ToList();
+        var tickAttrs = systemType.GetCustomAttributes<TickAttribute>().ToList();
 
-        // 仅允许 ReadPrev 和 Iterate
+        // 仅允许 ReadPrev 和 Tick
         CheckAttributes(
             systemType,
-            "Integration system can only use ReadPrev+Iterate",
-            whitelist: [typeof(ReadPrevAttribute), typeof(IterateAttribute)],
+            "Integration system can only use ReadPrev+Tick",
+            whitelist: [typeof(ReadPrevAttribute), typeof(TickAttribute)],
             blacklist:
             [
                 typeof(ReadCurrAttribute),
-                typeof(WriteAttribute),
-                typeof(ChangeStructureAttribute),
-                typeof(ConsumeAttribute),
+                typeof(CalcAttribute),
+                typeof(DelayedCalcAttribute),
             ]
         );
-        if (readPrevAttrs.Count == 0 && iterateAttrs.Count == 0)
+        if (readPrevAttrs.Count == 0 && tickAttrs.Count == 0)
             throw new Exception(
-                $"Integration system must have at least one [ReadPrev] or [Iterate]; found none on {systemType}"
+                $"Integration system must have at least one [ReadPrev] or [Tick]; found none on {systemType}"
             );
 
         // 记录组件访问声明
         var accesses = new List<AccessEntry>();
         foreach (var attr in readPrevAttrs)
             accesses.Add(new AccessEntry(AccessPhase.ReadPrev, attr.Type));
-        foreach (var attr in iterateAttrs)
+        foreach (var attr in tickAttrs)
             accesses.Add(new AccessEntry(AccessPhase.Write, attr.Type));
 
         // 检查并构建组件访问列表
@@ -267,49 +265,43 @@ internal sealed record SystemDeclaration
     private static SystemDeclaration CheckLateUpdateSystem(Type systemType)
     {
         var isCalc = systemType.GetInterfaces().Contains(typeof(ICalcSystem));
-        var isCalcWithChanges = systemType
-            .GetInterfaces()
-            .Contains(typeof(ICalcSystemWithStructuralChanges));
+        var isDelayedCalc = systemType.GetInterfaces().Contains(typeof(IDelayedCalcSystem));
 
-        // 必须实现 ICalcSystem 或 ICalcSystemWithStructuralChanges
-        if (!isCalc && !isCalcWithChanges)
+        // 必须实现 ICalcSystem 或 IDelayedCalcSystem
+        if (!isCalc && !isDelayedCalc)
             throw new Exception(
-                $"[LateUpdate] system {systemType} must implement ICalcSystem or ICalcSystemWithStructuralChanges."
+                $"[LateUpdate] system {systemType} must implement ICalcSystem or IDelayedCalcSystem."
             );
 
         var readCurrAttrs = systemType.GetCustomAttributes<ReadCurrAttribute>().ToList();
-        var writeAttrs = systemType.GetCustomAttributes<WriteAttribute>().ToList();
-        var consumeAttrs = systemType.GetCustomAttributes<ConsumeAttribute>().ToList();
+        var calcAttrs = systemType.GetCustomAttributes<CalcAttribute>().ToList();
 
-        // 仅允许 ReadCurr、Write、Consume 和 ChangeStructure
+        // 仅允许 ReadCurr、Calc 和 DelayedCalc
         CheckAttributes(
             systemType,
-            "LateUpdate system can only use ReadCurr+Write+Consume",
+            "LateUpdate system can only use ReadCurr+Calc+DelayedCalc",
             whitelist:
             [
                 typeof(ReadCurrAttribute),
-                typeof(WriteAttribute),
-                typeof(ConsumeAttribute),
-                typeof(ChangeStructureAttribute),
+                typeof(CalcAttribute),
+                typeof(DelayedCalcAttribute),
             ],
-            blacklist: [typeof(ReadPrevAttribute), typeof(IterateAttribute)]
+            blacklist: [typeof(ReadPrevAttribute), typeof(TickAttribute)]
         );
 
-        // ChangeStructure 声明需与 ICalcSystemWithStructuralChanges 接口成对
-        var hasChangeStructure = systemType.GetCustomAttributes<ChangeStructureAttribute>().Any();
-        if (hasChangeStructure ^ isCalcWithChanges)
+        // DelayedCalc 声明需与 IDelayedCalcSystem 接口成对
+        var hasDelayedCalc = systemType.GetCustomAttributes<DelayedCalcAttribute>().Any();
+        if (hasDelayedCalc ^ isDelayedCalc)
             throw new Exception(
-                "A system declaring structural changes must implement ICalcSystemWithStructuralChanges, and vice versa!"
+                "A system declaring delayed calc must implement IDelayedCalcSystem, and vice versa!"
             );
 
         // 记录组件访问声明
         var accesses = new List<AccessEntry>();
         foreach (var attr in readCurrAttrs)
             accesses.Add(new AccessEntry(AccessPhase.ReadCurr, attr.Type));
-        foreach (var attr in writeAttrs)
+        foreach (var attr in calcAttrs)
             accesses.Add(new AccessEntry(AccessPhase.Write, attr.Type));
-        foreach (var attr in consumeAttrs)
-            accesses.Add(new AccessEntry(AccessPhase.Consume, attr.Type));
 
         // 检查并构建组件访问列表
         var accessTable = CheckAndBuildAccessTable(systemType, accesses);
@@ -321,7 +313,7 @@ internal sealed record SystemDeclaration
             systemType,
             SystemStage.LateUpdate,
             accessTable,
-            hasChangeStructure,
+            hasDelayedCalc,
             explicitOrders,
             fineWithPairs,
             CollectPriority(systemType)

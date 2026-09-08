@@ -24,13 +24,12 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(ReferenceSize))]
 [ReadCurr(typeof(TeamReferenceColor))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
-[Consume(typeof(StartJumpingRequest))]
-[Write(typeof(WarpingStatus))]
-[ChangeStructure]
+[ReadCurr(typeof(StartJumpingRequest))]
+[Calc(typeof(WarpingStatus))]
+[DelayedCalc]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(WarpingStatus))]
-[FineWith(typeof(StartJumpingSystem), "跃迁和飞行完全不相干", typeof(StartJumpingRequest))]
 public sealed partial class StartWarpingSystem(World world, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     [Query]
     [All<StartJumpingRequest>]

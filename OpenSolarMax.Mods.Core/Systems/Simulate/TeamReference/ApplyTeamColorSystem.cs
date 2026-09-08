@@ -10,7 +10,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 将阵营参考颜色设置到属于阵营的实体的系统
 /// </summary>
 [SimulateSystem, LateUpdate, BothForGameplayAndPreview]
-[ReadCurr(typeof(InTeam.AsAffiliate)), ReadCurr(typeof(TeamReferenceColor)), Write(typeof(Sprite))]
+[ReadCurr(typeof(InTeam.AsAffiliate)), ReadCurr(typeof(TeamReferenceColor)), Calc(typeof(Sprite))]
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
     ExecuteBefore(

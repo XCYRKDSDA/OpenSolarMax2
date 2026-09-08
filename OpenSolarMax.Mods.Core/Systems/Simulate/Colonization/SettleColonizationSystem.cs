@@ -22,14 +22,14 @@ namespace OpenSolarMax.Mods.Core.Systems;
     ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(Victory)),
-    Consume(typeof(ColonizationState)),
-    ChangeStructure
+    ReadCurr(typeof(ColonizationState)),
+    DelayedCalc
 ]
 public sealed partial class SettleColonizationSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private void CreateHaloExplosion(CommandBuffer commandBuffer, Entity planet, Color color)
     {
@@ -64,7 +64,7 @@ public sealed partial class SettleColonizationSystem(
     [All<ColonizationState, InTeam.AsAffiliate>]
     private void SettleColonization(
         Entity planet,
-        ref ColonizationState state,
+        in ColonizationState state,
         in InTeam.AsAffiliate asTeamAffiliate,
         [Data] bool hasWon,
         [Data] CommandBuffer commandBuffer
@@ -103,7 +103,8 @@ public sealed partial class SettleColonizationSystem(
                 commandBuffer.Destroy(asTeamAffiliate.Relationship!.Value.Ref);
         }
 
-        state.Event = ColonizationEvent.Idle;
+        if (state.Event != ColonizationEvent.Idle)
+            commandBuffer.Set(planet, state with { Event = ColonizationEvent.Idle });
     }
 
     public void Update(CommandBuffer commandBuffer)

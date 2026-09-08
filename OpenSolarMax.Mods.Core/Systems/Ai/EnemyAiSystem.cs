@@ -28,11 +28,10 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [ReadCurr(typeof(AttackCooldown))]
 [ReadCurr(typeof(AttackRange))]
 [ReadCurr(typeof(Jumpable))]
-[Consume(typeof(AiTimer))]
-[Consume(typeof(PlanetAiTimers))]
-[ChangeStructure]
-public partial class EnemyAiSystem(World world, IConceptFactory factory)
-    : ICalcSystemWithStructuralChanges
+[ReadCurr(typeof(AiTimer))]
+[ReadCurr(typeof(PlanetAiTimers))]
+[DelayedCalc]
+public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDelayedCalcSystem
 {
     private static readonly Random Random = new();
 
@@ -238,6 +237,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
     /// </summary>
     private void SendShips(
         CommandBuffer commandBuffer,
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
         Entity team,
         in PlanetInfo sender,
         in PlanetInfo target,
@@ -257,9 +257,11 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
             }
         );
         // 原版 S2 有「充能中舰船冻结出兵冷却」的机制（Ship state==1 期间逐帧将冷却顶在难度值），本游戏未实现，冷却固定为 PlanetCooldownSeconds 秒。
-        sender.Entity.Get<PlanetAiTimers>().TimeLeft[team] = TimeSpan.FromSeconds(
-            planetCooldownSeconds
-        ); // TODO 随机化
+        // 出兵来源冷却不直接写组件，先记入待写表，由 Update 末尾 FlushPendingPlanetCooldowns 合并写回：
+        // 同一轮内多个队伍可能对同一星球派兵，若各自克隆整表入缓冲，播放时后一条会覆盖前一条，丢失先者队伍的冷却条目。
+        if (!pendingPlanetCooldowns.TryGetValue(sender.Entity, out var pending))
+            pendingPlanetCooldowns[sender.Entity] = pending = new Dictionary<Entity, TimeSpan>();
+        pending[team] = TimeSpan.FromSeconds(planetCooldownSeconds); // TODO 随机化
     }
 
     #endregion
@@ -426,7 +428,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
         Dictionary<Entity, PlanetInfo> planetInfos,
         Vector2 friendPlanetsCenter,
         in TeamPopulationRegistry populationRegistry,
-        CommandBuffer commandBuffer
+        CommandBuffer commandBuffer,
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
     )
     {
         // 寻找目标防守星球
@@ -477,6 +480,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 // 创建舰船移动请求并记录出兵冷却
                 SendShips(
                     commandBuffer,
+                    pendingPlanetCooldowns,
                     team,
                     in sender,
                     in target,
@@ -604,7 +608,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
         Dictionary<Entity, PlanetInfo> planetInfos,
         Vector2 friendPlanetsCenter,
         in TeamPopulationRegistry populationRegistry,
-        CommandBuffer commandBuffer
+        CommandBuffer commandBuffer,
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
     )
     {
         // 寻找可进攻的天体
@@ -652,6 +657,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 // 创建舰船移动请求并记录出兵冷却
                 SendShips(
                     commandBuffer,
+                    pendingPlanetCooldowns,
                     team,
                     in sender,
                     in target,
@@ -736,7 +742,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
         in Ai ai,
         Dictionary<Entity, PlanetInfo> planetInfos,
         in TeamPopulationRegistry populationRegistry,
-        CommandBuffer commandBuffer
+        CommandBuffer commandBuffer,
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
     )
     {
         // 计算各天体的聚兵价值
@@ -777,6 +784,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 // 创建舰船移动请求并记录出兵冷却
                 SendShips(
                     commandBuffer,
+                    pendingPlanetCooldowns,
                     team,
                     in sender,
                     in target,
@@ -796,13 +804,26 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
     /// <summary>
     /// 决策节奏：冷却未到返回 false，否则按预设节奏重置冷却并返回 true。
     /// </summary>
-    private static bool TryAdvanceTimer(in Ai ai, ref AiTimer timer)
+    private static bool TryAdvanceTimer(
+        in Ai ai,
+        in AiTimer timer,
+        Entity entity,
+        CommandBuffer commandBuffer
+    )
     {
         if (timer.TimeLeft > TimeSpan.Zero)
             return false;
         var jitterFactor =
             ai.JitterMinFactor + Random.NextDouble() * (ai.JitterMaxFactor - ai.JitterMinFactor);
-        timer.TimeLeft = TimeSpan.FromSeconds(ai.ActionIntervalSeconds * jitterFactor);
+        // AI 决策节奏的冷却重置经命令缓冲延迟生效：延迟至不动点播放阶段写回，
+        // 保证本轮迭代内读者仍看到冷却过期的旧值，并防止下一轮迭代重复触发入缓冲
+        commandBuffer.Set(
+            entity,
+            timer with
+            {
+                TimeLeft = TimeSpan.FromSeconds(ai.ActionIntervalSeconds * jitterFactor),
+            }
+        );
         return true;
     }
 
@@ -840,12 +861,13 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
     private void Execute(
         Entity team,
         in Ai ai,
-        ref AiTimer timer,
-        [Data] CommandBuffer commandBuffer
+        in AiTimer timer,
+        [Data] CommandBuffer commandBuffer,
+        [Data] Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
     )
     {
         // 决策节奏：冷却未到则跳过本次决策
-        if (!TryAdvanceTimer(in ai, ref timer))
+        if (!TryAdvanceTimer(in ai, in timer, team, commandBuffer))
             return;
 
         // 统计星球信息
@@ -870,7 +892,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 planetInfos,
                 friendPlanetsCenter,
                 in populationRegistry,
-                commandBuffer
+                commandBuffer,
+                pendingPlanetCooldowns
             )
         )
             return;
@@ -882,18 +905,52 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory)
                 planetInfos,
                 friendPlanetsCenter,
                 in populationRegistry,
-                commandBuffer
+                commandBuffer,
+                pendingPlanetCooldowns
             )
         )
             return;
         if (
             ai.GatherEnabled
-            && TryDispatchGather(team, in ai, planetInfos, in populationRegistry, commandBuffer)
+            && TryDispatchGather(
+                team,
+                in ai,
+                planetInfos,
+                in populationRegistry,
+                commandBuffer,
+                pendingPlanetCooldowns
+            )
         )
             return;
     }
 
     #endregion
 
-    public void Update(CommandBuffer commandBuffer) => ExecuteQuery(world, commandBuffer);
+    public void Update(CommandBuffer commandBuffer)
+    {
+        // 本轮调用内待写回的出兵冷却（星球 → 队伍 → 冷却）：经 [Data] 传入查询、由 SendShips 记录，
+        // 查询结束后合并写回命令缓冲。生命周期仅限本次调用，不引入跨调用的外部状态。
+        var pendingPlanetCooldowns = new Dictionary<Entity, Dictionary<Entity, TimeSpan>>();
+        ExecuteQuery(world, commandBuffer, pendingPlanetCooldowns);
+        FlushPendingPlanetCooldowns(pendingPlanetCooldowns, commandBuffer);
+    }
+
+    /// <summary>
+    /// 将本轮收集的出兵冷却合并写回命令缓冲：每个星球只克隆一次活动冷却表、合并全部队伍的待写条目后整表入缓冲一次。
+    /// 延迟至不动点播放阶段生效，迭代内读者仍看到重置前的冷却值；多队伍对同一星球派兵时条目互不覆盖。
+    /// </summary>
+    private static void FlushPendingPlanetCooldowns(
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
+        CommandBuffer commandBuffer
+    )
+    {
+        foreach (var (planet, pending) in pendingPlanetCooldowns)
+        {
+            var timers = planet.Get<PlanetAiTimers>();
+            var timeLeft = new Dictionary<Entity, TimeSpan>(timers.TimeLeft);
+            foreach (var (team, cooldown) in pending)
+                timeLeft[team] = cooldown;
+            commandBuffer.Set(planet, timers with { TimeLeft = timeLeft });
+        }
+    }
 }

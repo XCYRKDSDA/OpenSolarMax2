@@ -10,9 +10,9 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [Disable]
 [LateUpdate]
 [SimulateSystem]
-[Consume(typeof(InputEvent))]
-[ChangeStructure]
-public partial class CleanEventsSystem(World world) : ICalcSystemWithStructuralChanges
+[ReadCurr(typeof(InputEvent))]
+[DelayedCalc]
+public partial class CleanEventsSystem(World world) : IDelayedCalcSystem
 {
     [Query]
     [All<InputEvent>]

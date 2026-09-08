@@ -9,9 +9,9 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, LateUpdate]
-[ReadCurr(typeof(Animation)), ReadCurr(typeof(SoundEffect)), ChangeStructure]
+[ReadCurr(typeof(Animation)), ReadCurr(typeof(SoundEffect)), DelayedCalc]
 public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem(World world)
-    : ICalcSystemWithStructuralChanges
+    : IDelayedCalcSystem
 {
     [Query]
     [All<ExpireAfterAnimationAndSoundEffectCompleted, Animation>]

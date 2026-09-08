@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// 负责将FMOD.Studio.System的位置同步到Fmod体系中
 /// </summary>
 [RenderSystem, LateUpdate]
-[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), Write(typeof(FmodSystem))]
+[ReadCurr(typeof(Camera)), ReadCurr(typeof(AbsoluteTransform)), Calc(typeof(FmodSystem))]
 [FineWith(
     typeof(UpdateFmod3DSettingsSystem),
     "两者各自设置监听器属性与3D设置，互不冲突",

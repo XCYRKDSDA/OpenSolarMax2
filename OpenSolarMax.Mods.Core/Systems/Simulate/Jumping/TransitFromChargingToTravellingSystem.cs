@@ -17,16 +17,16 @@ namespace OpenSolarMax.Mods.Core.Systems;
 /// </summary>
 [LateUpdate]
 [SimulateSystem]
-[Write(typeof(SoundEffect))]
+[Calc(typeof(SoundEffect))]
 [ReadCurr(typeof(JumpingStatus))]
-[ChangeStructure]
+[DelayedCalc]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(SoundEffect))]
 public sealed partial class TransitFromChargingToTravellingSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory,
     [Section("systems:simulate:jumping")] IConfiguration configs
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
 

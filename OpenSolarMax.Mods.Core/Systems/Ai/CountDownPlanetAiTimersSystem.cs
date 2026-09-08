@@ -8,7 +8,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [AiSystem, Update]
-[Iterate(typeof(PlanetAiTimers))]
+[Tick(typeof(PlanetAiTimers))]
 public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
 {
     [Query]
@@ -28,7 +28,7 @@ public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
 
 [AiSystem, LateUpdate]
 [ReadCurr(typeof(InTeam.AsTeam))]
-[Write(typeof(PlanetAiTimers))]
+[Calc(typeof(PlanetAiTimers))]
 public partial class CleanPlanetAiTimerEntry(World world) : ICalcSystem
 {
     [Query]

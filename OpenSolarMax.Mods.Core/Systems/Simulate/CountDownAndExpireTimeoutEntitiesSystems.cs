@@ -9,7 +9,7 @@ using OpenSolarMax.Mods.Core.Components;
 namespace OpenSolarMax.Mods.Core.Systems;
 
 [SimulateSystem, Update]
-[Iterate(typeof(ExpiredAfterTimeout))]
+[Tick(typeof(ExpiredAfterTimeout))]
 public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSystem
 {
     [Query]
@@ -23,9 +23,8 @@ public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSy
 }
 
 [SimulateSystem, LateUpdate]
-[ReadCurr(typeof(ExpiredAfterTimeout)), ChangeStructure]
-public sealed partial class ExpireTimeoutEntitiesSystem(World world)
-    : ICalcSystemWithStructuralChanges
+[ReadCurr(typeof(ExpiredAfterTimeout)), DelayedCalc]
+public sealed partial class ExpireTimeoutEntitiesSystem(World world) : IDelayedCalcSystem
 {
     [Query]
     [All<ExpiredAfterTimeout>]

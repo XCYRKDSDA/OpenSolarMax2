@@ -18,8 +18,8 @@ namespace OpenSolarMax.Mods.Core.Systems;
 [SimulateSystem]
 [ReadCurr(typeof(TrailOf.AsShip))]
 [ReadCurr(typeof(JumpingStatus))]
-[Write(typeof(SoundEffect))]
-[ChangeStructure]
+[Calc(typeof(SoundEffect))]
+[DelayedCalc]
 [FineWith(
     typeof(TransitFromChargingToTravellingSystem),
     "状态切换均经命令缓冲延迟生效，同帧内两系统互不可见，起飞与落地顺序无关",
@@ -30,7 +30,7 @@ public sealed partial class LandArrivedShipsSystem(
     World world,
     IAssetsManager assets,
     IConceptFactory factory
-) : ICalcSystemWithStructuralChanges
+) : IDelayedCalcSystem
 {
     private readonly List<Entity> _arrivedEntities = [];
 

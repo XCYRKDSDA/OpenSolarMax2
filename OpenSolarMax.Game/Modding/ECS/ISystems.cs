@@ -13,7 +13,7 @@ public interface ICalcSystem
     void Update();
 }
 
-public interface ICalcSystemWithStructuralChanges
+public interface IDelayedCalcSystem
 {
     void Update(CommandBuffer commandBuffer);
 }
