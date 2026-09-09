@@ -5,6 +5,8 @@
 
   <ItemGroup>
     <AvailableItemName Include="Effect" />
+    <AvailableItemName Include="GameContent" />
+    <CompilerVisibleProperty Include="OSMContentPaths" />
   </ItemGroup>
 
   <Target
@@ -27,5 +29,14 @@
         LogicalName="$(ProjectName).$([System.String]::Copy('%(Effect.RelativeDir)').Replace('\','/').Replace('/', '.'))%(Effect.Filename).mgfxo"
       />
     </ItemGroup>
+  </Target>
+
+  <Target Name="ProcessGameContent" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <None Include="@(GameContent)" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+    <PropertyGroup>
+      <OSMContentPaths>@(GameContent->'%(FullPath)', ',')</OSMContentPaths>
+    </PropertyGroup>
   </Target>
 </Project>

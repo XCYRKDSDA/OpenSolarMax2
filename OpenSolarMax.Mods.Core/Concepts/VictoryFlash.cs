@@ -36,11 +36,11 @@ public class VictoryFlashDescription : IDescription
 public class VictoryFlashApplier(IAssetsManager assets) : IApplier<VictoryFlashDescription>
 {
     private readonly TextureRegion _whitePixel = assets.Load<TextureRegion>(
-        "Textures/Pixel.json:AtCenter"
+        Game.Content.Textures.Pixel_json + ":AtCenter"
     );
 
     private readonly AnimationClip<Entity> _flashAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/VictoryFlashAlpha.json"
+        Content.Animations.VictoryFlashAlpha_json
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, VictoryFlashDescription desc)

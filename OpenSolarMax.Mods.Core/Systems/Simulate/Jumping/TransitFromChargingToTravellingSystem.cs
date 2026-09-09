@@ -31,7 +31,7 @@ public sealed partial class TransitFromChargingToTravellingSystem(
     private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
 
     private readonly SafeFmodEventDescription _travelBegunSoundEvent =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipBegun");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipBegun");
 
     [Query]
     [All<JumpingStatus, SoundEffect>]

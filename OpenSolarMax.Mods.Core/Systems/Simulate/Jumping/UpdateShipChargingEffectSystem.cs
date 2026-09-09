@@ -36,7 +36,7 @@ public sealed partial class UpdateShipChargingEffectSystem(
 
     private readonly AnimationClip<Entity> _shipTakingOffAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipTakingOff.json");
+    >(Content.Animations.ShipTakingOff_json);
 
     [Query]
     [All<JumpingStatus>]

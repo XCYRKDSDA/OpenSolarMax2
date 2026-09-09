@@ -35,7 +35,7 @@ public sealed partial class LandArrivedShipsSystem(
     private readonly List<Entity> _arrivedEntities = [];
 
     private readonly SafeFmodEventDescription _travelDoneSoundEvent =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipDone");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipDone");
 
     [Query]
     [All<JumpingStatus>]

@@ -36,11 +36,14 @@
     <ProjectReference Include="..\Third Party\Arch\src\Arch\Arch.csproj">
       <AdditionalProperties>DefineConstants=$(DefineConstants);EVENTS</AdditionalProperties>
     </ProjectReference>
+    <ProjectReference
+      Include="..\OpenSolarMax.Content.SourceGenerators\OpenSolarMax.Content.SourceGenerators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Content\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <GameContent Include="Content\**\*" />
   </ItemGroup>
 </Project>

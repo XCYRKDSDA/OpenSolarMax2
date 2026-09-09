@@ -46,15 +46,15 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
     : IApplier<DestinationSurroundFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:Halo"
+        Content.Textures.SolarMax2_Atlas_json + ":Halo"
     );
 
     private readonly AnimationClip<Entity> _flareRotating = assets.Load<AnimationClip<Entity>>(
-        "Animations/DestinationSurroundFlareRotating.json"
+        Content.Animations.DestinationSurroundFlareRotating_json
     );
 
     private readonly AnimationClip<Entity> _flareCharging = assets.Load<AnimationClip<Entity>>(
-        "Animations/DestinationSurroundFlareCharging.json"
+        Content.Animations.DestinationSurroundFlareCharging_json
     );
 
     public void Apply(

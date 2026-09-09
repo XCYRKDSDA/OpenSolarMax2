@@ -74,19 +74,19 @@ public class TowerApplier(
     private readonly int _volume = configs.RequireValue<int>("volume");
 
     private readonly TextureRegion _towerTexture = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:Tower"
+        Content.Textures.SolarMax2_Atlas_json + ":Tower"
     );
 
     private readonly TextureRegion _towerShape = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TowerShape"
+        Content.Textures.SolarMax2_Atlas_json + ":TowerShape"
     );
 
     private readonly TextureRegion _towerFlare = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TowerShape"
+        Content.Textures.SolarMax2_Atlas_json + ":TowerShape"
     );
 
     private readonly TextureRegion _towerGlow = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TowerGlow"
+        Content.Textures.SolarMax2_Atlas_json + ":TowerGlow"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);

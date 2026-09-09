@@ -81,15 +81,35 @@ public class PlanetApplier(
 ) : IApplier<PlanetDescription>
 {
     private readonly TextureRegion _defaultPlanetShape = assets.Load<TextureRegion>(
-        Content.Textures.DefaultPlanetShape
+        Content.Textures.SolarMax2_Atlas_json + ":PlanetShape"
     );
 
-    private readonly TextureRegion[] _defaultPlanetTextures = Content
-        .Textures.DefaultPlanetTextures.Select(k => assets.Load<TextureRegion>(k))
+    private static readonly string[] _defaultPlanetTexturePaths =
+    {
+        Content.Textures.SolarMax2_Atlas_json + ":Planet01",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet02",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet03",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet04",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet05",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet06",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet07",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet08",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet09",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet10",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet11",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet12",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet13",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet14",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet15",
+        Content.Textures.SolarMax2_Atlas_json + ":Planet16",
+    };
+
+    private readonly TextureRegion[] _defaultPlanetTextures = _defaultPlanetTexturePaths
+        .Select(k => assets.Load<TextureRegion>(k))
         .ToArray();
 
     private readonly TextureRegion _defaultPlanetGlowTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:Halo"
+        Content.Textures.SolarMax2_Atlas_json + ":Halo"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);
@@ -97,7 +117,7 @@ public class PlanetApplier(
     public void Apply(CommandBuffer commandBuffer, Entity entity, PlanetDescription desc)
     {
         // 设置天体基本信息
-        var randomIndex = new Random().Next(Content.Textures.DefaultPlanetTextures.Length);
+        var randomIndex = new Random().Next(_defaultPlanetTexturePaths.Length);
         _celestialBodyApplier.Apply(
             commandBuffer,
             entity,

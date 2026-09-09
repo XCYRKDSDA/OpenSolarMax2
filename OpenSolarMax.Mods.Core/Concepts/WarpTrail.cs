@@ -45,12 +45,12 @@ public class WarpTrailDescription : IDescription
 public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:WarpGlare"
+        Content.Textures.SolarMax2_Atlas_json + ":WarpGlare"
     );
 
     private readonly AnimationClip<Entity> _trailFadeOutAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("/Animations/WarpTrailFadeOut.json");
+    >(Content.Animations.WarpTrailFadeOut_json);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, WarpTrailDescription desc)
     {

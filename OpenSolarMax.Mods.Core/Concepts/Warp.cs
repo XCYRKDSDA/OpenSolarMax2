@@ -61,15 +61,15 @@ public class WarpApplier(
     private readonly int _volume = configs.RequireValue<int>("volume");
 
     private readonly TextureRegion _warpTexture = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:Warp"
+        Content.Textures.SolarMax2_Atlas_json + ":Warp"
     );
 
     private readonly TextureRegion _warpShape = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:WarpShape"
+        Content.Textures.SolarMax2_Atlas_json + ":WarpShape"
     );
 
     private readonly TextureRegion _warpGlow = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:WarpGlow"
+        Content.Textures.SolarMax2_Atlas_json + ":WarpGlow"
     );
 
     private readonly CelestialBodyApplier _celestialBodyApplier = new(assets, factory, configs);

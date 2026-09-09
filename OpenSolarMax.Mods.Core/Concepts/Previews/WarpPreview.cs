@@ -50,7 +50,7 @@ public class WarpPreviewApplier(
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
 
     private readonly TextureRegion _defaultWarpShape = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:WarpShape"
+        Content.Textures.SolarMax2_Atlas_json + ":WarpShape"
     );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);

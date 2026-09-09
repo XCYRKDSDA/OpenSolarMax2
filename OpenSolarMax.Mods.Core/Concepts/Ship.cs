@@ -62,12 +62,12 @@ public class ShipDescription : IDescription
 public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IApplier<ShipDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
-        Content.Textures.DefaultShip
+        Content.Textures.SolarMax2_Atlas_json + ":Ship"
     );
 
     private readonly AnimationClip<Entity> _shipBlinkingAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipBlinking.json");
+    >(Content.Animations.ShipBlinking_json);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipDescription desc)
     {

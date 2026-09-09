@@ -44,15 +44,15 @@ public class HaloExplosionDescription : IDescription
 public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosionDescription>
 {
     private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:Halo"
+        Content.Textures.SolarMax2_Atlas_json + ":Halo"
     );
 
     private readonly AnimationClip<Entity> _explosionAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/HaloExplosion.json"
+        Content.Animations.HaloExplosion_json
     );
 
     private readonly SafeFmodEventDescription _colonizedSoundEvent =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/PlanetColonized");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/PlanetColonized");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, HaloExplosionDescription desc)
     {

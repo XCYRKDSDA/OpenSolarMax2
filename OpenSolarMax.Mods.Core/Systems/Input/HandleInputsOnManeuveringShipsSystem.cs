@@ -40,11 +40,11 @@ public sealed partial class HandleInputsOnManeuveringShipsSystem(
     private ButtonState _lastLeftButton = ButtonState.Released;
 
     private readonly AnimationClip<Entity> _growFadeClip = assets.Load<AnimationClip<Entity>>(
-        "/Animations/SelectionRingFadeOut.json"
+        Content.Animations.SelectionRingFadeOut_json
     );
 
     private readonly AnimationClip<Entity> _shrinkFadeClip = assets.Load<AnimationClip<Entity>>(
-        "/Animations/SelectionRingShrinkFadeOut.json"
+        Content.Animations.SelectionRingShrinkFadeOut_json
     );
 
     /// <summary>

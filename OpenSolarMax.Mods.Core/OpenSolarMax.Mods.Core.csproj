@@ -43,6 +43,11 @@
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="true"
     />
+    <ProjectReference
+      Include="..\OpenSolarMax.Content.SourceGenerators\OpenSolarMax.Content.SourceGenerators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
 
     <!-- Temporary solution. See https://github.com/dotnet/sdk/issues/42708 -->
     <ProjectReference Include="..\Third Party\Nine\Nine\Nine.MG.csproj">
@@ -61,15 +66,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Content\Animations\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Sounds\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Textures\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <GameContent Include="Content\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="manifest.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

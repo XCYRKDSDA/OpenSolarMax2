@@ -53,15 +53,15 @@ public class LaserBeamApplier(
     private readonly float _beamWidth = configs.RequireValue<float>("width");
 
     private readonly TextureRegion _beamTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:Quad_16x4Glow"
+        Content.Textures.SolarMax2_Atlas_json + ":Quad_16x4Glow"
     );
 
     private readonly AnimationClip<Entity> _beamAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/LaserBeam.json"
+        Content.Animations.LaserBeam_json
     );
 
     private readonly SafeFmodEventDescription _laserSoundEffect =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/LaserShoot");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/LaserShoot");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserBeamDescription desc)
     {

@@ -45,11 +45,11 @@ public sealed partial class UpdateShipTrailEffectSystem(
 
     private readonly AnimationClip<Entity> _trailStretchingAnimation = assets.Load<
         AnimationClip<Entity>
-    >("Animations/TrailStretching.json");
+    >(Content.Animations.TrailStretching_json);
 
     private readonly AnimationClip<Entity> _trailExtinguishedAnimation = assets.Load<
         AnimationClip<Entity>
-    >("Animations/TrailExtinguished.json");
+    >(Content.Animations.TrailExtinguished_json);
 
     [Query]
     [All<TrailOf.AsTrail, Sprite>]

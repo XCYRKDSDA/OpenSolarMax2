@@ -26,7 +26,7 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
     : IDelayedCalcSystem
 {
     private readonly SafeFmodEventDescription _warpingSoundEffect =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/Warping");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/Warping");
 
     [Query]
     [All<

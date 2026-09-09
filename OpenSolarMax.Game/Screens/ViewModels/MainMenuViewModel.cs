@@ -72,7 +72,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         _items = ["Editor", "Mods", "OS", .. _levelMods.Select(m => m.Info.ShortName)];
 
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
-        _pageBackground = game.Assets.Load<Texture2D>("Background.png");
+        _pageBackground = game.Assets.Load<Texture2D>(Content.Background_png);
 
         // 加载 默认、模组、编辑器 的预览
 
@@ -81,7 +81,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 new RichTextLayout()
                 {
                     Text = "E  D  I  T  O  R",
-                    Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                    Font = game
+                        .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
+                        .GetFont(80),
                 }
             )
         );
@@ -91,7 +93,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 new RichTextLayout()
                 {
                     Text = "M  O  D  S",
-                    Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                    Font = game
+                        .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
+                        .GetFont(80),
                 }
             )
         );
@@ -101,7 +105,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 new RichTextLayout()
                 {
                     Text = "O  P  E  N    S  O  L  A  R  M  A  X",
-                    Font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(80),
+                    Font = game
+                        .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
+                        .GetFont(80),
                 },
                 new Smooth()
             )

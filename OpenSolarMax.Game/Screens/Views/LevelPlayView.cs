@@ -102,7 +102,9 @@ internal class LevelPlayView
         };
         Grid.SetColumnSpan(leftStack, 3);
         var exitIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonClose")
+            game.Assets.Load<Nine.Graphics.TextureRegion>(
+                Content.UIs.Icons_Atlas_json + ":ButtonClose"
+            )
         );
         var exitButton = new StateOpacityButton(null)
         {
@@ -116,7 +118,9 @@ internal class LevelPlayView
         };
         exitButton.Click += OnExitButtonClicked;
         var pauseIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonPause")
+            game.Assets.Load<Nine.Graphics.TextureRegion>(
+                Content.UIs.Icons_Atlas_json + ":ButtonPause"
+            )
         );
         var pauseButton = new StateOpacityButton(null)
         {
@@ -130,7 +134,9 @@ internal class LevelPlayView
         };
         //pauseButton.Click += OnPauseButtonClicked;
         var restartIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonRestart")
+            game.Assets.Load<Nine.Graphics.TextureRegion>(
+                Content.UIs.Icons_Atlas_json + ":ButtonRestart"
+            )
         );
         var restartButton = new StateOpacityButton(null)
         {
@@ -154,7 +160,9 @@ internal class LevelPlayView
         };
         Grid.SetColumnSpan(rightStack, 3);
         var slowSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonSlowSpeed")
+            game.Assets.Load<Nine.Graphics.TextureRegion>(
+                Content.UIs.Icons_Atlas_json + ":ButtonSlowSpeed"
+            )
         );
         var slowButton = new StateOpacityToggleButton(null)
         {
@@ -168,7 +176,9 @@ internal class LevelPlayView
         };
         slowButton.IsToggledChanged += OnSpeedOptionChanged;
         var normalSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonNormalSpeed")
+            game.Assets.Load<Nine.Graphics.TextureRegion>(
+                Content.UIs.Icons_Atlas_json + ":ButtonNormalSpeed"
+            )
         );
         var normalButton = new StateOpacityToggleButton(null)
         {
@@ -182,7 +192,9 @@ internal class LevelPlayView
         };
         normalButton.IsToggledChanged += OnSpeedOptionChanged;
         var fastSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>("UIs/Icons.Atlas.json:ButtonFastSpeed")
+            game.Assets.Load<Nine.Graphics.TextureRegion>(
+                Content.UIs.Icons_Atlas_json + ":ButtonFastSpeed"
+            )
         );
         var fastButton = new StateOpacityToggleButton(null)
         {

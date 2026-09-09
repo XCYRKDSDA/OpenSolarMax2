@@ -43,11 +43,11 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
     : IApplier<WarpChargingBackFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:SpotGlow"
+        Content.Textures.SolarMax2_Atlas_json + ":SpotGlow"
     );
 
     private readonly AnimationClip<Entity> _rawFlareCharging = assets.Load<AnimationClip<Entity>>(
-        "Animations/WarpBackFlareCharging.json"
+        Content.Animations.WarpBackFlareCharging_json
     );
 
     public void Apply(

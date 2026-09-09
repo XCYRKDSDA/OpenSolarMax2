@@ -45,7 +45,7 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<LaserFlashDescription>
 {
     private readonly AnimationClip<Entity> _glowAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/LaserFlash.json"
+        Content.Animations.LaserFlash_json
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserFlashDescription desc)

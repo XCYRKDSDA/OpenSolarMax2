@@ -1,0 +1,195 @@
+// ContentPathGenerator 生成规则表（与 .sisyphus/plans/content-path-generator.md T1 节一致）
+//
+// | 磁盘文件（Content/ 下相对路径） | 生成成员 | 值 |
+// |---|---|---|
+// | `Background.png` | `Content.Background_png` | `"Background.png"` |
+// | `Fonts/Downlink-gav1.ttf` | `Content.Fonts.Downlink_gav1_ttf` | `"Fonts/Downlink-gav1.ttf"` |
+// | `Animations/TitleScreen/LogoAnimation.json` | `Content.Animations.TitleScreen.LogoAnimation_json` | 同路径 |
+// | `Textures/Pixel.json` / `Textures/Pixel.bmp` | `Content.Textures.Pixel_json` / `...Pixel_bmp` | 各为自身完整路径 |
+// | `Textures/SolarMax2.Atlas.json` / `.png` | `Content.Textures.SolarMax2_Atlas_json` / `..._png` | 图集引用用前者 |
+// | `UIs/Icons.Atlas.json` / `.png` | `Content.UIs.Icons_Atlas_json` / `..._png` | 同上 |
+// | `UIs/IconsAtlas.json` / `.png` | `Content.UIs.IconsAtlas_json` / `..._png` | 同上 |
+// | `Sounds/Master.bank` | `Content.Sounds.Master_bank` | `"Sounds/Master.bank"` |
+// | `Sounds/Master.strings.bank`（不排除，照常生成） | `Content.Sounds.Master_strings_bank` | `"Sounds/Master.strings.bank"` |
+// | `Animations/ShipTakingOff.json` | `Content.Animations.ShipTakingOff_json` | 路径值 |
+//
+// 规则一句话：目录→嵌套静态类；每个文件→一个 `public const string`（名=文件名 `.`/`-`→`_`，值=剥
+// `Content/` 后正斜杠相对路径）。图集 region、FMOD 事件名一律不进生成器——调用点写 `常量 + ":Ship"`、
+// `常量 + ":/LaserShoot"`，const 拼接仍是编译期常量。
+
+using System.Collections.Immutable;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
+
+namespace OpenSolarMax.Content.SourceGenerators;
+
+[Generator]
+public sealed class ContentPathGenerator : IIncrementalGenerator
+{
+    private const string ContentPrefix = "Content/";
+
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        var assemblyName = context.CompilationProvider.Select(
+            static (compilation, _) => compilation.AssemblyName
+        );
+
+        var contentPaths = context
+            .AnalyzerConfigOptionsProvider.Select(
+                static (options, _) =>
+                {
+                    options.GlobalOptions.TryGetValue(
+                        "build_property.OSMContentPaths",
+                        out var raw
+                    );
+                    options.GlobalOptions.TryGetValue(
+                        "build_property.ProjectDir",
+                        out var projectDir
+                    );
+                    return (Paths: raw ?? string.Empty, ProjectDir: projectDir ?? string.Empty);
+                }
+            )
+            .SelectMany(
+                static (pair, _) =>
+                    string.IsNullOrEmpty(pair.Paths)
+                        ? []
+                        : pair
+                            .Paths.Split(',')
+                            .Select(p => NormalizeToContentRelativePath(p, pair.ProjectDir))
+            )
+            .Collect();
+
+        context.RegisterSourceOutput(
+            contentPaths.Combine(assemblyName),
+            static (spc, pair) => GenerateContent(spc, pair.Left, pair.Right)
+        );
+    }
+
+    private static string NormalizeToContentRelativePath(string path, string projectDir)
+    {
+        var relative = path;
+        if (Path.IsPathRooted(relative) && !string.IsNullOrEmpty(projectDir))
+        {
+            relative = StripProjectDirectory(relative, projectDir);
+        }
+
+        relative = relative.Replace('\\', '/');
+        if (relative.StartsWith(ContentPrefix, StringComparison.Ordinal))
+        {
+            relative = relative[ContentPrefix.Length..];
+        }
+        return relative;
+    }
+
+    private static string StripProjectDirectory(string path, string projectDir)
+    {
+        var normalizedProjectDir = projectDir.Replace('\\', '/').TrimEnd('/');
+        var normalizedPath = path.Replace('\\', '/');
+        if (normalizedPath.StartsWith(normalizedProjectDir + '/', StringComparison.Ordinal))
+        {
+            return normalizedPath[(normalizedProjectDir.Length + 1)..];
+        }
+        return normalizedPath;
+    }
+
+    private static void GenerateContent(
+        SourceProductionContext context,
+        ImmutableArray<string> contentPaths,
+        string? assemblyName
+    )
+    {
+        var root = new DirectoryNode();
+        foreach (var contentPath in contentPaths)
+        {
+            var segments = contentPath.Split('/');
+            var node = root;
+            for (var i = 0; i < segments.Length - 1; i++)
+            {
+                if (!node.Children.TryGetValue(segments[i], out var child))
+                {
+                    child = new DirectoryNode();
+                    node.Children.Add(segments[i], child);
+                }
+                node = child;
+            }
+            node.Files.Add(new FileEntry(MemberNameFromFileName(segments[^1]), contentPath));
+        }
+
+        var builder = new StringBuilder();
+        builder.AppendLine("// <auto-generated>");
+        builder.AppendLine(
+            "// 由 OpenSolarMax.Content.SourceGenerators 依据 OSMContentPaths 属性生成，请勿手动编辑。"
+        );
+        builder.AppendLine("// </auto-generated>");
+        builder.AppendLine();
+        if (!string.IsNullOrEmpty(assemblyName))
+        {
+            builder.Append("namespace ").Append(assemblyName).AppendLine(";");
+            builder.AppendLine();
+        }
+        builder.AppendLine("public static partial class Content");
+        builder.AppendLine("{");
+        EmitDirectory(builder, root, indent: 1);
+        builder.AppendLine("}");
+
+        context.AddSource("Content.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
+    }
+
+    /// <summary>
+    /// 成员名 = 文件名（含扩展名）中每个 `.` 与 `-` 替换为 `_`；首字符为数字时前置 `_`。
+    /// 名字含扩展名使同目录不同扩展名必然不同名，因此无需任何重名判定。
+    /// </summary>
+    private static string MemberNameFromFileName(string fileName)
+    {
+        var builder = new StringBuilder(fileName.Length + 1);
+        if (char.IsDigit(fileName[0]))
+        {
+            builder.Append('_');
+        }
+        foreach (var character in fileName)
+        {
+            builder.Append(character is '.' or '-' ? '_' : character);
+        }
+        return builder.ToString();
+    }
+
+    private static void EmitDirectory(StringBuilder builder, DirectoryNode node, int indent)
+    {
+        var padding = new string(' ', indent * 4);
+        foreach (var file in node.Files.OrderBy(f => f.MemberName, StringComparer.Ordinal))
+        {
+            builder
+                .Append(padding)
+                .Append("public const string ")
+                .Append(file.MemberName)
+                .Append(" = \"")
+                .Append(Escape(file.PathValue))
+                .AppendLine("\";");
+        }
+        foreach (var child in node.Children.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            builder.AppendLine();
+            builder
+                .Append(padding)
+                .Append("public static partial class ")
+                .Append(child.Key)
+                .AppendLine();
+            builder.Append(padding).Append('{').AppendLine();
+            EmitDirectory(builder, child.Value, indent + 1);
+            builder.Append(padding).Append('}').AppendLine();
+        }
+    }
+
+    private static string Escape(string value) => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+    private sealed record FileEntry(string MemberName, string PathValue);
+
+    private sealed class DirectoryNode
+    {
+        public List<FileEntry> Files { get; } = new();
+
+        public Dictionary<string, DirectoryNode> Children { get; } = new();
+    }
+}

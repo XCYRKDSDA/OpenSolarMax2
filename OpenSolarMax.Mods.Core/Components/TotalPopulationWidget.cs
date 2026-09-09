@@ -32,7 +32,7 @@ public sealed class TotalPopulationWidget : HorizontalStackPanel
         var opacity = configs.RequireValue<float>("opacity");
         var textSize = configs.RequireValue<int>("text:size");
 
-        var font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(textSize);
+        var font = assets.Load<FontSystem>(Game.Content.Fonts.Downlink_gav1_ttf).GetFont(textSize);
         var labelStyle = new LabelStyle() { Font = font, TextColor = Color.White };
 
         _prefixLabel = new Label() { Text = _populationTextPrefix };

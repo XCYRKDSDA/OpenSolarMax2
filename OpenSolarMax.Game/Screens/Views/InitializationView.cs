@@ -26,7 +26,7 @@ internal class InitializationView : ViewBase<InitializationViewModel>
     {
         // 构建 UI
 
-        var font = game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(_textSize);
+        var font = game.Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf).GetFont(_textSize);
 
         _logoLabel = new Label()
         {
