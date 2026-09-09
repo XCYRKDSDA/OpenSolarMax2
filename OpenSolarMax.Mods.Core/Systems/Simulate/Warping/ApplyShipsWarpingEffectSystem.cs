@@ -41,11 +41,11 @@ public sealed partial class ApplyShipsWarpingEffectSystem(World world, IAssetsMa
 {
     private readonly AnimationClip<Entity> _shipPreWarpAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipPreWarp.json");
+    >(Content.Animations.ShipPreWarp_json);
 
     private readonly AnimationClip<Entity> _shipPostWarpAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipPostWarp.json");
+    >(Content.Animations.ShipPostWarp_json);
 
     [Query]
     [All<WarpingStatus, Sprite, AbsoluteTransform>]

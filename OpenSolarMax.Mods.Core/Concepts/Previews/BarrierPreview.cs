@@ -48,11 +48,11 @@ public class BarrierPreviewApplier(
     private readonly float _barrierEdgeWidth = configs.RequireValue<float>("edge:preview:width");
 
     private readonly TextureRegion _barrierNodeShape = assets.Load<TextureRegion>(
-        "/Textures/SolarMax2.Atlas.json:BarrierShape"
+        Content.Textures.SolarMax2_Atlas_json + ":BarrierShape"
     );
 
     private readonly TextureRegion _barrierEdgePixel = assets.Load<TextureRegion>(
-        "/Textures/Pixel.json:AtCenter"
+        Game.Content.Textures.Pixel_json + ":AtCenter"
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, BarrierPreviewDescription desc)

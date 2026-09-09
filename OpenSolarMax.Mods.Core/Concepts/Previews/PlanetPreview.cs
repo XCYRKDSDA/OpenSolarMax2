@@ -47,7 +47,7 @@ public class PlanetPreviewApplier(IAssetsManager assets, IConceptFactory factory
     : IApplier<PlanetPreviewDescription>
 {
     private readonly TextureRegion _defaultPlanetShape = assets.Load<TextureRegion>(
-        Content.Textures.DefaultPlanetShape
+        Content.Textures.SolarMax2_Atlas_json + ":PlanetShape"
     );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);

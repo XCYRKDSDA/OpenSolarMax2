@@ -4,6 +4,7 @@
     <Project Path="Third Party/Nine/Nine/Nine.MG.csproj" />
     <Project Path="Third Party/Arch/src/Arch/Arch.csproj" />
   </Folder>
+  <Project Path="OpenSolarMax.Content.SourceGenerators/OpenSolarMax.Content.SourceGenerators.csproj" />
   <Project Path="OpenSolarMax.Game/OpenSolarMax.Game.csproj" />
   <Project Path="OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj" />
   <Project Path="OpenSolarMax.Mods.Core.SourceGenerators/OpenSolarMax.Mods.Core.SourceGenerators.csproj" />

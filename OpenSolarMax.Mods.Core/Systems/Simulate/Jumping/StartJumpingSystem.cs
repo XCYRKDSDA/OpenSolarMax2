@@ -42,7 +42,7 @@ public sealed partial class StartJumpingSystem(
 ) : IDelayedCalcSystem
 {
     private readonly SafeFmodEventDescription _chargingSoundEvent =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipCharging");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipCharging");
 
     private readonly float _offsetTime = configs.RequireValue<float>("arrival_time_offset");
     private readonly float _maxOffsetRatio = configs.RequireValue<float>(

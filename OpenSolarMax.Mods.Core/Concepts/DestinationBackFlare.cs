@@ -43,12 +43,12 @@ public class DestinationBackFlareApplier(IAssetsManager assets, IConceptFactory 
     : IApplier<DestinationBackFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:SpotGlow"
+        Content.Textures.SolarMax2_Atlas_json + ":SpotGlow"
     );
 
     private readonly ParametricAnimationClip<Entity> _rawFlareCharging = assets.Load<
         ParametricAnimationClip<Entity>
-    >("Animations/DestinationBackFlareCharging.json");
+    >(Content.Animations.DestinationBackFlareCharging_json);
 
     public void Apply(
         CommandBuffer commandBuffer,

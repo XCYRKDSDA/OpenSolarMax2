@@ -40,7 +40,7 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
     : IApplier<WarpChargingEffectDescription>
 {
     private readonly SafeFmodEventDescription _warpChargingSoundEffect =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/WarpCharging");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/WarpCharging");
 
     public void Apply(
         CommandBuffer commandBuffer,

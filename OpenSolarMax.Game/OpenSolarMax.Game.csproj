@@ -36,6 +36,15 @@
     <ProjectReference Include="..\Third Party\Arch\src\Arch\Arch.csproj">
       <AdditionalProperties>DefineConstants=$(DefineConstants);EVENTS</AdditionalProperties>
     </ProjectReference>
+    <ProjectReference
+      Include="..\OpenSolarMax.Content.SourceGenerators\OpenSolarMax.Content.SourceGenerators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Content\**\*" />
   </ItemGroup>
 
   <ItemGroup>

@@ -29,7 +29,7 @@ public sealed partial class VisualizeEntityIdsSystem(
     private readonly Color _textColor = configs.RequireValue<Color>("text:color");
 
     private readonly SpriteFontBase _font = assets
-        .Load<FontSystem>(Game.Content.Fonts.Default)
+        .Load<FontSystem>(Game.Content.Fonts.Downlink_gav1_ttf)
         .GetFont(configs.RequireValue<int>("text:size"));
 
     private readonly FontRenderer _fontRenderer = new(graphicsDevice);

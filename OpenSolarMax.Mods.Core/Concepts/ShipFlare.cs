@@ -42,15 +42,15 @@ public class ShipFlareDescription : IDescription
 public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:ShipFlare"
+        Content.Textures.SolarMax2_Atlas_json + ":ShipFlare"
     );
 
     private readonly AnimationClip<Entity> _flareAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/ShipFlare.json"
+        Content.Animations.ShipFlare_json
     );
 
     private readonly SafeFmodEventDescription _destroyedSoundEvent =
-        assets.Load<SafeFmodEventDescription>("Sounds/Master.bank:/ShipDestroyed");
+        assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipDestroyed");
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipFlareDescription desc)
     {

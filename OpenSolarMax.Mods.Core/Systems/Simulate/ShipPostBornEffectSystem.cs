@@ -91,7 +91,7 @@ public partial class ApplyShipPostBornEffectSystem(World world, IAssetsManager a
     /// </summary>
     private readonly AnimationClip<Entity> _shipPostBornAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipPostBorn.json");
+    >(Content.Animations.ShipPostBorn_json);
 
     [Query]
     [All<ShipPostBornEffect, Sprite>]

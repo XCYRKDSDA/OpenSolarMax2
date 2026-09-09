@@ -52,16 +52,16 @@ public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFac
     : IApplier<WarpChargingSurroundFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:Halo"
+        Content.Textures.SolarMax2_Atlas_json + ":Halo"
     );
 
     private readonly ParametricAnimationClip<Entity> _rawFlareRotating = assets.Load<
         ParametricAnimationClip<Entity>
-    >("Animations/WarpSurroundFlareRotating.json");
+    >(Content.Animations.WarpSurroundFlareRotating_json);
 
     private readonly ParametricAnimationClip<Entity> _rawFlareCharging = assets.Load<
         ParametricAnimationClip<Entity>
-    >("Animations/WarpSurroundFlareCharging.json");
+    >(Content.Animations.WarpSurroundFlareCharging_json);
 
     public void Apply(
         CommandBuffer commandBuffer,

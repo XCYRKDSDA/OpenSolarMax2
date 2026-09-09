@@ -36,7 +36,7 @@ public sealed partial class UpdateShipTravellingEffectSystem(
 
     private readonly AnimationClip<Entity> _shipJumpingAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipJumping.json");
+    >(Content.Animations.ShipJumping_json);
 
     [Query]
     [All<JumpingStatus>]

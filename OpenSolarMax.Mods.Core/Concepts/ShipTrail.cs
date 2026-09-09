@@ -42,7 +42,7 @@ public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<ShipTrailDescription>
 {
     private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:Quad8x4"
+        Content.Textures.SolarMax2_Atlas_json + ":Quad8x4"
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipTrailDescription desc)

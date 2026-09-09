@@ -50,7 +50,7 @@ public class TowerPreviewApplier(
     private readonly float _referenceRadius = configs.RequireValue<float>("reference_radius");
 
     private readonly TextureRegion _towerShape = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:TowerShape"
+        Content.Textures.SolarMax2_Atlas_json + ":TowerShape"
     );
 
     private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);

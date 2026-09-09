@@ -41,11 +41,11 @@ public class ShipPulseDescription : IDescription
 public class ShipPulseApplier(IAssetsManager assets) : IApplier<ShipPulseDescription>
 {
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:ShipPulse"
+        Content.Textures.SolarMax2_Atlas_json + ":ShipPulse"
     );
 
     private readonly AnimationClip<Entity> _pulseAnimation = assets.Load<AnimationClip<Entity>>(
-        "Animations/ShipPulse.json"
+        Content.Animations.ShipPulse_json
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipPulseDescription desc)

@@ -43,11 +43,11 @@ public class ShipAfterImageDescription : IDescription
 public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterImageDescription>
 {
     private readonly TextureRegion _texture = assets.Load<TextureRegion>(
-        Content.Textures.DefaultShip
+        Content.Textures.SolarMax2_Atlas_json + ":Ship"
     );
 
     private readonly AnimationClip<Entity> _animation = assets.Load<AnimationClip<Entity>>(
-        "Animations/ShipAfterImage.json"
+        Content.Animations.ShipAfterImage_json
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipAfterImageDescription desc)

@@ -42,12 +42,12 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
     : IApplier<ShipBornPulseDescription>
 {
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
-        "Textures/SolarMax2.Atlas.json:ShipPulse"
+        Content.Textures.SolarMax2_Atlas_json + ":ShipPulse"
     );
 
     private readonly AnimationClip<Entity> _bornPulseAnimationClip = assets.Load<
         AnimationClip<Entity>
-    >("Animations/ShipBornPulse.json");
+    >(Content.Animations.ShipBornPulse_json);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipBornPulseDescription desc)
     {

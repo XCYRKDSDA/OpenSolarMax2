@@ -42,7 +42,7 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
     : IApplier<ColonizationFlareDescription>
 {
     private readonly AnimationClip<Entity> _clip = assets.Load<AnimationClip<Entity>>(
-        "Animations/ColonizationFlare.json"
+        Content.Animations.ColonizationFlare_json
     );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ColonizationFlareDescription desc)

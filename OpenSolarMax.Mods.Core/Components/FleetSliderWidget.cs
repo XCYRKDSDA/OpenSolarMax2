@@ -47,7 +47,7 @@ public sealed class FleetSliderWidget : HorizontalSlider
         Padding = new Thickness(0, padding);
         Background = null;
 
-        var font = assets.Load<FontSystem>(Game.Content.Fonts.Default).GetFont(textSize);
+        var font = assets.Load<FontSystem>(Game.Content.Fonts.Downlink_gav1_ttf).GetFont(textSize);
 
         var knobLabel = new Label
         {

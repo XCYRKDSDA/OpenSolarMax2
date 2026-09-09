@@ -83,7 +83,7 @@ internal class MenuLikeView
         {
             // 创建曝光渲染工具
             _exposureSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
-            _exposureWhiteBase = game.Assets.Load<Texture2D>("Textures/Pixel.bmp");
+            _exposureWhiteBase = game.Assets.Load<Texture2D>(Content.Textures.Pixel_bmp);
         }
 
         // 顶栏
@@ -98,13 +98,19 @@ internal class MenuLikeView
             Content = new Image()
             {
                 Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Idle)
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.IconsAtlas_json + ":BackBtn_Idle"
+                    )
                 ),
                 OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Pressed)
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.IconsAtlas_json + ":BackBtn_Pressed"
+                    )
                 ),
                 PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(Content.UIs.Icons.BackBtn_Pressed)
+                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                        Content.UIs.IconsAtlas_json + ":BackBtn_Pressed"
+                    )
                 ),
             },
             HorizontalAlignment = HorizontalAlignment.Left,
@@ -175,7 +181,7 @@ internal class MenuLikeView
             Text = name,
             TextAlign = TextHorizontalAlignment.Center,
             TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
-            Font = Game.Assets.Load<FontSystem>(Content.Fonts.Default).GetFont(40),
+            Font = Game.Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf).GetFont(40),
         };
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
