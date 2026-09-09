@@ -44,12 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Content\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Content\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <GameContent Include="Content\**\*" />
   </ItemGroup>
 </Project>
