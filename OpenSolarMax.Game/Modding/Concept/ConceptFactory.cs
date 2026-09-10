@@ -61,7 +61,10 @@ internal class ConceptFactory : IConceptFactory
         var conceptTemplate = _concepts[key];
         Debug.Assert(typeof(T) == conceptTemplate.DescriptionType);
 
-        var entity = world.Construct(commandBuffer, conceptTemplate.Signature);
+        var entity = world.Construct(
+            commandBuffer,
+            conceptTemplate.Signature + new Signature(typeof(ConceptTag))
+        );
         foreach (var applier in conceptTemplate.Appliers)
         {
             applier.Switch(
@@ -69,6 +72,8 @@ internal class ConceptFactory : IConceptFactory
                 a => ((IApplier<T>)a).Apply(commandBuffer, entity, description)
             );
         }
+
+        commandBuffer.Set(in entity, new ConceptTag { Name = conceptTemplate.Name });
 
         return entity;
     }
@@ -92,7 +97,10 @@ internal class ConceptFactory : IConceptFactory
         var conceptTemplate = _concepts[key];
         Debug.Assert(description.GetType() == conceptTemplate.DescriptionType);
 
-        var entity = world.Construct(commandBuffer, conceptTemplate.Signature);
+        var entity = world.Construct(
+            commandBuffer,
+            conceptTemplate.Signature + new Signature(typeof(ConceptTag))
+        );
         foreach (var applier in conceptTemplate.Appliers)
         {
             applier.Switch(
@@ -100,6 +108,8 @@ internal class ConceptFactory : IConceptFactory
                 a => a.Apply(commandBuffer, entity, description)
             );
         }
+
+        commandBuffer.Set(in entity, new ConceptTag { Name = conceptTemplate.Name });
 
         return entity;
     }
@@ -109,11 +119,16 @@ internal class ConceptFactory : IConceptFactory
         var conceptTemplate = _concepts[key];
         Debug.Assert(conceptTemplate.DescriptionType is null);
 
-        var entity = world.Construct(commandBuffer, conceptTemplate.Signature);
+        var entity = world.Construct(
+            commandBuffer,
+            conceptTemplate.Signature + new Signature(typeof(ConceptTag))
+        );
         foreach (var applier in conceptTemplate.Appliers)
         {
             applier.Switch(a => a.Apply(commandBuffer, entity), _ => throw new Exception());
         }
+
+        commandBuffer.Set(in entity, new ConceptTag { Name = conceptTemplate.Name });
 
         return entity;
     }
