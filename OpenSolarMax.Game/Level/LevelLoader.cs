@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Nine.Assets;
 using Nine.Assets.Serialization;
-using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Game.Utils;
 using Zio;
@@ -64,13 +63,30 @@ internal class LevelLoader(
         collected.Add((path, jsonLevel));
     }
 
-    private LevelFile ParseAndMerge(
-        List<(UPath Path, JsonLevel Level)> collected,
-        IAssetsManager assets
-    )
+    private LevelFile ParseAndMerge(List<(UPath Path, JsonLevel Level)> collected)
     {
         // 初始化从配置模式索引到配置模式名称的映射
         var schemaNamesByDeclarationId = declarationSchemaInfos.Keys.ToDictionary(key => key);
+
+        var statementSerializerOptions = new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true,
+            IncludeFields = true,
+        };
+        // 添加基础类型转换器
+        statementSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        statementSerializerOptions.Converters.Add(new Vector2JsonConverter());
+        statementSerializerOptions.Converters.Add(new ColorJsonConverter());
+        statementSerializerOptions.Converters.Add(new BlendStateJsonConverter());
+        // 添加 OneOf 转换器
+        statementSerializerOptions.Converters.Add(new OneOfJsonConverterFactory());
+        // 添加语句转换器
+        statementSerializerOptions.Converters.Add(
+            new DeclarationStatementJsonConverter(
+                schemaNamesByDeclarationId,
+                declarationSchemaInfos
+            )
+        );
 
         var templates = new Dictionary<string, DeclarationStatement>();
         var entities = new List<(string? Id, DeclarationStatement Statement)>();
@@ -78,32 +94,6 @@ internal class LevelLoader(
 
         foreach (var (path, jsonLevel) in collected)
         {
-            // 每个文件使用独立的序列化选项，因为资源引用转换器绑定到各自文件所在目录
-            var statementSerializerOptions = new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true,
-                IncludeFields = true,
-            };
-            // 添加基础类型转换器
-            statementSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            statementSerializerOptions.Converters.Add(new Vector2JsonConverter());
-            statementSerializerOptions.Converters.Add(new ColorJsonConverter());
-            statementSerializerOptions.Converters.Add(new BlendStateJsonConverter());
-            // 添加资源引用转换器
-            var directory = path.GetDirectory();
-            statementSerializerOptions.Converters.Add(
-                new AssetReferenceJsonConverter<TextureRegion>(assets, directory)
-            );
-            // 添加 OneOf 转换器
-            statementSerializerOptions.Converters.Add(new OneOfJsonConverterFactory());
-            // 添加语句转换器
-            statementSerializerOptions.Converters.Add(
-                new DeclarationStatementJsonConverter(
-                    schemaNamesByDeclarationId,
-                    declarationSchemaInfos
-                )
-            );
-
             // 解析模板语句
             foreach (var (templateKey, templateJsonElement) in jsonLevel.Templates)
             {
@@ -165,6 +155,6 @@ internal class LevelLoader(
         CollectJsonLevels(fs, path, visited, collected);
 
         // 解析阶段：按序解析各文件的模板、实体与配置，并合并到最终结果
-        return ParseAndMerge(collected, assets);
+        return ParseAndMerge(collected);
     }
 }
