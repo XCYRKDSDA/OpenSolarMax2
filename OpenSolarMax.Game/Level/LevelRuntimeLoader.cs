@@ -1,9 +1,7 @@
 using System.Reflection;
-using System.Text.Json;
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding;
@@ -80,14 +78,11 @@ internal class LevelRuntimeLoader
     {
         // 构造关卡级配置（叠加到模组 LocalConfigs 之上）
         IConfigurationRoot effectiveConfigs;
-        if (level.Configs is { } configsJson)
+        if (level.Configs is { } levelConfigs)
         {
-            var jsonStream = new MemoryStream(
-                System.Text.Encoding.UTF8.GetBytes(configsJson.GetRawText())
-            );
             effectiveConfigs = new ConfigurationBuilder()
                 .AddConfiguration(_levelModContext.LocalConfigs)
-                .AddJsonStream(jsonStream)
+                .AddConfiguration(levelConfigs)
                 .Build();
         }
         else

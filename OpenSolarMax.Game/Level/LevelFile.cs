@@ -1,12 +1,12 @@
-using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace OpenSolarMax.Game.Level;
 
 internal class LevelFile
 {
-    public Dictionary<string, DeclarationStatement> Templates { get; } = [];
+    public required Dictionary<string, DeclarationStatement> Templates { get; init; }
 
-    public List<(string? Id, DeclarationStatement Statement)> Entities { get; } = [];
+    public required List<(string? Id, DeclarationStatement Statement)> Entities { get; init; }
 
-    public JsonElement? Configs { get; set; }
+    public IConfiguration? Configs { get; init; }
 }
