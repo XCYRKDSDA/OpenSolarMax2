@@ -1,17 +1,7 @@
 {
-    "templates": {
-        "planet30": { "$base": "planet", "radius": 19.2, "volume": 30, "population": 30, "produceSpeed": 0.6 },
-        "planet40": { "$base": "planet", "radius": 25.6, "volume": 40, "population": 40, "produceSpeed": 0.8 },
-        "planet50": { "$base": "planet", "radius": 32.0, "volume": 50, "population": 50, "produceSpeed": 1.0 },
-        "blue": { "$base": "team", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
-    },
+    "includes": ["common.json"],
 
     "entities": [
-        { "$id": "blue", "$base": "blue" },
-        { "$id": "red", "$base": "blue", "color": "#FF5D93", "ai": "smart" },
-
-        { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "team": "blue" },
-
         { "$base": "warp", "position": [ 512, 384 ] },
 
         { "$base": "tower", "position": [ 272, 248 ] },
