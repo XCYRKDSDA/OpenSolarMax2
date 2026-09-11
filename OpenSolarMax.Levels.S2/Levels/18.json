@@ -1,5 +1,5 @@
 {
-    "includes": ["common.json"],
+    "includes": [ ".common.json" ],
 
     "entities": [
         { "$base": "warp", "position": [ 512, 384 ] },

@@ -219,6 +219,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         );
         var levelPreviews = levelModInfo
             .Levels.EnumerateFiles("*.json")
+            .Where(f => !f.Name.StartsWith('.'))
             .Select(f =>
             {
                 var level = levelLoader.Load(f.FileSystem, levelModContext.LocalAssets, f.Path);

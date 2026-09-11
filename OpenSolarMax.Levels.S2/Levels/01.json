@@ -1,5 +1,5 @@
 {
-    "includes": ["common.json"],
+    "includes": [ ".common.json" ],
 
     "configs": {
         "systems:victory:require_all_planets": true

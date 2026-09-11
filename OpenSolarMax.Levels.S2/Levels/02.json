@@ -1,5 +1,5 @@
 {
-    "includes": ["common.json"],
+    "includes": [ ".common.json" ],
 
     "entities": [
         { "$base": "planet60", "team": "blue", "position": [ 512, 288 ], "ships": 60 },
