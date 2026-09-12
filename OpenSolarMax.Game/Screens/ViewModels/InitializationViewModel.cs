@@ -45,7 +45,7 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
 
     private static MainMenuPageContext Load(IProgress<float> progress, SolarMax game)
     {
-        var levelModInfos = game.Mods.LevelMods;
+        var levelModInfos = game.GameSession.Mods;
         var previewableLevelMods = levelModInfos.Select(info =>
         {
             // TODO: 若未指定预览文件则加载缺省图片

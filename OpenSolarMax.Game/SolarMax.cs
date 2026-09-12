@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Nine.Assets;
 using Nine.Screens;
-using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.ViewModels;
@@ -30,8 +29,6 @@ public class SolarMax : XNAGame
     private SpriteBatch _spriteBatch;
 
     private TaskScheduler _loadingTaskScheduler;
-
-    private ModsManager _mods;
 
     private GameSession _gameSession;
 
@@ -64,8 +61,6 @@ public class SolarMax : XNAGame
 
     public AssetsManager Assets => _globalAssets;
 
-    internal ModsManager Mods => _mods;
-
     internal GameSession GameSession => _gameSession;
 
     internal ScreenManager ScreenManager => _globalScreenManager;
@@ -82,7 +77,6 @@ public class SolarMax : XNAGame
         _loadingTaskScheduler = pair.ExclusiveScheduler;
 
         // 初始化模组管理器
-        _mods = new ModsManager(Folders.Mods.Behaviors, Folders.Mods.Content, Folders.Mods.Levels);
         _gameSession = new GameSession(this);
 
         // 创建渲染相关内容

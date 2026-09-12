@@ -6,7 +6,6 @@ using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Animations;
-using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
@@ -27,8 +26,6 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private readonly List<IFadableImage> _builtinPreviews = [];
 
     private readonly List<PreviewableLevelMod> _levelMods;
-
-    private Tuple<int, Task<object?>>? _previousChapterPageContextPair = null;
 
     #endregion
 
@@ -170,30 +167,12 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         if (idx < _builtinPreviews.Count)
             return;
         var levelModIndex = idx - _builtinPreviews.Count;
-        var contextLoadTask = _previousChapterPageContextPair switch
-        {
-            { } prev when prev?.Item1 == levelModIndex => prev.Item2,
-            { } prev => Task
-                .Factory.StartNew(
-                    async () =>
-                    {
-                        var previousChapterPageContext = (ChapterPageContext)(await prev.Item2)!;
-                        previousChapterPageContext.LevelModContext.Dispose();
-                        return (object?)Load(_levelMods[levelModIndex], Game);
-                    },
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    Game.BackgroundScheduler
-                )
-                .Unwrap(),
-            null => Task<object?>.Factory.StartNew(
-                () => Load(_levelMods[levelModIndex], Game),
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                Game.BackgroundScheduler
-            ),
-        };
-        _previousChapterPageContextPair = new(levelModIndex, contextLoadTask);
+        var contextLoadTask = Task<object?>.Factory.StartNew(
+            () => Load(_levelMods[levelModIndex], Game),
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            Game.BackgroundScheduler
+        );
         Game.ScreenManager.Forward2(
             typeof(ChapterPage),
             contextLoadTask,
@@ -210,26 +189,10 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private static ChapterPageContext Load(PreviewableLevelMod previewableLevelMod, SolarMax game)
     {
         var levelModInfo = previewableLevelMod.Info;
-        var levelModContext = game.Mods.CreateLevelModContext(levelModInfo, game);
-        var levelLoader = new LevelLoader(levelModContext.DeclarationSchemaInfos);
-        var levelPreviewLoader = new LevelRuntimeLoader(
-            levelModContext,
-            GameplayOrPreview.Preview,
-            game
-        );
-        var levelPreviews = levelModInfo
-            .Levels.EnumerateFiles("*.json")
-            .Where(f => !f.Name.StartsWith('.'))
-            .Select(f =>
-            {
-                var level = levelLoader.Load(f.FileSystem, levelModContext.LocalAssets, f.Path);
-                return (f.NameWithoutExtension, level, levelPreviewLoader.LoadLevel(level));
-            })
+        var modSession = game.GameSession.LoadMod(levelModInfo);
+        var levelPreviews = modSession
+            .Levels.Select(entry => (Info: entry, Preview: modSession.LoadLevelPreview(entry)))
             .ToList();
-        return new ChapterPageContext(
-            levelModContext,
-            levelPreviews,
-            previewableLevelMod.Background!
-        );
+        return new ChapterPageContext(modSession, levelPreviews, previewableLevelMod.Background!);
     }
 }
