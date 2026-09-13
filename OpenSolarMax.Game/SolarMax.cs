@@ -5,11 +5,11 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Nine.Assets;
 using Nine.Screens;
-using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.Screens.Views;
+using OpenSolarMax.Game.Sessions;
 using OpenSolarMax.Game.Utils;
 using FmodStudioSystem = FMOD.Studio.System;
 using XNAGame = Microsoft.Xna.Framework.Game;
@@ -30,7 +30,7 @@ public class SolarMax : XNAGame
 
     private TaskScheduler _loadingTaskScheduler;
 
-    private ModsManager _mods;
+    private GameSession _gameSession;
 
     public SolarMax()
     {
@@ -61,7 +61,7 @@ public class SolarMax : XNAGame
 
     public AssetsManager Assets => _globalAssets;
 
-    internal ModsManager Mods => _mods;
+    internal GameSession GameSession => _gameSession;
 
     internal ScreenManager ScreenManager => _globalScreenManager;
 
@@ -77,7 +77,7 @@ public class SolarMax : XNAGame
         _loadingTaskScheduler = pair.ExclusiveScheduler;
 
         // 初始化模组管理器
-        _mods = new ModsManager(Folders.Mods.Behaviors, Folders.Mods.Content, Folders.Mods.Levels);
+        _gameSession = new GameSession(this);
 
         // 创建渲染相关内容
         _renderTarget = new RenderTarget2D(
@@ -128,6 +128,14 @@ public class SolarMax : XNAGame
         base.UnloadContent();
 
         _globalFmodSystem.release();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            _gameSession?.Dispose();
+
+        base.Dispose(disposing);
     }
 
     protected override void Update(GameTime gameTime)

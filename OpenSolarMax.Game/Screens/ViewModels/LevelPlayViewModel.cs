@@ -5,18 +5,17 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Game.Screens.Transitions;
+using OpenSolarMax.Game.Sessions;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
 internal partial class LevelPlayViewModel : ViewModelBase
 {
-    private readonly LevelRuntime _runtime;
+    private readonly LevelSession _session;
     private readonly Entity _viewEntity;
-    private readonly GameTime _playTime = new();
 
     [ObservableProperty]
     private bool _paused = false;
@@ -30,38 +29,36 @@ internal partial class LevelPlayViewModel : ViewModelBase
     [ObservableProperty]
     private ICommand _exitCommand;
 
-    public World World => _runtime.World;
+    public World World => _session.World;
 
-    public AggregateSystem InputSystem => _runtime.InputSystems;
+    public AggregateSystem InputSystem => _session.InputSystems;
 
-    public AggregateSystem RenderSystem => _runtime.RenderSystems;
+    public AggregateSystem RenderSystem => _session.RenderSystems;
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(LevelRuntime levelRuntime, Texture2D background, SolarMax game)
+    public LevelPlayViewModel(LevelSession session, Texture2D background, SolarMax game)
         : base(game)
     {
-        // 记录运行时
-        _runtime = levelRuntime;
+        // 记录会话
+        _session = session;
         _background = background;
 
         _exitCommand = new RelayCommand(OnExit);
 
         // 查找相机
         var viewDesc = new QueryDescription().WithAll<ViewTag>();
-        var viewCount = _runtime.World.CountEntities(in viewDesc);
+        var viewCount = _session.World.CountEntities(in viewDesc);
         if (viewCount > 1)
             throw new Exception("there're more than one view entities in the world!");
         if (viewCount <= 0)
             throw new Exception("there's no view entity in the world!");
-        _runtime.World.GetEntities(in viewDesc, MemoryMarshal.CreateSpan(ref _viewEntity, 1));
-
-        // 设置 fmod 系统
-        _runtime.World.Query(
-            new QueryDescription().WithAll<FMOD.Studio.System>(),
-            (ref FMOD.Studio.System fmodSystem) => fmodSystem = game.FmodSystem
-        );
+        _session.World.GetEntities(in viewDesc, MemoryMarshal.CreateSpan(ref _viewEntity, 1));
     }
+
+    partial void OnPausedChanged(bool value) => _session.Paused = value;
+
+    partial void OnSimulateSpeedChanged(float value) => _session.SimulateSpeed = value;
 
     private void OnExit()
     {
@@ -73,22 +70,12 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public override void Update(GameTime gameTime)
     {
-        if (Paused)
-            return;
-
-        // 更新时间
-        _playTime.ElapsedGameTime = gameTime.ElapsedGameTime * SimulateSpeed;
-        _playTime.TotalGameTime += _playTime.ElapsedGameTime;
-        _playTime.IsRunningSlowly = gameTime.IsRunningSlowly;
-
-        // 更新世界
-        _runtime.AiSystems.Update(_playTime);
-        _runtime.SimulateSystems.Update(_playTime);
+        _session.Update(gameTime);
     }
 
     public override void Dispose()
     {
         base.Dispose();
-        _runtime.Dispose();
+        _session.Dispose();
     }
 }
