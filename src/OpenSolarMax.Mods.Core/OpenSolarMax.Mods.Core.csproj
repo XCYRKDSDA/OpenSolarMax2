@@ -5,9 +5,6 @@
     <Nullable>enable</Nullable>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <OutputPath>..\OpenSolarMax.Launcher\bin\$(PlatformName)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\$(RuntimeIdentifier)\Mods\Behaviors\OpenSolarMax.Mods.Core</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,10 +14,6 @@
   <ItemGroup>
     <Effect Include="Graphics\*.fx" />
   </ItemGroup>
-
-  <Target Name="CopyCompiledEffects" AfterTargets="CompileEffects" BeforeTargets="PreporeForBuild">
-    <Copy SourceFiles="@(CompiledEffect)" DestinationFiles="$(OutputPath)%(CompiledEffect.Name)" />
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="Arch.System.SourceGenerator" Version="2.1.0">
