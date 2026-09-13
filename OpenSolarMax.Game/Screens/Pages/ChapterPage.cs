@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.Screens.Views;
 using OpenSolarMax.Game.Sessions;

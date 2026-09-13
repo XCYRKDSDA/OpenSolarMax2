@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Sessions;

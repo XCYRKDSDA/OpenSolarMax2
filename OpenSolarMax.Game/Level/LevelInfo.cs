@@ -1,5 +1,5 @@
 using Zio;
 
-namespace OpenSolarMax.Game.Sessions;
+namespace OpenSolarMax.Game.Level;
 
 internal sealed record LevelInfo(string Name, FileEntry File);
