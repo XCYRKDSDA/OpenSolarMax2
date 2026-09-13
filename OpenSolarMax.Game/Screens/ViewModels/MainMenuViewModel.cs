@@ -189,10 +189,15 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private static ChapterPageContext Load(PreviewableLevelMod previewableLevelMod, SolarMax game)
     {
         var levelModInfo = previewableLevelMod.Info;
-        var modSession = game.GameSession.LoadMod(levelModInfo);
+        var modSessionHandle = game.GameSession.LoadMod(levelModInfo);
+        var modSession = modSessionHandle.Value;
         var levelPreviews = modSession
             .Levels.Select(entry => (Info: entry, Preview: modSession.LoadLevelPreview(entry)))
             .ToList();
-        return new ChapterPageContext(modSession, levelPreviews, previewableLevelMod.Background!);
+        return new ChapterPageContext(
+            modSessionHandle,
+            levelPreviews,
+            previewableLevelMod.Background!
+        );
     }
 }

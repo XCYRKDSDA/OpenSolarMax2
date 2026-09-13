@@ -2,6 +2,8 @@ using System.Collections.Immutable;
 using System.Reflection;
 using Arch.Buffer;
 using Arch.Core;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
@@ -21,6 +23,8 @@ internal sealed class ModSession : IDisposable
         WorldLoader WorldLoader
     );
 
+    private const int _previewCacheCapacity = 16;
+
     private readonly ImmutableArray<BehaviorMod> _behaviorMods;
     private readonly ImmutableArray<ContentMod> _contentMods;
     private readonly IAssetsManager _localAssets;
@@ -32,7 +36,13 @@ internal sealed class ModSession : IDisposable
     private readonly BehaviorBranch _previewBranch;
 
     private readonly IReadOnlyList<LevelInfo> _levels;
-    private readonly Dictionary<LevelInfo, LevelSession> _previewCache = new();
+    private readonly IScopedCache<LevelInfo, LevelSession> _previewCache = new ConcurrentLruBuilder<
+        LevelInfo,
+        LevelSession
+    >()
+        .WithCapacity(_previewCacheCapacity)
+        .AsScopedCache()
+        .Build();
 
     public ModSession(
         LevelModInfo metadata,
@@ -70,15 +80,13 @@ internal sealed class ModSession : IDisposable
     // 以免两次进入的状态互相续上；当前没有拷贝机制，故每次重新读取并构建。
     public LevelSession LoadLevel(LevelInfo entry) => LoadLevelCore(entry, _gameplayBranch, true);
 
-    public LevelSession LoadLevelPreview(LevelInfo entry)
+    public Lifetime<LevelSession> LoadLevelPreview(LevelInfo entry)
     {
-        // 预览关卡构建代价高，缓存复用；模组会话释放时统一释放
-        if (_previewCache.TryGetValue(entry, out var cached))
-            return cached;
-
-        var preview = LoadLevelCore(entry, _previewBranch, false);
-        _previewCache[entry] = preview;
-        return preview;
+        // 预览走 scoped LRU：淘汰只减缓存那份计数，持有 Lifetime 的预览不会被释放
+        return _previewCache.ScopedGetOrAdd(
+            entry,
+            key => new Scoped<LevelSession>(LoadLevelCore(key, _previewBranch, false))
+        );
     }
 
     private BehaviorBranch BuildBranch(BakedBehaviorsInfo behaviors)
@@ -200,10 +208,9 @@ internal sealed class ModSession : IDisposable
 
     public void Dispose()
     {
-        // 先释放预览关卡：其世界引用了 LocalAssets 中的资产
-        foreach (var preview in _previewCache.Values)
-            preview.Dispose();
-        _previewCache.Clear();
+        // 先释放缓存中剩余的预览，再释放 LocalAssets
+        foreach (var (_, scoped) in _previewCache)
+            scoped.Dispose();
 
         _localAssets.Dispose();
         foreach (var mod in _behaviorMods)

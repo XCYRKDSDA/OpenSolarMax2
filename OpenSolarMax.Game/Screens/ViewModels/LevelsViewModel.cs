@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using BitFaster.Caching;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
@@ -16,9 +17,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 {
     #region Models
 
-    private readonly ModSession _modSession;
+    private readonly Lifetime<ModSession> _modSessionHandle;
 
-    private readonly List<(LevelInfo Info, LevelSession Preview)> _loadedLevelPreviews;
+    private readonly List<(LevelInfo Info, Lifetime<LevelSession> Preview)> _loadedLevelPreviews;
 
     #endregion
 
@@ -55,8 +56,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     public int InitializeIndex { get; }
 
     public LevelsViewModel(
-        ModSession modSession,
-        List<(LevelInfo Info, LevelSession Preview)> levelPreviews,
+        Lifetime<ModSession> modSessionHandle,
+        List<(LevelInfo Info, Lifetime<LevelSession> Preview)> levelPreviews,
         Texture2D background,
         SolarMax game
     )
@@ -66,7 +67,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _backwardCommand = new RelayCommand(OnBackward);
 
         // 接受 Models 参数
-        _modSession = modSession;
+        _modSessionHandle = modSessionHandle;
         _loadedLevelPreviews = levelPreviews;
         _pageBackground = background;
 
@@ -77,8 +78,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         InitializeIndex = 0;
         _primaryItemIndex = 0;
         _primaryItemPreview = new WorldRenderer(
-            _loadedLevelPreviews[0].Preview.World,
-            _loadedLevelPreviews[0].Preview.RenderSystems,
+            _loadedLevelPreviews[0].Preview.Value.World,
+            _loadedLevelPreviews[0].Preview.Value.RenderSystems,
             game.GraphicsDevice
         );
         _primaryItemBackground = null;
@@ -92,8 +93,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     partial void OnPrimaryItemIndexChanged(int value)
     {
         PrimaryItemPreview = new WorldRenderer(
-            _loadedLevelPreviews[value].Preview.World,
-            _loadedLevelPreviews[value].Preview.RenderSystems,
+            _loadedLevelPreviews[value].Preview.Value.World,
+            _loadedLevelPreviews[value].Preview.Value.RenderSystems,
             Game.GraphicsDevice
         );
     }
@@ -103,8 +104,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         SecondaryItemPreview = value is null
             ? null
             : new WorldRenderer(
-                _loadedLevelPreviews[value.Value].Preview.World,
-                _loadedLevelPreviews[value.Value].Preview.RenderSystems,
+                _loadedLevelPreviews[value.Value].Preview.Value.World,
+                _loadedLevelPreviews[value.Value].Preview.Value.RenderSystems,
                 Game.GraphicsDevice
             );
     }
@@ -115,7 +116,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         if (Game.ScreenManager.Transitioning)
             return;
 
-        var session = _modSession.LoadLevel(_loadedLevelPreviews[idx].Info);
+        var session = _modSessionHandle.Value.LoadLevel(_loadedLevelPreviews[idx].Info);
 
         Game.ScreenManager.Forward(
             typeof(LevelPlayPage),
@@ -135,5 +136,13 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     public override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
+    }
+
+    public override void Dispose()
+    {
+        // 先还预览再还模组；模组随缓存淘汰或最后一份 Lifetime 归还时释放
+        foreach (var (_, preview) in _loadedLevelPreviews)
+            preview.Dispose();
+        _modSessionHandle.Dispose();
     }
 }

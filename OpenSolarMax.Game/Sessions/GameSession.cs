@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using System.Runtime.Loader;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -14,13 +16,18 @@ namespace OpenSolarMax.Game.Sessions;
 
 internal sealed class GameSession : IDisposable
 {
-    private const int ModCacheCapacity = 1;
+    private const int _modCacheCapacity = 1;
 
     private readonly SolarMax _game;
     private readonly ModsManager _modsManager;
 
-    private readonly Dictionary<LevelModInfo, ModSession> _modCache = new();
-    private readonly LinkedList<LevelModInfo> _modCacheOrder = new();
+    private readonly IScopedCache<LevelModInfo, ModSession> _modCache = new ConcurrentLruBuilder<
+        LevelModInfo,
+        ModSession
+    >()
+        .WithCapacity(_modCacheCapacity)
+        .AsScopedCache()
+        .Build();
 
     public GameSession(SolarMax game)
     {
@@ -34,16 +41,11 @@ internal sealed class GameSession : IDisposable
 
     public IReadOnlyList<LevelModInfo> Mods => _modsManager.LevelMods;
 
-    public ModSession LoadMod(LevelModInfo info)
-    {
-        // 命中缓存则直接复用，并刷新其最近使用顺序
-        if (_modCache.TryGetValue(info, out var cached))
-        {
-            _modCacheOrder.Remove(info);
-            _modCacheOrder.AddFirst(info);
-            return cached;
-        }
+    public Lifetime<ModSession> LoadMod(LevelModInfo info) =>
+        _modCache.ScopedGetOrAdd(info, key => new Scoped<ModSession>(BuildMod(key)));
 
+    private ModSession BuildMod(LevelModInfo info)
+    {
         // 依赖解析
         // 列出所有行为模组和资产模组
         var allBehaviorModInfos = _modsManager.BehaviorMods.ToDictionary(m => m.FullName, m => m);
@@ -186,27 +188,12 @@ internal sealed class GameSession : IDisposable
             _game
         );
 
-        // 写入缓存；超出容量时淘汰最久未使用的模组会话
-        _modCache[info] = session;
-        _modCacheOrder.AddFirst(info);
-        while (_modCacheOrder.Count > ModCacheCapacity)
-        {
-            var lru = _modCacheOrder.Last!.Value;
-            _modCacheOrder.RemoveLast();
-            var evicted = _modCache[lru];
-            _modCache.Remove(lru);
-            evicted.Dispose();
-        }
-
         return session;
     }
 
     public void Dispose()
     {
-        foreach (var session in _modCache.Values)
-            session.Dispose();
-
-        _modCache.Clear();
-        _modCacheOrder.Clear();
+        foreach (var (_, scoped) in _modCache)
+            scoped.Dispose();
     }
 }
