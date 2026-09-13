@@ -5,7 +5,7 @@
             "label": "dotnet: build OpenSolarMax.Mods.Core",
             "type": "dotnet",
             "task": "build",
-            "file": "${workspaceFolder}/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj",
+            "file": "${workspaceFolder}/src/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj",
             "group": "build",
             "problemMatcher": [],
         },

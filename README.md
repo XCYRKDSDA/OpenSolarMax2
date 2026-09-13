@@ -76,8 +76,8 @@ cd OpenSolarMax2
 The launcher "OpenSolarMax.Launcher" and the module "OpenSolarMax.Mods.Core" must be built separately. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
 
 ```shell
-dotnet build OpenSolarMax.Launcher
-dotnet build OpenSolarMax.Mods.Core
+dotnet build src/OpenSolarMax.Launcher
+dotnet build src/OpenSolarMax.Mods.Core
 ```
 
 ### Run
@@ -105,5 +105,5 @@ dotnet build OpenSolarMax.Mods.Core
 2. Launch the game:
 
     ```shell
-    dotnet run --project OpenSolarMax.Launcher
+    dotnet run --project src/OpenSolarMax.Launcher
     ```
