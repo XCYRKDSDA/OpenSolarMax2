@@ -73,37 +73,44 @@ cd OpenSolarMax2
 
 ### Build
 
-The launcher "OpenSolarMax.Launcher" and the module "OpenSolarMax.Mods.Core" must be built separately. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
+The launcher "OpenSolarMax.Launcher" is built normally, while the module "OpenSolarMax.Mods.Core" is published to `publish/mods/`. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
 
 ```shell
-dotnet build OpenSolarMax.Launcher
-dotnet build OpenSolarMax.Mods.Core
+dotnet build src/OpenSolarMax.Launcher
+dotnet publish src/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj -c Debug -o publish/mods/OpenSolarMax.Mods.Core
 ```
+
+> You must publish the module before running the game. A fresh clone has no `publish/mods/` directory.
 
 ### Run
 
-1. Set an environment variable to configure where the game looks for level mods:
+1. Set two environment variables: one for level packages, one for behavior modules.
 
     For POSIX-compliant shells:
 
     ```bash
-    export OSM_LEVEL_MOD_PATHS="$(pwd)"
+    export OSM_LEVEL_MOD_PATHS=levels
+    export OSM_BEHAVIOR_MOD_PATHS=publish/mods
     ```
 
     For PowerShell:
 
     ```powershell
-    $env:OSM_LEVEL_MOD_PATHS=(Get-Location).Path
+    $env:OSM_LEVEL_MOD_PATHS="levels"
+    $env:OSM_BEHAVIOR_MOD_PATHS="publish/mods"
     ```
 
     For CMD:
 
     ```cmd
-    set OSM_LEVEL_MOD_PATHS=%CD%
+    set OSM_LEVEL_MOD_PATHS=levels
+    set OSM_BEHAVIOR_MOD_PATHS=publish/mods
     ```
 
 2. Launch the game:
 
     ```shell
-    dotnet run --project OpenSolarMax.Launcher
+    dotnet run --project src/OpenSolarMax.Launcher
     ```
+
+When debugging from VS Code (F5), `.vscode/launch.json` sets both environment variables inline, and its pre-launch task publishes the module and then builds the launcher.

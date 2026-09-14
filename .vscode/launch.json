@@ -3,10 +3,15 @@
     "configurations": [
         {
             "name": "Launch OpenSolarMax",
-            "type": "dotnet",
+            "type": "coreclr",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj",
-            "preLaunchTask": "dotnet: build OpenSolarMax.Mods.Core"
+            "preLaunchTask": "build OpenSolarMax.Launcher",
+            "program": "${workspaceFolder}/src/OpenSolarMax.Launcher/bin/Debug/net8.0/OpenSolarMax.Launcher.dll",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "OSM_LEVEL_MOD_PATHS": "levels",
+                "OSM_BEHAVIOR_MOD_PATHS": "publish/mods"
+            }
         }
     ]
 }

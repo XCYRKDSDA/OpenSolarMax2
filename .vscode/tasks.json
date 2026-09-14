@@ -2,12 +2,34 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "dotnet: build OpenSolarMax.Mods.Core",
-            "type": "dotnet",
-            "task": "build",
-            "file": "${workspaceFolder}/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj",
-            "group": "build",
-            "problemMatcher": [],
+            "label": "publish OpenSolarMax.Mods.Core",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "publish",
+                "src/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj",
+                "-c",
+                "Debug",
+                "-o",
+                "publish/mods/OpenSolarMax.Mods.Core"
+            ],
+            "problemMatcher": "$msCompile"
         },
-    ],
+        {
+            "label": "build OpenSolarMax.Launcher",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "src/OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj",
+                "-c",
+                "Debug"
+            ],
+            "dependsOn": [
+                "publish OpenSolarMax.Mods.Core"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        }
+    ]
 }
