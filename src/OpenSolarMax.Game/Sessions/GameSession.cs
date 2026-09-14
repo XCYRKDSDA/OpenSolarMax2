@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using System.Runtime.Loader;
 using BitFaster.Caching;
-using BitFaster.Caching.Lru;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
@@ -16,18 +15,13 @@ namespace OpenSolarMax.Game.Sessions;
 
 internal sealed class GameSession : IDisposable
 {
-    private const int _modCacheCapacity = 1;
-
     private readonly SolarMax _game;
     private readonly ModsManager _modsManager;
 
-    private readonly IScopedCache<LevelModInfo, ModSession> _modCache = new ConcurrentLruBuilder<
-        LevelModInfo,
-        ModSession
-    >()
-        .WithCapacity(_modCacheCapacity)
-        .AsScopedCache()
-        .Build();
+    // 至多保留一份已构建的模组会话：同一模组复用同一实例，切换模组时释放旧实例
+    private readonly object _modCacheLock = new();
+    private LevelModInfo? _modCacheKey;
+    private Scoped<ModSession>? _modCache;
 
     public GameSession(SolarMax game)
     {
@@ -41,8 +35,31 @@ internal sealed class GameSession : IDisposable
 
     public IReadOnlyList<LevelModInfo> Mods => _modsManager.LevelMods;
 
-    public Lifetime<ModSession> LoadMod(LevelModInfo info) =>
-        _modCache.ScopedGetOrAdd(info, key => new Scoped<ModSession>(BuildMod(key)));
+    public Lifetime<ModSession> LoadMod(LevelModInfo info)
+    {
+        Scoped<ModSession>? previous = null;
+        Lifetime<ModSession> lifetime;
+
+        lock (_modCacheLock)
+        {
+            var scope = _modCache;
+            if (scope is null || _modCacheKey != info)
+            {
+                previous = scope;
+                scope = new Scoped<ModSession>(BuildMod(info));
+                _modCache = scope;
+                _modCacheKey = info;
+            }
+
+            // 槽位在本锁内安装、也只在本锁内终止，此处不会失败
+            lifetime = scope.CreateLifetime();
+        }
+
+        // 释放缓存持有的那份引用；若仍有持有者，值存活到最后一个 lifetime 归还
+        previous?.Dispose();
+
+        return lifetime;
+    }
 
     private ModSession BuildMod(LevelModInfo info)
     {
@@ -193,7 +210,15 @@ internal sealed class GameSession : IDisposable
 
     public void Dispose()
     {
-        foreach (var (_, scoped) in _modCache)
-            scoped.Dispose();
+        Scoped<ModSession>? scope;
+
+        lock (_modCacheLock)
+        {
+            scope = _modCache;
+            _modCache = null;
+            _modCacheKey = null;
+        }
+
+        scope?.Dispose();
     }
 }
