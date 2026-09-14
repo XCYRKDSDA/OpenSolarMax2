@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace OpenSolarMax.Mods.Core.Utils;
 
-internal class SingleItemGroup<TKey, TItem>(TKey key, TItem item) : IGrouping<TKey, TItem>
+public class SingleItemGroup<TKey, TItem>(TKey key, TItem item) : IGrouping<TKey, TItem>
 {
     public TKey Key => key;
 
@@ -14,7 +14,7 @@ internal class SingleItemGroup<TKey, TItem>(TKey key, TItem item) : IGrouping<TK
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-internal class EnumerableGroup<TKey, TItem>(TKey key, IEnumerable<TItem> items)
+public class EnumerableGroup<TKey, TItem>(TKey key, IEnumerable<TItem> items)
     : IGrouping<TKey, TItem>
 {
     public TKey Key => key;

@@ -41,6 +41,16 @@ public class RelationShipGenerator : ISourceGenerator
         GeneratorExecutionContext context
     )
     {
+        var componentsNamespace = context
+            .Compilation.GetTypeByMetadataName(
+                "OpenSolarMax.Mods.Core.Components.IRelationshipRecord"
+            )!
+            .ContainingNamespace.ToString();
+
+        var utilsNamespace = context
+            .Compilation.GetTypeByMetadataName("OpenSolarMax.Mods.Core.Utils.SingleItemGroup`2")!
+            .ContainingNamespace.ToString();
+
         var participantsTypes = string.Join(
             ", ",
             info.Participants.Select(p => $"typeof({p.Type})")
@@ -82,6 +92,8 @@ public class RelationShipGenerator : ISourceGenerator
         );
 
         var relationshipCs = _relationshipTemplate
+            .Replace("@COMPONENTS_NAMESPACE@", componentsNamespace)
+            .Replace("@UTILS_NAMESPACE@", utilsNamespace)
             .Replace("@NAMESPACE@", info.Namespace)
             .Replace("@RELATIONSHIP_SYMBOL@", info.Symbol)
             .Replace("@RELATIONSHIP_TYPE@", info.Type)
@@ -98,6 +110,8 @@ public class RelationShipGenerator : ISourceGenerator
                 ? _participant1Template
                 : _participant2Template;
             var participantsCs = template
+                .Replace("@COMPONENTS_NAMESPACE@", componentsNamespace)
+                .Replace("@UTILS_NAMESPACE@", utilsNamespace)
                 .Replace("@NAMESPACE@", info.Namespace)
                 .Replace("@RELATIONSHIP_SYMBOL@", info.Symbol)
                 .Replace("@RELATIONSHIP_TYPE@", info.Type)
