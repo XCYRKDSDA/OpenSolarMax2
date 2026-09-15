@@ -1,8 +1,8 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Systems;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Utils;
 

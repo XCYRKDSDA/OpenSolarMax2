@@ -1,0 +1,42 @@
+using Arch.Buffer;
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Common.Components;
+
+namespace OpenSolarMax.Mods.Common.Systems;
+
+[SimulateSystem, Update]
+[Tick(typeof(ExpiredAfterTimeout))]
+public sealed partial class CountDownExpirationTimeSystem(World world) : ITickSystem
+{
+    [Query]
+    [All<ExpiredAfterTimeout>]
+    private static void CountDown([Data] GameTime time, ref ExpiredAfterTimeout expiration)
+    {
+        expiration.ElapsedTime += time.ElapsedGameTime;
+    }
+
+    public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
+}
+
+[SimulateSystem, LateUpdate]
+[ReadCurr(typeof(ExpiredAfterTimeout)), DelayedCalc]
+public sealed partial class ExpireTimeoutEntitiesSystem(World world) : IDelayedCalcSystem
+{
+    [Query]
+    [All<ExpiredAfterTimeout>]
+    private static void ExpireEntities(
+        [Data] CommandBuffer commands,
+        Entity entity,
+        ref ExpiredAfterTimeout expiration
+    )
+    {
+        if (expiration.ElapsedTime > expiration.ExpiryTime)
+            commands.Destroy(entity);
+    }
+
+    public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
+}

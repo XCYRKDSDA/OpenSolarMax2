@@ -5,9 +5,9 @@ using Arch.System.SourceGenerator;
 using Nine.Animations;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Systems;
-using OpenSolarMax.Mods.Core.Utils;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
+using OpenSolarMax.Mods.Common.Utils;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Utils;
 

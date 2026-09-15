@@ -5,8 +5,8 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using FMOD.Studio;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Systems;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;

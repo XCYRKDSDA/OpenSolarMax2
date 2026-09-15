@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
-using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Utils;

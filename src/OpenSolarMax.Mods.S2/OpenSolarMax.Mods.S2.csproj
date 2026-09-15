@@ -31,12 +31,12 @@
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-    <ProjectReference Include="..\OpenSolarMax.Mods.Core\OpenSolarMax.Mods.Core.csproj">
+    <ProjectReference Include="..\OpenSolarMax.Mods.Common\OpenSolarMax.Mods.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
     <ProjectReference
-      Include="..\OpenSolarMax.Mods.Core.SourceGenerators\OpenSolarMax.Mods.Core.SourceGenerators.csproj"
+      Include="..\OpenSolarMax.Mods.Common.SourceGenerators\OpenSolarMax.Mods.Common.SourceGenerators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="true"
     />

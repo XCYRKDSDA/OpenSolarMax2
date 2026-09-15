@@ -5,8 +5,8 @@ using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Core.Components;
-using OpenSolarMax.Mods.Core.Systems;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;

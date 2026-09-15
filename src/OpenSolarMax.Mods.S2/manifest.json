@@ -11,7 +11,7 @@
     "configs": "configs.toml",
     "dependencies": {
         "behaviors": [
-            "OpenSolarMax.Mods.Core"
+            "OpenSolarMax.Mods.Common"
         ]
     }
 }

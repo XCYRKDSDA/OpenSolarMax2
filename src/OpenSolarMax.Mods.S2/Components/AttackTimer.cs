@@ -1,4 +1,4 @@
-using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Common.Components;
 
 namespace OpenSolarMax.Mods.S2.Components;
 
