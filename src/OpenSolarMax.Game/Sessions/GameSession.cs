@@ -67,10 +67,12 @@ internal sealed class GameSession : IDisposable
         // 列出所有行为模组和资产模组
         var allBehaviorModInfos = _modsManager.BehaviorMods.ToDictionary(m => m.FullName, m => m);
         var allContentModInfos = _modsManager.ContentMods.ToDictionary(m => m.FullName, m => m);
-        // 查找依赖
-        var behaviorModInfos = info.BehaviorDeps.Select(d => allBehaviorModInfos[d]).ToArray();
+        // 沿模组自己声明的依赖展开，被依赖者排在依赖方之前
+        var behaviorModInfos = ModDependencyResolver.Resolve(
+            info.BehaviorDeps,
+            allBehaviorModInfos
+        );
         var contentModInfos = info.ContentDeps.Select(d => allContentModInfos[d]).ToArray();
-        // TODO: 递归查找
 
         // 加载行为模组
         var behaviorMods = new List<BehaviorMod>();

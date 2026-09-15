@@ -9,7 +9,6 @@
     "link": "https://github.com/XCYRKDSDA/OpenSolarMax2",
     "dependencies": {
         "behaviors": [
-            "OpenSolarMax.Mods.Core",
             "OpenSolarMax.Mods.S2"
         ]
     }
