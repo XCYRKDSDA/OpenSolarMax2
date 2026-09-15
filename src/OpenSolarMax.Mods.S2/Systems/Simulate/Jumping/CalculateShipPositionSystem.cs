@@ -1,0 +1,65 @@
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
+using OpenSolarMax.Mods.S2.Components;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+/// <summary>
+/// 跳跃系统。根据跳跃时间计算舰船动画、位置和方向
+/// </summary>
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(JumpingStatus))]
+[Calc(typeof(AbsoluteTransform))]
+[ExecuteBefore(
+    typeof(CalculateAbsoluteTransformSystem),
+    "先计算飞行的飞船的位置，然后通过变换树计算尾迹位置",
+    typeof(AbsoluteTransform)
+)]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(AbsoluteTransform))]
+public sealed partial class CalculateShipPositionSystem(World world) : ICalcSystem
+{
+    [Query]
+    [All<JumpingStatus, AbsoluteTransform>]
+    private static void CalculatePosition(in JumpingStatus status, ref AbsoluteTransform pose)
+    {
+        if (status.State == JumpingState.Idle)
+            return;
+
+        if (status.State == JumpingState.Charging)
+            pose.Translation = status.Task.DeparturePosition;
+        else if (status.State == JumpingState.Travelling)
+        {
+            var progress =
+                status.Travelling.ElapsedTime
+                / (status.Task.ExpectedTravelDuration - status.Travelling.DelayedTime);
+            pose.Translation = Vector3.Lerp(
+                status.Task.DeparturePosition,
+                status.Task.ExpectedArrivalPosition,
+                progress
+            );
+        }
+
+        // 摆放尾向
+        // 旋转后的+X轴指向目标点, XZ平面与原XY平面垂直
+        var headX = Vector3.Normalize(
+            status.Task.ExpectedArrivalPosition - status.Task.DeparturePosition
+        );
+        var headY = Vector3.Normalize(Vector3.Cross(Vector3.UnitZ, headX));
+        var headZ = Vector3.Normalize(Vector3.Cross(headX, headY));
+        var rotation = new Matrix
+        {
+            Right = headX,
+            Up = headY,
+            Backward = headZ,
+        };
+        pose.Rotation = Quaternion.CreateFromRotationMatrix(rotation);
+    }
+
+    public void Update() => CalculatePositionQuery(world);
+}

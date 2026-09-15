@@ -1,0 +1,61 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Arch.Core;
+using Arch.Core.Extensions;
+using @COMPONENTS_NAMESPACE@;
+using @UTILS_NAMESPACE@;
+
+namespace @NAMESPACE@;
+
+partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
+{
+    public struct @PARTICIPANT_TYPE@(): IParticipantIndex
+    {
+        public Dictionary<Entity, @RELATIONSHIP_TYPE@> Relationships = [];
+
+        #region IParticipantIndex
+
+        readonly int ICollection<Entity>.Count => Relationships.Count;
+
+        readonly bool ICollection<Entity>.IsReadOnly => false;
+
+        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex)
+        {
+            Relationships.Keys.CopyTo(array, arrayIndex);
+        }
+
+        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
+        {
+            return Relationships.Keys.GetEnumerator();
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (this as IEnumerable<Entity>).GetEnumerator();
+        }
+
+        readonly bool ICollection<Entity>.Contains(Entity relationship)
+        {
+            return Relationships.ContainsKey(relationship);
+        }
+
+        void ICollection<Entity>.Add(Entity relationship)
+        {
+            Relationships.Add(relationship, relationship.Get<@RELATIONSHIP_TYPE@>());
+        }
+
+        bool ICollection<Entity>.Remove(Entity relationship)
+        {
+            return Relationships.Remove(relationship);
+        }
+
+        void ICollection<Entity>.Clear()
+        {
+            Relationships.Clear();
+        }
+
+        #endregion
+    }
+}

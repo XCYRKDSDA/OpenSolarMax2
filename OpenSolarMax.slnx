@@ -7,6 +7,7 @@
   <Project Path="src/OpenSolarMax.Content.SourceGenerators/OpenSolarMax.Content.SourceGenerators.csproj" />
   <Project Path="src/OpenSolarMax.Game/OpenSolarMax.Game.csproj" />
   <Project Path="src/OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj" />
-  <Project Path="src/OpenSolarMax.Mods.Core.SourceGenerators/OpenSolarMax.Mods.Core.SourceGenerators.csproj" />
-  <Project Path="src/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj" />
+  <Project Path="src/OpenSolarMax.Mods.Common.SourceGenerators/OpenSolarMax.Mods.Common.SourceGenerators.csproj" />
+  <Project Path="src/OpenSolarMax.Mods.Common/OpenSolarMax.Mods.Common.csproj" />
+  <Project Path="src/OpenSolarMax.Mods.S2/OpenSolarMax.Mods.S2.csproj" />
 </Solution>

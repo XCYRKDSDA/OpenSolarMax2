@@ -1,0 +1,74 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Arch.Core;
+using Arch.Core.Extensions;
+using @COMPONENTS_NAMESPACE@;
+using @UTILS_NAMESPACE@;
+
+namespace @NAMESPACE@;
+
+partial @RELATIONSHIP_SYMBOL@ @RELATIONSHIP_TYPE@
+{
+    public struct @PARTICIPANT_TYPE@(): IParticipantIndex
+    {
+        public (Entity Ref, @RELATIONSHIP_TYPE@ Copy)? Relationship = null;
+
+        #region IParticipantIndex
+
+        readonly int ICollection<Entity>.Count => Relationship is null ? 0 : 1;
+
+        readonly bool ICollection<Entity>.IsReadOnly => false;
+
+        readonly void ICollection<Entity>.CopyTo(Entity[] array, int arrayIndex)
+        {
+            if (Relationship.HasValue)
+                array[arrayIndex] = Relationship.Value.Ref;
+        }
+
+        readonly IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
+        {
+            if (Relationship.HasValue)
+                yield return Relationship.Value.Ref;
+        }
+
+        readonly IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (this as IEnumerable<Entity>).GetEnumerator();
+        }
+
+        readonly bool ICollection<Entity>.Contains(Entity relationship)
+        {
+            if (!Relationship.HasValue)
+                return false;
+            return Relationship.Value.Ref == relationship;
+        }
+
+        void ICollection<Entity>.Add(Entity relationship)
+        {
+            if (Relationship.HasValue)
+                throw new IndexOutOfRangeException();
+            Relationship = (relationship, relationship.Get<@RELATIONSHIP_TYPE@>());
+        }
+
+        bool ICollection<Entity>.Remove(Entity relationship)
+        {
+            if (!Relationship.HasValue)
+                return false;
+
+            if (Relationship.Value.Ref != relationship)
+                return false;
+
+            Relationship = null;
+            return true;
+        }
+
+        void ICollection<Entity>.Clear()
+        {
+            Relationship = null;
+        }
+
+        #endregion
+    }
+}

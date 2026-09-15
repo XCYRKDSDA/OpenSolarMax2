@@ -1,0 +1,40 @@
+using Arch.Buffer;
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using FMOD.Studio;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Common.Components;
+
+namespace OpenSolarMax.Mods.Common.Systems;
+
+[SimulateSystem, LateUpdate]
+[ReadCurr(typeof(Animation)), ReadCurr(typeof(SoundEffect)), DelayedCalc]
+public sealed partial class ExpireAnimationAndSoundEffectCompletedEntitiesSystem(World world)
+    : IDelayedCalcSystem
+{
+    [Query]
+    [All<ExpireAfterAnimationAndSoundEffectCompleted, Animation>]
+    private static void ExpireEntities(
+        [Data] CommandBuffer commands,
+        Entity entity,
+        in Animation animation,
+        in SoundEffect soundEffect
+    )
+    {
+        if (animation.RawClip is not null)
+            return;
+
+        // 没有指定动画剪辑也算是播完了
+        bool animationDone =
+            animation.Clip is null || animation.TimeElapsed.TotalSeconds > animation.Clip.Length;
+
+        soundEffect.EventInstance.getPlaybackState(out var playbackState);
+        bool soundEffectDone = playbackState == PLAYBACK_STATE.STOPPED;
+
+        if (animationDone && soundEffectDone)
+            commands.Destroy(entity);
+    }
+
+    public void Update(CommandBuffer commandBuffer) => ExpireEntitiesQuery(world, commandBuffer);
+}

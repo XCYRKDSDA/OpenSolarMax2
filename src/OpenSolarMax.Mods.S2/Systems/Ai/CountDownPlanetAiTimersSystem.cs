@@ -1,0 +1,61 @@
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+[AiSystem, Update]
+[Tick(typeof(PlanetAiTimers))]
+public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
+{
+    [Query]
+    [All<PlanetAiTimers>]
+    private static void CountDown(ref PlanetAiTimers aiTimers, [Data] GameTime gameTime)
+    {
+        foreach (var key in aiTimers.TimeLeft.Keys)
+        {
+            aiTimers.TimeLeft[key] -= gameTime.ElapsedGameTime;
+            if (aiTimers.TimeLeft[key] < TimeSpan.Zero)
+                aiTimers.TimeLeft[key] = TimeSpan.Zero;
+        }
+    }
+
+    public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
+}
+
+[AiSystem, LateUpdate]
+[ReadCurr(typeof(InTeam.AsTeam))]
+[Calc(typeof(PlanetAiTimers))]
+public partial class CleanPlanetAiTimerEntry(World world) : ICalcSystem
+{
+    [Query]
+    [All<PlanetAiTimers>]
+    private static void CleanEntries(ref PlanetAiTimers aiTimers, [Data] HashSet<Entity> parties)
+    {
+        var timeLeft = aiTimers.TimeLeft;
+        var keysToRemove = timeLeft.Keys.Where(k => !parties.Contains(k)).ToList();
+        var keysToAdd = parties.Where(k => !timeLeft.ContainsKey(k)).ToList();
+        foreach (var key in keysToRemove)
+            timeLeft.Remove(key);
+        foreach (var key in keysToAdd)
+            timeLeft.Add(key, TimeSpan.Zero);
+    }
+
+    [Query]
+    [All<InTeam.AsTeam>]
+    private static void CountParties(Entity entity, [Data] HashSet<Entity> parties)
+    {
+        parties.Add(entity);
+    }
+
+    public void Update()
+    {
+        HashSet<Entity> parties = [];
+        CountPartiesQuery(world, parties);
+        CleanEntriesQuery(world, parties);
+    }
+}

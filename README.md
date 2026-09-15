@@ -73,11 +73,11 @@ cd OpenSolarMax2
 
 ### Build
 
-The launcher "OpenSolarMax.Launcher" is built normally, while the module "OpenSolarMax.Mods.Core" is published to `publish/mods/`. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
+The launcher "OpenSolarMax.Launcher" is built normally, while the module "OpenSolarMax.Mods.Common" is published to `publish/mods/`. This is because the launcher does not explicitly depend on the modules, but loads their assemblies directly at runtime.
 
 ```shell
 dotnet build src/OpenSolarMax.Launcher
-dotnet publish src/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj -c Debug -o publish/mods/OpenSolarMax.Mods.Core
+dotnet publish src/OpenSolarMax.Mods.Common/OpenSolarMax.Mods.Common.csproj -c Debug -o publish/mods/OpenSolarMax.Mods.Common
 ```
 
 > You must publish the module before running the game. A fresh clone has no `publish/mods/` directory.

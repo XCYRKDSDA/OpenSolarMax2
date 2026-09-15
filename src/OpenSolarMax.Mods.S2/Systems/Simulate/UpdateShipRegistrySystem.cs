@@ -1,0 +1,37 @@
+using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
+using OpenSolarMax.Mods.S2.Components;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+[SimulateSystem, LateUpdate]
+[
+    ReadCurr(typeof(TreeRelationship<Anchorage>.AsParent)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    Calc(typeof(AnchoredShipsRegistry))
+]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(AnchoredShipsRegistry))]
+public sealed partial class UpdateShipRegistrySystem(World world) : ICalcSystem
+{
+    [Query]
+    [All<TreeRelationship<Anchorage>.AsParent, AnchoredShipsRegistry>]
+    private static void CountAnchoredShips(
+        in TreeRelationship<Anchorage>.AsParent asAnchorageParent,
+        ref AnchoredShipsRegistry shipRegistry
+    )
+    {
+        shipRegistry.Ships =
+            (Lookup<Entity, Entity>)
+                asAnchorageParent.Relationships.Values.ToLookup(
+                    copy => copy.Child.Get<InTeam.AsAffiliate>().Relationship!.Value.Copy.Team,
+                    copy => copy.Child
+                );
+    }
+
+    public void Update() => CountAnchoredShipsQuery(world);
+}
