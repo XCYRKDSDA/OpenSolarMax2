@@ -9,4 +9,5 @@
   <Project Path="src/OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj" />
   <Project Path="src/OpenSolarMax.Mods.Core.SourceGenerators/OpenSolarMax.Mods.Core.SourceGenerators.csproj" />
   <Project Path="src/OpenSolarMax.Mods.Core/OpenSolarMax.Mods.Core.csproj" />
+  <Project Path="src/OpenSolarMax.Mods.S2/OpenSolarMax.Mods.S2.csproj" />
 </Solution>

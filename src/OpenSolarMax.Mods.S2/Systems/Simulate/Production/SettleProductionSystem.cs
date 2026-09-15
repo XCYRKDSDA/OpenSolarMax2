@@ -1,0 +1,76 @@
+using Arch.Buffer;
+using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.S2.Components;
+using OpenSolarMax.Mods.S2.Concepts;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+/// <summary>
+/// 结算生产系统. 在所有推进了生产的星球上计算是否产生新舰船
+/// </summary>
+[SimulateSystem, LateUpdate]
+[
+    ReadCurr(typeof(ProductionState)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
+    ReadCurr(typeof(TeamReferenceColor)),
+    ReadCurr(typeof(PlanetGeostationaryOrbit)),
+    DelayedCalc
+]
+public sealed partial class SettleProductionSystem(World world, IConceptFactory factory)
+    : IDelayedCalcSystem
+{
+    [Query]
+    [All<ProductionState, InTeam.AsAffiliate>]
+    private void SettleProduction(
+        Entity planet,
+        in ProductionState state,
+        in InTeam.AsAffiliate teamRelationship,
+        [Data] CommandBuffer commandBuffer
+    )
+    {
+        if (teamRelationship.Relationship is null)
+            return;
+        var team = teamRelationship.Relationship!.Value.Copy.Team;
+
+        // 生产一个新部队
+        for (int i = 0; i < state.ShipsProducedThisFrame; i++)
+        {
+            var newShip = factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.Ship,
+                new ShipDescription()
+                {
+                    Team = team,
+                    Planet = planet,
+                    PlanetOrbit = planet.Get<PlanetGeostationaryOrbit>(),
+                }
+            );
+
+            // 添加出生后动画
+            commandBuffer.Add(newShip, new ShipPostBornEffect() { TimeElapsed = TimeSpan.Zero });
+
+            // 生成出生动画
+            factory.Make(
+                world,
+                commandBuffer,
+                new ShipBornPulseDescription()
+                {
+                    Ship = newShip,
+                    Color = team.Get<TeamReferenceColor>().Value,
+                }
+            );
+        }
+
+        if (state.ShipsProducedThisFrame != 0)
+            commandBuffer.Set(planet, state with { ShipsProducedThisFrame = 0 });
+    }
+
+    public void Update(CommandBuffer commandBuffer) => SettleProductionQuery(world, commandBuffer);
+}

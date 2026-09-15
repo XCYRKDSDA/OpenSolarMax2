@@ -1,0 +1,55 @@
+using Arch.Buffer;
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Mods.Core.Systems;
+using OpenSolarMax.Mods.Core.Systems.Timing;
+using OpenSolarMax.Mods.S2.Components;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+[SimulateSystem, Update]
+[Tick(typeof(VictoryExitTimer))]
+public sealed partial class VictoryExitCountDownSystem(World world)
+    : CountDownSystemBase<VictoryExitTimer>(world) { }
+
+[SimulateSystem, LateUpdate]
+[
+    ReadCurr(typeof(VictoryExitTimer)),
+    Calc(typeof(GameState)),
+    ReadCurr(typeof(ViewTag)),
+    DelayedCalc
+]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(GameState))]
+public sealed partial class VictoryExitSystem(World world) : IDelayedCalcSystem
+{
+    [Query]
+    [All<VictoryExitTimer>]
+    private static void CollectExpired(
+        Entity entity,
+        in VictoryExitTimer timer,
+        [Data] List<Entity> expired
+    )
+    {
+        if (timer.TimeLeft <= TimeSpan.Zero)
+            expired.Add(entity);
+    }
+
+    public void Update(CommandBuffer commandBuffer)
+    {
+        var expired = new List<Entity>();
+        CollectExpiredQuery(world, expired);
+        if (expired.Count == 0)
+            return;
+
+        world.Query(
+            new QueryDescription().WithAll<ViewTag, GameState>(),
+            (ref GameState state) => state.Status = GameStatus.Victory
+        );
+
+        foreach (var entity in expired)
+            commandBuffer.Destroy(entity);
+    }
+}

@@ -36,11 +36,6 @@
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="true"
     />
-    <ProjectReference
-      Include="..\OpenSolarMax.Content.SourceGenerators\OpenSolarMax.Content.SourceGenerators.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"
-    />
 
     <!-- Temporary solution. See https://github.com/dotnet/sdk/issues/42708 -->
     <ProjectReference Include="..\..\third_party\Nine\Nine\Nine.MG.csproj">
@@ -66,11 +61,5 @@
     <None Update="manifest.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="configs.toml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>

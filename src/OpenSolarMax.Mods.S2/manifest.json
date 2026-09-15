@@ -1,0 +1,17 @@
+{
+    "type": "behavior",
+    "fullName": "OpenSolarMax.Mods.S2",
+    "shortName": "S2",
+    "author": "XCY",
+    "version": "0.0.1",
+    "description": "",
+    "link": "",
+    "assembly": "OpenSolarMax.Mods.S2.dll",
+    "content": "Content",
+    "configs": "configs.toml",
+    "dependencies": {
+        "behaviors": [
+            "OpenSolarMax.Mods.Core"
+        ]
+    }
+}

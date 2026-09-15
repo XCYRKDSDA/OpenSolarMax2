@@ -1,0 +1,38 @@
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.Core.Components;
+using OpenSolarMax.Mods.Core.Systems;
+using OpenSolarMax.Mods.S2.Components;
+using OpenSolarMax.Mods.S2.Utils;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+/// <summary>
+/// 根据相位计算实体绕其轨道的位姿变换的系统
+/// </summary>
+[SimulateSystem, LateUpdate, BothForGameplayAndPreview]
+[
+    ReadCurr(typeof(RevolutionOrbit)),
+    ReadCurr(typeof(RevolutionState)),
+    Calc(typeof(RelativeTransform))
+]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(RelativeTransform))]
+public sealed partial class CalculateTransformAroundOrbitSystem(World world) : ICalcSystem
+{
+    [Query]
+    [All<TreeRelationship<RelativeTransform>, RelativeTransform, RevolutionOrbit, RevolutionState>]
+    private static void CalculateTransform(
+        in RevolutionOrbit orbit,
+        in RevolutionState state,
+        ref RelativeTransform transform
+    )
+    {
+        // 更新相对位姿
+        transform = RevolutionUtils.CalculateTransform(in orbit, in state);
+    }
+
+    public void Update() => CalculateTransformQuery(world);
+}

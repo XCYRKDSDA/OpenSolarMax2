@@ -16,6 +16,20 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "publish OpenSolarMax.Mods.S2",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "publish",
+                "src/OpenSolarMax.Mods.S2/OpenSolarMax.Mods.S2.csproj",
+                "-c",
+                "Debug",
+                "-o",
+                "publish/mods/OpenSolarMax.Mods.S2"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "build OpenSolarMax.Launcher",
             "type": "process",
             "command": "dotnet",
@@ -26,7 +40,8 @@
                 "Debug"
             ],
             "dependsOn": [
-                "publish OpenSolarMax.Mods.Core"
+                "publish OpenSolarMax.Mods.Core",
+                "publish OpenSolarMax.Mods.S2"
             ],
             "problemMatcher": "$msCompile",
             "group": "build"

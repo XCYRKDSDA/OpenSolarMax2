@@ -6,12 +6,6 @@ internal class EffectResource(string name)
 {
     private const string _namespace = "OpenSolarMax.Mods.Core.Graphics";
 
-    public static readonly EffectResource BoxEffect = new($"{_namespace}.Box.mgfxo");
-    public static readonly EffectResource CircleEffect = new($"{_namespace}.Circle.mgfxo");
-    public static readonly EffectResource GlowCircleEffect = new($"{_namespace}.GlowCircle.mgfxo");
-    public static readonly EffectResource RingEffect = new($"{_namespace}.Ring.mgfxo");
-    public static readonly EffectResource SegmentEffect = new($"{_namespace}.Segment.mgfxo");
-    public static readonly EffectResource SpriteEffect = new($"{_namespace}.Sprite.mgfxo");
     public static readonly EffectResource TintEffect = new($"{_namespace}.Tint.mgfxo");
 
     private readonly object _locker = new();
