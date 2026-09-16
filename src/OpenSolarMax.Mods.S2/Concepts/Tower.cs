@@ -28,7 +28,7 @@ public abstract class TowerDefinition : IDefinition
             typeof(InAttackRangeShipsRegistry),
             typeof(AttackTimer),
             typeof(AttackCooldown),
-            typeof(Tower)
+            typeof(AttackFlash)
         );
 }
 
@@ -81,7 +81,7 @@ public class TowerApplier(
         Content.Textures.SolarMax2_Atlas_json + ":TowerShape"
     );
 
-    private readonly TextureRegion _towerFlare = assets.Load<TextureRegion>(
+    private readonly TextureRegion _towerAttackFlash = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":TowerShape"
     );
 
@@ -113,6 +113,6 @@ public class TowerApplier(
         // 配置炮塔属性
         commandBuffer.Set(in entity, new AttackRange { Range = desc.AttackRange });
         commandBuffer.Set(in entity, new AttackCooldown { Duration = desc.CooldownTime });
-        commandBuffer.Set(in entity, new Tower { FlareTexture = _towerFlare });
+        commandBuffer.Set(in entity, new AttackFlash { Texture = _towerAttackFlash });
     }
 }
