@@ -415,4 +415,17 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         Widgets.CollectionChanged += WidgetsOnCollectionChanged;
     }
+
+    protected override void InternalArrange()
+    {
+        // 先按常规排布预览面板与缩略图面板
+        base.InternalArrange();
+
+        // 缩略图容器需要以内容完整宽度排布，否则会被父控件宽度截断。仿照 Myra 的 ScrollViewer 实现
+        var thumbnailsBounds = _thumbnailsPanel.ActualBounds;
+        var contentWidth = _thumbnailContainer
+            .Measure(new Point(thumbnailsBounds.Width, thumbnailsBounds.Height))
+            .X;
+        _thumbnailContainer.Arrange(new Rectangle(0, 0, contentWidth, thumbnailsBounds.Height));
+    }
 }
