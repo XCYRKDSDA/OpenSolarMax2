@@ -3,8 +3,8 @@
 
     "entities": [
         { "$base": "planet60", "team": "blue", "position": [ 512, 288 ], "ships": 60 },
-        { "$base": "planet50", "team": "red", "position": [ 384, 480 ], "ships": 30 },
+        { "$base": "planet30", "team": "red", "position": [ 384, 480 ], "ships": 30 },
 
-        { "$base": "planet50", "position": [ 640, 480 ] }
+        { "$base": "planet30", "position": [ 640, 480 ] }
     ]
 }

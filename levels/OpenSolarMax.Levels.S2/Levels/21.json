@@ -1,0 +1,13 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$id": "node_0", "$base": "planet40", "team": "blue", "position": [ 368, 384 ], "ships": 40 },
+        { "$id": "node_1", "$base": "planet40", "team": "red", "position": [ 656, 384 ], "ships": 40 },
+
+        { "$base": "planet30", "parent": "node_0", "orbit": { "shape": [ 288, 288 ], "period": 62.831853, "phase": -0.25 } },
+        { "$base": "planet30", "parent": "node_0", "orbit": { "shape": [ 288, 288 ], "period": 62.831853, "phase": 0.25 } },
+        { "$base": "planet30", "parent": "node_1", "orbit": { "shape": [ 288, 288 ], "period": -62.831853, "phase": 0.5 } },
+        { "$base": "planet30", "parent": "node_1", "orbit": { "shape": [ 288, 288 ], "period": -62.831853, "phase": 0 } }
+    ]
+}

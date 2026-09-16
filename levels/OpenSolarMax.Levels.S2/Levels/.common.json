@@ -10,6 +10,8 @@
     "entities": [
         { "$id": "blue", "$base": "blue" },
         { "$id": "red", "$base": "blue", "color": "#FF5D93", "ai": "smart" },
+        { "$id": "orange", "$base": "blue", "color": "#FF8C5A", "ai": "smart" },
+        { "$id": "lime", "$base": "blue", "color": "#CAFF6E", "ai": "smart" },
 
         { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "team": "blue" }
     ]
