@@ -1,0 +1,13 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$base": "planet50", "team": "blue", "position": [ 192, 384 ], "ships": 50 },
+        { "$base": "planet30", "team": "red", "position": [ 832, 384 ], "ships": 30 },
+
+        { "$base": "planet30", "position": [ 392, 296 ] },
+        { "$base": "planet30", "position": [ 392, 472 ] },
+        { "$base": "planet30", "position": [ 632, 296 ] },
+        { "$base": "planet30", "position": [ 632, 472 ] }
+    ]
+}

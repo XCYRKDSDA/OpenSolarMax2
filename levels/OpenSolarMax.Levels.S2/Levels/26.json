@@ -1,0 +1,24 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$id": "node_0", "$base": "warp", "team": "blue", "position": [ 512, 384 ], "ships": 40 },
+
+        { "$base": "planet30", "position": [ 240, 248 ] },
+        { "$base": "planet30", "position": [ 240, 520 ] },
+        { "$base": "planet30", "position": [ 784, 248 ] },
+        { "$base": "planet30", "position": [ 784, 520 ] },
+
+        { "$base": "planet30", "team": "red", "parent": "node_0", "orbit": { "shape": [ 288, 288 ], "period": 62.831853, "phase": -0.25 }, "ships": 30 },
+
+        { "$base": "planet30", "parent": "node_0", "orbit": { "shape": [ 293.720956, 293.720956 ], "period": 62.831853, "phase": -0.081549 } },
+
+        { "$base": "planet30", "team": "orange", "parent": "node_0", "orbit": { "shape": [ 293.720956, 293.720956 ], "period": 62.831853, "phase": 0.081549 }, "ships": 30 },
+
+        { "$base": "planet30", "parent": "node_0", "orbit": { "shape": [ 288, 288 ], "period": 62.831853, "phase": 0.25 } },
+
+        { "$base": "planet30", "team": "lime", "parent": "node_0", "orbit": { "shape": [ 293.720956, 293.720956 ], "period": 62.831853, "phase": 0.418451 }, "ships": 30 },
+
+        { "$base": "planet30", "parent": "node_0", "orbit": { "shape": [ 293.720956, 293.720956 ], "period": 62.831853, "phase": -0.418451 } }
+    ]
+}

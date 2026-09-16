@@ -1,0 +1,20 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$base": "starbase", "position": [ 512, 400 ] },
+
+        { "$base": "planet30", "team": "blue", "position": [ 512, 248 ], "ships": 30 },
+
+        { "$base": "planet30", "position": [ 352, 472 ] },
+        { "$base": "planet30", "position": [ 672, 472 ] },
+
+        { "$base": "planet40", "team": "red", "position": [ 832, 496 ], "ships": 40 },
+        { "$base": "planet40", "team": "orange", "position": [ 192, 496 ], "ships": 40 },
+
+        { "$base": "planet40", "position": [ 752, 336 ] },
+        { "$base": "planet40", "position": [ 272, 336 ] },
+        { "$base": "planet30", "position": [ 920, 376 ] },
+        { "$base": "planet30", "position": [ 104, 376 ] }
+    ]
+}

@@ -87,6 +87,14 @@ volume = 40
 reference_radius = 19.2 # 128 / 2 * 0.3 : 以 1024px 等级纹理为基础, 乘上固定系数 0.3
 volume = 60             # 原版 S2 中为 30，但占领速度有 0.5 的 debuf
 
+[applier.starbase]
+reference_radius = 32 # 128 / 2 * 0.5 : 以 1024px 等级纹理为基础, 乘上固定系数 0.5
+volume = 100          # 原版 S2 中为 50，但占领速度有 0.5 的 debuf
+population = 100
+produce_speed = 2
+attack_range = 180
+cooldown = 0.15
+
 [applier.barrier]
 node.size = { x = 27, y = 27 }
 edge.space = 8

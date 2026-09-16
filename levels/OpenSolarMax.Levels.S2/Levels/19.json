@@ -1,0 +1,25 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$base": "tower", "position": [ 512, 384 ] },
+
+        { "$base": "barrier", "head": [ 448, 320 ], "tail": [ 576, 320 ] },
+        { "$base": "barrier", "head": [ 448, 320 ], "tail": [ 448, 448 ] },
+        { "$base": "barrier", "head": [ 576, 320 ], "tail": [ 576, 448 ] },
+        { "$base": "barrier", "head": [ 576, 448 ], "tail": [ 448, 448 ] },
+
+        { "$base": "planet30", "position": [ 360, 384 ] },
+        { "$base": "planet30", "position": [ 512, 232 ] },
+        { "$base": "planet30", "position": [ 512, 536 ] },
+        { "$base": "planet30", "position": [ 664, 384 ] },
+
+        { "$base": "warp", "position": [ 192, 384 ] },
+        { "$base": "warp", "position": [ 832, 384 ] },
+
+        { "$base": "planet40", "team": "blue", "position": [ 272, 264 ], "ships": 40 },
+        { "$base": "planet40", "team": "blue", "position": [ 272, 504 ], "ships": 40 },
+        { "$base": "planet40", "team": "red", "position": [ 752, 264 ], "ships": 40 },
+        { "$base": "planet40", "team": "red", "position": [ 752, 504 ], "ships": 40 }
+    ]
+}

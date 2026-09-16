@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 
 [SimulateSystem, LateUpdate]
 [
-    ReadCurr(typeof(Tower)),
+    ReadCurr(typeof(AttackFlash)),
     ReadCurr(typeof(InAttackRangeShipsRegistry)),
     ReadCurr(typeof(AttackCooldown)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
@@ -47,10 +47,10 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
     }
 
     [Query]
-    [All<Tower, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InTeam.AsAffiliate>]
+    [All<AttackFlash, InAttackRangeShipsRegistry, AttackTimer, AttackCooldown, InTeam.AsAffiliate>]
     private void Shoot(
         Entity entity,
-        in Tower tower,
+        in AttackFlash attackFlash,
         in InAttackRangeShipsRegistry registry,
         in AttackTimer timer,
         in AttackCooldown cooldown,
@@ -64,8 +64,8 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
         if (asAffiliate.Relationship is null)
             return;
 
-        var towerTeam = asAffiliate.Relationship.Value.Copy.Team;
-        var target = SelectTarget(in registry, in towerTeam);
+        var shooterTeam = asAffiliate.Relationship.Value.Copy.Team;
+        var target = SelectTarget(in registry, in shooterTeam);
         if (target is null)
             return;
 
@@ -73,7 +73,7 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
         commandBuffer.Set(entity, timer with { TimeLeft = cooldown.Duration });
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
-        var towerColor = towerTeam.Get<TeamReferenceColor>().Value;
+        var shooterColor = shooterTeam.Get<TeamReferenceColor>().Value;
         factory.Make(
             world,
             commandBuffer,
@@ -81,11 +81,11 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
             {
                 Planet = entity,
                 TargetPosition = targetPosition,
-                Color = towerColor,
+                Color = shooterColor,
             }
         );
 
-        if (tower.FlareTexture is not null)
+        if (attackFlash.Texture is not null)
         {
             factory.Make(
                 world,
@@ -94,7 +94,7 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
                 {
                     Tower = entity,
                     Color = Color.White,
-                    Texture = tower.FlareTexture,
+                    Texture = attackFlash.Texture,
                 }
             );
         }
