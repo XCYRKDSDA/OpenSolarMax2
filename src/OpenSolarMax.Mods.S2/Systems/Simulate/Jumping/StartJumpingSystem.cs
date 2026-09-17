@@ -142,6 +142,10 @@ public sealed partial class StartJumpingSystem(
                 _maxOffsetRatio * expectedTravelDuration / 2
             );
 
+            // Debug.WriteLine(
+            //     $"{ship.Id},{pose.Translation.X},{pose.Translation.Y},{pose.Translation.Z},{expectedPosition.X},{expectedPosition.Y},{expectedPosition.Z},{dt}"
+            // );
+
             // 设置任务并初始化状态。JumpingStatus 的写入经命令缓冲延迟生效，
             // 用于打破 StartJumpingSystem 与 CalculateShipPositionSystem 之间的读写环
             commandBuffer.Set(
