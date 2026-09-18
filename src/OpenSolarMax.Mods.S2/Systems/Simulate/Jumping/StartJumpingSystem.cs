@@ -55,7 +55,12 @@ public sealed partial class StartJumpingSystem(
     private readonly float _maxOffsetRatio = configs.RequireValue<float>(
         "arrival_time_max_offset_ratio"
     );
-    private readonly float _chargingHoldMax = configs.RequireValue<float>("charging_hold_max");
+    private readonly float _chargingStretchMin = configs.RequireValue<float>(
+        "charging_stretch_min"
+    );
+    private readonly float _chargingStretchMax = configs.RequireValue<float>(
+        "charging_stretch_max"
+    );
 
     [Query]
     [All<StartJumpingRequest>]
@@ -148,9 +153,15 @@ public sealed partial class StartJumpingSystem(
                 _maxOffsetRatio * expectedTravelDuration / 2
             );
 
-            // 拉长结束后的随机停顿。停顿不计入飞行时长补偿，直接推迟抵达时刻
-            var hold = (float)Random.Shared.NextDouble() * _chargingHoldMax;
-            var arrivalTimeOffset = dt + hold;
+            // 拉长段的随机耗时。超出基准（区间下限）的部分不计入飞行时长补偿，
+            // 直接推迟抵达时刻
+            var stretch = MathHelper.Lerp(
+                _chargingStretchMin,
+                _chargingStretchMax,
+                (float)Random.Shared.NextDouble()
+            );
+            var stretchDelay = stretch - _chargingStretchMin;
+            var arrivalTimeOffset = dt + stretchDelay;
 
             // Debug.WriteLine(
             //     $"{ship.Id},{pose.Translation.X},{pose.Translation.Y},{pose.Translation.Z},{expectedPosition.X},{expectedPosition.Y},{expectedPosition.Z},{dt}"
@@ -177,7 +188,7 @@ public sealed partial class StartJumpingSystem(
                     {
                         ElapsedTime = 0,
                         Clip = _takingOffClip.Bake(
-                            new Dictionary<string, object?> { ["HOLD"] = hold }
+                            new Dictionary<string, object?> { ["STRETCH"] = stretch }
                         ),
                     },
                 }

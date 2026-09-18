@@ -1,7 +1,7 @@
 {
-    "duration": "0.5 + HOLD",
+    "duration": "STRETCH + 0.2",
     "variables": {
-        "HOLD": 0
+        "STRETCH": 0.3
     },
     "curves": {
         "Sprite::Alpha": [
@@ -9,9 +9,8 @@
         ],
         "Sprite::Scale": [
             { "time": 0, "value": [ 1, 1 ] },
-            { "time": 0.3, "value": [ 6, 1 ] },
-            { "time": "0.3 + HOLD", "value": [ 6, 1 ] },
-            { "time": "0.5 + HOLD", "value": [ 3, 0.5 ] }
+            { "time": "STRETCH", "value": [ 6, 1 ] },
+            { "time": "STRETCH + 0.2", "value": [ 3, 0.5 ] }
         ]
     }
 }
