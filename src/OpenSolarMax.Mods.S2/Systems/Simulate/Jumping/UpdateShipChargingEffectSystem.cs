@@ -3,7 +3,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Nine.Animations;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
@@ -28,17 +27,12 @@ namespace OpenSolarMax.Mods.S2.Systems;
 ]
 public sealed partial class UpdateShipChargingEffectSystem(
     World world,
-    IAssetsManager assets,
     [Section("systems:simulate:jumping")] IConfiguration configs
 ) : ICalcSystem
 {
     private readonly float _shipJumpingFadeInDuration = configs.RequireValue<float>(
         "fading_in_duration"
     );
-
-    private readonly AnimationClip<Entity> _shipTakingOffAnimationClip = assets.Load<
-        AnimationClip<Entity>
-    >(Content.Animations.ShipTakingOff_json);
 
     [Query]
     [All<JumpingStatus>]
@@ -47,34 +41,33 @@ public sealed partial class UpdateShipChargingEffectSystem(
         if (status.State != JumpingState.Charging)
             return;
 
-        // Charging状态下播放起飞动画
-        if (status.State == JumpingState.Charging)
-        {
-            var takingOffAnimationTime = status.Charging.ElapsedTime;
-            var fadeInTime = status.Charging.ElapsedTime;
-            var fadeInRatio = fadeInTime / _shipJumpingFadeInDuration;
+        // 停顿点与充能总时长由该舰船专属的起飞动画剪辑给出（见 StartJumpingSystem）
+        if (status.Charging.Clip is not { } takingOffClip)
+            return;
 
-            switch (fadeInRatio)
-            {
-                case >= 0 and < 1:
-                    AnimationEvaluator<Entity>.TweenAndSet(
-                        ref ship,
-                        null,
-                        float.NaN, // 上一个动画设置为空，直接继承上一个系统设置的值
-                        _shipTakingOffAnimationClip,
-                        takingOffAnimationTime,
-                        null,
-                        fadeInRatio
-                    ); // 采用默认的线性差值
-                    break;
-                case >= 1:
-                    AnimationEvaluator<Entity>.EvaluateAndSet(
-                        ref ship,
-                        _shipTakingOffAnimationClip,
-                        takingOffAnimationTime
-                    );
-                    break;
-            }
+        var takingOffAnimationTime = status.Charging.ElapsedTime;
+        var fadeInRatio = takingOffAnimationTime / _shipJumpingFadeInDuration;
+
+        switch (fadeInRatio)
+        {
+            case >= 0 and < 1:
+                AnimationEvaluator<Entity>.TweenAndSet(
+                    ref ship,
+                    null,
+                    float.NaN, // 上一个动画设置为空，直接继承上一个系统设置的值
+                    takingOffClip,
+                    takingOffAnimationTime,
+                    null,
+                    fadeInRatio
+                ); // 采用默认的线性差值
+                break;
+            case >= 1:
+                AnimationEvaluator<Entity>.EvaluateAndSet(
+                    ref ship,
+                    takingOffClip,
+                    takingOffAnimationTime
+                );
+                break;
         }
     }
 

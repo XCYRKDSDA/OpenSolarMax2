@@ -8,7 +8,7 @@ wave_total_seconds = 2.5    # 胜利波纹动效：从胜利帧起所有星球�
 # 仿真系统相关
 
 [systems.simulate.jumping]
-charging_duration = 0.5
+charging_hold_max = 0.5             # 最大拉伸后的随机停顿时长上界，秒
 landing_duration = 0.5
 fading_in_duration = 0.1
 fading_out_duration = 0.25

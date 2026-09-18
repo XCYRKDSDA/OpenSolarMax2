@@ -6,6 +6,7 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
+using Nine.Animations.Parametric;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
@@ -43,6 +44,10 @@ public sealed partial class StartJumpingSystem(
     [Section("systems:simulate:jumping")] IConfiguration configs
 ) : IDelayedCalcSystem
 {
+    private readonly ParametricAnimationClip<Entity> _takingOffClip = assets.Load<
+        ParametricAnimationClip<Entity>
+    >(Content.Animations.ShipTakingOff_json);
+
     private readonly SafeFmodEventDescription _chargingSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipCharging");
 
@@ -50,6 +55,7 @@ public sealed partial class StartJumpingSystem(
     private readonly float _maxOffsetRatio = configs.RequireValue<float>(
         "arrival_time_max_offset_ratio"
     );
+    private readonly float _chargingHoldMax = configs.RequireValue<float>("charging_hold_max");
 
     [Query]
     [All<StartJumpingRequest>]
@@ -142,6 +148,10 @@ public sealed partial class StartJumpingSystem(
                 _maxOffsetRatio * expectedTravelDuration / 2
             );
 
+            // 拉长结束后的随机停顿。停顿不计入飞行时长补偿，直接推迟抵达时刻
+            var hold = (float)Random.Shared.NextDouble() * _chargingHoldMax;
+            var arrivalTimeOffset = dt + hold;
+
             // Debug.WriteLine(
             //     $"{ship.Id},{pose.Translation.X},{pose.Translation.Y},{pose.Translation.Z},{expectedPosition.X},{expectedPosition.Y},{expectedPosition.Z},{dt}"
             // );
@@ -156,14 +166,20 @@ public sealed partial class StartJumpingSystem(
                     Task = new()
                     {
                         DestinationPlanet = request.Destination,
-                        ExpectedTravelDuration = expectedTravelDuration + dt,
+                        ExpectedTravelDuration = expectedTravelDuration + arrivalTimeOffset,
                         DeparturePosition = pose.Translation,
                         ExpectedArrivalPosition =
-                            expectedPosition + arrivalPlanetPositionDerivative * dt,
+                            expectedPosition + arrivalPlanetPositionDerivative * arrivalTimeOffset,
                         ExpectedRevolutionOrbit = expectedOrbit,
                         ExpectedRevolutionState = revolutionState,
                     },
-                    Charging = new() { ElapsedTime = 0 },
+                    Charging = new()
+                    {
+                        ElapsedTime = 0,
+                        Clip = _takingOffClip.Bake(
+                            new Dictionary<string, object?> { ["HOLD"] = hold }
+                        ),
+                    },
                 }
             );
 
