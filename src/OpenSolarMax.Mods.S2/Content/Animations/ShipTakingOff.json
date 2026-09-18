@@ -1,5 +1,5 @@
 {
-    "duration": "STRETCH + 0.2",
+    "duration": "STRETCH + 0.1 + 0.001",
     "variables": {
         "STRETCH": 0.3
     },
@@ -9,8 +9,9 @@
         ],
         "Sprite::Scale": [
             { "time": 0, "value": [ 1, 1 ] },
-            { "time": "STRETCH", "value": [ 6, 1 ] },
-            { "time": "STRETCH + 0.2", "value": [ 3, 0.5 ] }
+            { "time": "STRETCH", "value": [ 6, 0.75 ] },
+            { "time": "STRETCH + 0.1", "value": [ 2, 1 ] },
+            { "time": "STRETCH + 0.1 + 0.001", "value": [ 2, 0.5 ], "type": "step" }
         ]
     }
 }
