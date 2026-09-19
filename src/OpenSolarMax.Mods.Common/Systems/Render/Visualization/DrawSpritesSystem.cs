@@ -25,6 +25,17 @@ public sealed partial class DrawSpritesSystem(
 {
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
 
+    // 加法混合的状态只建一次。BlendState 是 GraphicsResource，在循环里新建会让它反复被
+    // 登记进 GraphicsDevice 的资源表，并在终结时线性查找移除，与主线程抢同一把锁，
+    // 造成偶发的长停顿。
+    private static readonly BlendState _additiveBlendState = new()
+    {
+        ColorSourceBlend = Blend.One,
+        AlphaSourceBlend = Blend.One,
+        ColorDestinationBlend = Blend.One,
+        AlphaDestinationBlend = Blend.One,
+    };
+
     private static readonly QueryDescription _drawableDesc = new QueryDescription().WithAll<
         Sprite,
         AbsoluteTransform
@@ -125,13 +136,7 @@ public sealed partial class DrawSpritesSystem(
         graphicsDevice.BlendState = sprite.Blend switch
         {
             SpriteBlend.Alpha => BlendState.AlphaBlend,
-            SpriteBlend.Additive => new BlendState()
-            {
-                ColorSourceBlend = Blend.One,
-                AlphaSourceBlend = Blend.One,
-                ColorDestinationBlend = Blend.One,
-                AlphaDestinationBlend = Blend.One,
-            },
+            SpriteBlend.Additive => _additiveBlendState,
             SpriteBlend.Opaque => BlendState.Opaque,
             SpriteBlend.NonPremultiplied => BlendState.NonPremultiplied,
             _ => throw new ArgumentOutOfRangeException(),
