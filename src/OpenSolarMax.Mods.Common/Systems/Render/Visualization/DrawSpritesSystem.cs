@@ -25,17 +25,6 @@ public sealed partial class DrawSpritesSystem(
 {
     private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
 
-    // 加法混合的状态只建一次。BlendState 是 GraphicsResource，在循环里新建会让它反复被
-    // 登记进 GraphicsDevice 的资源表，并在终结时线性查找移除，与主线程抢同一把锁，
-    // 造成偶发的长停顿。
-    private static readonly BlendState _additiveBlendState = new()
-    {
-        ColorSourceBlend = Blend.One,
-        AlphaSourceBlend = Blend.One,
-        ColorDestinationBlend = Blend.One,
-        AlphaDestinationBlend = Blend.One,
-    };
-
     private static readonly QueryDescription _drawableDesc = new QueryDescription().WithAll<
         Sprite,
         AbsoluteTransform
@@ -126,21 +115,23 @@ public sealed partial class DrawSpritesSystem(
             sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height
         );
 
-        // 设置四个顶点的颜色
-        _vertices[0].Color = sprite.Color * sprite.Gradient.LeftTop * sprite.Alpha;
-        _vertices[1].Color = sprite.Color * sprite.Gradient.RightTop * sprite.Alpha;
-        _vertices[2].Color = sprite.Color * sprite.Gradient.LeftBottom * sprite.Alpha;
-        _vertices[3].Color = sprite.Color * sprite.Gradient.RightBottom * sprite.Alpha;
-
-        // 设置混合模式
-        graphicsDevice.BlendState = sprite.Blend switch
-        {
-            SpriteBlend.Alpha => BlendState.AlphaBlend,
-            SpriteBlend.Additive => _additiveBlendState,
-            SpriteBlend.Opaque => BlendState.Opaque,
-            SpriteBlend.NonPremultiplied => BlendState.NonPremultiplied,
-            _ => throw new ArgumentOutOfRangeException(),
-        };
+        // 设置四个顶点的颜色，并把混合模式编码进 alpha 通道（见 EncodeBlend）
+        _vertices[0].Color = EncodeBlend(
+            sprite.Color * sprite.Gradient.LeftTop * sprite.Alpha,
+            sprite.Blend
+        );
+        _vertices[1].Color = EncodeBlend(
+            sprite.Color * sprite.Gradient.RightTop * sprite.Alpha,
+            sprite.Blend
+        );
+        _vertices[2].Color = EncodeBlend(
+            sprite.Color * sprite.Gradient.LeftBottom * sprite.Alpha,
+            sprite.Blend
+        );
+        _vertices[3].Color = EncodeBlend(
+            sprite.Color * sprite.Gradient.RightBottom * sprite.Alpha,
+            sprite.Blend
+        );
 
         // 设置Shader纹理
         _effect.Parameters["tex_sampler+tex"].SetValue(sprite.Texture.Texture);
@@ -160,6 +151,26 @@ public sealed partial class DrawSpritesSystem(
             );
         }
     }
+
+    /// <summary>
+    /// 把混合模式编码进顶点色的 alpha 通道，使 Alpha 与 Additive 共用同一个混合状态
+    /// （<see cref="BlendState.AlphaBlend"/>，即 One / InverseSourceAlpha）。绘制过程中不再设置
+    /// <c>graphicsDevice.BlendState</c>，批次也就不再被混合模式打断。
+    ///
+    /// 该状态算的是 <c>dst = src + dst·(1 − src.a)</c>，所以只靠控制输出 alpha 就能表达不同混合：
+    /// Alpha 原样输出；Additive 把 alpha 置 0，dst 不被衰减，退化为加法；
+    /// Opaque 把 alpha 置 1，dst 被完全覆盖（要求纹理本身不透明）；
+    /// NonPremultiplied 与 Alpha 合并（该模式当前未被使用）。
+    ///
+    /// 着色器保持不变，仍输出 <c>顶点色 × 纹理色</c>。
+    /// </summary>
+    private static Color EncodeBlend(Color color, SpriteBlend blend) =>
+        blend switch
+        {
+            SpriteBlend.Additive => new Color(color.R, color.G, color.B, (byte)0),
+            SpriteBlend.Opaque => new Color(color.R, color.G, color.B, byte.MaxValue),
+            _ => color,
+        };
 
     [Query]
     [All<RenderSettings, Projection>]
