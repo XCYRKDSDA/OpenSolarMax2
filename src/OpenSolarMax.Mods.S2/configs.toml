@@ -8,11 +8,12 @@ wave_total_seconds = 2.5    # 胜利波纹动效：从胜利帧起所有星球�
 # 仿真系统相关
 
 [systems.simulate.jumping]
-charging_duration = 0.5
+charging_stretch_min = 0.4          # 拉长段最短耗时，秒（基准，不推迟抵达）
+charging_stretch_max = 0.8          # 拉长段最长耗时，秒（充能总计 0.5~1.0 秒）
 landing_duration = 0.5
 fading_in_duration = 0.1
 fading_out_duration = 0.25
-arrival_time_offset = -8.5          # 抵达时间的绝对偏差（半边）
+arrival_time_offset = 0.25          # 抵达时间的绝对偏差（半边）
 arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间的最大比例
 
 # 输入系统相关

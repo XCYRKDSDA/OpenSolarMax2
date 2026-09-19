@@ -1,9 +1,9 @@
 {
-    "duration": 5,
+    "duration": 12.5,
     "curves": {
         "Sprite::Scale.X": [
             { "time": 0, "value": 0, "type": "linear" },
-            { "time": 5, "value": 12.8, "type": "linear" }
+            { "time": 12.5, "value": 25, "type": "linear" }
         ]
     }
 }

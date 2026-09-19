@@ -6,6 +6,7 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
+using Nine.Animations.Parametric;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
@@ -43,12 +44,22 @@ public sealed partial class StartJumpingSystem(
     [Section("systems:simulate:jumping")] IConfiguration configs
 ) : IDelayedCalcSystem
 {
+    private readonly ParametricAnimationClip<Entity> _takingOffClip = assets.Load<
+        ParametricAnimationClip<Entity>
+    >(Content.Animations.ShipTakingOff_json);
+
     private readonly SafeFmodEventDescription _chargingSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipCharging");
 
     private readonly float _offsetTime = configs.RequireValue<float>("arrival_time_offset");
     private readonly float _maxOffsetRatio = configs.RequireValue<float>(
         "arrival_time_max_offset_ratio"
+    );
+    private readonly float _chargingStretchMin = configs.RequireValue<float>(
+        "charging_stretch_min"
+    );
+    private readonly float _chargingStretchMax = configs.RequireValue<float>(
+        "charging_stretch_max"
     );
 
     [Query]
@@ -142,6 +153,20 @@ public sealed partial class StartJumpingSystem(
                 _maxOffsetRatio * expectedTravelDuration / 2
             );
 
+            // 拉长段的随机耗时。超出基准（区间下限）的部分不计入飞行时长补偿，
+            // 直接推迟抵达时刻
+            var stretch = MathHelper.Lerp(
+                _chargingStretchMin,
+                _chargingStretchMax,
+                (float)Random.Shared.NextDouble()
+            );
+            var stretchDelay = stretch - _chargingStretchMin;
+            var arrivalTimeOffset = dt + stretchDelay;
+
+            // Debug.WriteLine(
+            //     $"{ship.Id},{pose.Translation.X},{pose.Translation.Y},{pose.Translation.Z},{expectedPosition.X},{expectedPosition.Y},{expectedPosition.Z},{dt}"
+            // );
+
             // 设置任务并初始化状态。JumpingStatus 的写入经命令缓冲延迟生效，
             // 用于打破 StartJumpingSystem 与 CalculateShipPositionSystem 之间的读写环
             commandBuffer.Set(
@@ -152,14 +177,20 @@ public sealed partial class StartJumpingSystem(
                     Task = new()
                     {
                         DestinationPlanet = request.Destination,
-                        ExpectedTravelDuration = expectedTravelDuration + dt,
+                        ExpectedTravelDuration = expectedTravelDuration + arrivalTimeOffset,
                         DeparturePosition = pose.Translation,
                         ExpectedArrivalPosition =
-                            expectedPosition + arrivalPlanetPositionDerivative * dt,
+                            expectedPosition + arrivalPlanetPositionDerivative * arrivalTimeOffset,
                         ExpectedRevolutionOrbit = expectedOrbit,
                         ExpectedRevolutionState = revolutionState,
                     },
-                    Charging = new() { ElapsedTime = 0 },
+                    Charging = new()
+                    {
+                        ElapsedTime = 0,
+                        Clip = _takingOffClip.Bake(
+                            new Dictionary<string, object?> { ["STRETCH"] = stretch }
+                        ),
+                    },
                 }
             );
 

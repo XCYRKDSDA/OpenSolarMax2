@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using Nine.Animations;
 
 namespace OpenSolarMax.Mods.S2.Components;
 
@@ -45,6 +46,11 @@ public struct JumpingStatus_Charging
     /// 已充能的时间
     /// </summary>
     public float ElapsedTime;
+
+    /// <summary>
+    /// 该舰船专属的起飞动画剪辑，停顿时长已烘焙进其关键帧
+    /// </summary>
+    public AnimationClip<Entity>? Clip;
 }
 
 public struct JumpingStatus_Travelling

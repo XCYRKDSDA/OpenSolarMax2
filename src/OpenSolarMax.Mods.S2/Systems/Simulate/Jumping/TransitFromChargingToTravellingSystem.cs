@@ -2,10 +2,8 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Systems;
@@ -26,12 +24,9 @@ namespace OpenSolarMax.Mods.S2.Systems;
 public sealed partial class TransitFromChargingToTravellingSystem(
     World world,
     IAssetsManager assets,
-    IConceptFactory factory,
-    [Section("systems:simulate:jumping")] IConfiguration configs
+    IConceptFactory factory
 ) : IDelayedCalcSystem
 {
-    private readonly float _chargingDuration = configs.RequireValue<float>("charging_duration");
-
     private readonly SafeFmodEventDescription _travelBegunSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipBegun");
 
@@ -48,7 +43,8 @@ public sealed partial class TransitFromChargingToTravellingSystem(
         if (status.State != JumpingState.Charging)
             return;
 
-        if (status.Charging.ElapsedTime > _chargingDuration)
+        // 充能总时长由该舰船专属的剪辑长度给出（见 StartJumpingSystem）
+        if (status.Charging.ElapsedTime > status.Charging.Clip!.Length)
         {
             // 状态切换经命令缓冲延迟到回放时生效，任务字段需随新状态一并保留
             commandBuffer.Set(

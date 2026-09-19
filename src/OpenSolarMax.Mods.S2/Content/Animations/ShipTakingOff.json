@@ -1,13 +1,17 @@
 {
-    "duration": 0.5,
+    "duration": "STRETCH + 0.1 + 0.001",
+    "variables": {
+        "STRETCH": 0.3
+    },
     "curves": {
         "Sprite::Alpha": [
             { "time": 0, "value": 1, "type": "step" }
         ],
         "Sprite::Scale": [
-            { "time": 0, "value": [ 1, 1 ], "type": "smooth" },
-            { "time": 0.3, "value": [ 6, 1 ], "type": "smooth" },
-            { "time": 0.5, "value": [ 3, 0.5 ], "type": "smooth" }
+            { "time": 0, "value": [ 1, 1 ] },
+            { "time": "STRETCH", "value": [ 6, 0.75 ] },
+            { "time": "STRETCH + 0.1", "value": [ 2, 1 ] },
+            { "time": "STRETCH + 0.1 + 0.001", "value": [ 2, 0.5 ], "type": "step" }
         ]
     }
 }
