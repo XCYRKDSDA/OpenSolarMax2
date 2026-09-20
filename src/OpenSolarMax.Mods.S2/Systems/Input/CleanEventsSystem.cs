@@ -1,0 +1,25 @@
+using Arch.Buffer;
+using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Mods.S2.Components;
+
+namespace OpenSolarMax.Mods.S2.Systems;
+
+[Disable]
+[LateUpdate]
+[SimulateSystem]
+[ReadCurr(typeof(InputEvent))]
+[DelayedCalc]
+public partial class CleanEventsSystem(World world) : IDelayedCalcSystem
+{
+    [Query]
+    [All<InputEvent>]
+    private static void DestroyEvents(Entity entity, [Data] CommandBuffer commandBuffer)
+    {
+        commandBuffer.Destroy(entity);
+    }
+
+    public void Update(CommandBuffer commandBuffer) => DestroyEventsQuery(world, commandBuffer);
+}

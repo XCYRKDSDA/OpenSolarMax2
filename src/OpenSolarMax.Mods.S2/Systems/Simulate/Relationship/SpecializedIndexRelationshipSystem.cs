@@ -1,6 +1,5 @@
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Common.Components;
-using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
@@ -26,3 +25,19 @@ public sealed class IndexPlanetSelectionRingSystem(EventRegistry registry)
 [SimulateSystem, Reactive]
 public sealed class IndexViewSelectionRingSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<ViewSelectionRing>(registry) { }
+
+[SimulateSystem, Reactive]
+public sealed class IndexDependenceSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<Dependence>(registry) { }
+
+[SimulateSystem, Reactive, BothForGameplayAndPreview]
+public sealed class IndexTeamAffiliationSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<InTeam>(registry) { }
+
+[SimulateSystem, Reactive, BothForGameplayAndPreview]
+public sealed class IndexTransformTreeSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<TreeRelationship<RelativeTransform>>(registry) { }
+
+[SimulateSystem, Reactive, BothForGameplayAndPreview]
+public sealed class IndexColorSyncTreeSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<TreeRelationship<ColorSync>>(registry) { }

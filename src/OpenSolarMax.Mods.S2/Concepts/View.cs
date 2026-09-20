@@ -8,7 +8,7 @@ using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.UI;
-using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;

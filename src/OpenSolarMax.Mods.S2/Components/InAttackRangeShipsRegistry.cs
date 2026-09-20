@@ -1,5 +1,5 @@
 using Arch.Core;
-using OpenSolarMax.Mods.Common.Utils;
+using OpenSolarMax.Mods.S2.Utils;
 
 namespace OpenSolarMax.Mods.S2.Components;
 

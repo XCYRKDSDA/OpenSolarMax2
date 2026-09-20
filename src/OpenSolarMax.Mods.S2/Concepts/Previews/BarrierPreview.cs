@@ -7,8 +7,8 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
-using OpenSolarMax.Mods.Common.Utils;
 using OpenSolarMax.Mods.S2.Components;
+using OpenSolarMax.Mods.S2.Utils;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 

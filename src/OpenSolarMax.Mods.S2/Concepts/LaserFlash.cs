@@ -6,7 +6,7 @@ using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 

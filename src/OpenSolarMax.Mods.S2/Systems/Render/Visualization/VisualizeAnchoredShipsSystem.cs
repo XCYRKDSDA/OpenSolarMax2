@@ -10,11 +10,10 @@ using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Common.Components;
-using OpenSolarMax.Mods.Common.Systems;
-using OpenSolarMax.Mods.Common.Utils;
+using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Graphics;
+using OpenSolarMax.Mods.S2.Utils;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 

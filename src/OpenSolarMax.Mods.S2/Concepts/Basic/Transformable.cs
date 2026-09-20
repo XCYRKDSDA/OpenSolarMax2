@@ -3,7 +3,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 

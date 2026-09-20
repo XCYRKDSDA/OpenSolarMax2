@@ -4,9 +4,8 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
-using OpenSolarMax.Mods.Common.Systems;
-using OpenSolarMax.Mods.Common.Systems.Timing;
 using OpenSolarMax.Mods.S2.Components;
+using OpenSolarMax.Mods.S2.Systems.Timing;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 

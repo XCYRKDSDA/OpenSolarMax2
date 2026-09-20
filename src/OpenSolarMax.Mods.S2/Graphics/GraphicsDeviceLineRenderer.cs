@@ -2,7 +2,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Mods.Common.Graphics;
 
 namespace OpenSolarMax.Mods.S2.Graphics;
 

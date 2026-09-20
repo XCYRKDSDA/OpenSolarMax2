@@ -8,10 +8,5 @@
     "link": "",
     "assembly": "OpenSolarMax.Mods.S2.dll",
     "content": "Content",
-    "configs": "configs.toml",
-    "dependencies": {
-        "behaviors": [
-            "OpenSolarMax.Mods.Common"
-        ]
-    }
+    "configs": "configs.toml"
 }

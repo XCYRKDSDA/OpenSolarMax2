@@ -8,8 +8,7 @@ using Nine.Animations;
 using Nine.Assets;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Common.Components;
-using OpenSolarMax.Mods.Common.Systems;
+using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;

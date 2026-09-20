@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Concepts;
 
