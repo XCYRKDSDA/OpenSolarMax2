@@ -18,7 +18,8 @@ public abstract class DestinationEffectDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
-        + new Signature(typeof(DestinationEffectAssignment), typeof(InTeam.AsAffiliate));
+        + TeamInheritableDefinition.Signature
+        + new Signature(typeof(DestinationEffectAssignment));
 }
 
 [Describe(ConceptNames.DestinationEffect)]
@@ -35,6 +36,9 @@ public class DestinationEffectDescription : IDescription
 public class DestinationEffectApplier(IConceptFactory factory)
     : IApplier<DestinationEffectDescription>
 {
+    private readonly TransformableApplier _transformableApplier = new(factory);
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, DestinationEffectDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
@@ -82,25 +86,26 @@ public class DestinationEffectApplier(IConceptFactory factory)
             ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Warp }
         );
-        factory.Make(
-            world,
+
+        // 设置位姿
+        _transformableApplier.Apply(
             commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription
+            entity,
+            new TransformableDescription()
             {
-                Parent = desc.Warp,
-                Child = entity,
-                Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
+                Transform = new RelativeTransformOptions
+                {
+                    Parent = desc.Warp,
+                    Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
+                },
             }
         );
 
         // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
     }
 }

@@ -21,13 +21,12 @@ public abstract class WarpChargingSurroundFlareDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
-            typeof(Animation),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(Animation)
         );
 }
 
@@ -64,6 +63,8 @@ public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFac
     private readonly ParametricAnimationClip<Entity> _rawFlareCharging = assets.Load<
         ParametricAnimationClip<Entity>
     >(Content.Animations.WarpSurroundFlareCharging_json);
+
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(
         CommandBuffer commandBuffer,
@@ -142,12 +143,10 @@ public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFac
         );
 
         // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
     }
 }

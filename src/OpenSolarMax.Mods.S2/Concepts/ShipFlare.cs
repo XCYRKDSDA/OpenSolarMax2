@@ -18,17 +18,13 @@ public static partial class ConceptNames
 public abstract class ShipFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿변환
-            typeof(AbsoluteTransform),
-            // 효과
-            typeof(Sprite),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
+            // 效果
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationAndSoundEffectCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
         );
 }
 
@@ -55,23 +51,22 @@ public class ShipFlareApplier(IAssetsManager assets, IConceptFactory factory)
     private readonly SafeFmodEventDescription _destroyedSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipDestroyed");
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipFlareDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        // 设置位置
-        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });
-
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions { Translation = desc.Position },
                 Texture = _flareTexture,
-                Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -90,14 +85,5 @@ public class ShipFlareApplier(IAssetsManager assets, IConceptFactory factory)
         _destroyedSoundEvent.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }
