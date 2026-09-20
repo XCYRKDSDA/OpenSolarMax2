@@ -25,7 +25,9 @@ public abstract class ShipBornPulseDefinition : IDefinition
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted)
+            typeof(ExpireAfterAnimationCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -34,7 +36,7 @@ public class ShipBornPulseDescription : IDescription
 {
     public required Entity Ship { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ShipBornPulse)]
@@ -59,7 +61,6 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             new Sprite
             {
                 Texture = _pulseTexture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
@@ -93,5 +94,14 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

@@ -22,18 +22,21 @@ public abstract class VictoryFlashDefinition : IDefinition
             typeof(AbsoluteTransform),
             typeof(Sprite),
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted)
+            typeof(ExpireAfterAnimationCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
 [Describe(ConceptNames.VictoryFlash)]
 public class VictoryFlashDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.VictoryFlash)]
-public class VictoryFlashApplier(IAssetsManager assets) : IApplier<VictoryFlashDescription>
+public class VictoryFlashApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<VictoryFlashDescription>
 {
     private readonly TextureRegion _whitePixel = assets.Load<TextureRegion>(
         Game.Content.Textures.Pixel_json + ":AtCenter"
@@ -45,6 +48,8 @@ public class VictoryFlashApplier(IAssetsManager assets) : IApplier<VictoryFlashD
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, VictoryFlashDescription desc)
     {
+        var world = World.Worlds[entity.WorldId];
+
         commandBuffer.Set(
             in entity,
             new AbsoluteTransform { Translation = new Vector3(0, 0, 1000) }
@@ -55,7 +60,6 @@ public class VictoryFlashApplier(IAssetsManager assets) : IApplier<VictoryFlashD
             new Sprite
             {
                 Texture = _whitePixel,
-                Color = desc.Color,
                 Alpha = 0f,
                 Size = new Vector2(1e6f, 1e6f),
                 Scale = Vector2.One,
@@ -74,5 +78,14 @@ public class VictoryFlashApplier(IAssetsManager assets) : IApplier<VictoryFlashD
         );
 
         commandBuffer.Set(in entity, new ExpireAfterAnimationCompleted());
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

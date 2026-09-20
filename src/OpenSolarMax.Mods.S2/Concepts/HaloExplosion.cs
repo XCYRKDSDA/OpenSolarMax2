@@ -26,14 +26,16 @@ public abstract class HaloExplosionDefinition : IDefinition
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
 [Describe(ConceptNames.HaloExplosion)]
 public class HaloExplosionDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required Vector3 Position { get; set; }
 
@@ -41,7 +43,8 @@ public class HaloExplosionDescription : IDescription
 }
 
 [Apply(ConceptNames.HaloExplosion)]
-public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosionDescription>
+public class HaloExplosionApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<HaloExplosionDescription>
 {
     private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":Halo"
@@ -56,6 +59,8 @@ public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosio
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, HaloExplosionDescription desc)
     {
+        var world = World.Worlds[entity.WorldId];
+
         // 摆放位置
         commandBuffer.Set(
             in entity,
@@ -68,7 +73,6 @@ public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosio
             new Sprite
             {
                 Texture = _haloTexture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new(desc.PlanetRadius * 2),
                 Scale = Vector2.One,
@@ -91,5 +95,14 @@ public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosio
         _colonizedSoundEvent.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

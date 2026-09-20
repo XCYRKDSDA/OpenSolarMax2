@@ -25,14 +25,16 @@ public abstract class ShipAfterImageDefinition : IDefinition
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted)
+            typeof(ExpireAfterAnimationCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
 [Describe(ConceptNames.ShipAfterImage)]
 public class ShipAfterImageDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required Vector3 Position { get; set; }
 
@@ -40,7 +42,8 @@ public class ShipAfterImageDescription : IDescription
 }
 
 [Apply(ConceptNames.ShipAfterImage)]
-public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterImageDescription>
+public class ShipAfterImageApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipAfterImageDescription>
 {
     private readonly TextureRegion _texture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":Ship"
@@ -52,6 +55,8 @@ public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterIm
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipAfterImageDescription desc)
     {
+        var world = World.Worlds[entity.WorldId];
+
         // 摆放位置
         commandBuffer.Set(
             in entity,
@@ -64,7 +69,6 @@ public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterIm
             new Sprite
             {
                 Texture = _texture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new(8, 8),
                 Scale = Vector2.One,
@@ -82,5 +86,14 @@ public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterIm
                 TimeOffset = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

@@ -2,6 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -17,7 +18,7 @@ public abstract class DestinationEffectDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
-        + new Signature(typeof(DestinationEffectAssignment));
+        + new Signature(typeof(DestinationEffectAssignment), typeof(InTeam.AsAffiliate));
 }
 
 [Describe(ConceptNames.DestinationEffect)]
@@ -27,7 +28,7 @@ public class DestinationEffectDescription : IDescription
 
     public required float WarpRadius { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.DestinationEffect)]
@@ -46,7 +47,7 @@ public class DestinationEffectApplier(IConceptFactory factory)
             {
                 Effect = entity,
                 Radius = desc.WarpRadius * 2f,
-                Color = desc.Color,
+                Team = desc.Team,
             }
         );
 
@@ -62,7 +63,7 @@ public class DestinationEffectApplier(IConceptFactory factory)
                     {
                         Effect = entity,
                         Radius = desc.WarpRadius * 2f,
-                        Color = desc.Color,
+                        Team = desc.Team,
                         Angle = i * MathF.PI * 2 / 3,
                     }
                 )
@@ -92,5 +93,14 @@ public class DestinationEffectApplier(IConceptFactory factory)
                 Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
             }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

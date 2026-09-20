@@ -43,9 +43,9 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(Colonizable), // 允许进行殖民
             typeof(ColonizationState), // 殖民状态
             typeof(InTeam.AsAffiliate), // 可以隶属于某个阵营
+            typeof(TreeRelationship<InTeam>.AsParent), // 阵营继承关系父方
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
-            typeof(TreeRelationship<ColorSync>.AsParent), // 颜色同步关系父方
             // 选择圈相关
             typeof(PlanetSelectionRing.AsPlanet), // 星球的选择圈索引
             // AI 相关
@@ -237,9 +237,9 @@ public class CelestialBodyApplier(
         factory.Make(
             world,
             commandBuffer,
-            new ColorSyncableDrawableDescription
+            new TeamSyncableDrawableDescription
             {
-                ColorSource = entity,
+                TeamSource = entity,
                 Transform = new RelativeTransformOptions
                 {
                     Parent = entity,

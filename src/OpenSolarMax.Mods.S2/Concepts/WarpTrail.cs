@@ -27,7 +27,9 @@ public abstract class WarpTrailDefinition : IDefinition
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted)
+            typeof(ExpireAfterAnimationCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -38,11 +40,12 @@ public class WarpTrailDescription : IDescription
 
     public required Vector3 Tail { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.WarpTrail)]
-public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescription>
+public class WarpTrailApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<WarpTrailDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":WarpGlare"
@@ -54,6 +57,8 @@ public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescrip
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, WarpTrailDescription desc)
     {
+        var world = World.Worlds[entity.WorldId];
+
         var vector = desc.Tail - desc.Head;
         var length = vector.Length();
 
@@ -63,7 +68,6 @@ public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescrip
             new Sprite
             {
                 Texture = _defaultTexture,
-                Color = desc.Color,
                 Alpha = 0.25f,
                 Size = new(length * 0.7f, 2),
                 Position = Vector2.Zero,
@@ -94,5 +98,14 @@ public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescrip
                 TimeOffset = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

@@ -26,7 +26,9 @@ public abstract class ShipFlareDefinition : IDefinition
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -35,11 +37,12 @@ public class ShipFlareDescription : IDescription
 {
     public required Vector3 Position { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ShipFlare)]
-public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescription>
+public class ShipFlareApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":ShipFlare"
@@ -54,6 +57,8 @@ public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescrip
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipFlareDescription desc)
     {
+        var world = World.Worlds[entity.WorldId];
+
         // 设置位置
         commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });
 
@@ -63,7 +68,6 @@ public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescrip
             new Sprite
             {
                 Texture = _flareTexture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
@@ -86,5 +90,14 @@ public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescrip
         _destroyedSoundEvent.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }
