@@ -7,6 +7,7 @@ using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -22,7 +23,9 @@ public static partial class ConceptNames
 public abstract class TeamInheritableDrawableDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        Drawable.Signature + TeamInheritableDefinition.Signature;
+        Drawable.Signature
+        + TeamInheritableDefinition.Signature
+        + new Signature(typeof(VisualStyle));
 }
 
 [Describe(ConceptNames.TeamInheritableDrawable), BothForGameplayAndPreview]
@@ -96,6 +99,11 @@ public class TeamInheritableDrawableDescription : IDescription
     /// 阵营继承的来源实体。仅在未直接隶属阵营时生效
     /// </summary>
     public Entity TeamSource { get; set; } = Entity.Null;
+
+    /// <summary>
+    /// 实体的视觉类型
+    /// </summary>
+    public VisualStyle VisualStyle { get; set; } = VisualStyle.Solid;
 }
 
 [Apply(ConceptNames.TeamInheritableDrawable), BothForGameplayAndPreview]
@@ -135,5 +143,8 @@ public class TeamInheritableDrawableApplier(IAssetsManager assets, IConceptFacto
             entity,
             new TeamInheritableDescription { Team = desc.Team, TeamSource = desc.TeamSource }
         );
+
+        // 设置视觉类型
+        commandBuffer.Set(in entity, desc.VisualStyle);
     }
 }

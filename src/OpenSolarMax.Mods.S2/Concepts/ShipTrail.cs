@@ -68,6 +68,7 @@ public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
                 Scale = new Vector2(0, 1),
                 Blend = SpriteBlend.Additive,
                 TeamSource = desc.Ship,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

@@ -25,6 +25,8 @@ public abstract class ColonizationFlareDefinition : IDefinition
         + new Signature(
             // 效果
             typeof(Sprite),
+            // 视觉类型
+            typeof(VisualStyle),
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -103,5 +105,8 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
             entity,
             new TeamInheritableDescription { Team = desc.Team }
         );
+
+        // 设置视觉类型
+        commandBuffer.Set(in entity, VisualStyle.Effect);
     }
 }

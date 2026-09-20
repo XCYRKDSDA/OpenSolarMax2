@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -56,6 +57,7 @@ public class VictoryFlashApplier(IAssetsManager assets, IConceptFactory factory)
                 Size = new Vector2(1e6f, 1e6f),
                 Blend = SpriteBlend.Additive,
                 Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

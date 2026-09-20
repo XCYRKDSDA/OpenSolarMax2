@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Utils;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -74,6 +75,7 @@ public class WarpTrailApplier(IAssetsManager assets, IConceptFactory factory)
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
                 Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

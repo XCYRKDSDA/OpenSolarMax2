@@ -19,7 +19,7 @@ public abstract class TeamDefinition : IDefinition
         DependencyCapableDefinition.Signature
         + new Signature(
             // 阵营参考值
-            typeof(TeamReferenceColor),
+            typeof(RecommendedVisualStyle),
             // 阵营属性
             typeof(Producible),
             typeof(Combatable),
@@ -40,6 +40,11 @@ public class TeamDescription : IDescription
     /// 阵营的代表色
     /// </summary>
     public required Color Color { get; set; }
+
+    /// <summary>
+    /// 属于该阵营的发光外观实体的混合模式
+    /// </summary>
+    public SpriteBlend Blend { get; set; } = SpriteBlend.Additive;
 
     /// <summary>
     /// 生产一个该阵营舰船需要的工作量
@@ -67,7 +72,10 @@ public class TeamApplier : IApplier<TeamDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, TeamDescription desc)
     {
-        commandBuffer.Set(in entity, new TeamReferenceColor { Value = desc.Color });
+        commandBuffer.Set(
+            in entity,
+            new RecommendedVisualStyle { Color = desc.Color, Blend = desc.Blend }
+        );
 
         commandBuffer.Set(in entity, new Producible { WorkloadPerShip = desc.Workload });
 

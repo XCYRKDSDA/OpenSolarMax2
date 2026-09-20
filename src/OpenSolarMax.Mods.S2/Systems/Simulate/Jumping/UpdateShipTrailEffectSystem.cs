@@ -25,7 +25,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
     FineWith(typeof(SynchronizeColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite)),
-    FineWith(typeof(ApplyTeamColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite)),
+    FineWith(typeof(ApplyVisualStyleSystem), "本系统不设置颜色与混合模式，无冲突", typeof(Sprite)),
     FineWith(
         typeof(UpdateShipChargingEffectSystem),
         "飞船和尾迹是不同实体，无冲突",
