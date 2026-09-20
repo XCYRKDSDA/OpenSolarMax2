@@ -21,14 +21,13 @@ public abstract class LaserFlashDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationCompleted)
         );
 }
 
@@ -50,21 +49,24 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
         Content.Animations.LaserFlash_json
     );
 
+    private readonly TransformableApplier _transformableApplier = new(factory);
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserFlashDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
         // 摆放位置
-        factory.Make(
-            world,
+        _transformableApplier.Apply(
             commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription
+            entity,
+            new TransformableDescription()
             {
-                Parent = desc.Tower,
-                Child = entity,
-                Translation = Vector3.UnitZ * 0.1f,
-                Rotation = Quaternion.Identity,
+                Transform = new RelativeTransformOptions
+                {
+                    Parent = desc.Tower,
+                    Translation = Vector3.UnitZ * 0.1f,
+                },
             }
         );
 
@@ -91,12 +93,10 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
         );
 
         // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
     }
 }

@@ -18,16 +18,11 @@ public static partial class ConceptNames
 public abstract class ShipPulseDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿变换
-            typeof(AbsoluteTransform),
-            // 效果
-            typeof(Sprite),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationCompleted)
         );
 }
 
@@ -51,23 +46,22 @@ public class ShipPulseApplier(IAssetsManager assets, IConceptFactory factory)
         Content.Animations.ShipPulse_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipPulseDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        // 设置位置
-        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });
-
-        // 设置颜色
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions { Translation = desc.Position },
                 Texture = _pulseTexture,
-                Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -81,14 +75,5 @@ public class ShipPulseApplier(IAssetsManager assets, IConceptFactory factory)
                 TimeElapsed = TimeSpan.Zero,
             }
         );
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }

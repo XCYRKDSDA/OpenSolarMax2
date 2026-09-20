@@ -23,10 +23,9 @@ public abstract class CelestialBodyDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
             // 效果
-            typeof(Sprite),
             typeof(Flare),
             // 动画
             typeof(Animation),
@@ -42,8 +41,6 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(Battlefield), // 允许发生战争
             typeof(Colonizable), // 允许进行殖民
             typeof(ColonizationState), // 殖民状态
-            typeof(InTeam.AsAffiliate), // 可以隶属于某个阵营
-            typeof(TreeRelationship<InTeam>.AsParent), // 阵营继承关系父方
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
             // 选择圈相关
@@ -110,32 +107,25 @@ public class CelestialBodyApplier(
     private readonly float _orbitMinRoll = configs.RequireValue<Angle>("orbit:roll:min");
     private readonly float _orbitMaxRoll = configs.RequireValue<Angle>("orbit:roll:max");
 
-    private readonly TransformableApplier _transformableApplier = new(factory);
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, CelestialBodyDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
         var random = new Random();
 
-        // 设置位姿
-        _transformableApplier.Apply(
+        // 设置位姿与外观
+        _drawableApplier.Apply(
             commandBuffer,
             entity,
-            new TransformableDescription() { Transform = desc.Transform }
-        );
-
-        // 设置纹理和外形
-        commandBuffer.Set(
-            in entity,
-            new Sprite()
+            new TeamInheritableDrawableDescription()
             {
-                Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
+                Transform = desc.Transform,
+                Texture = desc.Texture,
                 Alpha = 1,
                 Size = new Vector2(desc.ReferenceRadius * 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Alpha,
+                Team = desc.Team,
             }
         );
 
@@ -167,16 +157,9 @@ public class CelestialBodyApplier(
         // 设置殖民体量
         commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
 
-        // 设置阵营
+        // 设置殖民状态
         if (desc.Team != Entity.Null)
         {
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
-
             commandBuffer.Set(
                 in entity,
                 new ColonizationState
@@ -237,7 +220,7 @@ public class CelestialBodyApplier(
         factory.Make(
             world,
             commandBuffer,
-            new TeamSyncableDrawableDescription
+            new TeamInheritableDrawableDescription
             {
                 TeamSource = entity,
                 Transform = new RelativeTransformOptions

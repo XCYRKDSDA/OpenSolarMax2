@@ -19,15 +19,11 @@ public abstract class ShipBornPulseDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
-            // 效果
-            typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationCompleted)
         );
 }
 
@@ -51,20 +47,24 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
         AnimationClip<Entity>
     >(Content.Animations.ShipBornPulse_json);
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipBornPulseDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
-        // 设置颜色
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new RelativeTransformOptions { Parent = desc.Ship },
                 Texture = _pulseTexture,
-                Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -79,14 +79,6 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             }
         );
 
-        // 设置相对位置
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Parent = desc.Ship, Child = entity }
-        );
-
         // 设置依赖关系
         factory.Make(
             world,
@@ -94,14 +86,5 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
         );
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }

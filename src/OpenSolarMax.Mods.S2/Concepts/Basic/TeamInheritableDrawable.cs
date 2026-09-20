@@ -12,25 +12,22 @@ namespace OpenSolarMax.Mods.S2.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string TeamSyncableDrawable = "TeamSyncableDrawable";
+    public const string TeamInheritableDrawable = "TeamInheritableDrawable";
 }
 
-[Define(ConceptNames.TeamSyncableDrawable), BothForGameplayAndPreview]
-public abstract class TeamSyncableDrawableDefinition : IDefinition
+/// <summary>
+/// 阵营继承可绘制实体：由 <see cref="Drawable"/> 与 <see cref="TeamInheritable"/> 组装
+/// </summary>
+[Define(ConceptNames.TeamInheritableDrawable), BothForGameplayAndPreview]
+public abstract class TeamInheritableDrawableDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        Drawable.Signature
-        + new Signature(typeof(TreeRelationship<InTeam>.AsChild), typeof(InTeam.AsAffiliate));
+        Drawable.Signature + TeamInheritableDefinition.Signature;
 }
 
-[Describe(ConceptNames.TeamSyncableDrawable), BothForGameplayAndPreview]
-public class TeamSyncableDrawableDescription : IDescription
+[Describe(ConceptNames.TeamInheritableDrawable), BothForGameplayAndPreview]
+public class TeamInheritableDrawableDescription : IDescription
 {
-    /// <summary>
-    /// 队伍同步的源实体
-    /// </summary>
-    public required Entity TeamSource { get; set; }
-
     /// <summary>
     /// 实体的位置
     /// </summary>
@@ -44,6 +41,11 @@ public class TeamSyncableDrawableDescription : IDescription
     /// 精灵纹理
     /// </summary>
     public required OneOf<string, TextureRegion> Texture { get; set; }
+
+    /// <summary>
+    /// 纹理的过渡
+    /// </summary>
+    public TextureUV<float> Gradient { get; set; } = 1.0f;
 
     /// <summary>
     /// 精灵的掩膜颜色
@@ -84,21 +86,31 @@ public class TeamSyncableDrawableDescription : IDescription
     /// 是否为平面纹理
     /// </summary>
     public bool Billboard { get; set; } = true;
+
+    /// <summary>
+    /// 直接隶属的阵营
+    /// </summary>
+    public Entity Team { get; set; } = Entity.Null;
+
+    /// <summary>
+    /// 阵营继承的来源实体。仅在未直接隶属阵营时生效
+    /// </summary>
+    public Entity TeamSource { get; set; } = Entity.Null;
 }
 
-[Apply(ConceptNames.TeamSyncableDrawable), BothForGameplayAndPreview]
-public class TeamSyncableDrawableApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<TeamSyncableDrawableDescription>
+[Apply(ConceptNames.TeamInheritableDrawable), BothForGameplayAndPreview]
+public class TeamInheritableDrawableApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<TeamInheritableDrawableDescription>
 {
     private readonly DrawableApplier _drawableApplier = new(assets, factory);
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
-        TeamSyncableDrawableDescription desc
+        TeamInheritableDrawableDescription desc
     )
     {
-        // 应用 Drawable 概念
         _drawableApplier.Apply(
             commandBuffer,
             entity,
@@ -106,6 +118,7 @@ public class TeamSyncableDrawableApplier(IAssetsManager assets, IConceptFactory 
             {
                 Transform = desc.Transform,
                 Texture = desc.Texture,
+                Gradient = desc.Gradient,
                 Color = desc.Color,
                 Alpha = desc.Alpha,
                 Size = desc.Size,
@@ -117,12 +130,10 @@ public class TeamSyncableDrawableApplier(IAssetsManager assets, IConceptFactory 
             }
         );
 
-        // 建立阵营继承关系
-        var world = World.Worlds[entity.WorldId];
-        factory.Make(
-            world,
+        _teamApplier.Apply(
             commandBuffer,
-            new TeamInheritanceDescription { Parent = desc.TeamSource, Child = entity }
+            entity,
+            new TeamInheritableDescription { Team = desc.Team, TeamSource = desc.TeamSource }
         );
     }
 }

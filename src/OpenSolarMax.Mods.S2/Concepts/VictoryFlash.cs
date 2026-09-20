@@ -18,14 +18,8 @@ public static partial class ConceptNames
 public abstract class VictoryFlashDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            typeof(AbsoluteTransform),
-            typeof(Sprite),
-            typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
-        );
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(typeof(Animation), typeof(ExpireAfterAnimationCompleted));
 }
 
 [Describe(ConceptNames.VictoryFlash)]
@@ -46,24 +40,22 @@ public class VictoryFlashApplier(IAssetsManager assets, IConceptFactory factory)
         Content.Animations.VictoryFlashAlpha_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, VictoryFlashDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        commandBuffer.Set(
-            in entity,
-            new AbsoluteTransform { Translation = new Vector3(0, 0, 1000) }
-        );
-
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions { Translation = new Vector3(0, 0, 1000) },
                 Texture = _whitePixel,
                 Alpha = 0f,
                 Size = new Vector2(1e6f, 1e6f),
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -78,14 +70,5 @@ public class VictoryFlashApplier(IAssetsManager assets, IConceptFactory factory)
         );
 
         commandBuffer.Set(in entity, new ExpireAfterAnimationCompleted());
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }

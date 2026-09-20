@@ -19,14 +19,10 @@ public abstract class WarpChargingBackFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
-            // 效果
-            typeof(Sprite),
             // 动画
-            typeof(Animation),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(Animation)
         );
 }
 
@@ -52,6 +48,8 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
         Content.Animations.WarpBackFlareCharging_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
@@ -60,19 +58,18 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
     {
         var world = World.Worlds[entity.WorldId];
 
-        // 填充默认纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new RelativeTransformOptions { Parent = desc.Effect },
                 Texture = _flareTexture,
-                Alpha = 1,
                 Size = new(desc.Radius * 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
+                Team = desc.Team,
             }
         );
 
@@ -94,20 +91,5 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
             ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Effect }
         );
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Parent = desc.Effect, Child = entity }
-        );
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }

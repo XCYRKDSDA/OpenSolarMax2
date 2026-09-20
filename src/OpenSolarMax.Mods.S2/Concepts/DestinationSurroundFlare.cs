@@ -21,13 +21,12 @@ public abstract class DestinationSurroundFlareDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
-            typeof(Animation),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(Animation)
         );
 }
 
@@ -58,6 +57,8 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
     private readonly AnimationClip<Entity> _flareCharging = assets.Load<AnimationClip<Entity>>(
         Content.Animations.DestinationSurroundFlareCharging_json
     );
+
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(
         CommandBuffer commandBuffer,
@@ -131,12 +132,10 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
         );
 
         // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
     }
 }

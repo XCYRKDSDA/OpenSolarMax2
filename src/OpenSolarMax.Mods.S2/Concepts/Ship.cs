@@ -21,18 +21,15 @@ public abstract class ShipDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
             // 效果
-            typeof(Sprite),
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
             //
-            typeof(InTeam.AsAffiliate),
             typeof(TreeRelationship<Anchorage>.AsChild),
             typeof(TrailOf.AsShip),
-            typeof(TreeRelationship<InTeam>.AsParent),
             typeof(JumpingStatus),
             typeof(PopulationCost),
             typeof(WarpingStatus),
@@ -70,23 +67,21 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
         AnimationClip<Entity>
     >(Content.Animations.ShipBlinking_json);
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        // 填充默认纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
                 Texture = _defaultTexture,
-                Color = Color.White,
                 Alpha = 1,
                 Size = new(4, 4),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -113,14 +108,6 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
             commandBuffer,
             transformRelationship,
             desc.PlanetOrbit
-        );
-
-        // 设置所属阵营
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.InTeam,
-            new InTeamDescription { Team = desc.Team, Affiliate = entity }
         );
 
         // 初始化飞行状态

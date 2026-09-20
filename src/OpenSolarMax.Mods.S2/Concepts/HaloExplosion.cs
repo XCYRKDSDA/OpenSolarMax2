@@ -18,17 +18,13 @@ public static partial class ConceptNames
 public abstract class HaloExplosionDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿变换
-            typeof(AbsoluteTransform),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
             // 效果
-            typeof(Sprite),
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationAndSoundEffectCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
         );
 }
 
@@ -57,26 +53,24 @@ public class HaloExplosionApplier(IAssetsManager assets, IConceptFactory factory
     private readonly SafeFmodEventDescription _colonizedSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/PlanetColonized");
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, HaloExplosionDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        // 摆放位置
-        commandBuffer.Set(
-            in entity,
-            new AbsoluteTransform { Translation = desc.Position with { Z = 1000 } }
-        );
-
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions
+                {
+                    Translation = desc.Position with { Z = 1000 },
+                },
                 Texture = _haloTexture,
-                Alpha = 1,
                 Size = new(desc.PlanetRadius * 2),
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -95,14 +89,5 @@ public class HaloExplosionApplier(IAssetsManager assets, IConceptFactory factory
         _colonizedSoundEvent.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }

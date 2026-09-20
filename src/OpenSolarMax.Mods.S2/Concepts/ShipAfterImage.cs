@@ -18,16 +18,11 @@ public static partial class ConceptNames
 public abstract class ShipAfterImageDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿变换
-            typeof(AbsoluteTransform),
-            // 效果
-            typeof(Sprite),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationCompleted)
         );
 }
 
@@ -53,26 +48,25 @@ public class ShipAfterImageApplier(IAssetsManager assets, IConceptFactory factor
         Content.Animations.ShipAfterImage_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipAfterImageDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        // 摆放位置
-        commandBuffer.Set(
-            in entity,
-            new AbsoluteTransform { Translation = desc.Position, Rotation = desc.Rotation }
-        );
-
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions
+                {
+                    Translation = desc.Position,
+                    Rotation = desc.Rotation,
+                },
                 Texture = _texture,
-                Alpha = 1,
                 Size = new(8, 8),
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
             }
         );
 
@@ -86,14 +80,5 @@ public class ShipAfterImageApplier(IAssetsManager assets, IConceptFactory factor
                 TimeOffset = TimeSpan.Zero,
             }
         );
-
-        // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
     }
 }

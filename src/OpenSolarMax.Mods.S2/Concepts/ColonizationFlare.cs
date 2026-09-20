@@ -21,14 +21,13 @@ public abstract class ColonizationFlareDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 效果
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted),
-            // 阵营
-            typeof(InTeam.AsAffiliate)
+            typeof(ExpireAfterAnimationCompleted)
         );
 }
 
@@ -47,6 +46,8 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
     private readonly AnimationClip<Entity> _clip = assets.Load<AnimationClip<Entity>>(
         Content.Animations.ColonizationFlare_json
     );
+
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ColonizationFlareDescription desc)
     {
@@ -97,12 +98,10 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
         );
 
         // 设置阵营
-        if (desc.Team != Entity.Null)
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
     }
 }
