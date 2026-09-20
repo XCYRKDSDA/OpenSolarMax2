@@ -235,6 +235,7 @@ public class CelestialBodyApplier(
                 Size = new Vector2(desc.ReferenceRadius * 2),
                 Color = Color.White,
                 Blend = SpriteBlend.Additive,
+                VisualStyle = VisualStyle.Effect,
             }
         );
     }

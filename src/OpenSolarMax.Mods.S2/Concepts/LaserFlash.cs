@@ -7,6 +7,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -25,6 +26,8 @@ public abstract class LaserFlashDefinition : IDefinition
         + new Signature(
             // 效果
             typeof(Sprite),
+            // 视觉类型
+            typeof(VisualStyle),
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -98,5 +101,8 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
             entity,
             new TeamInheritableDescription { Team = desc.Team }
         );
+
+        // 设置视觉类型
+        commandBuffer.Set(in entity, VisualStyle.Effect);
     }
 }

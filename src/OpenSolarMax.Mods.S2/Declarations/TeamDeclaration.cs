@@ -2,6 +2,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Concepts;
 
 namespace OpenSolarMax.Mods.S2.Declarations;
@@ -10,6 +11,11 @@ namespace OpenSolarMax.Mods.S2.Declarations;
 public class TeamDeclaration : IDeclaration<TeamDeclaration>
 {
     public Color? Color { get; set; }
+
+    /// <summary>
+    /// 发光外观（如舰船、光晕、尾迹与特效）的混合模式
+    /// </summary>
+    public SpriteBlend? Blend { get; set; }
 
     public float? Workload { get; set; }
 
@@ -27,6 +33,7 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
         return new TeamDeclaration()
         {
             Color = newCfg.Color ?? Color,
+            Blend = newCfg.Blend ?? Blend,
             Workload = newCfg.Workload ?? Workload,
             Attack = newCfg.Attack ?? Attack,
             Health = newCfg.Health ?? Health,
@@ -60,6 +67,9 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
             AiProfile = declaration.Ai,
         };
 
+        if (declaration.Blend is { } blend)
+            desc.Blend = blend;
+
         return desc;
     }
 }
@@ -76,6 +86,9 @@ public class TeamPreviewDeclarationTranslator : ITranslator<TeamDeclaration, Tea
             throw new NullReferenceException();
 
         var desc = new TeamPreviewDescription() { Color = declaration.Color.Value };
+
+        if (declaration.Blend is { } blend)
+            desc.Blend = blend;
 
         return desc;
     }

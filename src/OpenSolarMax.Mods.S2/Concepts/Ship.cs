@@ -82,6 +82,7 @@ public class ShipApplier(IAssetsManager assets, IConceptFactory factory) : IAppl
                 Size = new(4, 4),
                 Blend = SpriteBlend.Additive,
                 Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 
