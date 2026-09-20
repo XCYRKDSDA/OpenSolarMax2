@@ -26,14 +26,16 @@ public abstract class LaserFlashDefinition : IDefinition
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted)
+            typeof(ExpireAfterAnimationCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
 [Describe(ConceptNames.LaserFlash)]
 public class LaserFlashDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required TextureRegion Texture { get; set; }
 
@@ -73,7 +75,6 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
             towerSprite with
             {
                 Texture = desc.Texture,
-                Color = desc.Color,
                 Blend = SpriteBlend.Additive,
             }
         );
@@ -88,5 +89,14 @@ public class LaserFlashApplier(IAssetsManager assets, IConceptFactory factory)
                 TimeOffset = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

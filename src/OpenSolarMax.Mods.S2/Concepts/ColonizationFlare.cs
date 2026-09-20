@@ -26,7 +26,9 @@ public abstract class ColonizationFlareDefinition : IDefinition
             typeof(Sprite),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationCompleted)
+            typeof(ExpireAfterAnimationCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -35,7 +37,7 @@ public class ColonizationFlareDescription : IDescription
 {
     public required Entity Planet { get; set; }
 
-    public required Color AfterColor { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ColonizationFlare)]
@@ -79,7 +81,6 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
             planetSprite with
             {
                 Texture = desc.Planet.Get<Flare>().Texture,
-                Color = desc.AfterColor,
                 Blend = SpriteBlend.Additive,
             }
         );
@@ -94,5 +95,14 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
                 TimeOffset = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

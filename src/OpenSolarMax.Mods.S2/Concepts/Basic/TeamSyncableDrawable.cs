@@ -7,29 +7,29 @@ using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
-using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
 public static partial class ConceptNames
 {
-    public const string ColorSyncableDrawable = "ColorSyncableDrawable";
+    public const string TeamSyncableDrawable = "TeamSyncableDrawable";
 }
 
-[Define(ConceptNames.ColorSyncableDrawable), BothForGameplayAndPreview]
-public abstract class ColorSyncableDrawableDefinition : IDefinition
+[Define(ConceptNames.TeamSyncableDrawable), BothForGameplayAndPreview]
+public abstract class TeamSyncableDrawableDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        Drawable.Signature + new Signature(typeof(TreeRelationship<ColorSync>.AsChild));
+        Drawable.Signature
+        + new Signature(typeof(TreeRelationship<InTeam>.AsChild), typeof(InTeam.AsAffiliate));
 }
 
-[Describe(ConceptNames.ColorSyncableDrawable), BothForGameplayAndPreview]
-public class ColorSyncableDrawableDescription : IDescription
+[Describe(ConceptNames.TeamSyncableDrawable), BothForGameplayAndPreview]
+public class TeamSyncableDrawableDescription : IDescription
 {
     /// <summary>
-    /// 颜色同步的源实体
+    /// 队伍同步的源实体
     /// </summary>
-    public required Entity ColorSource { get; set; }
+    public required Entity Parent { get; set; }
 
     /// <summary>
     /// 实体的位置
@@ -86,16 +86,16 @@ public class ColorSyncableDrawableDescription : IDescription
     public bool Billboard { get; set; } = true;
 }
 
-[Apply(ConceptNames.ColorSyncableDrawable), BothForGameplayAndPreview]
-public class ColorSyncableDrawableApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<ColorSyncableDrawableDescription>
+[Apply(ConceptNames.TeamSyncableDrawable), BothForGameplayAndPreview]
+public class TeamSyncableDrawableApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<TeamSyncableDrawableDescription>
 {
     private readonly DrawableApplier _drawableApplier = new(assets, factory);
 
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
-        ColorSyncableDrawableDescription desc
+        TeamSyncableDrawableDescription desc
     )
     {
         // 应用 Drawable 概念
@@ -117,12 +117,12 @@ public class ColorSyncableDrawableApplier(IAssetsManager assets, IConceptFactory
             }
         );
 
-        // 建立颜色同步关系
+        // 建立阵营继承关系
         var world = World.Worlds[entity.WorldId];
         factory.Make(
             world,
             commandBuffer,
-            new ColorSyncRelationshipDescription { Parent = desc.ColorSource, Child = entity }
+            new TeamInheritanceDescription { Parent = desc.Parent, Child = entity }
         );
     }
 }

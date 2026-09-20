@@ -25,7 +25,9 @@ public abstract class WarpChargingSurroundFlareDefinition : IDefinition
             // 效果
             typeof(Sprite),
             // 动画
-            typeof(Animation)
+            typeof(Animation),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -36,7 +38,7 @@ public class WarpChargingSurroundFlareDescription : IDescription
 
     public required float Radius { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required float Angle { get; set; }
 
@@ -77,7 +79,6 @@ public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFac
             new Sprite
             {
                 Texture = _flareTexture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new(desc.Radius * 2),
                 Position = Vector2.Zero,
@@ -139,5 +140,14 @@ public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFac
                 TimeElapsed = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

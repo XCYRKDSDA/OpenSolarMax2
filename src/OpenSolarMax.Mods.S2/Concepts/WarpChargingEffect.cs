@@ -22,7 +22,9 @@ public abstract class WarpChargingEffectDefinition : IDefinition
         + new Signature(
             //
             typeof(SoundEffect),
-            typeof(WarpChargingEffectAssignment)
+            typeof(WarpChargingEffectAssignment),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -33,7 +35,7 @@ public class WarpChargingEffectDescription : IDescription
 
     public required float WarpRadius { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.WarpChargingEffect)]
@@ -59,7 +61,7 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
             {
                 Effect = entity,
                 Radius = desc.WarpRadius * 3f,
-                Color = desc.Color,
+                Team = desc.Team,
             }
         );
 
@@ -83,7 +85,7 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
                         {
                             Effect = entity,
                             Radius = desc.WarpRadius * 3f,
-                            Color = desc.Color,
+                            Team = desc.Team,
                             MaxSize = maxSize,
                             Ratio = rate,
                             Angle = angle,
@@ -126,5 +128,14 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
         _warpChargingSoundEffect.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }

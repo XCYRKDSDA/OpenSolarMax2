@@ -24,7 +24,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(RevolutionState))]
 [ReadCurr(typeof(PlanetGeostationaryOrbit))]
 [ReadCurr(typeof(ReferenceSize))]
-[ReadCurr(typeof(TeamReferenceColor))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(StartJumpingRequest))]
 [Calc(typeof(WarpingStatus))]
@@ -120,7 +119,7 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
             {
                 Warp = request.Departure,
                 WarpRadius = request.Departure.Get<ReferenceSize>().Radius,
-                Color = request.Team.Get<TeamReferenceColor>().Value,
+                Team = request.Team,
             }
         );
 

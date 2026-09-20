@@ -27,8 +27,10 @@ public abstract class ShipTrailDefinition : IDefinition
             typeof(Animation),
             //
             typeof(TrailOf.AsTrail),
-            // 颜色同步子节点
-            typeof(TreeRelationship<ColorSync>.AsChild)
+            // 阵营继承子节点
+            typeof(TreeRelationship<InTeam>.AsChild),
+            // 阵营成员
+            typeof(InTeam.AsAffiliate)
         );
 }
 
@@ -93,12 +95,12 @@ public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
             new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
         );
 
-        // 设置颜色同步关系（ship 为父，trail 为子）
+        // 设置阵营继承关系（ship 为父，trail 为子）
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.ColorSyncRelationship,
-            new ColorSyncRelationshipDescription { Parent = desc.Ship, Child = entity }
+            ConceptNames.TeamInheritance,
+            new TeamInheritanceDescription { Parent = desc.Ship, Child = entity }
         );
     }
 }

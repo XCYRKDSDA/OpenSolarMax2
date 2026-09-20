@@ -29,14 +29,16 @@ public abstract class LaserBeamDefinition : IDefinition
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
-            typeof(ExpireAfterAnimationAndSoundEffectCompleted)
+            typeof(ExpireAfterAnimationAndSoundEffectCompleted),
+            // 阵营
+            typeof(InTeam.AsAffiliate)
         );
 }
 
 [Describe(ConceptNames.LaserBeam)]
 public class LaserBeamDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required Entity Planet { get; set; }
 
@@ -89,7 +91,6 @@ public class LaserBeamApplier(
             new Sprite
             {
                 Texture = _beamTexture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new Vector2(vector.Length(), _beamWidth),
                 Scale = Vector2.One,
@@ -113,5 +114,14 @@ public class LaserBeamApplier(
         _laserSoundEffect.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
+
+        // 设置阵营
+        if (desc.Team != Entity.Null)
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.InTeam,
+                new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            );
     }
 }
