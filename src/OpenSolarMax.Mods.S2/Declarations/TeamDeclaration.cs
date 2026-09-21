@@ -24,6 +24,11 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
     public float? Health { get; set; }
 
     /// <summary>
+    /// 舰船的移动速度
+    /// </summary>
+    public float? Speed { get; set; }
+
+    /// <summary>
     /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
     /// </summary>
     public string? Ai { get; set; }
@@ -37,6 +42,7 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
             Workload = newCfg.Workload ?? Workload,
             Attack = newCfg.Attack ?? Attack,
             Health = newCfg.Health ?? Health,
+            Speed = newCfg.Speed ?? Speed,
             Ai = newCfg.Ai ?? Ai,
         };
     }
@@ -55,6 +61,7 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
             || declaration.Workload is null
             || declaration.Attack is null
             || declaration.Health is null
+            || declaration.Speed is null
         )
             throw new NullReferenceException();
 
@@ -64,6 +71,7 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
             Workload = declaration.Workload.Value,
             Attack = declaration.Attack.Value,
             Health = declaration.Health.Value,
+            Speed = declaration.Speed.Value,
             AiProfile = declaration.Ai,
         };
 
