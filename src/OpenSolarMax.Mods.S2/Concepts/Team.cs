@@ -62,6 +62,11 @@ public class TeamDescription : IDescription
     public required float Health { get; set; }
 
     /// <summary>
+    /// 舰船的移动速度
+    /// </summary>
+    public required float Speed { get; set; }
+
+    /// <summary>
     /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
     /// </summary>
     public string? AiProfile { get; set; }
@@ -88,7 +93,7 @@ public class TeamApplier : IApplier<TeamDescription>
             }
         );
 
-        commandBuffer.Set(in entity, new Jumpable { Speed = 50 });
+        commandBuffer.Set(in entity, new Jumpable { Speed = desc.Speed });
 
         commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 0.1f });
 
