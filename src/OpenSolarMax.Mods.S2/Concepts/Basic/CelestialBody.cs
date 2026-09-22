@@ -46,7 +46,11 @@ public abstract class CelestialBodyDefinition : IDefinition
             // 选择圈相关
             typeof(PlanetSelectionRing.AsPlanet), // 星球的选择圈索引
             // AI 相关
-            typeof(PlanetAiTimers) // AI 操作计时器
+            typeof(PlanetAiTimers), // AI 操作计时器
+            // 首府关系
+            typeof(CapitalOf.AsCapital), // 作为阵营首府的索引
+            // 出兵来源的留守驻军
+            typeof(Garrison) // 派兵数不超过「驻留兵力 − 留守数」
         );
 }
 
@@ -93,6 +97,16 @@ public class CelestialBodyDescription : IDescription
     public required OneOf<string, TextureRegion> GlowTexture { get; set; }
 
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
+
+    /// <summary>
+    /// 该天体是否为其所属阵营的首府
+    /// </summary>
+    public bool Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int Garrison { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -157,6 +171,9 @@ public class CelestialBodyApplier(
         // 设置殖民体量
         commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
 
+        // 设置留守驻军
+        commandBuffer.Set(in entity, new Garrison { Ships = desc.Garrison });
+
         // 设置殖民状态
         if (desc.Team != Entity.Null)
         {
@@ -168,6 +185,19 @@ public class CelestialBodyApplier(
                     Progress = desc.Volume,
                     Event = ColonizationEvent.Idle,
                 }
+            );
+        }
+
+        // 建立首府关系：天体声明为首府时，与所属阵营建立一对一的独占关系
+        if (desc.Capital)
+        {
+            if (desc.Team == Entity.Null)
+                throw new InvalidOperationException("首府天体必须有阵营");
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.CapitalOf,
+                new CapitalOfDescription { Capital = entity, Team = desc.Team }
             );
         }
 
