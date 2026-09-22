@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -15,6 +16,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [AiSystem, LateUpdate]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(InTeam.AsTeam))]
+[ReadCurr(typeof(CapitalOf.AsTeam))]
+[ReadCurr(typeof(Garrison))]
 [ReadCurr(typeof(Battlefield))]
 [ReadCurr(typeof(Colonizable))]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
@@ -62,6 +65,11 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         public bool Battle;
 
         public bool CanProduce;
+
+        /// <summary>
+        /// 作为出兵来源时的留守舰船数
+        /// </summary>
+        public int Garrison;
     }
 
     #region 共享工具
@@ -277,7 +285,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         AnchoredShipsRegistry,
         JumpingShipsRegistry,
         AbsoluteTransform,
-        PlanetAiTimers
+        PlanetAiTimers,
+        Garrison
     >]
     private static void CollectPlanetInfo(
         Entity planet,
@@ -288,6 +297,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in JumpingShipsRegistry jumpingShipsRegistry,
         in AbsoluteTransform absoluteTransform,
         in PlanetAiTimers planetAiTimers,
+        in Garrison garrison,
         [Data] Entity team,
         [Data] Dictionary<Entity, PlanetInfo> planetInfos
     )
@@ -347,6 +357,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                     .Max(),
                 Battle = battlefield.FrontlineDamage.Count > 0,
                 CanProduce = canProduce,
+                Garrison = garrison.Ships,
                 AttackRange = planet.Has<AttackRange>() ? planet.Get<AttackRange>().Range : null,
                 AttackCooldownSeconds = planet.Has<AttackCooldown>()
                     ? (float?)planet.Get<AttackCooldown>().Duration.TotalSeconds
@@ -399,7 +410,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private static List<PlanetInfo> ExtractDefendSenders(
         Dictionary<Entity, PlanetInfo> planetInfos,
         Entity team,
-        AiDefenseParameters defense
+        AiDefenseParameters defense,
+        Entity? capital
     )
     {
         return planetInfos
@@ -407,6 +419,9 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             {
                 // 基本条件：该天体己方 AI 冷却为 0 且该天体己方强度不为 0
                 if (info.AiTimeLeft > TimeSpan.Zero || info.ActualFriendShips <= 0)
+                    return false;
+                // 首府交战中不作为出兵来源
+                if (info.Entity == capital && info.Battle)
                     return false;
                 // 出兵来源准入：未在战斗才允许派兵，战斗中且己方占优则排除（抽兵会失守）
                 return IsSenderAdmissible(
@@ -426,6 +441,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private bool TryDispatchDefense(
         Entity team,
         in Ai ai,
+        Entity? capital,
         Dictionary<Entity, PlanetInfo> planetInfos,
         Vector2 friendPlanetsCenter,
         in TeamPopulationRegistry populationRegistry,
@@ -441,7 +457,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             ai.Defense
         );
         // 寻找可出兵防御的天体
-        var defendSenders = ExtractDefendSenders(planetInfos, team, ai.Defense);
+        var defendSenders = ExtractDefendSenders(planetInfos, team, ai.Defense, capital);
 
         foreach (var target in defendTargets)
         {
@@ -474,6 +490,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 shipsToSend += routeDamage;
                 if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
                     continue;
+                // 出兵来源的留守驻军不许派出，派兵数不超过「驻留兵力 − 留守数」
+                shipsToSend = Math.Min(shipsToSend, sender.ActualFriendShips - sender.Garrison);
                 // 飞船数为零或负值时跳过该组合，继续尝试后续组合
                 if (shipsToSend <= 0)
                     continue;
@@ -546,7 +564,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private static List<PlanetInfo> ExtractAttackSenders(
         Dictionary<Entity, PlanetInfo> planetInfos,
         Entity team,
-        AiAttackParameters attack
+        AiAttackParameters attack,
+        Entity? capital
     )
     {
         return planetInfos
@@ -554,6 +573,9 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             {
                 // 基本条件：该天体己方 AI 冷却为 0 且该天体己方强度不为 0
                 if (info.AiTimeLeft > TimeSpan.Zero || info.ActualFriendShips <= 0)
+                    return false;
+                // 首府交战中不作为出兵来源
+                if (info.Entity == capital && info.Battle)
                     return false;
                 // 条件：排除锁星中的天体
                 if (info.PredictedEnemyShips == 0 && info.Team != team)
@@ -606,6 +628,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private bool TryDispatchAttack(
         Entity team,
         in Ai ai,
+        Entity? capital,
         Dictionary<Entity, PlanetInfo> planetInfos,
         Vector2 friendPlanetsCenter,
         in TeamPopulationRegistry populationRegistry,
@@ -616,7 +639,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         // 寻找可进攻的天体
         var attackTargets = ExtractAttackTargets(planetInfos, team, friendPlanetsCenter, ai.Attack);
         // 寻找可出兵进攻的天体
-        var attackSenders = ExtractAttackSenders(planetInfos, team, ai.Attack);
+        var attackSenders = ExtractAttackSenders(planetInfos, team, ai.Attack, capital);
 
         foreach (var target in attackTargets)
         {
@@ -651,6 +674,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 shipsToSend += routeDamage;
                 if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
                     continue;
+                // 出兵来源的留守驻军不许派出，派兵数不超过「驻留兵力 − 留守数」
+                shipsToSend = Math.Min(shipsToSend, sender.ActualFriendShips - sender.Garrison);
                 // 飞船数为零或负值时跳过该组合，继续尝试后续组合
                 if (shipsToSend <= 0)
                     continue;
@@ -707,7 +732,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private static List<PlanetInfo> ExtractGatherSenders(
         Dictionary<Entity, PlanetInfo> planetInfos,
         Entity team,
-        AiGatherParameters gather
+        AiGatherParameters gather,
+        Entity? capital
     )
     {
         return planetInfos
@@ -722,6 +748,9 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                     && info.Team != team
                     && info is { PredictedEnemyShips: 0, ActualFriendShips: > 0 }
                 )
+                    return false;
+                // 首府交战中不作为出兵来源
+                if (info.Entity == capital && info.Battle)
                     return false;
                 // 出兵来源准入：未在战斗才允许派兵，战斗中则排除
                 return IsSenderAdmissible(
@@ -741,6 +770,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private bool TryDispatchGather(
         Entity team,
         in Ai ai,
+        Entity? capital,
         Dictionary<Entity, PlanetInfo> planetInfos,
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
@@ -750,7 +780,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         // 计算各天体的聚兵价值
         var gatherValues = CalculateGatherValues(planetInfos, team);
         // 寻找可出兵聚兵的天体
-        var gatherSenders = ExtractGatherSenders(planetInfos, team, ai.Gather);
+        var gatherSenders = ExtractGatherSenders(planetInfos, team, ai.Gather, capital);
         // 聚兵目标按价值升序排序
         var gatherTargets = planetInfos.Values.OrderBy(t => gatherValues[t.Entity]).ToList();
         foreach (var target in gatherTargets)
@@ -778,6 +808,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 shipsToSend += routeDamage;
                 if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
                     continue;
+                // 出兵来源的留守驻军不许派出，派兵数不超过「驻留兵力 − 留守数」
+                shipsToSend = Math.Min(shipsToSend, sender.ActualFriendShips - sender.Garrison);
                 // 飞船数为零或负值时跳过该组合，继续尝试后续组合
                 if (shipsToSend <= 0)
                     continue;
@@ -794,6 +826,80 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 );
                 return true;
             }
+        }
+        return false;
+    }
+
+    #endregion
+
+    #region 首府回防
+
+    /// <summary>
+    /// 首府回防：目标只有首府，派兵量按进攻参数计算——对齐原版 Final AI：它只有一个派兵循环，
+    /// 首府规则仅替换目标列表。
+    /// </summary>
+    private bool TryDefendCapital(
+        Entity team,
+        in Ai ai,
+        Entity? capital,
+        in PlanetInfo target,
+        Dictionary<Entity, PlanetInfo> planetInfos,
+        in TeamPopulationRegistry populationRegistry,
+        CommandBuffer commandBuffer,
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
+    )
+    {
+        // 寻找可出兵回防的天体
+        var senders = ExtractAttackSenders(planetInfos, team, ai.Attack, capital);
+
+        foreach (var sender in senders)
+        {
+            // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
+            if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                continue;
+            // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
+            var combined = sender.ActualFriendShips + target.PredictedFriendShips;
+            if (!IsStrengthGreater(combined, target.PredictedEnemyShips, ai.Attack.AllowEqual))
+                continue;
+
+            // 基本飞船数：目标预测敌方强度 × 敌方兵力系数 − 目标预测己方强度 × 己方兵力系数
+            var shipsToSend = CalculateShipsToSend(
+                target.PredictedEnemyShips,
+                target.PredictedFriendShips,
+                ai.Attack.EnemyCoefficient,
+                ai.Attack.AllyCoefficient
+            );
+            // 出兵来源受威胁时决定是否派出全部兵力
+            shipsToSend = ApplyAllOutPriority(shipsToSend, in sender, in target, ai.Attack);
+            // 加上路上损耗，损耗过大时放弃
+            var routeDamage = EstimateRouteDamage(
+                in sender,
+                in target,
+                team,
+                world.Get<Jumpable>(team).Speed,
+                ai.Attack.DamageEstimateCoefficient,
+                planetInfos
+            );
+            shipsToSend += routeDamage;
+            if (!IsDispatchAllowedGivenDamage(routeDamage, in sender, in populationRegistry))
+                continue;
+            // 出兵来源的留守驻军不许派出，派兵数不超过「驻留兵力 − 留守数」
+            shipsToSend = Math.Min(shipsToSend, sender.ActualFriendShips - sender.Garrison);
+            // 飞船数为零或负值时跳过该组合，继续尝试后续组合
+            if (shipsToSend <= 0)
+                continue;
+
+            // 创建舰船移动请求并记录出兵冷却
+            SendShips(
+                commandBuffer,
+                pendingPlanetCooldowns,
+                team,
+                in sender,
+                in target,
+                shipsToSend,
+                ai.PlanetCooldownSeconds
+            );
+            return true;
         }
         return false;
     }
@@ -858,11 +964,12 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     }
 
     [Query]
-    [All<Ai, InTeam.AsTeam, AiTimer>]
+    [All<Ai, InTeam.AsTeam, CapitalOf.AsTeam, AiTimer>]
     private void Execute(
         Entity team,
         in Ai ai,
         in AiTimer timer,
+        in CapitalOf.AsTeam asCapital,
         [Data] CommandBuffer commandBuffer,
         [Data] Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
     )
@@ -875,6 +982,11 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         var planetInfos = new Dictionary<Entity, PlanetInfo>();
         CollectPlanetInfoQuery(world, team, planetInfos);
 
+        // 本队首府：由独占关系索引直接给出，无首府时为 null
+        Entity? capital = asCapital.Relationship is { } capitalRelation
+            ? capitalRelation.Copy.Capital
+            : null;
+
         // 挂机检查：启用挂机且人口上限为 0、总飞船数低于阈值时挂机
         ref readonly var populationRegistry = ref team.Get<TeamPopulationRegistry>();
         if (CheckIdle(in ai, in populationRegistry))
@@ -884,12 +996,38 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         if (!TryComputeFriendPlanetsCenter(planetInfos, team, out var friendPlanetsCenter))
             return;
 
+        // 首府必须是本局关卡中的天体，否则说明关卡声明有误
+        Debug.Assert(capital is null || planetInfos.ContainsKey(capital.Value), "首府不是天体");
+
+        // 首府回防：首府有敌情时本轮只回防首府，派不出援军也不回退到常规决策。
+        // 回防只由首府关系的存在决定，不受 DefenseEnabled/AttackEnabled/GatherEnabled 控制：
+        // 它是防守行为，挂在进攻开关下讲不通；另设开关则与「声明了首府即启用」的设计重复
+        if (
+            capital is not null
+            && planetInfos.TryGetValue(capital.Value, out var threatenedCapital)
+            && threatenedCapital.PredictedEnemyShips > 0
+        )
+        {
+            TryDefendCapital(
+                team,
+                in ai,
+                capital,
+                in threatenedCapital,
+                planetInfos,
+                in populationRegistry,
+                commandBuffer,
+                pendingPlanetCooldowns
+            );
+            return;
+        }
+
         // 依次尝试防御、进攻、聚兵，任一阶段派出舰队即结束本轮
         if (
             ai.DefenseEnabled
             && TryDispatchDefense(
                 team,
                 in ai,
+                capital,
                 planetInfos,
                 friendPlanetsCenter,
                 in populationRegistry,
@@ -903,6 +1041,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             && TryDispatchAttack(
                 team,
                 in ai,
+                capital,
                 planetInfos,
                 friendPlanetsCenter,
                 in populationRegistry,
@@ -916,6 +1055,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             && TryDispatchGather(
                 team,
                 in ai,
+                capital,
                 planetInfos,
                 in populationRegistry,
                 commandBuffer,

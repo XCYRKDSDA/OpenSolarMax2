@@ -26,3 +26,11 @@ public sealed class IndexPlanetSelectionRingSystem(EventRegistry registry)
 [SimulateSystem, Reactive]
 public sealed class IndexViewSelectionRingSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<ViewSelectionRing>(registry) { }
+
+/// <summary>
+/// 索引天体与阵营的首府关系，维护 AsCapital 和 AsTeam 索引组件。
+/// 两端独占，重复声明首府时在此抛出异常。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexCapitalOfSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<CapitalOf>(registry) { }

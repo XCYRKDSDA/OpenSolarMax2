@@ -56,6 +56,16 @@ public class DilatorDescription : IDescription
     /// 天体初始飞船数量，null 表示不设置
     /// </summary>
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
+
+    /// <summary>
+    /// 该天体是否为其所属阵营的首府
+    /// </summary>
+    public bool Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int Garrison { get; set; }
 }
 
 [Apply(ConceptNames.Dilator)]
@@ -103,6 +113,8 @@ public class DilatorApplier(
                 Volume = _volume,
                 GlowTexture = _dilatorGlow,
                 InitialShips = desc.InitialShips,
+                Capital = desc.Capital,
+                Garrison = desc.Garrison,
             }
         );
 

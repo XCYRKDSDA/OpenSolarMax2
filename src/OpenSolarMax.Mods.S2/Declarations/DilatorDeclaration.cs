@@ -25,6 +25,16 @@ public class DilatorDeclaration : IDeclaration<DilatorDeclaration>
 
     public OneOf<int, Dictionary<string, int>>? Ships { get; set; }
 
+    /// <summary>
+    /// 是否为所属阵营的首府
+    /// </summary>
+    public bool? Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int? Garrison { get; set; }
+
     public DilatorDeclaration Aggregate(DilatorDeclaration newCfg)
     {
         return new DilatorDeclaration()
@@ -38,6 +48,8 @@ public class DilatorDeclaration : IDeclaration<DilatorDeclaration>
             Team = newCfg.Team ?? Team,
             ProduceShips = newCfg.ProduceShips ?? ProduceShips,
             Ships = newCfg.Ships ?? Ships,
+            Capital = newCfg.Capital ?? Capital,
+            Garrison = newCfg.Garrison ?? Garrison,
         };
     }
 }
@@ -55,6 +67,8 @@ public class DilatorDeclarationTranslator : ITranslator<DilatorDeclaration, Dila
         var desc = new DilatorDescription()
         {
             ProduceShips = declaration.ProduceShips ?? false,
+            Capital = declaration.Capital ?? false,
+            Garrison = declaration.Garrison ?? 0,
             InitialShips = declaration.Ships?.Match(
                 count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
                 teams =>

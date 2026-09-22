@@ -28,6 +28,8 @@ public abstract class TeamDefinition : IDefinition
             // 隶属关系
             typeof(InTeam.AsTeam),
             typeof(TeamPopulationRegistry),
+            // 首府关系
+            typeof(CapitalOf.AsTeam),
             // 胜利状态
             typeof(Victory)
         );

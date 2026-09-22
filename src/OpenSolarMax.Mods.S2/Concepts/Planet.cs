@@ -71,6 +71,16 @@ public class PlanetDescription : IDescription
     /// 该星球初始飞船数量，null 表示不设置
     /// </summary>
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
+
+    /// <summary>
+    /// 该天体是否为其所属阵营的首府
+    /// </summary>
+    public bool Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int Garrison { get; set; }
 }
 
 [Apply(ConceptNames.Planet)]
@@ -131,6 +141,8 @@ public class PlanetApplier(
                 Volume = desc.Volume,
                 GlowTexture = _defaultPlanetGlowTexture,
                 InitialShips = desc.InitialShips,
+                Capital = desc.Capital,
+                Garrison = desc.Garrison,
             }
         );
 
