@@ -1,6 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using OneOf;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -10,7 +11,7 @@ public static partial class ConceptNames
     public const string EmptyCoord = "EmptyCoord";
 }
 
-[Define(ConceptNames.EmptyCoord)]
+[Define(ConceptNames.EmptyCoord), BothForGameplayAndPreview]
 public abstract class EmptyCoordDefinition : IDefinition
 {
     public static Signature Signature { get; } =
@@ -19,7 +20,7 @@ public abstract class EmptyCoordDefinition : IDefinition
 
 // 1. 接口的需求来自使用方。接口希望选项平铺，
 
-[Describe(ConceptNames.EmptyCoord)]
+[Describe(ConceptNames.EmptyCoord), BothForGameplayAndPreview]
 public class EmptyCoordDescription : IDescription
 {
     public OneOf<
@@ -29,7 +30,7 @@ public class EmptyCoordDescription : IDescription
     > Transform { get; set; } = new AbsoluteTransformOptions();
 }
 
-[Apply(ConceptNames.EmptyCoord)]
+[Apply(ConceptNames.EmptyCoord), BothForGameplayAndPreview]
 public class EmptyCoordApplier(IConceptFactory factory) : IApplier<EmptyCoordDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
