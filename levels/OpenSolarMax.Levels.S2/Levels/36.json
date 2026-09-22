@@ -1,0 +1,38 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$id": "dilator", "$base": "dilator", "team": "dark", "position": [ 512, 384 ], "ships": 150, "produceShips": true },
+
+        { "$base": "tower", "team": "dark", "parent": "dilator", "orbit": { "shape": [ 224, 224 ], "period": 62.831853, "phase": -0.25 } },
+        { "$base": "tower", "team": "dark", "parent": "dilator", "orbit": { "shape": [ 224, 224 ], "period": 62.831853, "phase": 0.25 } },
+        { "$base": "tower", "team": "dark", "parent": "dilator", "orbit": { "shape": [ 222.279104, 222.279104 ], "period": 62.831853, "phase": -0.084046 } },
+        { "$base": "tower", "team": "dark", "parent": "dilator", "orbit": { "shape": [ 222.279104, 222.279104 ], "period": 62.831853, "phase": -0.415954 } },
+        { "$base": "tower", "team": "dark", "parent": "dilator", "orbit": { "shape": [ 222.279104, 222.279104 ], "period": 62.831853, "phase": 0.415954 } },
+        { "$base": "tower", "team": "dark", "parent": "dilator", "orbit": { "shape": [ 222.279104, 222.279104 ], "period": 62.831853, "phase": 0.084046 } },
+
+        { "$base": "planet30", "team": "blue", "position": [ 304, 312 ], "ships": 30 },
+
+        { "$base": "starbase", "team": "blue", "position": [ 120, 248 ], "ships": 100 },
+        { "$base": "starbase", "team": "lime", "position": [ 120, 520 ], "ships": 100 },
+        { "$base": "starbase", "team": "red", "position": [ 904, 248 ], "ships": 100 },
+        { "$base": "starbase", "team": "orange", "position": [ 904, 520 ], "ships": 100 },
+
+        { "$base": "planet30", "team": "blue", "position": [ 248, 216 ], "ships": 30 },
+        { "$base": "planet30", "team": "lime", "position": [ 248, 552 ], "ships": 30 },
+        { "$base": "planet30", "team": "lime", "position": [ 304, 456 ], "ships": 30 },
+        { "$base": "planet30", "team": "blue", "position": [ 360, 216 ], "ships": 30 },
+        { "$base": "planet30", "team": "lime", "position": [ 360, 552 ], "ships": 30 },
+
+        { "$base": "warp", "position": [ 192, 384 ] },
+
+        { "$base": "planet30", "team": "red", "position": [ 720, 312 ], "ships": 30 },
+        { "$base": "planet30", "team": "orange", "position": [ 720, 456 ], "ships": 30 },
+        { "$base": "planet30", "team": "orange", "position": [ 664, 552 ], "ships": 30 },
+        { "$base": "planet30", "team": "red", "position": [ 664, 216 ], "ships": 30 },
+        { "$base": "planet30", "team": "red", "position": [ 776, 216 ], "ships": 30 },
+        { "$base": "planet30", "team": "orange", "position": [ 776, 552 ], "ships": 30 },
+
+        { "$base": "warp", "position": [ 832, 384 ] }
+    ]
+}

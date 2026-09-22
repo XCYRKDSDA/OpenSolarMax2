@@ -1,0 +1,30 @@
+{
+    "includes": [ ".common.json" ],
+
+    "entities": [
+        { "$base": "dilator", "team": "dark", "position": [ 512, 384 ], "ships": 320, "produceShips": false },
+
+        { "$id": "center", "$base": "empty", "position": [ 512, 384 ] },
+
+        { "$base": "planet30", "team": "blue", "parent": "center", "orbit": { "shape": [ 144, 144 ], "period": -62.831853, "phase": -0.25 }, "ships": 30 },
+        { "$base": "planet30", "team": "blue", "parent": "center", "orbit": { "shape": [ 144, 144 ], "period": -62.831853, "phase": 0.25 }, "ships": 30 },
+        { "$base": "planet30", "team": "blue", "parent": "center", "orbit": { "shape": [ 144, 144 ], "period": -62.831853, "phase": 0.5 }, "ships": 30 },
+        { "$base": "planet30", "team": "blue", "parent": "center", "orbit": { "shape": [ 144, 144 ], "period": -62.831853, "phase": 0 }, "ships": 30 },
+        { "$base": "planet30", "team": "red", "parent": "center", "orbit": { "shape": [ 352, 352 ], "period": 62.831853, "phase": -0.25 }, "ships": 30 },
+        { "$base": "planet30", "team": "red", "parent": "center", "orbit": { "shape": [ 352, 352 ], "period": 62.831853, "phase": 0.25 }, "ships": 30 },
+        { "$base": "planet30", "team": "red", "parent": "center", "orbit": { "shape": [ 352, 352 ], "period": 62.831853, "phase": 0.5 }, "ships": 30 },
+        { "$base": "planet30", "team": "red", "parent": "center", "orbit": { "shape": [ 352, 352 ], "period": 62.831853, "phase": 0 }, "ships": 30 },
+
+        { "$id": "node_9", "$base": "tower", "position": [ 216, 384 ] },
+        { "$id": "node_10", "$base": "tower", "position": [ 808, 384 ] },
+
+        { "$base": "planet30", "team": "orange", "parent": "node_9", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": -0.375 }, "ships": 30 },
+        { "$base": "planet30", "team": "orange", "parent": "node_9", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": 0.375 }, "ships": 30 },
+        { "$base": "planet30", "team": "orange", "parent": "node_9", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": 0.125 }, "ships": 30 },
+        { "$base": "planet30", "team": "orange", "parent": "node_9", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": -0.125 }, "ships": 30 },
+        { "$base": "planet30", "team": "lime", "parent": "node_10", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": -0.375 }, "ships": 30 },
+        { "$base": "planet30", "team": "lime", "parent": "node_10", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": 0.375 }, "ships": 30 },
+        { "$base": "planet30", "team": "lime", "parent": "node_10", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": -0.125 }, "ships": 30 },
+        { "$base": "planet30", "team": "lime", "parent": "node_10", "orbit": { "shape": [ 248.901587, 248.901587 ], "period": -62.831853, "phase": 0.125 }, "ships": 30 }
+    ]
+}
