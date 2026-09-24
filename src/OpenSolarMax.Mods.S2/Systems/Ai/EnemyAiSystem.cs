@@ -712,13 +712,13 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             pair => pair.Key,
             pair =>
             {
-                ref readonly var reachabilityRegistry = ref pair.Key.Get<ReachabilityRegistry>();
-                var value = -reachabilityRegistry
-                    .FromHereTo.Where(entry => entry.Value)
-                    .Count(entry =>
-                        planetInfos[entry.Key].Team != team
-                        || planetInfos[entry.Key].PredictedEnemyShips > 0
-                    );
+                // lambda 内无法捕获 ref 局部变量，故取一份结构体副本
+                var reachabilityRegistry = pair.Key.Get<ReachabilityRegistry>();
+                var value = -planetInfos.Values.Count(target =>
+                    target.Entity != pair.Key
+                    && (target.Team != team || target.PredictedEnemyShips > 0)
+                    && reachabilityRegistry.FromHereTo[target.Entity]
+                );
                 if (pair.Key.Has<AiValueBonus>())
                     value -= pair.Key.Get<AiValueBonus>().Value;
                 return value;
