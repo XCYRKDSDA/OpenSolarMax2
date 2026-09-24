@@ -247,7 +247,7 @@ public class CelestialBodyApplier(
         }
 
         // 创建光晕子实体
-        factory.Make(
+        var glow = factory.Make(
             world,
             commandBuffer,
             new TeamInheritableDrawableDescription
@@ -267,6 +267,14 @@ public class CelestialBodyApplier(
                 Blend = SpriteBlend.Additive,
                 VisualStyle = VisualStyle.Effect,
             }
+        );
+
+        // 光晕依赖本体：本体被销毁时光晕随之销毁
+        factory.Make(
+            world,
+            commandBuffer,
+            ConceptNames.Dependence,
+            new DependenceDescription { Dependent = glow, Dependency = entity }
         );
     }
 }
