@@ -37,6 +37,8 @@ public abstract class CelestialBodyDefinition : IDefinition
             // 移动相关
             typeof(JumpingShipsRegistry), // 前往该天体的舰船的索引
             typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
+            typeof(StartJumpingRequest.AsDeparture),
+            typeof(StartJumpingRequest.AsDestination),
             // 战争相关
             typeof(Battlefield), // 允许发生战争
             typeof(Colonizable), // 允许进行殖民
