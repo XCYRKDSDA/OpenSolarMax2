@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -18,11 +19,8 @@ public static partial class ConceptNames
 public abstract class ShipPulseDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿变换
-            typeof(AbsoluteTransform),
-            // 效果
-            typeof(Sprite),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -34,11 +32,12 @@ public class ShipPulseDescription : IDescription
 {
     public required Vector3 Position { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ShipPulse)]
-public class ShipPulseApplier(IAssetsManager assets) : IApplier<ShipPulseDescription>
+public class ShipPulseApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipPulseDescription>
 {
     private readonly TextureRegion _pulseTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":ShipPulse"
@@ -48,22 +47,23 @@ public class ShipPulseApplier(IAssetsManager assets) : IApplier<ShipPulseDescrip
         Content.Animations.ShipPulse_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipPulseDescription desc)
     {
-        // 设置位置
-        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });
-
-        // 设置颜色
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions { Translation = desc.Position },
                 Texture = _pulseTexture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

@@ -19,6 +19,7 @@ public abstract class WarpChargingEffectDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             //
             typeof(SoundEffect),
@@ -33,7 +34,7 @@ public class WarpChargingEffectDescription : IDescription
 
     public required float WarpRadius { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.WarpChargingEffect)]
@@ -42,6 +43,9 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
 {
     private readonly SafeFmodEventDescription _warpChargingSoundEffect =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/WarpCharging");
+
+    private readonly TransformableApplier _transformableApplier = new(factory);
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(
         CommandBuffer commandBuffer,
@@ -59,7 +63,7 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
             {
                 Effect = entity,
                 Radius = desc.WarpRadius * 3f,
-                Color = desc.Color,
+                Team = desc.Team,
             }
         );
 
@@ -83,7 +87,7 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
                         {
                             Effect = entity,
                             Radius = desc.WarpRadius * 3f,
-                            Color = desc.Color,
+                            Team = desc.Team,
                             MaxSize = maxSize,
                             Ratio = rate,
                             Angle = angle,
@@ -111,20 +115,30 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
             ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Warp }
         );
-        factory.Make(
-            world,
+
+        // 设置位姿
+        _transformableApplier.Apply(
             commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription
+            entity,
+            new TransformableDescription()
             {
-                Parent = desc.Warp,
-                Child = entity,
-                Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
+                Transform = new RelativeTransformOptions
+                {
+                    Parent = desc.Warp,
+                    Translation = Vector3.Zero with { Z = 500 }, // 保证位于前边
+                },
             }
         );
 
         _warpChargingSoundEffect.Native.createInstance(out var eventInstance);
         commandBuffer.Set(in entity, new SoundEffect { EventInstance = eventInstance });
         eventInstance.start();
+
+        // 设置阵营
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
     }
 }

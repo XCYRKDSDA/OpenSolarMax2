@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Utils;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -21,9 +22,12 @@ public abstract class DestinationSurroundFlareDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 效果
             typeof(Sprite),
+            // 视觉类型
+            typeof(VisualStyle),
             // 动画
             typeof(Animation)
         );
@@ -36,7 +40,7 @@ public class DestinationSurroundFlareDescription : IDescription
 
     public required float Radius { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required float Angle { get; set; }
 }
@@ -57,6 +61,8 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
         Content.Animations.DestinationSurroundFlareCharging_json
     );
 
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
+
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
@@ -71,7 +77,6 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
             new Sprite
             {
                 Texture = _flareTexture,
-                Color = desc.Color,
                 Alpha = 1,
                 Size = new(desc.Radius * 2),
                 Position = Vector2.Zero,
@@ -128,5 +133,15 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
                 TimeElapsed = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
+
+        // 设置视觉类型
+        commandBuffer.Set(in entity, VisualStyle.Effect);
     }
 }

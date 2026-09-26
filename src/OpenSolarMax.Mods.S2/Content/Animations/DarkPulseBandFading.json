@@ -1,0 +1,22 @@
+{
+    "duration": "END",
+    "variables": {
+        "DELAY": 0,
+        "END": 1,
+        "WIDTH": 0.5,
+        "LEN_START": 1,
+        "LEN_END": 0,
+        "ALPHA_START": 0,
+        "ALPHA_END": 1
+    },
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": "DELAY", "value": "ALPHA_START" },
+            { "time": "END", "value": "ALPHA_END" }
+        ],
+        "Sprite::Scale": [
+            { "time": "DELAY", "value": [ "WIDTH", "LEN_START" ] },
+            { "time": "END", "value": [ "WIDTH", "LEN_END" ] }
+        ]
+    }
+}

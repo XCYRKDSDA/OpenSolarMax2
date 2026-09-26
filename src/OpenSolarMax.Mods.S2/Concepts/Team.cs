@@ -19,7 +19,7 @@ public abstract class TeamDefinition : IDefinition
         DependencyCapableDefinition.Signature
         + new Signature(
             // 阵营参考值
-            typeof(TeamReferenceColor),
+            typeof(RecommendedVisualStyle),
             // 阵营属性
             typeof(Producible),
             typeof(Combatable),
@@ -28,6 +28,8 @@ public abstract class TeamDefinition : IDefinition
             // 隶属关系
             typeof(InTeam.AsTeam),
             typeof(TeamPopulationRegistry),
+            // 首府关系
+            typeof(CapitalOf.AsTeam),
             // 胜利状态
             typeof(Victory)
         );
@@ -40,6 +42,11 @@ public class TeamDescription : IDescription
     /// 阵营的代表色
     /// </summary>
     public required Color Color { get; set; }
+
+    /// <summary>
+    /// 属于该阵营的发光外观实体的混合模式
+    /// </summary>
+    public SpriteBlend Blend { get; set; } = SpriteBlend.Additive;
 
     /// <summary>
     /// 生产一个该阵营舰船需要的工作量
@@ -57,6 +64,11 @@ public class TeamDescription : IDescription
     public required float Health { get; set; }
 
     /// <summary>
+    /// 舰船的移动速度
+    /// </summary>
+    public required float Speed { get; set; }
+
+    /// <summary>
     /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
     /// </summary>
     public string? AiProfile { get; set; }
@@ -67,7 +79,10 @@ public class TeamApplier : IApplier<TeamDescription>
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, TeamDescription desc)
     {
-        commandBuffer.Set(in entity, new TeamReferenceColor { Value = desc.Color });
+        commandBuffer.Set(
+            in entity,
+            new RecommendedVisualStyle { Color = desc.Color, Blend = desc.Blend }
+        );
 
         commandBuffer.Set(in entity, new Producible { WorkloadPerShip = desc.Workload });
 
@@ -80,7 +95,7 @@ public class TeamApplier : IApplier<TeamDescription>
             }
         );
 
-        commandBuffer.Set(in entity, new Jumpable { Speed = 50 });
+        commandBuffer.Set(in entity, new Jumpable { Speed = desc.Speed });
 
         commandBuffer.Set(in entity, new ColonizationAbility { ProgressPerSecond = 0.1f });
 

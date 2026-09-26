@@ -4,7 +4,8 @@
         "planet40": { "$base": "planet", "radius": 25.6, "volume": 40, "population": 40, "produceSpeed": 0.8 },
         "planet50": { "$base": "planet", "radius": 32.0, "volume": 50, "population": 50, "produceSpeed": 1.0 },
         "planet60": { "$base": "planet", "radius": 38.4, "volume": 60, "population": 60, "produceSpeed": 1.2 },
-        "blue": { "$base": "team", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1 }
+        "blue": { "$base": "team", "color": "#5FB6FF", "workload": 1, "attack": 0.1, "health": 1, "speed": 50 },
+        "dark": { "$base": "team", "color": "#000000", "blend": "alpha", "workload": 1, "attack": 0.1, "health": 1, "speed": 100, "ai": "dark" }
     },
 
     "entities": [
@@ -12,6 +13,8 @@
         { "$id": "red", "$base": "blue", "color": "#FF5D93", "ai": "smart" },
         { "$id": "orange", "$base": "blue", "color": "#FF8C5A", "ai": "smart" },
         { "$id": "lime", "$base": "blue", "color": "#CAFF6E", "ai": "smart" },
+        { "$id": "gray", "$base": "blue", "color": "#999999" },
+        { "$id": "dark", "$base": "dark" },
 
         { "$base": "view", "size": [ 1024, 540 ], "position": [ 512, 384 ], "depth": [ -1000, 1000 ], "team": "blue" }
     ]

@@ -19,3 +19,7 @@ public sealed class IndexTransformTreeSystem(EventRegistry registry)
 [SimulateSystem, Reactive, BothForGameplayAndPreview]
 public sealed class IndexColorSyncTreeSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<TreeRelationship<ColorSync>>(registry) { }
+
+[SimulateSystem, Reactive, BothForGameplayAndPreview]
+public sealed class IndexInTeamTreeSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<TreeRelationship<InTeam>>(registry) { }

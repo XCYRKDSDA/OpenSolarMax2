@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -18,11 +19,9 @@ public static partial class ConceptNames
 public abstract class HaloExplosionDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿变换
-            typeof(AbsoluteTransform),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
             // 效果
-            typeof(Sprite),
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
@@ -33,7 +32,7 @@ public abstract class HaloExplosionDefinition : IDefinition
 [Describe(ConceptNames.HaloExplosion)]
 public class HaloExplosionDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required Vector3 Position { get; set; }
 
@@ -41,7 +40,8 @@ public class HaloExplosionDescription : IDescription
 }
 
 [Apply(ConceptNames.HaloExplosion)]
-public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosionDescription>
+public class HaloExplosionApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<HaloExplosionDescription>
 {
     private readonly TextureRegion _haloTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":Halo"
@@ -54,25 +54,25 @@ public class HaloExplosionApplier(IAssetsManager assets) : IApplier<HaloExplosio
     private readonly SafeFmodEventDescription _colonizedSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/PlanetColonized");
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, HaloExplosionDescription desc)
     {
-        // 摆放位置
-        commandBuffer.Set(
-            in entity,
-            new AbsoluteTransform { Translation = desc.Position with { Z = 1000 } }
-        );
-
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions
+                {
+                    Translation = desc.Position with { Z = 1000 },
+                },
                 Texture = _haloTexture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new(desc.PlanetRadius * 2),
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

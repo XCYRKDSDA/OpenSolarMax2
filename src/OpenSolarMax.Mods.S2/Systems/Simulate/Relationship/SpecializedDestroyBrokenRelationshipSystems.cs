@@ -26,3 +26,17 @@ public sealed class DestroyBrokenPlanetSelectionRingsSystem(EventRegistry regist
 [SimulateSystem, Reactive]
 public sealed class DestroyBrokenViewSelectionRingsSystem(EventRegistry registry)
     : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(registry) { }
+
+/// <summary>
+/// 清理已损坏的首府关系。当首府天体或阵营被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenCapitalOfSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<CapitalOf>(registry) { }
+
+/// <summary>
+/// 清理已损坏的运输请求。当出发或目的天体被销毁时，自动销毁请求实体。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenJumpingRequestSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<StartJumpingRequest>(registry) { }

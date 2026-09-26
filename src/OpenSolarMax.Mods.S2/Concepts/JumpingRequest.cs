@@ -15,7 +15,7 @@ public static partial class ConceptNames
 public abstract class JumpingRequestDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(typeof(InputEvent), typeof(StartJumpingRequest));
+        new(typeof(InputEvent), typeof(StartJumpingRequest), typeof(StartJumpingAssignedShips));
 }
 
 [Describe(ConceptNames.JumpingRequest)]
@@ -37,13 +37,10 @@ public class JumpingRequestApplier : IApplier<JumpingRequestDescription>
     {
         commandBuffer.Set(
             in entity,
-            new StartJumpingRequest
-            {
-                Departure = desc.Departure,
-                Destination = desc.Destination,
-                Team = desc.Team,
-                ExpectedNum = desc.ExpectedNum,
-            }
+            new StartJumpingRequest(desc.Departure, desc.Destination, desc.Team, desc.ExpectedNum)
         );
+
+        // Ships 保持为 null，表示尚未分配舰船
+        commandBuffer.Set(in entity, new StartJumpingAssignedShips());
     }
 }

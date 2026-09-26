@@ -1,0 +1,19 @@
+{
+    "duration": "END",
+    "variables": {
+        "DELAY": 0,
+        "END": 1,
+        "SIZE_START": 6,
+        "SIZE_END": 0
+    },
+    "curves": {
+        "Sprite::Alpha": [
+            { "time": "DELAY", "value": 0 },
+            { "time": "END", "value": 1 }
+        ],
+        "Sprite::Scale": [
+            { "time": "DELAY", "value": [ "SIZE_START", "SIZE_START" ] },
+            { "time": "END", "value": [ "SIZE_END", "SIZE_END" ] }
+        ]
+    }
+}

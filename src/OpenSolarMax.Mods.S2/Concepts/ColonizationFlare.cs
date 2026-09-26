@@ -21,9 +21,12 @@ public abstract class ColonizationFlareDefinition : IDefinition
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
         + TransformableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 效果
             typeof(Sprite),
+            // 视觉类型
+            typeof(VisualStyle),
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -35,7 +38,7 @@ public class ColonizationFlareDescription : IDescription
 {
     public required Entity Planet { get; set; }
 
-    public required Color AfterColor { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ColonizationFlare)]
@@ -45,6 +48,8 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
     private readonly AnimationClip<Entity> _clip = assets.Load<AnimationClip<Entity>>(
         Content.Animations.ColonizationFlare_json
     );
+
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ColonizationFlareDescription desc)
     {
@@ -79,7 +84,6 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
             planetSprite with
             {
                 Texture = desc.Planet.Get<Flare>().Texture,
-                Color = desc.AfterColor,
                 Blend = SpriteBlend.Additive,
             }
         );
@@ -94,5 +98,15 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
                 TimeOffset = TimeSpan.Zero,
             }
         );
+
+        // 设置阵营
+        _teamApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
+        );
+
+        // 设置视觉类型
+        commandBuffer.Set(in entity, VisualStyle.Effect);
     }
 }

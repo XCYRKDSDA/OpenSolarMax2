@@ -18,7 +18,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
     ExecuteAfter(
-        typeof(ApplyTeamColorSystem),
+        typeof(ApplyVisualStyleSystem),
         "在其他设置外观的系统之后执行以覆写",
         typeof(Sprite)
     ),

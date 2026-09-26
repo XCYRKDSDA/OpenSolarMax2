@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -18,11 +19,9 @@ public static partial class ConceptNames
 public abstract class ShipFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿변환
-            typeof(AbsoluteTransform),
-            // 효과
-            typeof(Sprite),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
+            // 效果
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
@@ -35,11 +34,12 @@ public class ShipFlareDescription : IDescription
 {
     public required Vector3 Position { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ShipFlare)]
-public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescription>
+public class ShipFlareApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipFlareDescription>
 {
     private readonly TextureRegion _flareTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":ShipFlare"
@@ -52,22 +52,23 @@ public class ShipFlareApplier(IAssetsManager assets) : IApplier<ShipFlareDescrip
     private readonly SafeFmodEventDescription _destroyedSoundEvent =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/ShipDestroyed");
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipFlareDescription desc)
     {
-        // 设置位置
-        commandBuffer.Set(in entity, new AbsoluteTransform { Translation = desc.Position });
-
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions { Translation = desc.Position },
                 Texture = _flareTexture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 
