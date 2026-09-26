@@ -171,8 +171,12 @@ public static class JumpingUtils
 
         // 开始求解
         var t = 0f;
-        var err1 = float.NaN;
         var destinationPosition1 = destinationPositionRef;
+
+        // t=0 时刻的误差即初始距离（此时可移动距离为 0）。缺少该初值时，
+        // 若出发点到目的地不足一个步长的航程，首次交叉的线性插值会用到未初始化的 NaN
+        var err1 = (destinationPosition1 - departurePosition).Length();
+
         while (true)
         {
             // 步进系统
