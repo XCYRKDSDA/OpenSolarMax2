@@ -2,7 +2,7 @@
     "includes": [ ".common.json" ],
 
     "entities": [
-        { "$base": "dilator", "team": "dark", "position": [ 512, 384 ], "ships": 320, "produceShips": false },
+        { "$base": "dilator_spawner", "team": "dark", "position": [ 512, 384 ], "ships": 350 },
 
         { "$id": "center", "$base": "empty", "position": [ 512, 384 ] },
 
