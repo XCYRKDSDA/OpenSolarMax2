@@ -25,6 +25,8 @@ public abstract class TeamDefinition : IDefinition
             typeof(Combatable),
             typeof(Jumpable),
             typeof(ColonizationAbility),
+            // 视觉呈现
+            typeof(TeamVisualization),
             // 隶属关系
             typeof(InTeam.AsTeam),
             typeof(TeamPopulationRegistry),
@@ -72,6 +74,11 @@ public class TeamDescription : IDescription
     /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
     /// </summary>
     public string? AiProfile { get; set; }
+
+    /// <summary>
+    /// 是否隐藏天体上该阵营的舰船数目文字
+    /// </summary>
+    public bool HideShipCount { get; set; } = false;
 }
 
 [Apply(ConceptNames.Team)]
@@ -83,6 +90,8 @@ public class TeamApplier : IApplier<TeamDescription>
             in entity,
             new RecommendedVisualStyle { Color = desc.Color, Blend = desc.Blend }
         );
+
+        commandBuffer.Set(in entity, new TeamVisualization { HideShipCount = desc.HideShipCount });
 
         commandBuffer.Set(in entity, new Producible { WorkloadPerShip = desc.Workload });
 
