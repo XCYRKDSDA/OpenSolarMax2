@@ -20,6 +20,16 @@ public class TowerDeclaration : IDeclaration<TowerDeclaration>
 
     public OneOf<int, Dictionary<string, int>>? Ships { get; set; }
 
+    /// <summary>
+    /// 是否为所属阵营的首府
+    /// </summary>
+    public bool? Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int? Garrison { get; set; }
+
     public TowerDeclaration Aggregate(TowerDeclaration newCfg)
     {
         return new TowerDeclaration()
@@ -32,6 +42,8 @@ public class TowerDeclaration : IDeclaration<TowerDeclaration>
                     : newCfg.Orbit ?? Orbit,
             Team = newCfg.Team ?? Team,
             Ships = newCfg.Ships ?? Ships,
+            Capital = newCfg.Capital ?? Capital,
+            Garrison = newCfg.Garrison ?? Garrison,
         };
     }
 }
@@ -48,6 +60,8 @@ public class TowerDeclarationTranslator : ITranslator<TowerDeclaration, TowerDes
     {
         var desc = new TowerDescription()
         {
+            Capital = declaration.Capital ?? false,
+            Garrison = declaration.Garrison ?? 0,
             InitialShips = declaration.Ships?.Match(
                 count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
                 teams =>

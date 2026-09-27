@@ -23,7 +23,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
     ReadCurr(typeof(VictoryEffectMarker)),
-    ReadCurr(typeof(TeamReferenceColor)),
     DelayedCalc
 ]
 public sealed partial class GameOverSystem(
@@ -125,12 +124,11 @@ public sealed partial class GameOverSystem(
             new VictoryExitTimerDescription { TimeLeft = TimeSpan.FromSeconds(_waveTotalSeconds) }
         );
 
-        var flashColor = winner.Get<TeamReferenceColor>().Value;
         factory.Make(
             world,
             commandBuffer,
             ConceptNames.VictoryFlash,
-            new VictoryFlashDescription { Color = flashColor }
+            new VictoryFlashDescription { Team = winner }
         );
     }
 }

@@ -47,6 +47,16 @@ public class WarpDescription : IDescription
     public Entity Team { get; set; } = Entity.Null;
 
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
+
+    /// <summary>
+    /// 该天体是否为其所属阵营的首府
+    /// </summary>
+    public bool Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int Garrison { get; set; }
 }
 
 [Apply(ConceptNames.Warp)]
@@ -90,6 +100,8 @@ public class WarpApplier(
                 Volume = _volume,
                 GlowTexture = _warpGlow,
                 InitialShips = desc.InitialShips,
+                Capital = desc.Capital,
+                Garrison = desc.Garrison,
             }
         );
 

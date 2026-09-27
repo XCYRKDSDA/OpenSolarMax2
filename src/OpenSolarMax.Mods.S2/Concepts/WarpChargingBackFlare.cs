@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -19,10 +20,8 @@ public abstract class WarpChargingBackFlareDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
-            // 效果
-            typeof(Sprite),
             // 动画
             typeof(Animation)
         );
@@ -35,7 +34,7 @@ public class WarpChargingBackFlareDescription : IDescription
 
     public required float Radius { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.WarpChargingBackFlare)]
@@ -50,6 +49,8 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
         Content.Animations.WarpBackFlareCharging_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(
         CommandBuffer commandBuffer,
         Entity entity,
@@ -58,20 +59,19 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
     {
         var world = World.Worlds[entity.WorldId];
 
-        // 填充默认纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new RelativeTransformOptions { Parent = desc.Effect },
                 Texture = _flareTexture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new(desc.Radius * 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 
@@ -92,12 +92,6 @@ public class WarpChargingBackFlareApplier(IAssetsManager assets, IConceptFactory
             commandBuffer,
             ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Effect }
-        );
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Parent = desc.Effect, Child = entity }
         );
     }
 }
