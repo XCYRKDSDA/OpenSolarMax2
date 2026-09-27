@@ -10,4 +10,7 @@
   <Project Path="src/OpenSolarMax.Mods.Common.SourceGenerators/OpenSolarMax.Mods.Common.SourceGenerators.csproj" />
   <Project Path="src/OpenSolarMax.Mods.Common/OpenSolarMax.Mods.Common.csproj" />
   <Project Path="src/OpenSolarMax.Mods.S2/OpenSolarMax.Mods.S2.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/OpenSolarMax.Tests.Common/OpenSolarMax.Tests.Common.csproj" />
+  </Folder>
 </Solution>
