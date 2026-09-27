@@ -33,6 +33,11 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
     /// </summary>
     public string? Ai { get; set; }
 
+    /// <summary>
+    /// 是否隐藏天体上该阵营的舰船数目文字
+    /// </summary>
+    public bool? HideShipCount { get; set; }
+
     public TeamDeclaration Aggregate(TeamDeclaration newCfg)
     {
         return new TeamDeclaration()
@@ -44,6 +49,7 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
             Health = newCfg.Health ?? Health,
             Speed = newCfg.Speed ?? Speed,
             Ai = newCfg.Ai ?? Ai,
+            HideShipCount = newCfg.HideShipCount ?? HideShipCount,
         };
     }
 }
@@ -77,6 +83,9 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
 
         if (declaration.Blend is { } blend)
             desc.Blend = blend;
+
+        if (declaration.HideShipCount is { } hide)
+            desc.HideShipCount = hide;
 
         return desc;
     }
