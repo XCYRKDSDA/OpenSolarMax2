@@ -1,0 +1,64 @@
+using Arch.Buffer;
+using Arch.Core;
+using Microsoft.Extensions.Configuration;
+using Nine.Assets;
+using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.S2.Components;
+
+namespace OpenSolarMax.Mods.S2.Concepts;
+
+public static partial class ConceptNames
+{
+    public const string ConvertingDilator = "ConvertingDilator";
+}
+
+/// <summary>
+/// 转化 dilator 概念：在 dilator 的基础上，被占领时释放转化波，
+/// 把沿途的天体与舰船转为指定阵营。白马非马，独立于 <see cref="ConceptNames.Dilator"/>
+/// </summary>
+[Define(ConceptNames.ConvertingDilator)]
+public abstract class ConvertingDilatorDefinition : IDefinition
+{
+    public static Signature Signature { get; } =
+        DilatorDefinition.Signature
+        + new Signature(typeof(ConvertingDilatorConfig), typeof(ConvertingDilatorState));
+}
+
+[Describe(ConceptNames.ConvertingDilator)]
+public class ConvertingDilatorDescription : DilatorDescription
+{
+    /// <summary>
+    /// 转化波的目标阵营
+    /// </summary>
+    public Entity ConversionTeam { get; set; } = Entity.Null;
+
+    /// <summary>
+    /// 转化波半径的扩张速度
+    /// </summary>
+    public float ConversionSpeed { get; set; }
+}
+
+[Apply(ConceptNames.ConvertingDilator)]
+public class ConvertingDilatorApplier(
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body", "applier:dilator")] IConfiguration configs
+) : IApplier<ConvertingDilatorDescription>
+{
+    private readonly DilatorApplier _dilatorApplier = new(assets, factory, configs);
+
+    public void Apply(CommandBuffer commandBuffer, Entity entity, ConvertingDilatorDescription desc)
+    {
+        _dilatorApplier.Apply(commandBuffer, entity, desc);
+
+        commandBuffer.Set(
+            in entity,
+            new ConvertingDilatorConfig
+            {
+                ConversionTeam = desc.ConversionTeam,
+                ConversionSpeed = desc.ConversionSpeed,
+            }
+        );
+    }
+}

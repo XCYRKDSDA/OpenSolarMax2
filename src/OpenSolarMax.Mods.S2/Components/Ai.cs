@@ -226,7 +226,7 @@ public struct Ai
         JitterMaxFactor = 2,
         IdleCheckEnabled = true,
         IdlePopulationThreshold = 40,
-        PlanetCooldownSeconds = 1,
+        PlanetCooldownSeconds = 0.25f,
         DefenseEnabled = false,
         AttackEnabled = true,
         GatherEnabled = true,
