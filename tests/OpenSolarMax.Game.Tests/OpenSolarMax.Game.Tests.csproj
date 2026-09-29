@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>OpenSolarMax.Game.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <ProjectReference Include="..\..\src\OpenSolarMax.Game\OpenSolarMax.Game.csproj" />
+    <ProjectReference Include="..\OpenSolarMax.Tests.Game.Common\OpenSolarMax.Tests.Game.Common.csproj" />
+    <!-- 仅保证测试夹具模组先于本工程构建；其产物以文件形式供模组加载器读取，不作为引用程序集 -->
+    <ProjectReference
+      Include="..\OpenSolarMax.Game.Tests.Fixtures\OpenSolarMax.Game.Tests.Fixtures.csproj"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FixtureModFiles Include="..\OpenSolarMax.Game.Tests.Fixtures\bin\$(Configuration)\net8.0\OpenSolarMax.Game.Tests.Fixtures.dll" />
+    <FixtureModFiles Include="..\OpenSolarMax.Game.Tests.Fixtures\bin\$(Configuration)\net8.0\OpenSolarMax.Game.Tests.Fixtures.pdb" />
+    <FixtureModFiles Include="..\OpenSolarMax.Game.Tests.Fixtures\manifest.json" />
+  </ItemGroup>
+
+  <Target Name="ArrangeBehaviorModFixture" AfterTargets="Build">
+    <Copy
+      SourceFiles="@(FixtureModFiles)"
+      DestinationFolder="$(OutDir)Fixtures/BehaviorMods/OpenSolarMax.Game.Tests.Fixtures"
+    />
+  </Target>
+</Project>

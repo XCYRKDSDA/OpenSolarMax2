@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Game.Modding.ECS;
 
-internal class AggregateSystem : IDisposable
+public class AggregateSystem : IDisposable
 {
     private const int MaxFixpointIterations = 32;
 

@@ -5,107 +5,92 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game;
 
-public static class Folders
+public class Folders : IFolders
 {
-    private static readonly AggregateFileSystem _contentFs;
+    private readonly AggregateFileSystem _contentFs;
+    private readonly AggregateFileSystem _behaviorModsFs;
+    private readonly AggregateFileSystem _contentModsFs;
+    private readonly AggregateFileSystem _levelModsFs;
 
-    static Folders()
+    public Folders(IEnvs envs, IPaths paths)
     {
         _contentFs = new AggregateFileSystem();
         // 程序当前路径
         _contentFs.AddFileSystem(new ResourceFileSystem(Assembly.GetExecutingAssembly()));
         _contentFs.AddFileSystem(
-            new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                Paths.BaseDirectories.Binary / Paths.Content
-            )
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(paths.Binary / paths.Content)
         );
         // 标准路径
         // _contentFs.AddFileSystem(
-        //     new PhysicalFileSystem().GetOrCreateSubFileSystem(Paths.BaseDirectories.SystemData / Paths.Content));
+        //     new PhysicalFileSystem().GetOrCreateSubFileSystem(paths.SystemData / paths.Content));
         _contentFs.AddFileSystem(
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(paths.UserData / paths.Content)
+        );
+
+        _behaviorModsFs = new AggregateFileSystem();
+        _behaviorModsFs.AddFileSystem(
             new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                Paths.BaseDirectories.UserData / Paths.Content
+                paths.Binary / paths.Mods / paths.Behaviors
             )
         );
-    }
-
-    public static IFileSystem Content => _contentFs;
-
-    public static class Mods
-    {
-        private static readonly AggregateFileSystem _behaviorsFs;
-
-        private static readonly AggregateFileSystem _contentFs;
-
-        private static readonly AggregateFileSystem _levelsFs;
-
-        static Mods()
+        // _behaviorModsFs.AddFileSystem(
+        //     new PhysicalFileSystem().GetOrCreateSubFileSystem(paths.SystemData / paths.Mods / paths.Behaviors));
+        _behaviorModsFs.AddFileSystem(
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(
+                paths.UserData / paths.Mods / paths.Behaviors
+            )
+        );
+        foreach (var path in envs.CustomBehaviorModPaths)
         {
-            _behaviorsFs = new AggregateFileSystem();
-            _behaviorsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.Binary / Paths.Mods / Paths.Behaviors
+            var fs = new PhysicalFileSystem();
+            _behaviorModsFs.AddFileSystem(
+                fs.GetOrCreateSubFileSystem(
+                    fs.ConvertPathFromInternal((paths.Current / path).FullName)
                 )
             );
-            // _behaviorsFs.AddFileSystem(
-            //     new PhysicalFileSystem().GetOrCreateSubFileSystem(
-            //         Paths.BaseDirectories.SystemData / Paths.Mods / Paths.Behaviors));
-            _behaviorsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.UserData / Paths.Mods / Paths.Behaviors
-                )
-            );
-            foreach (var path in Envs.CustomBehaviorModPaths)
-            {
-                var fs = new PhysicalFileSystem();
-                _behaviorsFs.AddFileSystem(
-                    fs.GetOrCreateSubFileSystem(
-                        fs.ConvertPathFromInternal((Paths.BaseDirectories.Current / path).FullName)
-                    )
-                );
-            }
-
-            _contentFs = new AggregateFileSystem();
-            _contentFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.Binary / Paths.Mods / Paths.ContentMods
-                )
-            );
-            _contentFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.UserData / Paths.Mods / Paths.ContentMods
-                )
-            );
-
-            _levelsFs = new AggregateFileSystem();
-            _levelsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.Binary / Paths.Mods / Paths.Levels
-                )
-            );
-            // _levelsFs.AddFileSystem(
-            //     new PhysicalFileSystem().GetOrCreateSubFileSystem(
-            //         Paths.BaseDirectories.SystemData / Paths.Mods / Paths.Levels));
-            _levelsFs.AddFileSystem(
-                new PhysicalFileSystem().GetOrCreateSubFileSystem(
-                    Paths.BaseDirectories.UserData / Paths.Mods / Paths.Levels
-                )
-            );
-            foreach (var path in Envs.CustomLevelModPaths)
-            {
-                var fs = new PhysicalFileSystem();
-                _levelsFs.AddFileSystem(
-                    fs.GetOrCreateSubFileSystem(
-                        fs.ConvertPathFromInternal((Paths.BaseDirectories.Current / path).FullName)
-                    )
-                );
-            }
         }
 
-        public static IFileSystem Behaviors => _behaviorsFs;
+        _contentModsFs = new AggregateFileSystem();
+        _contentModsFs.AddFileSystem(
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(
+                paths.Binary / paths.Mods / paths.ContentMods
+            )
+        );
+        _contentModsFs.AddFileSystem(
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(
+                paths.UserData / paths.Mods / paths.ContentMods
+            )
+        );
 
-        public static IFileSystem Content => _contentFs;
-
-        public static IFileSystem Levels => _levelsFs;
+        _levelModsFs = new AggregateFileSystem();
+        _levelModsFs.AddFileSystem(
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(
+                paths.Binary / paths.Mods / paths.Levels
+            )
+        );
+        // _levelModsFs.AddFileSystem(
+        //     new PhysicalFileSystem().GetOrCreateSubFileSystem(paths.SystemData / paths.Mods / paths.Levels));
+        _levelModsFs.AddFileSystem(
+            new PhysicalFileSystem().GetOrCreateSubFileSystem(
+                paths.UserData / paths.Mods / paths.Levels
+            )
+        );
+        foreach (var path in envs.CustomLevelModPaths)
+        {
+            var fs = new PhysicalFileSystem();
+            _levelModsFs.AddFileSystem(
+                fs.GetOrCreateSubFileSystem(
+                    fs.ConvertPathFromInternal((paths.Current / path).FullName)
+                )
+            );
+        }
     }
+
+    public IFileSystem Content => _contentFs;
+
+    public IFileSystem BehaviorMods => _behaviorModsFs;
+
+    public IFileSystem ContentMods => _contentModsFs;
+
+    public IFileSystem LevelMods => _levelModsFs;
 }

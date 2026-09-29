@@ -4,7 +4,7 @@ using Nine.Animations;
 
 namespace OpenSolarMax.Game.UI;
 
-public class FadableWrapper(IImage image, ICurve<float>? map = null) : IFadableImage
+internal class FadableWrapper(IImage image, ICurve<float>? map = null) : IFadableImage
 {
     public Point Size => image.Size;
 

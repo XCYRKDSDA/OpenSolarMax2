@@ -2,7 +2,8 @@ using Nine.Screens;
 
 namespace OpenSolarMax.Game.Screens;
 
-public class AsyncScreen<T>(IScreenFactory screenFactory, Task<object?> contextTask) : ITaskLike<T>
+internal class AsyncScreen<T>(IScreenFactory screenFactory, Task<object?> contextTask)
+    : ITaskLike<T>
     where T : class, IScreen
 {
     public AggregateException? Exception => contextTask.Exception;

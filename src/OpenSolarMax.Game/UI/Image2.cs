@@ -5,7 +5,7 @@ using Myra.Graphics2D.UI;
 
 namespace OpenSolarMax.Game.UI;
 
-public class Image2 : Widget
+internal class Image2 : Widget
 {
     private IImage? _image;
 

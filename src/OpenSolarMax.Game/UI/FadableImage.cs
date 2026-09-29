@@ -5,7 +5,7 @@ using Myra.Graphics2D.UI;
 
 namespace OpenSolarMax.Game.UI;
 
-public class FadableImage : Widget
+internal class FadableImage : Widget
 {
     private IFadableImage? _image;
 

@@ -13,9 +13,9 @@ internal record ChapterPageContext(
     Texture2D Background
 );
 
-internal class ChapterPage(ChapterPageContext ctx, SolarMax game)
+internal class ChapterPage(ChapterPageContext ctx, IUiServices uiServices)
     : MenuLikeView(
-        new LevelsViewModel(ctx.ModHandle, ctx.LevelPreviews, ctx.Background, game),
+        new LevelsViewModel(ctx.ModHandle, ctx.LevelPreviews, ctx.Background, uiServices),
         false,
-        game
+        uiServices
     );

@@ -1,0 +1,10 @@
+{
+    "type": "behavior",
+    "fullName": "OpenSolarMax.Game.Tests.Fixtures",
+    "shortName": "Fixtures",
+    "author": "tests",
+    "version": "0.0.1",
+    "description": "Game.Tests 的测试用行为模组夹具",
+    "link": "",
+    "assembly": "OpenSolarMax.Game.Tests.Fixtures.dll"
+}

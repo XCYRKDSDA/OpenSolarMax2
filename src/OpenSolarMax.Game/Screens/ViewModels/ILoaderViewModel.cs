@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-public interface ILoaderViewModel
+internal interface ILoaderViewModel
 {
     float Progress { get; }
 

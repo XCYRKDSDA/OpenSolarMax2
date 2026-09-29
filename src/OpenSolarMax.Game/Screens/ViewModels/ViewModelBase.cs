@@ -3,13 +3,13 @@ using Microsoft.Xna.Framework;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
 
-public abstract class ViewModelBase : ObservableObject, IViewModel
+internal abstract class ViewModelBase : ObservableObject, IViewModel
 {
-    public SolarMax Game { get; }
+    public IUiServices UiServices { get; }
 
-    protected ViewModelBase(SolarMax game)
+    protected ViewModelBase(IUiServices uiServices)
     {
-        Game = game;
+        UiServices = uiServices;
     }
 
     public virtual void Update(GameTime gameTime) { }

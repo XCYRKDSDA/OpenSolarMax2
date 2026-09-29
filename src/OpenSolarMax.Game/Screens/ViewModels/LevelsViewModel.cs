@@ -59,9 +59,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         Lifetime<ModSession> modSessionHandle,
         List<(LevelInfo Info, Lifetime<LevelSession> Preview)> levelPreviews,
         Texture2D background,
-        SolarMax game
+        IUiServices uiServices
     )
-        : base(game)
+        : base(uiServices)
     {
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
         _backwardCommand = new RelayCommand(OnBackward);
@@ -80,7 +80,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _primaryItemPreview = new WorldRenderer(
             _loadedLevelPreviews[0].Preview.Value.World,
             _loadedLevelPreviews[0].Preview.Value.RenderSystems,
-            game.GraphicsDevice
+            uiServices.GraphicsDevice
         );
         _primaryItemBackground = null;
         _secondaryItemIndex = null;
@@ -95,7 +95,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         PrimaryItemPreview = new WorldRenderer(
             _loadedLevelPreviews[value].Preview.Value.World,
             _loadedLevelPreviews[value].Preview.Value.RenderSystems,
-            Game.GraphicsDevice
+            UiServices.GraphicsDevice
         );
     }
 
@@ -106,19 +106,19 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             : new WorldRenderer(
                 _loadedLevelPreviews[value.Value].Preview.Value.World,
                 _loadedLevelPreviews[value.Value].Preview.Value.RenderSystems,
-                Game.GraphicsDevice
+                UiServices.GraphicsDevice
             );
     }
 
     private void OnSelectItem(int idx)
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
 
         var session = _modSessionHandle.Value.LoadLevel(_loadedLevelPreviews[idx].Info);
 
-        Game.ScreenManager.Forward(
+        UiServices.ScreenManager.Forward(
             typeof(LevelPlayPage),
             new LevelPlayPageContext(session, PageBackground),
             typeof(GamePlayTransitionScreen)
@@ -128,9 +128,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     private void OnBackward()
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
-        Game.ScreenManager.Backward();
+        UiServices.ScreenManager.Backward();
     }
 
     public override void Update(GameTime gameTime)

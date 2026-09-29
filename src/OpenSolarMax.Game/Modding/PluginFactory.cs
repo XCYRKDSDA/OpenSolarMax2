@@ -4,7 +4,7 @@ using OpenSolarMax.Game.Modding.Configuration;
 
 namespace OpenSolarMax.Game.Modding;
 
-public static class PluginFactory
+internal static class PluginFactory
 {
     /// <summary>
     /// 根据给定参数和选项，反射地创建指定插件类型

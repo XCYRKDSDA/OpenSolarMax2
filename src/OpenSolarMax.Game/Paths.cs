@@ -3,46 +3,43 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game;
 
-internal static class Paths
+internal class Paths : IPaths
 {
     private static readonly PhysicalFileSystem _physicalFileSystem = new();
 
-    public static class BaseDirectories
-    {
-        public static UPath Binary { get; } =
-            _physicalFileSystem.ConvertPathFromInternal(AppContext.BaseDirectory);
+    public UPath Binary { get; } =
+        _physicalFileSystem.ConvertPathFromInternal(AppContext.BaseDirectory);
 
-        public static UPath Current { get; } =
-            _physicalFileSystem.ConvertPathFromInternal(Environment.CurrentDirectory);
+    public UPath Current { get; } =
+        _physicalFileSystem.ConvertPathFromInternal(Environment.CurrentDirectory);
 
-        public static UPath UserData { get; } =
-            _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-            );
+    public UPath UserData { get; } =
+        _physicalFileSystem.ConvertPathFromInternal(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+        );
 
-        public static UPath UserConfig { get; } =
-            _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-            );
+    public UPath UserConfig { get; } =
+        _physicalFileSystem.ConvertPathFromInternal(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+        );
 
-        public static UPath SystemData { get; } =
-            _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-            );
+    public UPath SystemData { get; } =
+        _physicalFileSystem.ConvertPathFromInternal(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+        );
 
-        public static UPath SystemConfig { get; } =
-            _physicalFileSystem.ConvertPathFromInternal(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-            );
-    }
+    public UPath SystemConfig { get; } =
+        _physicalFileSystem.ConvertPathFromInternal(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+        );
 
-    public static UPath Content => "Content";
+    public UPath Content => "Content";
 
-    public static UPath Mods => "Mods";
+    public UPath Mods => "Mods";
 
-    public static UPath Behaviors => "Behaviors";
+    public UPath Behaviors => "Behaviors";
 
-    public static UPath Levels => "Levels";
+    public UPath Levels => "Levels";
 
-    public static UPath ContentMods => "Content";
+    public UPath ContentMods => "Content";
 }

@@ -7,7 +7,7 @@ using Container = Myra.Graphics2D.UI.Container;
 
 namespace OpenSolarMax.Game.UI;
 
-public sealed class CustomHorizontalScrollViewer : Container
+internal sealed class CustomHorizontalScrollViewer : Container
 {
     private class Circle : IImage
     {

@@ -4,10 +4,10 @@ using OpenSolarMax.Game.Screens.ViewModels;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
-internal abstract class ViewBase<T>(T viewModel, SolarMax game) : IScreen
+internal abstract class ViewBase<T>(T viewModel, IUiServices uiServices) : IScreen
     where T : IViewModel
 {
-    public SolarMax Game => game;
+    public IUiServices UiServices => uiServices;
 
     public T ViewModel => viewModel;
 

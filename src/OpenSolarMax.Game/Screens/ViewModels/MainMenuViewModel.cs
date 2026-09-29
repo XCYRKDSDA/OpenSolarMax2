@@ -9,6 +9,7 @@ using Nine.Animations;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
+using OpenSolarMax.Game.Sessions;
 using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
@@ -26,6 +27,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private readonly List<IFadableImage> _builtinPreviews = [];
 
     private readonly List<PreviewableLevelMod> _levelMods;
+
+    private readonly GameSession _gameSession;
 
     #endregion
 
@@ -61,15 +64,20 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
 
     public int InitializeIndex { get; }
 
-    public MainMenuViewModel(List<PreviewableLevelMod> levelMods, SolarMax game)
-        : base(game)
+    public MainMenuViewModel(
+        List<PreviewableLevelMod> levelMods,
+        GameSession gameSession,
+        IUiServices uiServices
+    )
+        : base(uiServices)
     {
         _levelMods = levelMods;
+        _gameSession = gameSession;
 
         _items = ["Editor", "Mods", "OS", .. _levelMods.Select(m => m.Info.ShortName)];
 
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
-        _pageBackground = game.Assets.Load<Texture2D>(Content.Background_png);
+        _pageBackground = uiServices.Assets.Load<Texture2D>(Content.Background_png);
 
         // 加载 默认、模组、编辑器 的预览
 
@@ -78,7 +86,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 new RichTextLayout()
                 {
                     Text = "E  D  I  T  O  R",
-                    Font = game
+                    Font = uiServices
                         .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
                         .GetFont(80),
                 }
@@ -90,7 +98,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 new RichTextLayout()
                 {
                     Text = "M  O  D  S",
-                    Font = game
+                    Font = uiServices
                         .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
                         .GetFont(80),
                 }
@@ -102,7 +110,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
                 new RichTextLayout()
                 {
                     Text = "O  P  E  N    S  O  L  A  R  M  A  X",
-                    Font = game
+                    Font = uiServices
                         .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
                         .GetFont(80),
                 },
@@ -161,19 +169,19 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     private void OnSelectItem(int idx)
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
 
         if (idx < _builtinPreviews.Count)
             return;
         var levelModIndex = idx - _builtinPreviews.Count;
         var contextLoadTask = Task<object?>.Factory.StartNew(
-            () => Load(_levelMods[levelModIndex], Game),
+            () => Load(_levelMods[levelModIndex], _gameSession),
             CancellationToken.None,
             TaskCreationOptions.None,
-            Game.BackgroundScheduler
+            UiServices.BackgroundScheduler
         );
-        Game.ScreenManager.Forward2(
+        UiServices.ScreenManager.Forward2(
             typeof(ChapterPage),
             contextLoadTask,
             typeof(ChapterTransitionScreen),
@@ -186,10 +194,13 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         public float Evaluate(float x) => 1 - (x - 1) * (x - 1);
     }
 
-    private static ChapterPageContext Load(PreviewableLevelMod previewableLevelMod, SolarMax game)
+    private static ChapterPageContext Load(
+        PreviewableLevelMod previewableLevelMod,
+        GameSession gameSession
+    )
     {
         var levelModInfo = previewableLevelMod.Info;
-        var modSessionHandle = game.GameSession.LoadMod(levelModInfo);
+        var modSessionHandle = gameSession.LoadMod(levelModInfo);
         var modSession = modSessionHandle.Value;
         var levelPreviews = modSession
             .Levels.Select(entry => (Info: entry, Preview: modSession.LoadLevelPreview(entry)))

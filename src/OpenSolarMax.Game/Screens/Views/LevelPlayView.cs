@@ -30,17 +30,17 @@ internal class LevelPlayView
     private readonly SpriteBatch _uiSpriteBatch;
     private bool _exited = false;
 
-    public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
-        : base(viewModel, game)
+    public LevelPlayView(LevelPlayViewModel viewModel, IUiServices uiServices)
+        : base(viewModel, uiServices)
     {
-        _background = new HorizontalScrollingBackground(game.GraphicsDevice)
+        _background = new HorizontalScrollingBackground(uiServices.GraphicsDevice)
         {
             Texture = viewModel.Background,
         };
 
-        var pp = game.GraphicsDevice.PresentationParameters;
+        var pp = uiServices.GraphicsDevice.PresentationParameters;
         _uiRenderTarget = new RenderTarget2D(
-            game.GraphicsDevice,
+            uiServices.GraphicsDevice,
             pp.BackBufferWidth,
             pp.BackBufferHeight,
             false,
@@ -49,7 +49,7 @@ internal class LevelPlayView
             0,
             RenderTargetUsage.PreserveContents
         );
-        _uiSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
+        _uiSpriteBatch = new SpriteBatch(uiServices.GraphicsDevice, 1);
 
         #region 初始化 UI
 
@@ -102,7 +102,7 @@ internal class LevelPlayView
         };
         Grid.SetColumnSpan(leftStack, 3);
         var exitIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>(
+            uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                 Content.UIs.Icons_Atlas_json + ":ButtonClose"
             )
         );
@@ -118,7 +118,7 @@ internal class LevelPlayView
         };
         exitButton.Click += OnExitButtonClicked;
         var pauseIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>(
+            uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                 Content.UIs.Icons_Atlas_json + ":ButtonPause"
             )
         );
@@ -134,7 +134,7 @@ internal class LevelPlayView
         };
         //pauseButton.Click += OnPauseButtonClicked;
         var restartIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>(
+            uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                 Content.UIs.Icons_Atlas_json + ":ButtonRestart"
             )
         );
@@ -160,7 +160,7 @@ internal class LevelPlayView
         };
         Grid.SetColumnSpan(rightStack, 3);
         var slowSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>(
+            uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                 Content.UIs.Icons_Atlas_json + ":ButtonSlowSpeed"
             )
         );
@@ -176,7 +176,7 @@ internal class LevelPlayView
         };
         slowButton.IsToggledChanged += OnSpeedOptionChanged;
         var normalSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>(
+            uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                 Content.UIs.Icons_Atlas_json + ":ButtonNormalSpeed"
             )
         );
@@ -192,7 +192,7 @@ internal class LevelPlayView
         };
         normalButton.IsToggledChanged += OnSpeedOptionChanged;
         var fastSpeedIcon = new IconRegion(
-            game.Assets.Load<Nine.Graphics.TextureRegion>(
+            uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                 Content.UIs.Icons_Atlas_json + ":ButtonFastSpeed"
             )
         );
@@ -379,7 +379,7 @@ internal class LevelPlayView
                 {
                     if (state.Status != GameStatus.Playing && !_exited)
                     {
-                        Game.ScreenManager.Backward();
+                        UiServices.ScreenManager.Backward();
                         _exited = true;
                     }
                 }
@@ -407,7 +407,7 @@ internal class LevelPlayView
         );
         ViewModel.RenderSystem.Update(gameTime);
 
-        var gd = Game.GraphicsDevice;
+        var gd = UiServices.GraphicsDevice;
         var oldRenderTargets = gd.GetRenderTargets();
         gd.SetRenderTarget(_uiRenderTarget);
         gd.Clear(Color.Black);

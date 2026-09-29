@@ -3,7 +3,7 @@ using Myra.Graphics2D;
 
 namespace OpenSolarMax.Game.UI;
 
-public interface IFadableImage : IImage
+internal interface IFadableImage : IImage
 {
     void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn);
 

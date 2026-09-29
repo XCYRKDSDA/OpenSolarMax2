@@ -16,9 +16,13 @@ using XNAGame = Microsoft.Xna.Framework.Game;
 
 namespace OpenSolarMax.Game;
 
-public class SolarMax : XNAGame
+public class SolarMax : XNAGame, IUiServices
 {
     private readonly GraphicsDeviceManager _graphics;
+
+    private Envs _envs;
+    private Paths _paths;
+    private Folders _folders;
 
     private AssetsManager _globalAssets;
 
@@ -61,9 +65,11 @@ public class SolarMax : XNAGame
 
     public AssetsManager Assets => _globalAssets;
 
-    internal GameSession GameSession => _gameSession;
+    public IFolders Folders => _folders;
 
-    internal ScreenManager ScreenManager => _globalScreenManager;
+    public GameSession GameSession => _gameSession;
+
+    public ScreenManager ScreenManager => _globalScreenManager;
 
     private void PreparingDeviceSettings(object? sender, PreparingDeviceSettingsEventArgs e)
     {
@@ -75,6 +81,11 @@ public class SolarMax : XNAGame
         // 创建串行式后台加载调度器
         var pair = new ConcurrentExclusiveSchedulerPair();
         _loadingTaskScheduler = pair.ExclusiveScheduler;
+
+        // 初始化目录
+        _envs = new Envs();
+        _paths = new Paths();
+        _folders = new Folders(_envs, _paths);
 
         // 初始化模组管理器
         _gameSession = new GameSession(this);
@@ -109,7 +120,7 @@ public class SolarMax : XNAGame
         AssetsManager.RegisterDefaultLoader(new FmodEventLoader(_globalFmodSystem));
 
         // 初始化全局资产
-        _globalAssets = new AssetsManager(Folders.Content);
+        _globalAssets = new AssetsManager(_folders.Content);
 
         // 初始化全局界面管理器
         _globalScreenManager = new ScreenManager(new ScreenFactory(this), this);
@@ -120,7 +131,7 @@ public class SolarMax : XNAGame
 
     protected override void LoadContent()
     {
-        _globalScreenManager.Forward(typeof(InitializationPage));
+        _globalScreenManager.Forward(typeof(InitializationPage), _gameSession);
     }
 
     protected override void UnloadContent()

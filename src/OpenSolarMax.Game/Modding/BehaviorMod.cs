@@ -14,7 +14,7 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? Applier);
+public record ConceptRelatedTypes(Type? Definition, Type? Description, Type? Applier);
 
 /// <param name="ContentFileSystems">模组中提供资产的所有文件系统</param>
 /// <param name="Configs">模组中提供的参数配置文件</param>
@@ -23,7 +23,7 @@ internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? A
 /// <param name="DeclarationSchemaInfos">模组提供的所有配置类型，按照<see cref="SchemaNameAttribute"/>索引</param>
 /// <param name="GameplayBehaviorsInfo">游玩时的行为信息</param>
 /// <param name="PreviewBehaviorsInfo">预览时的行为信息</param>
-internal record BehaviorMod(
+public record BehaviorMod(
     BehaviorModInfo Metadata,
     ImmutableArray<IFileSystem> ContentFileSystems,
     IConfigurationRoot? Configs,

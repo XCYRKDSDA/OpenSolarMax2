@@ -2,8 +2,9 @@ using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using XNAGame = Microsoft.Xna.Framework.Game;
 
-namespace OpenSolarMax.Tests.Common;
+namespace OpenSolarMax.Tests.Game.Common;
 
 /// <summary>
 /// 测试进程内共享的图形设备夹具：创建一个 <see cref="GraphicsDevice"/>，
@@ -40,7 +41,7 @@ namespace OpenSolarMax.Tests.Common;
 /// </remarks>
 public sealed class GraphicsDeviceFixture : IDisposable
 {
-    private readonly Game _game = new HostGame();
+    private readonly XNAGame _game = new HostGame();
     private readonly BlockingCollection<Action> _workQueue = new(new ConcurrentQueue<Action>());
     private readonly ManualResetEventSlim _initialized = new(false);
     private readonly Thread _thread;
@@ -159,5 +160,5 @@ public sealed class GraphicsDeviceFixture : IDisposable
     /// 后者构造需要 Game 实例，且设备创建依赖的 <c>SdlGameWindow.Instance</c>
     /// 也只在其创建窗口的流程中赋值。永远不对它调用 <c>Run</c>，游戏循环不会启动。
     /// </summary>
-    private sealed class HostGame : Game;
+    private sealed class HostGame : XNAGame;
 }

@@ -8,7 +8,7 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace OpenSolarMax.Game.UI;
 
-public class SvgMyraImage : IImage
+internal class SvgMyraImage : IImage
 {
     public Point Size { get; }
 

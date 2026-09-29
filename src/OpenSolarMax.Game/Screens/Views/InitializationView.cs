@@ -21,12 +21,14 @@ internal class InitializationView : ViewBase<InitializationViewModel>
     private readonly Label _logoLabel;
     private readonly HorizontalProgressBar _progressBar;
 
-    public InitializationView(InitializationViewModel viewModel, SolarMax game)
-        : base(viewModel, game)
+    public InitializationView(InitializationViewModel viewModel, IUiServices uiServices)
+        : base(viewModel, uiServices)
     {
         // 构建 UI
 
-        var font = game.Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf).GetFont(_textSize);
+        var font = uiServices
+            .Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf)
+            .GetFont(_textSize);
 
         _logoLabel = new Label()
         {
@@ -79,7 +81,7 @@ internal class InitializationView : ViewBase<InitializationViewModel>
 
     public override void Draw(GameTime gameTime)
     {
-        Game.GraphicsDevice.Clear(Color.White);
+        UiServices.GraphicsDevice.Clear(Color.White);
         _desktop.Render();
     }
 }

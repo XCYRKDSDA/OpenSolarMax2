@@ -6,7 +6,7 @@ using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record BakedBehaviorsInfo(
+public record BakedBehaviorsInfo(
     ImmutableDictionary<string, DeclarationTranslatorInfo> TranslatorTypes,
     ImmutableDictionary<string, ConceptInfo> ConceptInfos,
     StageSystemTypesCollection SystemTypes,

@@ -7,14 +7,14 @@ namespace OpenSolarMax.Game.Utils;
 /// 实体模板接口。
 /// 提供了初始化实体的方法
 /// </summary>
-public interface ITemplate
+internal interface ITemplate
 {
     Signature Signature { get; }
 
     void Apply(CommandBuffer commandBuffer, Entity entity);
 }
 
-public static class TemplateExtensions
+internal static class TemplateExtensions
 {
     public static Entity Make(this World world, CommandBuffer commandBuffer, ITemplate template)
     {

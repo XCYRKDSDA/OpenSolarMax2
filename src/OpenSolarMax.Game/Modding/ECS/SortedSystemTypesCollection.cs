@@ -2,14 +2,14 @@ using System.Collections.Immutable;
 
 namespace OpenSolarMax.Game.Modding.ECS;
 
-internal record ImmutableSortedSystemTypesCollection(
+public record ImmutableSortedSystemTypesCollection(
     ImmutableArray<Type> UpdateSystems,
     ImmutableArray<Type> LateUpdate1Systems,
     ImmutableArray<Type> LateUpdate2Systems,
     ImmutableArray<Type> ReactiveSystems
 );
 
-internal record StageSystemTypesCollection(
+public record StageSystemTypesCollection(
     ImmutableSortedSystemTypesCollection Input,
     ImmutableSortedSystemTypesCollection Ai,
     ImmutableSortedSystemTypesCollection Simulate,

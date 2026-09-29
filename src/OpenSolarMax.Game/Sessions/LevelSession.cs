@@ -4,7 +4,7 @@ using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Sessions;
 
-internal sealed class LevelSession : IDisposable
+public sealed class LevelSession : IDisposable
 {
     private readonly GameTime _playTime = new();
 

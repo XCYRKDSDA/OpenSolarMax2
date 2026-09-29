@@ -37,8 +37,8 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(LevelSession session, Texture2D background, SolarMax game)
-        : base(game)
+    public LevelPlayViewModel(LevelSession session, Texture2D background, IUiServices uiServices)
+        : base(uiServices)
     {
         // 记录会话
         _session = session;
@@ -63,9 +63,9 @@ internal partial class LevelPlayViewModel : ViewModelBase
     private void OnExit()
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
-        Game.ScreenManager.Backward();
+        UiServices.ScreenManager.Backward();
     }
 
     public override void Update(GameTime gameTime)

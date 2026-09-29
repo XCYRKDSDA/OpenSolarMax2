@@ -6,7 +6,7 @@ using Myra.Graphics2D.UI.Styles;
 namespace OpenSolarMax.Game.UI;
 
 [StyleTypeName("Button")]
-public class StateOpacityToggleButton : ToggleButton
+internal class StateOpacityToggleButton : ToggleButton
 {
     private float _normalOpacity = 0.3f;
     private float _hoverOpacity = 0.5f;

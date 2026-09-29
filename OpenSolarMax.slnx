@@ -11,6 +11,8 @@
   <Project Path="src/OpenSolarMax.Mods.Common/OpenSolarMax.Mods.Common.csproj" />
   <Project Path="src/OpenSolarMax.Mods.S2/OpenSolarMax.Mods.S2.csproj" />
   <Folder Name="/tests/">
-    <Project Path="tests/OpenSolarMax.Tests.Common/OpenSolarMax.Tests.Common.csproj" />
+    <Project Path="tests/OpenSolarMax.Tests.Game.Common/OpenSolarMax.Tests.Game.Common.csproj" />
+    <Project Path="tests/OpenSolarMax.Game.Tests/OpenSolarMax.Game.Tests.csproj" />
+    <Project Path="tests/OpenSolarMax.Game.Tests.Fixtures/OpenSolarMax.Game.Tests.Fixtures.csproj" />
   </Folder>
 </Solution>

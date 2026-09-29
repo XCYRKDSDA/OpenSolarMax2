@@ -3,7 +3,7 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record BehaviorModInfo(
+public record BehaviorModInfo(
     DirectoryEntry Directory,
     string FullName,
     string ShortName,

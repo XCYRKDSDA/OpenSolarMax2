@@ -7,5 +7,8 @@ namespace OpenSolarMax.Game.Screens.Pages;
 
 internal record LevelPlayPageContext(LevelSession LevelSession, Texture2D Background);
 
-internal class LevelPlayPage(LevelPlayPageContext ctx, SolarMax game)
-    : LevelPlayView(new LevelPlayViewModel(ctx.LevelSession, ctx.Background, game), game) { }
+internal class LevelPlayPage(LevelPlayPageContext ctx, IUiServices uiServices)
+    : LevelPlayView(
+        new LevelPlayViewModel(ctx.LevelSession, ctx.Background, uiServices),
+        uiServices
+    ) { }

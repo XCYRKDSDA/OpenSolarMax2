@@ -58,8 +58,8 @@ internal class MenuLikeView
 
     #endregion
 
-    public MenuLikeView(IMenuLikeViewModel viewModel, bool enableExposure, SolarMax game)
-        : base(viewModel, game)
+    public MenuLikeView(IMenuLikeViewModel viewModel, bool enableExposure, IUiServices uiServices)
+        : base(viewModel, uiServices)
     {
         _desktop = new Desktop();
         _rootPanel = new Panel();
@@ -82,8 +82,8 @@ internal class MenuLikeView
         if (enableExposure)
         {
             // 创建曝光渲染工具
-            _exposureSpriteBatch = new SpriteBatch(game.GraphicsDevice, 1);
-            _exposureWhiteBase = game.Assets.Load<Texture2D>(Content.Textures.Pixel_bmp);
+            _exposureSpriteBatch = new SpriteBatch(uiServices.GraphicsDevice, 1);
+            _exposureWhiteBase = uiServices.Assets.Load<Texture2D>(Content.Textures.Pixel_bmp);
         }
 
         // 顶栏
@@ -98,17 +98,17 @@ internal class MenuLikeView
             Content = new Image()
             {
                 Renderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                    uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                         Content.UIs.IconsAtlas_json + ":BackBtn_Idle"
                     )
                 ),
                 OverRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                    uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                         Content.UIs.IconsAtlas_json + ":BackBtn_Pressed"
                     )
                 ),
                 PressedRenderable = ToMyra(
-                    game.Assets.Load<Nine.Graphics.TextureRegion>(
+                    uiServices.Assets.Load<Nine.Graphics.TextureRegion>(
                         Content.UIs.IconsAtlas_json + ":BackBtn_Pressed"
                     )
                 ),
@@ -181,7 +181,7 @@ internal class MenuLikeView
             Text = name,
             TextAlign = TextHorizontalAlignment.Center,
             TextColor = new Color(0xff, 0xcc, 0xe5, 0xff),
-            Font = Game.Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf).GetFont(40),
+            Font = UiServices.Assets.Load<FontSystem>(Content.Fonts.Downlink_gav1_ttf).GetFont(40),
         };
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -363,8 +363,11 @@ internal class MenuLikeView
                     : _exposureFadeSpeedFast;
             _exposure -= exposureFadeSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
             var halfLife = MathF.Sqrt(
-                MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferWidth, 2)
-                    + MathF.Pow(Game.GraphicsDevice.PresentationParameters.BackBufferHeight, 2)
+                MathF.Pow(UiServices.GraphicsDevice.PresentationParameters.BackBufferWidth, 2)
+                    + MathF.Pow(
+                        UiServices.GraphicsDevice.PresentationParameters.BackBufferHeight,
+                        2
+                    )
             );
 
             _exposureSpriteBatch.Begin(blendState: BlendState.Additive);
@@ -373,8 +376,8 @@ internal class MenuLikeView
                 new Rectangle(
                     0,
                     0,
-                    Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                    Game.GraphicsDevice.PresentationParameters.BackBufferHeight
+                    UiServices.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                    UiServices.GraphicsDevice.PresentationParameters.BackBufferHeight
                 ),
                 Color.White * _exposure
             );

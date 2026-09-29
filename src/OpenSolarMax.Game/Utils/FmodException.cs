@@ -1,6 +1,6 @@
 namespace OpenSolarMax.Game.Utils;
 
-public class FmodException(FMOD.RESULT err) : Exception
+internal class FmodException(FMOD.RESULT err) : Exception
 {
     public static void Check(FMOD.RESULT code)
     {

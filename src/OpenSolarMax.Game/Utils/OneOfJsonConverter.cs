@@ -4,7 +4,7 @@ using OneOf;
 
 namespace OpenSolarMax.Game.Utils;
 
-public class OneOfJsonConverter<T0, T1> : JsonConverter<OneOf<T0, T1>>
+internal class OneOfJsonConverter<T0, T1> : JsonConverter<OneOf<T0, T1>>
 {
     public override OneOf<T0, T1> Read(
         ref Utf8JsonReader reader,
@@ -41,7 +41,7 @@ public class OneOfJsonConverter<T0, T1> : JsonConverter<OneOf<T0, T1>>
     ) => throw new NotImplementedException();
 }
 
-public class OneOfJsonConverterFactory : JsonConverterFactory
+internal class OneOfJsonConverterFactory : JsonConverterFactory
 {
     public override bool CanConvert(Type typeToConvert)
     {

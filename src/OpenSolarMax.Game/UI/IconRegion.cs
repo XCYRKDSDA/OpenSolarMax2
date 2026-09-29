@@ -4,7 +4,7 @@ using Nine.Graphics;
 
 namespace OpenSolarMax.Game.UI;
 
-public class IconRegion : IImage
+internal class IconRegion : IImage
 {
     private readonly TextureRegion _textureRegion;
     private int _height;

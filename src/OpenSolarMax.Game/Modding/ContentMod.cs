@@ -5,7 +5,7 @@ using Zio.FileSystems;
 namespace OpenSolarMax.Game.Modding;
 
 /// <param name="ContentFileSystems">模组中提供资产的所有文件系统</param>
-internal record ContentMod(ContentModInfo Metadata, ImmutableArray<IFileSystem> ContentFileSystems)
+public record ContentMod(ContentModInfo Metadata, ImmutableArray<IFileSystem> ContentFileSystems)
     : IDisposable
 {
     public void Dispose()

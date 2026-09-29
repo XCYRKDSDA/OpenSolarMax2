@@ -3,7 +3,7 @@ using Myra.Graphics2D.UI.Styles;
 
 namespace OpenSolarMax.Game.UI;
 
-public class StateOpacityButtonStyle : ButtonStyle
+internal class StateOpacityButtonStyle : ButtonStyle
 {
     [DefaultValue(0.3f)]
     public float NormalOpacity { get; set; } = 0.3f;

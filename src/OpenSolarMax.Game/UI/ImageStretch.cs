@@ -1,6 +1,6 @@
 namespace OpenSolarMax.Game.UI;
 
-public enum ImageStretch
+internal enum ImageStretch
 {
     Fill,
     Uniform,

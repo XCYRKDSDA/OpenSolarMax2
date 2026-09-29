@@ -13,9 +13,9 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Sessions;
 
-internal sealed class GameSession : IDisposable
+public sealed class GameSession : IDisposable
 {
-    private readonly SolarMax _game;
+    private readonly IGameServices _services;
     private readonly ModsManager _modsManager;
 
     // 至多保留一份已构建的模组会话：同一模组复用同一实例，切换模组时释放旧实例
@@ -23,13 +23,13 @@ internal sealed class GameSession : IDisposable
     private LevelModInfo? _modCacheKey;
     private Scoped<ModSession>? _modCache;
 
-    public GameSession(SolarMax game)
+    public GameSession(IGameServices services)
     {
-        _game = game;
+        _services = services;
         _modsManager = new ModsManager(
-            Folders.Mods.Behaviors,
-            Folders.Mods.Content,
-            Folders.Mods.Levels
+            services.Folders.BehaviorMods,
+            services.Folders.ContentMods,
+            services.Folders.LevelMods
         );
     }
 
@@ -109,7 +109,7 @@ internal sealed class GameSession : IDisposable
         // 构造局部资产层叠文件系统
         var localFileSystem = new AggregateFileSystem(owned: false); // 局部资产不持有模组的文件系统所有权
         // 全局资产位于最底层
-        localFileSystem.AddFileSystem(Folders.Content);
+        localFileSystem.AddFileSystem(_services.Folders.Content);
         // 逐个添加资产文件系统
         foreach (
             var fs in Enumerable.Concat(
@@ -121,7 +121,7 @@ internal sealed class GameSession : IDisposable
 
         // 构建局部资产管理器
         var localAssets = new AssetsManager(localFileSystem);
-        localAssets.RegisterLoader(new Texture2DLoader(_game.GraphicsDevice));
+        localAssets.RegisterLoader(new Texture2DLoader(_services.GraphicsDevice));
         localAssets.RegisterLoader(new TextureAtlasLoader());
         localAssets.RegisterLoader(new TextureRegionLoader());
         localAssets.RegisterLoader(new NinePatchRegionLoader());
@@ -204,7 +204,7 @@ internal sealed class GameSession : IDisposable
             declarationSchemaInfos,
             gameplayBehaviors,
             previewBehaviors,
-            _game
+            _services
         );
 
         return session;

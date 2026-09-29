@@ -5,7 +5,7 @@ using Nine.Animations;
 
 namespace OpenSolarMax.Game.UI;
 
-public class FadableRichText(RichTextLayout text, ICurve<float>? map = null) : IFadableImage
+internal class FadableRichText(RichTextLayout text, ICurve<float>? map = null) : IFadableImage
 {
     public Point Size => text.Size;
 

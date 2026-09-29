@@ -10,7 +10,7 @@ namespace OpenSolarMax.Game.UI;
 /// 普通、悬停、按压三种状态可分别设置透明度。
 /// </summary>
 [StyleTypeName("Button")]
-public class StateOpacityButton : Button
+internal class StateOpacityButton : Button
 {
     private float _normalOpacity = 0.3f;
     private float _hoverOpacity = 0.5f;
