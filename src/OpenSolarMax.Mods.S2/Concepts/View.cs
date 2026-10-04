@@ -43,7 +43,8 @@ public abstract class ViewDefinition : IDefinition
             // 视图标识
             typeof(ViewTag),
             // 游戏状态
-            typeof(GameState)
+            typeof(LevelExitState),
+            typeof(LevelClearState)
         );
 }
 
@@ -107,6 +108,7 @@ public class ViewApplier(
         commandBuffer.Set(in entity, new FleetSliderWidget(assets, fleetSliderConfigs));
 
         // 初始化游戏状态
-        commandBuffer.Set(in entity, new GameState { Status = GameStatus.Playing });
+        commandBuffer.Set(in entity, new LevelExitState { ShouldExit = false });
+        commandBuffer.Set(in entity, new LevelClearState { Status = ClearStatus.NotCleared });
     }
 }

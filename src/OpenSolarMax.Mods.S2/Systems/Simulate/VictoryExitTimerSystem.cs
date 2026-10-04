@@ -18,11 +18,11 @@ public sealed partial class VictoryExitCountDownSystem(World world)
 [SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(VictoryExitTimer)),
-    Calc(typeof(GameState)),
+    Calc(typeof(LevelExitState)),
     ReadCurr(typeof(ViewTag)),
     DelayedCalc
 ]
-[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(GameState))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(LevelExitState))]
 public sealed partial class VictoryExitSystem(World world) : IDelayedCalcSystem
 {
     [Query]
@@ -44,9 +44,10 @@ public sealed partial class VictoryExitSystem(World world) : IDelayedCalcSystem
         if (expired.Count == 0)
             return;
 
+        // 计时结束，设置退出信号
         world.Query(
-            new QueryDescription().WithAll<ViewTag, GameState>(),
-            (ref GameState state) => state.Status = GameStatus.Victory
+            new QueryDescription().WithAll<ViewTag, LevelExitState>(),
+            (ref LevelExitState state) => state.ShouldExit = true
         );
 
         foreach (var entity in expired)
