@@ -42,14 +42,8 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             typeof(ReachabilityRegistry),
             typeof(StartJumpingRequest.AsDeparture),
             typeof(StartJumpingRequest.AsDestination),
-            // 战争相关
-            typeof(Battlefield),
             // 其他
             typeof(ReferenceSize),
-            // 选择圈相关
-            typeof(PlanetSelectionRing.AsPlanet),
-            // AI 相关
-            typeof(PlanetAiTimers),
             // 出兵相关
             typeof(DefaultLaunchPad)
         );
