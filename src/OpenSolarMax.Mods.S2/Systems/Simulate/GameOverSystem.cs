@@ -116,8 +116,8 @@ public sealed partial class GameOverSystem(
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.VictoryExitTimer,
-            new VictoryExitTimerDescription { TimeLeft = TimeSpan.FromSeconds(_waveTotalSeconds) }
+            ConceptNames.LevelExitTimer,
+            new LevelExitTimerDescription { TimeLeft = TimeSpan.FromSeconds(_waveTotalSeconds) }
         );
 
         factory.Make(

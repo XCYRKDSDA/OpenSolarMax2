@@ -11,25 +11,25 @@ using OpenSolarMax.Mods.S2.Components;
 namespace OpenSolarMax.Mods.S2.Systems;
 
 [SimulateSystem, Update]
-[Tick(typeof(VictoryExitTimer))]
-public sealed partial class VictoryExitCountDownSystem(World world)
-    : CountDownSystemBase<VictoryExitTimer>(world) { }
+[Tick(typeof(LevelExitTimer))]
+public sealed partial class LevelExitCountDownSystem(World world)
+    : CountDownSystemBase<LevelExitTimer>(world) { }
 
 [SimulateSystem, LateUpdate]
 [
-    ReadCurr(typeof(VictoryExitTimer)),
+    ReadCurr(typeof(LevelExitTimer)),
     Calc(typeof(LevelExitState)),
     ReadCurr(typeof(ViewTag)),
     DelayedCalc
 ]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(LevelExitState))]
-public sealed partial class VictoryExitSystem(World world) : IDelayedCalcSystem
+public sealed partial class LevelExitSystem(World world) : IDelayedCalcSystem
 {
     [Query]
-    [All<VictoryExitTimer>]
+    [All<LevelExitTimer>]
     private static void CollectExpired(
         Entity entity,
-        in VictoryExitTimer timer,
+        in LevelExitTimer timer,
         [Data] List<Entity> expired
     )
     {

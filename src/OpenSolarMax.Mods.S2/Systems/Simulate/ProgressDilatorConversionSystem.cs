@@ -140,8 +140,8 @@ public sealed partial class ProgressDilatorConversionSystem(World world, IConcep
             factory.Make(
                 world,
                 commandBuffer,
-                ConceptNames.VictoryExitTimer,
-                new VictoryExitTimerDescription { TimeLeft = config.ExitDelay }
+                ConceptNames.LevelExitTimer,
+                new LevelExitTimerDescription { TimeLeft = config.ExitDelay }
             );
 
             updated.WaveReleased = true;

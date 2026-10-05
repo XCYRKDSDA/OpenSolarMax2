@@ -4,11 +4,11 @@ using OpenSolarMax.Mods.Common.Components;
 namespace OpenSolarMax.Mods.S2.Components;
 
 /// <summary>
-/// 胜利退出计时器组件。
-/// 拥有该组件的实体在胜利后开始倒计时，归零时触发关卡退出
+/// 关卡退出计时器组件。
+/// 拥有该组件的实体在结局流程开始后倒计时，归零时触发关卡退出
 /// </summary>
 [Component]
-public struct VictoryExitTimer : ICountDownTimer
+public struct LevelExitTimer : ICountDownTimer
 {
     /// <summary>
     /// 剩余时间
