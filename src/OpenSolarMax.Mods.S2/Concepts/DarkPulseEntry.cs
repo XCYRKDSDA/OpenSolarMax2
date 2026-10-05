@@ -18,8 +18,7 @@ public static partial class ConceptNames
 [Define(ConceptNames.DarkPulseEntry)]
 public abstract class DarkPulseEntryDefinition : IDefinition
 {
-    public static Signature Signature { get; } =
-        DarkPulseBurstDefinition.Signature + new Signature(typeof(ExpiredAfterTimeout));
+    public static Signature Signature { get; } = DarkPulseBurstDefinition.Signature;
 }
 
 [Describe(ConceptNames.DarkPulseEntry)]

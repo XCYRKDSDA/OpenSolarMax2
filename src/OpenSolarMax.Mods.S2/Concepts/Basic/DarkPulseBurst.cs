@@ -2,6 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Mods.Common.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -13,7 +14,8 @@ public static partial class ConceptNames
 [Define(ConceptNames.DarkPulseBurst)]
 public abstract class DarkPulseBurstDefinition : IDefinition
 {
-    public static Signature Signature { get; } = TransformableDefinition.Signature;
+    public static Signature Signature { get; } =
+        TransformableDefinition.Signature + new Signature(typeof(ExpiredAfterTimeout));
 }
 
 [Describe(ConceptNames.DarkPulseBurst)]
@@ -78,6 +80,11 @@ public class DarkPulseBurstApplier(IConceptFactory factory) : IApplier<DarkPulse
     /// </summary>
     private const float AngleStep = MathF.PI * 2 / 3;
 
+    /// <summary>
+    /// 自毁时刻相对演出结束时刻的余量
+    /// </summary>
+    private const float ExpiryMargin = 0.1f;
+
     private readonly TransformableApplier _transformableApplier = new(factory);
 
     /// <summary>
@@ -136,6 +143,15 @@ public class DarkPulseBurstApplier(IConceptFactory factory) : IApplier<DarkPulse
             interval *= desc.IntervalGrowth;
             maxSize *= desc.MaxSizeGrowth;
         }
+
+        commandBuffer.Set(
+            in entity,
+            new ExpiredAfterTimeout
+            {
+                ElapsedTime = TimeSpan.Zero,
+                ExpiryTime = TimeSpan.FromSeconds(endTime) + TimeSpan.FromSeconds(ExpiryMargin),
+            }
+        );
 
         return (delay, endTime);
     }

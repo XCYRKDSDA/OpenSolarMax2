@@ -2,7 +2,6 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Mods.Common.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -17,8 +16,7 @@ public static partial class ConceptNames
 [Define(ConceptNames.DarkPulseSustainBurst)]
 public abstract class DarkPulseSustainBurstDefinition : IDefinition
 {
-    public static Signature Signature { get; } =
-        DarkPulseBurstDefinition.Signature + new Signature(typeof(ExpiredAfterTimeout));
+    public static Signature Signature { get; } = DarkPulseBurstDefinition.Signature;
 }
 
 [Describe(ConceptNames.DarkPulseSustainBurst)]
@@ -66,7 +64,7 @@ public class DarkPulseSustainBurstApplier(IConceptFactory factory)
         DarkPulseSustainBurstDescription desc
     )
     {
-        var (_, totalSeconds) = _burstApplier.SpawnBurst(
+        _burstApplier.SpawnBurst(
             commandBuffer,
             entity,
             new DarkPulseBurstDescription
@@ -81,15 +79,6 @@ public class DarkPulseSustainBurstApplier(IConceptFactory factory)
                 RateGrowth = 1f,
                 InitialInterval = InitialInterval,
                 IntervalGrowth = 1f,
-            }
-        );
-
-        commandBuffer.Set(
-            in entity,
-            new ExpiredAfterTimeout
-            {
-                ElapsedTime = TimeSpan.Zero,
-                ExpiryTime = TimeSpan.FromSeconds(totalSeconds) + TimeSpan.FromSeconds(0.1),
             }
         );
     }
