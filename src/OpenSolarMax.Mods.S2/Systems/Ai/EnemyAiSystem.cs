@@ -277,6 +277,48 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
 
     #region 数据收集
 
+    /// <summary>
+    /// 统计某阵营飞行途中（已飞行距离超过 50）的舰船数
+    /// </summary>
+    private static int CountTravellingShips(IEnumerable<Entity> ships, Entity team)
+    {
+        var speed = team.Get<Jumpable>().Speed;
+        return ships.Count(ship =>
+        {
+            var status = ship.Get<JumpingStatus>();
+            return status.State == JumpingState.Travelling
+                && status.Travelling.ElapsedTime * speed > 50f;
+        });
+    }
+
+    /// <summary>
+    /// 预测某天体周边敌方阵营的兵力：敌方各阵营锚定舰船数与在途舰船数之和，若天体属于该阵营且可生产则加成 25%
+    /// </summary>
+    public static int PredictEnemyShips(
+        in AnchoredShipsRegistry anchoredShipsRegistry,
+        in JumpingShipsRegistry jumpingShipsRegistry,
+        Entity team,
+        Entity bodyTeam,
+        bool canProduce
+    )
+    {
+        // lambda 内无法捕获 in 参数，转存为局部变量
+        var incomingShips = jumpingShipsRegistry.IncomingShips;
+
+        return anchoredShipsRegistry
+            .Ships.Where(group => group.Key != team)
+            .Select(group =>
+            {
+                var incoming = CountTravellingShips(incomingShips[group.Key], group.Key);
+                var strength = group.Count() + incoming;
+                if (canProduce && bodyTeam == group.Key)
+                    strength = (int)(strength * 1.25f);
+                return strength;
+            })
+            .DefaultIfEmpty(0)
+            .Max();
+    }
+
     [Query]
     [All<
         InTeam.AsAffiliate,
@@ -337,24 +379,13 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                     .Select(g => g.Count())
                     .DefaultIfEmpty(0)
                     .Max(),
-                PredictedEnemyShips = anchoredShipsRegistry
-                    .Ships.Where(g => g.Key != team)
-                    .Select(g =>
-                    {
-                        var enemyIncoming = incomingShips[g.Key]
-                            .Count(ship =>
-                                ship.Get<JumpingStatus>().State == JumpingState.Travelling
-                                && ship.Get<JumpingStatus>().Travelling.ElapsedTime
-                                    * g.Key.Get<Jumpable>().Speed
-                                    > 50f
-                            );
-                        var s = g.Count() + enemyIncoming;
-                        if (canProduce && bodyTeam == g.Key)
-                            s = (int)(s * 1.25f);
-                        return s;
-                    })
-                    .DefaultIfEmpty(0)
-                    .Max(),
+                PredictedEnemyShips = PredictEnemyShips(
+                    in anchoredShipsRegistry,
+                    in jumpingShipsRegistry,
+                    team,
+                    bodyTeam,
+                    canProduce
+                ),
                 Battle = battlefield.FrontlineDamage.Count > 0,
                 CanProduce = canProduce,
                 Garrison = garrison.Ships,

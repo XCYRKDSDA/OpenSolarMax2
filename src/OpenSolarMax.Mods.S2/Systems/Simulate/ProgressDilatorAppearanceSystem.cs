@@ -58,48 +58,6 @@ public sealed partial class ProgressDilatorAppearanceSystem(
         configs.RequireValue<float>("exit_duration")
     );
 
-    /// <summary>
-    /// 统计某阵营飞行途中（已飞行距离超过 50）的舰船数
-    /// </summary>
-    private static int CountTravellingShips(IEnumerable<Entity> ships, Entity team)
-    {
-        var speed = team.Get<Jumpable>().Speed;
-        return ships.Count(ship =>
-        {
-            var status = ship.Get<JumpingStatus>();
-            return status.State == JumpingState.Travelling
-                && status.Travelling.ElapsedTime * speed > 50f;
-        });
-    }
-
-    /// <summary>
-    /// 与 EnemyAiSystem 一致的敌方兵力预测算法
-    /// </summary>
-    private static int PredictEnemyShips(
-        in AnchoredShipsRegistry anchoredShipsRegistry,
-        in JumpingShipsRegistry jumpingShipsRegistry,
-        Entity team,
-        Entity bodyTeam,
-        bool canProduce
-    )
-    {
-        // lambda 内无法捕获 in 参数，转存为局部变量
-        var incomingShips = jumpingShipsRegistry.IncomingShips;
-
-        return anchoredShipsRegistry
-            .Ships.Where(group => group.Key != team)
-            .Select(group =>
-            {
-                var incoming = CountTravellingShips(incomingShips[group.Key], group.Key);
-                var strength = group.Count() + incoming;
-                if (canProduce && bodyTeam == group.Key)
-                    strength = (int)(strength * 1.25f);
-                return strength;
-            })
-            .DefaultIfEmpty(0)
-            .Max();
-    }
-
     [Query]
     [All<
         InTeam.AsAffiliate,
@@ -128,7 +86,7 @@ public sealed partial class ProgressDilatorAppearanceSystem(
             : asAffiliate.Relationship.Value.Copy.Team;
         var canProduce = planet.Has<ProductionCondition>();
 
-        var predictedEnemyShips = PredictEnemyShips(
+        var predictedEnemyShips = EnemyAiSystem.PredictEnemyShips(
             in anchoredShipsRegistry,
             in jumpingShipsRegistry,
             team,
