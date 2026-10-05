@@ -5,9 +5,9 @@ using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
-using OpenSolarMax.Mods.S2.Concepts;
+using OpenSolarMax.Mods.Common.Concepts;
 
-namespace OpenSolarMax.Mods.S2.Systems;
+namespace OpenSolarMax.Mods.Common.Systems;
 
 /// <summary>
 /// 沿阵营继承关系树自根向叶传播阵营，维护子实体自身的 InTeam 关系

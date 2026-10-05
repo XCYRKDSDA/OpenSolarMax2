@@ -10,6 +10,7 @@ using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Concepts;
+using InTeamDescription = OpenSolarMax.Mods.Common.Concepts.InTeamDescription;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 
