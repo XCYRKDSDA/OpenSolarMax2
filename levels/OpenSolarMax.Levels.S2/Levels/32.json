@@ -2,7 +2,7 @@
     "includes": [ ".common.json" ],
 
     "entities": [
-        { "$id": "dilator", "$base": "converting_dilator", "position": [ 512, 384 ], "produceShips": false, "conversionSpeed": 80, "conversionTeam": "dark" },
+        { "$id": "dilator", "$base": "converting_dilator", "position": [ 512, 384 ], "conversionSpeed": 80, "conversionTeam": "dark" },
 
         { "$base": "tower", "team": "gray", "parent": "dilator", "orbit": { "shape": [ 224, 224 ], "period": 62.831853, "phase": -0.25 }, "ships": 30 },
         { "$base": "tower", "team": "gray", "parent": "dilator", "orbit": { "shape": [ 224, 224 ], "period": 62.831853, "phase": 0.25 }, "ships": 30 },

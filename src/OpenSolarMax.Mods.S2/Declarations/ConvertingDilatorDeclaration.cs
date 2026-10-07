@@ -1,6 +1,5 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
-using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.S2.Concepts;
@@ -8,10 +7,14 @@ using OpenSolarMax.Mods.S2.Concepts;
 namespace OpenSolarMax.Mods.S2.Declarations;
 
 [SchemaName("converting_dilator")]
-public class ConvertingDilatorDeclaration
-    : DilatorDeclaration,
-        IDeclaration<ConvertingDilatorDeclaration>
+public class ConvertingDilatorDeclaration : IDeclaration<ConvertingDilatorDeclaration>
 {
+    public string? Parent { get; set; }
+
+    public Vector2? Position { get; set; }
+
+    public OrbitDeclaration? Orbit { get; set; }
+
     /// <summary>
     /// 转化波的目标阵营
     /// </summary>
@@ -37,11 +40,6 @@ public class ConvertingDilatorDeclaration
                 Orbit is not null && newCfg.Orbit is not null
                     ? Orbit.Aggregate(newCfg.Orbit)
                     : newCfg.Orbit ?? Orbit,
-            Team = newCfg.Team ?? Team,
-            ProduceShips = newCfg.ProduceShips ?? ProduceShips,
-            Ships = newCfg.Ships ?? Ships,
-            Capital = newCfg.Capital ?? Capital,
-            Garrison = newCfg.Garrison ?? Garrison,
             ConversionTeam = newCfg.ConversionTeam ?? ConversionTeam,
             ConversionSpeed = newCfg.ConversionSpeed ?? ConversionSpeed,
             ExitDelay = newCfg.ExitDelay ?? ExitDelay,
@@ -61,31 +59,28 @@ public class ConvertingDilatorDeclaration
 public class ConvertingDilatorDeclarationTranslator
     : ITranslator<ConvertingDilatorDeclaration, ConvertingDilatorDescription>
 {
-    private readonly DilatorDeclarationTranslator _dilatorDeclarationTranslator = new();
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
     public ConvertingDilatorDescription ToDescription(
         ConvertingDilatorDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var dilatorDesc = _dilatorDeclarationTranslator.ToDescription(declaration, otherEntities);
+        var desc = new ConvertingDilatorDescription();
 
-        var desc = new ConvertingDilatorDescription()
+        var tfCfg = new TransformableDeclaration()
         {
-            Transform = dilatorDesc.Transform,
-            Team = dilatorDesc.Team,
-            ProduceShips = dilatorDesc.ProduceShips,
-            InitialShips = dilatorDesc.InitialShips,
-            Capital = dilatorDesc.Capital,
-            Garrison = dilatorDesc.Garrison,
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
         };
-
-        if (declaration.ConversionSpeed is not null)
-            desc.ConversionSpeed = declaration.ConversionSpeed.Value;
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+        desc.Transform = tfDesc.Transform;
 
         if (declaration.ConversionTeam is not null)
             desc.ConversionTeam = otherEntities[declaration.ConversionTeam];
-
+        if (declaration.ConversionSpeed is not null)
+            desc.ConversionSpeed = declaration.ConversionSpeed.Value;
         if (declaration.ExitDelay is float exitDelaySeconds)
             desc.ExitDelay = TimeSpan.FromSeconds(exitDelaySeconds);
 
@@ -97,11 +92,24 @@ public class ConvertingDilatorDeclarationTranslator
 public class ConvertingDilatorPreviewDeclarationTranslator
     : ITranslator<ConvertingDilatorDeclaration, DilatorPreviewDescription>
 {
-    private readonly DilatorPreviewDeclarationTranslator _dilatorPreviewDeclarationTranslator =
-        new();
+    private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
     public DilatorPreviewDescription ToDescription(
         ConvertingDilatorDeclaration declaration,
         IReadOnlyDictionary<string, Entity> otherEntities
-    ) => _dilatorPreviewDeclarationTranslator.ToDescription(declaration, otherEntities);
+    )
+    {
+        var desc = new DilatorPreviewDescription();
+
+        var tfCfg = new TransformableDeclaration()
+        {
+            Parent = declaration.Parent,
+            Position = declaration.Position,
+            Orbit = declaration.Orbit,
+        };
+        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+        desc.Transform = tfDesc.Transform;
+
+        return desc;
+    }
 }

@@ -2,6 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Extensions.Configuration;
 using Nine.Assets;
+using OneOf;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.S2.Components;
@@ -26,8 +27,17 @@ public abstract class ConvertingDilatorDefinition : IDefinition
 }
 
 [Describe(ConceptNames.ConvertingDilator)]
-public class ConvertingDilatorDescription : DilatorDescription
+public class ConvertingDilatorDescription : IDescription
 {
+    /// <summary>
+    /// 天体的变换关系
+    /// </summary>
+    public OneOf<
+        AbsoluteTransformOptions,
+        RelativeTransformOptions,
+        RevolutionOptions
+    > Transform { get; set; } = new AbsoluteTransformOptions();
+
     /// <summary>
     /// 转化波的目标阵营
     /// </summary>
@@ -55,7 +65,19 @@ public class ConvertingDilatorApplier(
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ConvertingDilatorDescription desc)
     {
-        _dilatorApplier.Apply(commandBuffer, entity, desc);
+        _dilatorApplier.Apply(
+            commandBuffer,
+            entity,
+            new DilatorDescription()
+            {
+                Transform = desc.Transform,
+                Team = Entity.Null,
+                ProduceShips = false,
+                InitialShips = null,
+                Capital = false,
+                Garrison = 0,
+            }
+        );
 
         commandBuffer.Set(
             in entity,
