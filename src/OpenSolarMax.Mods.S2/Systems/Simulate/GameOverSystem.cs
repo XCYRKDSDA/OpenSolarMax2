@@ -1,6 +1,6 @@
+using System.Diagnostics;
 using Arch.Buffer;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Concepts;
@@ -22,8 +23,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
     ReadCurr(typeof(Colonizable)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(VictoryEffectMarker)),
-    ReadCurr(typeof(TeamReferenceColor)),
+    ReadCurr(typeof(ViewTag)),
+    ReadCurr(typeof(LevelClearState)),
     DelayedCalc
 ]
 public sealed partial class GameOverSystem(
@@ -37,10 +38,21 @@ public sealed partial class GameOverSystem(
 
     [Query]
     [All<InTeam.AsTeam, Victory>]
-    private static void FindWinner(Entity team, in Victory victory, [Data] List<Entity> winners)
+    private static void FindWinner(Entity team, in Victory victory, [Data] ref Entity winner)
     {
-        if (victory.HasWon)
-            winners.Add(team);
+        if (!victory.HasWon)
+            return;
+
+        Debug.Assert(winner == Entity.Null, "同一帧中出现了多个胜者");
+        winner = team;
+    }
+
+    [Query]
+    [All<ViewTag, LevelClearState>]
+    private static void FindSettledViews(in LevelClearState clearState, [Data] ref bool settled)
+    {
+        if (clearState.Status != ClearStatus.NotCleared)
+            settled = true;
     }
 
     [Query]
@@ -54,27 +66,12 @@ public sealed partial class GameOverSystem(
         collected.Add((planet, new Vector2(transform.Translation.X, transform.Translation.Y)));
     }
 
-    public void Update(CommandBuffer commandBuffer)
+    private void SpawnVictoryEffects(Entity winner, CommandBuffer commandBuffer)
     {
-        var winners = new List<Entity>();
-        FindWinnerQuery(world, winners);
-        if (winners.Count == 0)
-            return;
-
-        var hasEffectMarker = false;
-        world.Query(
-            new QueryDescription().WithAll<VictoryEffectMarker>(),
-            (Entity _) => hasEffectMarker = true
-        );
-        if (hasEffectMarker)
-            return;
-
-        var winner = winners[0];
-
-        // 收集所有星球（含中立和己方），计算 XY 质心
         var planets = new List<(Entity Planet, Vector2 Pos)>();
         FindAllPlanetsQuery(world, planets);
 
+        // 所有星球（含中立和己方）的 XY 质心
         var centroid = planets.Aggregate(Vector2.Zero, (acc, p) => acc + p.Pos) / planets.Count;
 
         // 按距质心距离排序（近→远）；距离相近（差 ≤ 容差）时按 atan2 角度升序排（+X 为零，逆时针为正）
@@ -116,21 +113,54 @@ public sealed partial class GameOverSystem(
             );
         }
 
-        commandBuffer.Create(new Signature(typeof(VictoryEffectMarker)));
-
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.VictoryExitTimer,
-            new VictoryExitTimerDescription { TimeLeft = TimeSpan.FromSeconds(_waveTotalSeconds) }
+            ConceptNames.LevelExitTimer,
+            new LevelExitTimerDescription { TimeLeft = TimeSpan.FromSeconds(_waveTotalSeconds) }
         );
 
-        var flashColor = winner.Get<TeamReferenceColor>().Value;
         factory.Make(
             world,
             commandBuffer,
             ConceptNames.VictoryFlash,
-            new VictoryFlashDescription { Color = flashColor }
+            new VictoryFlashDescription { Team = winner }
         );
+    }
+
+    [Query]
+    [All<ViewTag, LevelClearState>]
+    private static void ClaimViews(
+        Entity viewEntity,
+        in LevelClearState clearState,
+        [Data] CommandBuffer commandBuffer
+    )
+    {
+        if (clearState.Status != ClearStatus.NotCleared)
+            return;
+
+        // 经缓冲写入裁决结果，下一轮迭代起对所有系统可见
+        commandBuffer.Set(in viewEntity, new LevelClearState { Status = ClearStatus.Cleared });
+    }
+
+    public void Update(CommandBuffer commandBuffer)
+    {
+        // 判断是否出现胜者
+        var winner = Entity.Null;
+        FindWinnerQuery(world, ref winner);
+        if (winner == Entity.Null)
+            return;
+
+        // 结局已被其他判定通道裁决时，不再启动默认结束流程
+        var settled = false;
+        FindSettledViewsQuery(world, ref settled);
+        if (settled)
+            return;
+
+        // 在所有天体上触发胜利效果
+        SpawnVictoryEffects(winner, commandBuffer);
+
+        // 设置所有视图上的通关状态
+        ClaimViewsQuery(world, commandBuffer);
     }
 }

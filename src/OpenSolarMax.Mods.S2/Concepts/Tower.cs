@@ -60,6 +60,16 @@ public class TowerDescription : IDescription
     public TimeSpan CooldownTime { get; set; } = TimeSpan.FromSeconds(0.2);
 
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
+
+    /// <summary>
+    /// 该天体是否为其所属阵营的首府
+    /// </summary>
+    public bool Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int Garrison { get; set; }
 }
 
 [Apply(ConceptNames.Tower)]
@@ -107,6 +117,8 @@ public class TowerApplier(
                 Volume = _volume,
                 GlowTexture = _towerGlow,
                 InitialShips = desc.InitialShips,
+                Capital = desc.Capital,
+                Garrison = desc.Garrison,
             }
         );
 

@@ -96,6 +96,18 @@ produce_speed = 2
 attack_range = 180
 cooldown = 0.15
 
+[applier.dilator]
+reference_radius = 25.6 # 128 / 2 * 0.4 : 以 1024px 等级纹理为基础, 乘上固定系数 0.4
+volume = 160            # 原版 S2 中为 40，但占领速度有 0.25 的 debuf
+population = 280        # 原版 S2 最后一关的数值
+produce_speed = 8       # 原版 S2 最后一关的数值
+
+# 临时 dilator 出现事件的三段时长，秒
+[applier.dilator_appearance]
+entry_duration = 6    # 入场演出
+standing_duration = 3 # 亮相
+exit_duration = 3     # 退场演出
+
 [applier.barrier]
 node.size = { x = 27, y = 27 }
 edge.space = 8

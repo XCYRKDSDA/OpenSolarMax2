@@ -6,6 +6,7 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -18,11 +19,8 @@ public static partial class ConceptNames
 public abstract class ShipAfterImageDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        new(
-            // 位姿变换
-            typeof(AbsoluteTransform),
-            // 效果
-            typeof(Sprite),
+        TeamInheritableDrawableDefinition.Signature
+        + new Signature(
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -32,7 +30,7 @@ public abstract class ShipAfterImageDefinition : IDefinition
 [Describe(ConceptNames.ShipAfterImage)]
 public class ShipAfterImageDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required Vector3 Position { get; set; }
 
@@ -40,7 +38,8 @@ public class ShipAfterImageDescription : IDescription
 }
 
 [Apply(ConceptNames.ShipAfterImage)]
-public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterImageDescription>
+public class ShipAfterImageApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<ShipAfterImageDescription>
 {
     private readonly TextureRegion _texture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":Ship"
@@ -50,25 +49,26 @@ public class ShipAfterImageApplier(IAssetsManager assets) : IApplier<ShipAfterIm
         Content.Animations.ShipAfterImage_json
     );
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipAfterImageDescription desc)
     {
-        // 摆放位置
-        commandBuffer.Set(
-            in entity,
-            new AbsoluteTransform { Translation = desc.Position, Rotation = desc.Rotation }
-        );
-
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions
+                {
+                    Translation = desc.Position,
+                    Rotation = desc.Rotation,
+                },
                 Texture = _texture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new(8, 8),
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

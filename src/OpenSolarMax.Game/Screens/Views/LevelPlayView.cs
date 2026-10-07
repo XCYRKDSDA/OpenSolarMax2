@@ -374,10 +374,10 @@ internal class LevelPlayView
         if (!_exited)
         {
             ViewModel.World.Query(
-                new QueryDescription().WithAll<GameState>(),
-                (ref GameState state) =>
+                new QueryDescription().WithAll<LevelExitState>(),
+                (ref LevelExitState state) =>
                 {
-                    if (state.Status != GameStatus.Playing && !_exited)
+                    if (state.ShouldExit && !_exited)
                     {
                         Game.ScreenManager.Backward();
                         _exited = true;

@@ -2,6 +2,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Concepts;
 
 namespace OpenSolarMax.Mods.S2.Declarations;
@@ -11,6 +12,11 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
 {
     public Color? Color { get; set; }
 
+    /// <summary>
+    /// 发光外观（如舰船、光晕、尾迹与特效）的混合模式
+    /// </summary>
+    public SpriteBlend? Blend { get; set; }
+
     public float? Workload { get; set; }
 
     public float? Attack { get; set; }
@@ -18,19 +24,32 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
     public float? Health { get; set; }
 
     /// <summary>
+    /// 舰船的移动速度
+    /// </summary>
+    public float? Speed { get; set; }
+
+    /// <summary>
     /// AI 预设档名（simple/smart/dark），null 表示该阵营不受 AI 控制
     /// </summary>
     public string? Ai { get; set; }
+
+    /// <summary>
+    /// 是否隐藏天体上该阵营的舰船数目文字
+    /// </summary>
+    public bool? HideShipCount { get; set; }
 
     public TeamDeclaration Aggregate(TeamDeclaration newCfg)
     {
         return new TeamDeclaration()
         {
             Color = newCfg.Color ?? Color,
+            Blend = newCfg.Blend ?? Blend,
             Workload = newCfg.Workload ?? Workload,
             Attack = newCfg.Attack ?? Attack,
             Health = newCfg.Health ?? Health,
+            Speed = newCfg.Speed ?? Speed,
             Ai = newCfg.Ai ?? Ai,
+            HideShipCount = newCfg.HideShipCount ?? HideShipCount,
         };
     }
 }
@@ -48,6 +67,7 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
             || declaration.Workload is null
             || declaration.Attack is null
             || declaration.Health is null
+            || declaration.Speed is null
         )
             throw new NullReferenceException();
 
@@ -57,8 +77,15 @@ public class TeamDeclarationTranslator : ITranslator<TeamDeclaration, TeamDescri
             Workload = declaration.Workload.Value,
             Attack = declaration.Attack.Value,
             Health = declaration.Health.Value,
+            Speed = declaration.Speed.Value,
             AiProfile = declaration.Ai,
         };
+
+        if (declaration.Blend is { } blend)
+            desc.Blend = blend;
+
+        if (declaration.HideShipCount is { } hide)
+            desc.HideShipCount = hide;
 
         return desc;
     }
@@ -76,6 +103,9 @@ public class TeamPreviewDeclarationTranslator : ITranslator<TeamDeclaration, Tea
             throw new NullReferenceException();
 
         var desc = new TeamPreviewDescription() { Color = declaration.Color.Value };
+
+        if (declaration.Blend is { } blend)
+            desc.Blend = blend;
 
         return desc;
     }

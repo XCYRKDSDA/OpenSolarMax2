@@ -11,6 +11,7 @@ using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.Common.Systems.Timing;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Concepts;
+using InTeamDescription = OpenSolarMax.Mods.Common.Concepts.InTeamDescription;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 
@@ -25,7 +26,6 @@ public sealed partial class PendingVictoryEffectCountDownSystem(World world)
     ReadCurr(typeof(VictoryEffectTarget)),
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(Colonizable)),
     Calc(typeof(ColonizationState)),
@@ -60,7 +60,7 @@ public sealed partial class FirePendingVictoryEffectSystem(World world, IConcept
             ConceptNames.HaloExplosion,
             new HaloExplosionDescription
             {
-                Color = winner.Get<TeamReferenceColor>().Value,
+                Team = winner,
                 Position = transform.Translation,
                 PlanetRadius = refSize.Radius,
             }
@@ -70,11 +70,7 @@ public sealed partial class FirePendingVictoryEffectSystem(World world, IConcept
         factory.Make(
             world,
             commandBuffer,
-            new ColonizationFlareDescription
-            {
-                Planet = planet,
-                AfterColor = winner.Get<TeamReferenceColor>().Value,
-            }
+            new ColonizationFlareDescription { Planet = planet, Team = winner }
         );
 
         ref var affiliation = ref planet.Get<InTeam.AsAffiliate>();

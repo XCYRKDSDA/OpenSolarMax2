@@ -9,6 +9,7 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Concepts;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -23,6 +24,7 @@ public abstract class ViewDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
+        + TeamInheritableDefinition.Signature
         + new Signature(
             // 位姿变换
             typeof(AbsoluteTransform),
@@ -34,8 +36,6 @@ public abstract class ViewDefinition : IDefinition
             typeof(Viewport),
             typeof(InputFocusState),
             typeof(RenderSettings),
-            //
-            typeof(InTeam.AsAffiliate),
             // 选择圈相关
             typeof(ViewSelectionRing.AsView), // 视图的选择圈索引
             // UI 插件
@@ -44,7 +44,8 @@ public abstract class ViewDefinition : IDefinition
             // 视图标识
             typeof(ViewTag),
             // 游戏状态
-            typeof(GameState)
+            typeof(LevelExitState),
+            typeof(LevelClearState)
         );
 }
 
@@ -73,11 +74,10 @@ public class ViewApplier(
 ) : IApplier<ViewDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);
+    private readonly TeamInheritableApplier _teamApplier = new(factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ViewDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
         // 设置位姿
         _transformableApplier.Apply(
             commandBuffer,
@@ -98,11 +98,10 @@ public class ViewApplier(
         );
 
         // 设置阵营
-        factory.Make(
-            world,
+        _teamApplier.Apply(
             commandBuffer,
-            ConceptNames.InTeam,
-            new InTeamDescription { Team = desc.Team, Affiliate = entity }
+            entity,
+            new TeamInheritableDescription { Team = desc.Team }
         );
 
         // 初始化 UI
@@ -110,6 +109,7 @@ public class ViewApplier(
         commandBuffer.Set(in entity, new FleetSliderWidget(assets, fleetSliderConfigs));
 
         // 初始化游戏状态
-        commandBuffer.Set(in entity, new GameState { Status = GameStatus.Playing });
+        commandBuffer.Set(in entity, new LevelExitState { ShouldExit = false });
+        commandBuffer.Set(in entity, new LevelClearState { Status = ClearStatus.NotCleared });
     }
 }

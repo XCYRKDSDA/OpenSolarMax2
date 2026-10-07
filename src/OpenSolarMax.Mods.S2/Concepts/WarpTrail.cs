@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Utils;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -20,11 +21,8 @@ public abstract class WarpTrailDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
-            // 位姿变换
-            typeof(AbsoluteTransform),
-            // 效果
-            typeof(Sprite),
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -38,11 +36,12 @@ public class WarpTrailDescription : IDescription
 
     public required Vector3 Tail { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.WarpTrail)]
-public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescription>
+public class WarpTrailApplier(IAssetsManager assets, IConceptFactory factory)
+    : IApplier<WarpTrailDescription>
 {
     private readonly TextureRegion _defaultTexture = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":WarpGlare"
@@ -52,35 +51,31 @@ public class WarpTrailApplier(IAssetsManager assets) : IApplier<WarpTrailDescrip
         AnimationClip<Entity>
     >(Content.Animations.WarpTrailFadeOut_json);
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, WarpTrailDescription desc)
     {
         var vector = desc.Tail - desc.Head;
         var length = vector.Length();
 
-        // 填充默认纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new AbsoluteTransformOptions
+                {
+                    Translation = (desc.Head + desc.Tail) / 2,
+                    Rotation = TransformProjection.UprightAim(vector),
+                },
                 Texture = _defaultTexture,
-                Color = desc.Color,
                 Alpha = 0.25f,
                 Size = new(length * 0.7f, 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
-            }
-        );
-
-        // 放置位置
-        commandBuffer.Set(
-            in entity,
-            new AbsoluteTransform
-            {
-                Translation = (desc.Head + desc.Tail) / 2,
-                Rotation = TransformProjection.UprightAim(vector),
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

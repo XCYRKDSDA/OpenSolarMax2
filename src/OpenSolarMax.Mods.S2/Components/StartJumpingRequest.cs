@@ -1,17 +1,38 @@
 using Arch.Core;
+using OpenSolarMax.Mods.Common.SourceGenerators;
 
 namespace OpenSolarMax.Mods.S2.Components;
 
 /// <summary>
 /// 开始运输请求。描述一个开始运输的请求
 /// </summary>
-public struct StartJumpingRequest
+[Relationship]
+public readonly partial struct StartJumpingRequest(
+    Entity departure,
+    Entity destination,
+    Entity team,
+    int expectedNum
+)
 {
-    public Entity Departure;
+    /// <summary>
+    /// 出发天体实体。一个天体可以同时作为多个请求的起点
+    /// </summary>
+    [Participant(exclusive: false)]
+    public readonly Entity Departure = departure;
 
-    public Entity Destination;
+    /// <summary>
+    /// 目的天体实体。一个天体可以同时作为多个请求的目标
+    /// </summary>
+    [Participant(exclusive: false)]
+    public readonly Entity Destination = destination;
 
-    public Entity Team;
+    /// <summary>
+    /// 请求所属的阵营
+    /// </summary>
+    public readonly Entity Team = team;
 
-    public int ExpectedNum;
+    /// <summary>
+    /// 期望的舰船数量
+    /// </summary>
+    public readonly int ExpectedNum = expectedNum;
 }

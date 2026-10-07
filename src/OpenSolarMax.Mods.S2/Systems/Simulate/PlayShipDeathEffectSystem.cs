@@ -13,19 +13,19 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [SimulateSystem, LateUpdate]
 [
     ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(Sprite)),
     ReadCurr(typeof(ShipDeathState)),
+    ReadCurr(typeof(InTeam.AsAffiliate)),
     DelayedCalc
 ]
 public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFactory factory)
     : IDelayedCalcSystem
 {
     [Query]
-    [All<ShipDeathState, AbsoluteTransform, Sprite>]
+    [All<ShipDeathState, AbsoluteTransform, InTeam.AsAffiliate>]
     private void PlayEffect(
         ref ShipDeathState deathState,
         in AbsoluteTransform transform,
-        in Sprite sprite,
+        in InTeam.AsAffiliate asAffiliate,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -33,18 +33,18 @@ public sealed partial class PlayShipDeathEffectSystem(World world, IConceptFacto
             return;
 
         var position = transform.Translation;
-        var color = sprite.Color;
+        var team = asAffiliate.Relationship?.Copy.Team ?? Entity.Null;
 
         factory.Make(
             world,
             commandBuffer,
-            new ShipFlareDescription { Color = color, Position = position }
+            new ShipFlareDescription { Team = team, Position = position }
         );
 
         factory.Make(
             world,
             commandBuffer,
-            new ShipPulseDescription { Color = color, Position = position }
+            new ShipPulseDescription { Team = team, Position = position }
         );
 
         deathState.State = DeathState.Dead;

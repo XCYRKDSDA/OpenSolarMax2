@@ -220,7 +220,7 @@ public struct Ai
     /// 预设：仅进攻与聚兵，节奏最快
     public static readonly Ai Dark = new()
     {
-        ActionIntervalSeconds = 1,
+        ActionIntervalSeconds = 0.25f,
         InitialDelaySeconds = 1.5f,
         JitterMinFactor = 1,
         JitterMaxFactor = 2,

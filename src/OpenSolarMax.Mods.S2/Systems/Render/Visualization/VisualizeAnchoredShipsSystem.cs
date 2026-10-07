@@ -120,6 +120,10 @@ public sealed partial class VisualizeAnchoredShipsSystem(
 
         if (parties.Length == 1)
         {
+            // 该阵营关闭了舰船数目显示则跳过绘制
+            if (parties[0].Get<TeamVisualization>().HideShipCount)
+                return;
+
             // 计算从世界到屏幕的缩放
             var scale2D = Vector2.TransformNormal(new(1, 1), worldToScreen);
             var scale = MathF.Abs(MathF.MaxMagnitude(scale2D.X, scale2D.Y));
@@ -139,7 +143,7 @@ public sealed partial class VisualizeAnchoredShipsSystem(
             var shadowPosition = position with { Y = position.Y + _shadowDistance };
 
             // 计算文字颜色
-            var color = parties[0].Get<TeamReferenceColor>().Value;
+            var color = parties[0].Get<RecommendedVisualStyle>().Color;
             var shadowColor = Color.Lerp(color, Color.Black, _shadowDensity) * _shadowDensity;
 
             _font.DrawText(_fontRenderer, text, shadowPosition, shadowColor);
@@ -163,7 +167,7 @@ public sealed partial class VisualizeAnchoredShipsSystem(
             // 获得各阵营的舰船数目、颜色和标签
             var shipsRegistry = registry.Ships;
             var weights = parties.Select(p => shipsRegistry[p].Count()).ToArray();
-            var colors = parties.Select((p) => p.Get<TeamReferenceColor>().Value).ToArray();
+            var colors = parties.Select((p) => p.Get<RecommendedVisualStyle>().Color).ToArray();
             var labels = weights.Select((w) => string.Format(_textFormat, w)).ToArray();
 
             // 计算每个阵营对应的弧的起止角度
@@ -187,6 +191,10 @@ public sealed partial class VisualizeAnchoredShipsSystem(
             // 绘制各个阵营的舰船数目文字
             for (int i = 0; i < parties.Length; i++)
             {
+                // 跳过关闭了舰船数目显示的阵营
+                if (parties[i].Get<TeamVisualization>().HideShipCount)
+                    continue;
+
                 var textSize = _font.MeasureString(labels[i]);
 
                 var textDir = -MathF.PI / 2 + (float)i / parties.Length * 2 * MathF.PI;
