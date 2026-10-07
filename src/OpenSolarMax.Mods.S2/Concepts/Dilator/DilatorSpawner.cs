@@ -46,12 +46,12 @@ public class DilatorSpawnerDescription : IDescription
     /// <summary>
     /// 总人口容量触发阈值
     /// </summary>
-    public int TotalPopulationThreshold { get; set; }
+    public int TotalPopulationThreshold { get; set; } = 220;
 
     /// <summary>
     /// 总现存人口触发阈值
     /// </summary>
-    public int CurrentPopulationThreshold { get; set; }
+    public int CurrentPopulationThreshold { get; set; } = 220;
 }
 
 [Apply(ConceptNames.DilatorSpawner)]

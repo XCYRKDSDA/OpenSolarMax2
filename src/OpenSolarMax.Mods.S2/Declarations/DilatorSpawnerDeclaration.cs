@@ -55,11 +55,6 @@ public class DilatorSpawnerDeclaration : IDeclaration<DilatorSpawnerDeclaration>
 public class DilatorSpawnerDeclarationTranslator
     : ITranslator<DilatorSpawnerDeclaration, DilatorSpawnerDescription>
 {
-    /// <summary>
-    /// 原版触发的字面阈值：人口容量与在场舰船数都需高于 220
-    /// </summary>
-    private const int DefaultThreshold = 220;
-
     private readonly TransformableDeclarationTranslator _transformableDeclarationTranslator = new();
 
     public DilatorSpawnerDescription ToDescription(
@@ -67,12 +62,7 @@ public class DilatorSpawnerDeclarationTranslator
         IReadOnlyDictionary<string, Entity> otherEntities
     )
     {
-        var desc = new DilatorSpawnerDescription()
-        {
-            ShipCount = declaration.Ships ?? 0,
-            TotalPopulationThreshold = declaration.TotalPopulationThreshold ?? DefaultThreshold,
-            CurrentPopulationThreshold = declaration.CurrentPopulationThreshold ?? DefaultThreshold,
-        };
+        var desc = new DilatorSpawnerDescription();
 
         var tfCfg = new TransformableDeclaration()
         {
@@ -85,6 +75,12 @@ public class DilatorSpawnerDeclarationTranslator
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];
+        if (declaration.Ships is not null)
+            desc.ShipCount = declaration.Ships.Value;
+        if (declaration.TotalPopulationThreshold is not null)
+            desc.TotalPopulationThreshold = declaration.TotalPopulationThreshold.Value;
+        if (declaration.CurrentPopulationThreshold is not null)
+            desc.CurrentPopulationThreshold = declaration.CurrentPopulationThreshold.Value;
 
         return desc;
     }

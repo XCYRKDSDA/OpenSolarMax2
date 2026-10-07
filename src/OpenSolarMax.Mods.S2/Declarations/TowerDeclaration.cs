@@ -60,8 +60,6 @@ public class TowerDeclarationTranslator : ITranslator<TowerDeclaration, TowerDes
     {
         var desc = new TowerDescription()
         {
-            Capital = declaration.Capital ?? false,
-            Garrison = declaration.Garrison ?? 0,
             InitialShips = declaration.Ships?.Match(
                 count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
                 teams =>
@@ -82,6 +80,10 @@ public class TowerDeclarationTranslator : ITranslator<TowerDeclaration, TowerDes
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];
+        if (declaration.Capital is not null)
+            desc.Capital = declaration.Capital.Value;
+        if (declaration.Garrison is not null)
+            desc.Garrison = declaration.Garrison.Value;
 
         return desc;
     }

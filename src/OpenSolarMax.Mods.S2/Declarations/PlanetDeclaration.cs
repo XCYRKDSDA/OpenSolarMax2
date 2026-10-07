@@ -84,8 +84,6 @@ public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, Planet
             Volume = declaration.Volume.Value,
             Population = declaration.Population.Value,
             ProduceSpeed = declaration.ProduceSpeed.Value,
-            Capital = declaration.Capital ?? false,
-            Garrison = declaration.Garrison ?? 0,
             InitialShips = declaration.Ships?.Match(
                 count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
                 teams =>
@@ -106,6 +104,10 @@ public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, Planet
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];
+        if (declaration.Capital is not null)
+            desc.Capital = declaration.Capital.Value;
+        if (declaration.Garrison is not null)
+            desc.Garrison = declaration.Garrison.Value;
 
         return desc;
     }

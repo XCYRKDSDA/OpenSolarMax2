@@ -66,9 +66,6 @@ public class DilatorDeclarationTranslator : ITranslator<DilatorDeclaration, Dila
     {
         var desc = new DilatorDescription()
         {
-            ProduceShips = declaration.ProduceShips ?? false,
-            Capital = declaration.Capital ?? false,
-            Garrison = declaration.Garrison ?? 0,
             InitialShips = declaration.Ships?.Match(
                 count => OneOf<int, Dictionary<Entity, int>>.FromT0(count),
                 teams =>
@@ -89,6 +86,12 @@ public class DilatorDeclarationTranslator : ITranslator<DilatorDeclaration, Dila
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];
+        if (declaration.ProduceShips is not null)
+            desc.ProduceShips = declaration.ProduceShips.Value;
+        if (declaration.Capital is not null)
+            desc.Capital = declaration.Capital.Value;
+        if (declaration.Garrison is not null)
+            desc.Garrison = declaration.Garrison.Value;
 
         return desc;
     }

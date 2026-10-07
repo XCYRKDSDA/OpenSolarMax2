@@ -60,12 +60,12 @@ public class DilatorDescription : IDescription
     /// <summary>
     /// 该天体是否为其所属阵营的首府
     /// </summary>
-    public bool Capital { get; set; }
+    public bool Capital { get; set; } = true;
 
     /// <summary>
     /// 该天体作为出兵来源时的留守舰船数
     /// </summary>
-    public int Garrison { get; set; }
+    public int Garrison { get; set; } = 150;
 }
 
 [Apply(ConceptNames.Dilator)]

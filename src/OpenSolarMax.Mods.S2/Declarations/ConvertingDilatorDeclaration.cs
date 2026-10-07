@@ -78,8 +78,10 @@ public class ConvertingDilatorDeclarationTranslator
             InitialShips = dilatorDesc.InitialShips,
             Capital = dilatorDesc.Capital,
             Garrison = dilatorDesc.Garrison,
-            ConversionSpeed = declaration.ConversionSpeed ?? 0,
         };
+
+        if (declaration.ConversionSpeed is not null)
+            desc.ConversionSpeed = declaration.ConversionSpeed.Value;
 
         if (declaration.ConversionTeam is not null)
             desc.ConversionTeam = otherEntities[declaration.ConversionTeam];
