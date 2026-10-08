@@ -354,6 +354,13 @@ internal class LevelPlayView
         ViewModel.SimulateSpeed = _speedButtonsMap[theButton];
     }
 
+    public override void OnActivated()
+    {
+        base.OnActivated();
+
+        _desktop.RefreshInputSnapshot();
+    }
+
     public override void Update(GameTime gameTime)
     {
         // 强行处理一次输入
@@ -430,6 +437,8 @@ internal class LevelPlayView
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.EnterConfigurationMode()
     {
+        _desktop.RefreshInputSnapshot();
+
         // 创建悬浮世界视图控件
         _floatingWorldView = new InputPassthroughWidget();
         _rootPanel.Widgets.Add(_floatingWorldView);

@@ -322,6 +322,13 @@ internal class MenuLikeView
         _scrollViewer.Update(gameTime);
     }
 
+    public override void OnActivated()
+    {
+        base.OnActivated();
+
+        _desktop.RefreshInputSnapshot();
+    }
+
     public override void Draw(GameTime gameTime)
     {
         // 计算背景偏移
@@ -407,6 +414,8 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+
+        _desktop.RefreshInputSnapshot();
     }
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
@@ -457,6 +466,8 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+
+        _desktop.RefreshInputSnapshot();
     }
 
     ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
@@ -495,6 +506,8 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+
+        _desktop.RefreshInputSnapshot();
     }
 
     ChapterTransitionTargetState? IVisualConfigurable<ChapterTransitionTargetState>.GetDefaultVisualState()
