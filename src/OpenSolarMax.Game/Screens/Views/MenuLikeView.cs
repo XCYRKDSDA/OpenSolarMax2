@@ -39,7 +39,7 @@ internal class MenuLikeView
     private float _actualBackgroundLeft = 0;
     private float _commonBackgroundAlpha = 1;
 
-    private int? _lastThumbnailsOffset = null;
+    private int? _lastScrollOffset = null;
     private float _targetBackgroundLeft = 0;
 
     #region 曝光相关
@@ -126,8 +126,8 @@ internal class MenuLikeView
         {
             Margin = new Thickness(20, 0, 20, 20),
         };
-        _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
-        _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
+        _scrollViewer.Scrolled += ScrollViewerOnScrolled;
+        _scrollViewer.Confirmed += ScrollViewerOnConfirmed;
 
         _primaryPreview = new FadableImage()
         {
@@ -160,7 +160,12 @@ internal class MenuLikeView
         foreach (var name in viewModel.Items)
             _scrollViewer.Widgets.Add(GenerateLabel(name));
 
-        _scrollViewer.TargetWidgetIndex = viewModel.PrimaryItemIndex;
+        if (_scrollViewer.Widgets.Count > 0)
+        {
+            _scrollViewer.TargetIndex = viewModel.PrimaryItemIndex;
+            // 写入聚焦状态使导航条立即跳转到目标条目精准居中处
+            _scrollViewer.Focus = new FocusState(viewModel.PrimaryItemIndex, 0);
+        }
         _primaryPreview.Renderable = viewModel.PrimaryItemPreview;
 
         // 绑定 view model
@@ -169,7 +174,9 @@ internal class MenuLikeView
         viewModel.PropertyChanged += ViewModelOnPropertyChanged;
 
         _desktop.UpdateLayout();
-        _scrollViewer.ConvergeImmediately();
+
+        // 进入界面即把键盘焦点交给查看器，方向键与确认键无需先点击
+        _scrollViewer.SetKeyboardFocus();
     }
 
     private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
@@ -265,50 +272,41 @@ internal class MenuLikeView
         }
     }
 
-    private void ScrollViewerOnThumbnailsPositionChanged(object? sender, EventArgs e)
+    private void ScrollViewerOnScrolled(object? sender, int delta)
     {
-        var primaryOnly =
-            _scrollViewer.Offset == 0
-            || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
-            || (
-                _scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1
-                && _scrollViewer.Offset > 0
-            );
+        var focus = _scrollViewer.Focus;
+        if (double.IsNaN(focus.NormalizedOffset))
+            return;
 
-        ViewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
+        var absOffset = Math.Abs(focus.NormalizedOffset);
+        var primaryOnly =
+            focus.NormalizedOffset == 0
+            || (focus.Index == 0 && focus.NormalizedOffset < 0)
+            || (focus.Index == _scrollViewer.Widgets.Count - 1 && focus.NormalizedOffset > 0);
+
+        ViewModel.PrimaryItemIndex = focus.Index;
         ViewModel.SecondaryItemIndex = primaryOnly
             ? null
-            : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
+            : focus.Index + Math.Sign(focus.NormalizedOffset);
 
-        _primaryPreview.FadeIn = MathF.Max(
-            1 - int.Abs(_scrollViewer.Offset) / (_scrollViewer.ThumbnailsInterval / 2f),
-            0
-        );
-        _secondaryPreview.FadeIn = MathF.Max(
-            1
-                - (_scrollViewer.ThumbnailsInterval - int.Abs(_scrollViewer.Offset))
-                    / (_scrollViewer.ThumbnailsInterval / 2f),
-            0
-        );
+        _primaryPreview.FadeIn = (float)Math.Max(1 - absOffset, 0);
+        _secondaryPreview.FadeIn = 0;
         _secondaryPreview.Visible = !primaryOnly;
 
         // 永远保持 secondary 背景在下
         if (_primaryBackground.Texture is not null)
         {
             _primaryBackground.Alpha =
-                MathF.Max(1 - float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0)
-                * _commonBackgroundAlpha;
+                (float)Math.Max(1 - absOffset / 2, 0) * _commonBackgroundAlpha;
             _secondaryBackground.Alpha = 1 * _commonBackgroundAlpha;
         }
         else
         {
-            _secondaryBackground.Alpha =
-                MathF.Max(float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0)
-                * _commonBackgroundAlpha;
+            _secondaryBackground.Alpha = (float)Math.Max(absOffset / 2, 0) * _commonBackgroundAlpha;
         }
     }
 
-    private void ScrollViewerOnItemTapped(object? sender, int idx)
+    private void ScrollViewerOnConfirmed(object? sender, int idx)
     {
         ViewModel.SelectItemCommand.Execute(idx);
     }
@@ -327,25 +325,26 @@ internal class MenuLikeView
     public override void Draw(GameTime gameTime)
     {
         // 计算背景偏移
-        if (_controlBackground && _lastThumbnailsOffset is not null)
+        if (_controlBackground && _lastScrollOffset is not null)
         {
-            var delta = _scrollViewer.ThumbnailsOffset - _lastThumbnailsOffset.Value;
+            // 位移增大 = 条目向左移动 = 背景向左移动，故取上次减本次
+            var delta = _lastScrollOffset.Value - _scrollViewer.ScrollOffsetPixels;
             _targetBackgroundLeft += delta * 2;
             var error = _targetBackgroundLeft - _actualBackgroundLeft;
             var velocity = error * 5;
             var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
             _actualBackgroundLeft += movement;
         }
-        _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
+        _lastScrollOffset = _scrollViewer.ScrollOffsetPixels;
 
         // 应用背景偏移
         _pageBackground.Left = _actualBackgroundLeft;
         _primaryBackground.Left =
-            _actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+            _actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ItemSpacing;
         if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
         {
             _secondaryBackground.Left =
-                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
+                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ItemSpacing;
         }
 
         _pageBackground.Draw();
@@ -358,7 +357,7 @@ internal class MenuLikeView
         {
             Debug.Assert(_exposureWhiteBase is not null);
             var exposureFadeSpeed =
-                _scrollViewer.NearestIndex == ViewModel.InitializeIndex
+                _scrollViewer.Focus.Index == ViewModel.InitializeIndex
                     ? _exposureFadeSpeedSlow
                     : _exposureFadeSpeedFast;
             _exposure -= exposureFadeSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -482,7 +481,7 @@ internal class MenuLikeView
 
         // 渐出时, 以第一预览偏移为准
         _targetBackgroundLeft = _actualBackgroundLeft =
-            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
+            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ItemSpacing;
     }
 
     #endregion
