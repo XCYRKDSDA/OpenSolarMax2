@@ -74,6 +74,10 @@ public sealed class CustomHorizontalScrollViewer : Container
     // 上次触发 Scrolled 事件时汇报的位移（int），用于计算差值
     private int _lastReportedPosition;
 
+    // 拖动期间的导航条位移采样（Update 每帧记录一次），
+    // 抬起时按窗口内首末样本估算结束拖动的速度
+    private readonly List<(TimeSpan Time, float Position)> _dragSamples = [];
+
     #endregion
 
     #region 子控件与布局
@@ -316,6 +320,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     private float _convergenceRate = 10f;
     private int _clickThreshold = 5;
     private int _clickItemDistanceThreshold = 80;
+    private TimeSpan _dragVelocitySampleWindow = TimeSpan.FromMilliseconds(100);
 
     /// <summary>
     /// 条目间距，即相邻导航条目中心的距离
@@ -418,6 +423,16 @@ public sealed class CustomHorizontalScrollViewer : Container
     }
 
     /// <summary>
+    /// 拖动速度采样窗口，抬起时用于计算结束拖动的速度的对位移采样的时间窗口长度，
+    /// 默认 100 毫秒
+    /// </summary>
+    public TimeSpan DragVelocitySampleWindow
+    {
+        get => _dragVelocitySampleWindow;
+        set => _dragVelocitySampleWindow = value;
+    }
+
+    /// <summary>
     /// 聚焦状态，索引与偏移量作为整体读写以保证原子性。
     /// 读取时由当前位移派生，空集合时为 (-1, NaN)。
     /// 赋值时索引须在 [0, n-1]、偏移须在 [-1, +1]，越界抛异常；
@@ -474,10 +489,13 @@ public sealed class CustomHorizontalScrollViewer : Container
     public event EventHandler<int>? Scrolled;
 
     /// <summary>
-    /// 由外部每帧调用以驱动收敛动画；拖动中或已处于稳态时不做收敛计算
+    /// 由外部每帧调用以驱动收敛动画；拖动中或已处于稳态时不做收敛计算。
+    /// 拖动按下期间每帧记录一次导航条位移采样，供抬起时估算结束拖动的速度
     /// </summary>
     public void Update(GameTime gameTime)
     {
+        RecordDragSample(gameTime.TotalGameTime);
+
         if (_pointerState == PointerState.Dragging)
             return;
         if (_items.Count == 0 || _targetIndex < 0)
@@ -503,6 +521,38 @@ public sealed class CustomHorizontalScrollViewer : Container
 
     #region 输入处理
 
+    /// <summary>
+    /// 记录本帧的导航条位移采样，并丢弃窗口之外的样本，供抬起时估算结束拖动的速度。
+    /// 只在未抬起期间记录，按下与抬起之间不留残余样本
+    /// </summary>
+    private void RecordDragSample(TimeSpan now)
+    {
+        if (_pointerState == PointerState.None)
+            return;
+
+        _dragSamples.Add((now, _scrollPosition));
+        while (_dragSamples.Count > 0 && now - _dragSamples[0].Time > _dragVelocitySampleWindow)
+            _dragSamples.RemoveAt(0);
+    }
+
+    /// <summary>
+    /// 结束拖动的速度，即采样窗口内导航条的平均位移速度：由首末样本的位移差除以时间跨度得到，
+    /// 方向以条目索引增大的方向为正。样本不足两个或时间跨度非正时取 0
+    /// </summary>
+    private float ComputeDragEndVelocity()
+    {
+        if (_dragSamples.Count < 2)
+            return 0f;
+
+        var (firstTime, firstPosition) = _dragSamples[0];
+        var (lastTime, lastPosition) = _dragSamples[^1];
+        var span = (lastTime - firstTime).TotalSeconds;
+        if (span <= 0)
+            return 0f;
+
+        return (float)((lastPosition - firstPosition) / span);
+    }
+
     public override void OnTouchDown()
     {
         base.OnTouchDown();
@@ -517,6 +567,7 @@ public sealed class CustomHorizontalScrollViewer : Container
         _pressPoint = pressPoint;
         _lastPointerPoint = pressPoint;
         _pointerState = PointerState.Pending;
+        _dragSamples.Clear();
 
         // 订阅 Desktop 级事件，保证指针移出控件范围后仍能跟踪
         Desktop.TouchMoved += DesktopOnTouchMoved;
@@ -557,7 +608,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     }
 
     /// <summary>
-    /// 处理指针抬起。拖动态把收敛目标设为抬起瞬间的聚焦条目；
+    /// 处理指针抬起。拖动结束时按结束拖动的速度推算极限停止位置，取最近条目为收敛目标；
     /// Pending 态按按下点判定单击区域，导航条内选中阈值内的最近条目，预览面板内触发确认
     /// </summary>
     private void DesktopOnTouchUp(object? sender, EventArgs args)
@@ -573,10 +624,25 @@ public sealed class CustomHorizontalScrollViewer : Container
 
         if (wasDragging)
         {
-            // 拖动抬起后收敛目标为抬起瞬间最聚焦的条目（越界拖动时即首/尾条目，表现为回弹）
-            _targetIndex = ComputeFocusState().Index;
+            // 按结束拖动的速度、依控制律的速度衰减规律推算极限停止位置
+            // （额外位移 = 速度 / 收敛比例系数），取离其最近的条目为收敛目标；
+            // 等距时取序号较大者，界外无条目故自然落在首/尾条目上，表现为回弹
+            var velocity = ComputeDragEndVelocity();
+            _dragSamples.Clear();
+
+            if (_items.Count == 0)
+                return;
+
+            var stopPosition = _scrollPosition + velocity / _convergenceRate;
+            _targetIndex = Math.Clamp(
+                (int)MathF.Floor(stopPosition / _itemSpacing + 0.5f),
+                0,
+                _items.Count - 1
+            );
             return;
         }
+
+        _dragSamples.Clear();
 
         // 单击的位置以按下点为准；区域与中心均按 ActualBounds（已扣除 Margin）计算
         if (_items.Count == 0)
