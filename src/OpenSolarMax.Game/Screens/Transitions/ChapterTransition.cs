@@ -58,6 +58,7 @@ internal class ChapterTransitionScreen(
     private readonly HorizontalScrollingBackground _background = new(game.GraphicsDevice)
     {
         Texture = ctx.Background,
+        ControlMode = ScrollingBackgroundControlMode.Manual,
     };
 
     private enum Stage
@@ -101,7 +102,7 @@ internal class ChapterTransitionScreen(
             _duration = TimeSpan.Zero;
             prevScreen.EnterConfigurationMode();
             _sourceDefaultState = prevScreen.GetDefaultVisualState()!;
-            _background.Left = _sourceDefaultState.BackgroundOffset;
+            _background.TargetOffset = _sourceDefaultState.BackgroundOffset;
         }
         else if (_stage == Stage.First && _duration >= _firstStageDuration)
         {
