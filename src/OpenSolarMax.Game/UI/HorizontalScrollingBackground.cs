@@ -131,59 +131,59 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
     #region 目标控制
 
     /// <summary>
-    /// 索引到目标偏移的映射，默认空，支持只指定部分索引，求值规则见
-    /// <see cref="MapIndexToOffset"/>。修改映射不会重算当前目标偏移，只影响后续的目标索引设置
+    /// 位置到目标偏移的映射，默认空，支持只指定部分位置，求值规则见
+    /// <see cref="MapPositionToOffset"/>。修改映射不会重算当前目标偏移，只影响后续的目标位置设置
     /// </summary>
-    public IReadOnlyDictionary<int, float> IndexToOffsetMapping { get; set; } =
-        new Dictionary<int, float>();
+    public IReadOnlyDictionary<float, float> PositionToOffsetMapping { get; set; } =
+        new Dictionary<float, float>();
 
     /// <summary>
-    /// 索引外推倍率。
-    /// 目标索引落在映射范围外时按它向最近端点外推，映射为空时目标偏移等于目标索引与该倍率的乘积
+    /// 位置外推倍率。
+    /// 目标位置落在映射范围外时按它向最近端点外推，映射为空时目标偏移等于目标位置与该倍率的乘积
     /// </summary>
-    public float IndexExtrapolationMultiplier { get; set; } = 960;
+    public float PositionExtrapolationMultiplier { get; set; } = 960;
 
     /// <summary>
-    /// 求目标索引对应的目标偏移：命中映射取指定值；在已指定索引之间线性插值；
-    /// 落在范围外按索引外推倍率向最近端点外推
+    /// 求目标位置对应的目标偏移：命中映射取指定值；在已指定位置之间线性插值；
+    /// 落在范围外按位置外推倍率向最近端点外推
     /// </summary>
-    private float MapIndexToOffset(int index)
+    private float MapPositionToOffset(float position)
     {
-        var mapping = IndexToOffsetMapping;
+        var mapping = PositionToOffsetMapping;
         if (mapping.Count == 0)
-            return index * IndexExtrapolationMultiplier;
+            return position * PositionExtrapolationMultiplier;
 
-        if (mapping.TryGetValue(index, out var specified))
+        if (mapping.TryGetValue(position, out var specified))
             return specified;
 
-        // 取相邻的已指定索引，一个小于目标索引、一个大于目标索引；
-        // 目标索引落在映射范围外时，其中一侧缺位
-        int? lower = null;
-        int? upper = null;
+        // 取相邻的已指定位置，一个小于目标位置、一个大于目标位置；
+        // 目标位置落在映射范围外时，其中一侧缺位
+        float? lower = null;
+        float? upper = null;
         foreach (var key in mapping.Keys)
         {
-            if (key < index && (lower is null || key > lower))
+            if (key < position && (lower is null || key > lower))
                 lower = key;
-            else if (key > index && (upper is null || key < upper))
+            else if (key > position && (upper is null || key < upper))
                 upper = key;
         }
 
         if (lower is not null && upper is not null)
         {
             var lowerOffset = mapping[lower.Value];
-            var ratio = (float)(index - lower.Value) / (upper.Value - lower.Value);
+            var ratio = (position - lower.Value) / (upper.Value - lower.Value);
             return lowerOffset + ratio * (mapping[upper.Value] - lowerOffset);
         }
 
         // 单侧缺位即落在范围外，按最近端点外推
-        var anchor = lower ?? upper ?? throw new InvalidOperationException("索引映射无有效索引");
-        return mapping[anchor] + (index - anchor) * IndexExtrapolationMultiplier;
+        var anchor = lower ?? upper ?? throw new InvalidOperationException("位置映射无有效位置");
+        return mapping[anchor] + (position - anchor) * PositionExtrapolationMultiplier;
     }
 
     /// <summary>
-    /// 将目标索引按映射换算为目标偏移并写入
+    /// 将目标位置按映射换算为目标偏移并写入
     /// </summary>
-    public void SetTargetIndex(int index) => TargetOffset = MapIndexToOffset(index);
+    public void SetTargetPosition(float position) => TargetOffset = MapPositionToOffset(position);
 
     /// <summary>
     /// 增量偏移倍率。通过增量形式修改目标偏移时施加于传入值的乘数
