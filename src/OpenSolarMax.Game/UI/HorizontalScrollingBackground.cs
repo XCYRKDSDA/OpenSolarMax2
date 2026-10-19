@@ -9,27 +9,29 @@ namespace OpenSolarMax.Game.UI;
 internal enum ScrollingBackgroundControlMode
 {
     /// <summary>
-    /// 自动模式：按线性控制律使实际偏移收敛到目标偏移
+    /// 自动模式：按线性控制律使实际居中点收敛到目标居中点
     /// </summary>
     Auto,
 
     /// <summary>
-    /// 手动模式：关闭控制律，实际偏移永远立即等于目标偏移
+    /// 手动模式：关闭控制律，实际居中点永远立即等于目标居中点
     /// </summary>
     Manual,
 }
 
 /// <summary>
-/// 水平滚动背景。纹理按视口高度缩放，水平铺满当前整个视口；实际偏移为 0 时纹理左侧位于视口中心。
-/// 设置目标偏移的入口有索引映射、增量与直接写入，三者相互覆盖。
+/// 水平滚动背景。纹理按视口高度缩放，水平铺满当前整个视口；实际居中点为 0 时纹理左侧位于视口中心。
+/// 状态以居中点存储，背景位移读数按当前缩放换算，视口尺寸改变时居中点保持不变。
+/// 设置目标状态的入口有位置映射、目标居中点、增量与直接写入，四者相互覆盖。
+/// 居中点以纹理像素计；背景位移与增量以画面像素计，组件按渲染缩放换算。
 /// </summary>
 internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
 {
     #region 内部状态
 
     private ScrollingBackgroundControlMode _controlMode = ScrollingBackgroundControlMode.Auto;
-    private float _actualOffset;
-    private float _targetOffset;
+    private float _actualFocusX;
+    private float _targetFocusX;
 
     #endregion
 
@@ -41,6 +43,13 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
 
     public float Opacity { get; set; } = 1;
 
+    /// <summary>
+    /// 画面像素与纹理像素之比：纹理按视口高度缩放后，一个纹理像素对应多少画面像素。
+    /// 纹理为空时按 1
+    /// </summary>
+    private float RenderScale =>
+        Texture is { } texture ? (float)graphicsDevice.Viewport.Height / texture.Height : 1;
+
     public void Draw()
     {
         if (Texture is not { } texture)
@@ -49,10 +58,11 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
         var viewport = graphicsDevice.Viewport;
 
         // 只支持横向滚动，图片按高度缩放
-        var scale = (float)viewport.Height / texture.Height;
+        var scale = RenderScale;
         var tileWidth = texture.Width * scale;
 
-        var anchorLeft = viewport.Width / 2f + _actualOffset;
+        // 纹理左界位于视口中心往右偏移实际居中点对应的画面距离
+        var anchorLeft = viewport.Width / 2f - _actualFocusX * scale;
         // 平移整数个纹理宽度，把绘制起点挪到视口左界以左
         var firstLeft = anchorLeft - tileWidth * MathF.Ceiling(anchorLeft / tileWidth);
 
@@ -82,10 +92,10 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
 
     #endregion
 
-    #region 偏移控制
+    #region 状态控制
 
     /// <summary>
-    /// 控制模式，默认自动。切入手动时把实际偏移立即置为目标偏移，保证二者恒等
+    /// 控制模式，默认自动。切入手动时把实际居中点立即置为目标居中点，保证二者恒等
     /// </summary>
     public ScrollingBackgroundControlMode ControlMode
     {
@@ -94,35 +104,67 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
         {
             _controlMode = value;
             if (value == ScrollingBackgroundControlMode.Manual)
-                _actualOffset = _targetOffset;
+                _actualFocusX = _targetFocusX;
         }
     }
 
     /// <summary>
-    /// 实际偏移，背景当前的水平位移。手动模式下写入会立刻同步到目标偏移
+    /// 实际居中点，实际状态的存储值，以纹理像素计，视口尺寸改变时保持不变。
+    /// 手动模式下写入会立刻同步到目标居中点
     /// </summary>
-    public float ActualOffset
+    public float ActualFocusX
     {
-        get => _actualOffset;
+        get => _actualFocusX;
         set
         {
-            _actualOffset = value;
+            _actualFocusX = value;
             if (ControlMode == ScrollingBackgroundControlMode.Manual)
-                _targetOffset = value;
+                _targetFocusX = value;
         }
     }
 
     /// <summary>
-    /// 目标偏移，自动模式下控制律的收敛目标。手动模式下写入会立刻同步到实际偏移
+    /// 实际背景位移，实际居中点按当前缩放换算的读数，以画面像素计。
+    /// 写入换算存回实际居中点；手动模式下换算后同步到目标居中点
     /// </summary>
-    public float TargetOffset
+    public float ActualScroll
     {
-        get => _targetOffset;
+        get => -_actualFocusX * RenderScale;
         set
         {
-            _targetOffset = value;
+            _actualFocusX = -value / RenderScale;
             if (ControlMode == ScrollingBackgroundControlMode.Manual)
-                _actualOffset = value;
+                _targetFocusX = _actualFocusX;
+        }
+    }
+
+    /// <summary>
+    /// 目标居中点，希望居中的背景图横向坐标，以纹理像素计，目标状态的存储值，视口尺寸改变时保持不变。
+    /// 手动模式下写入会立刻同步到实际居中点
+    /// </summary>
+    public float TargetFocusX
+    {
+        get => _targetFocusX;
+        set
+        {
+            _targetFocusX = value;
+            if (ControlMode == ScrollingBackgroundControlMode.Manual)
+                _actualFocusX = value;
+        }
+    }
+
+    /// <summary>
+    /// 目标背景位移，目标居中点按当前缩放换算的读数，以画面像素计，位移导向的设置入口。
+    /// 写入换算存回目标居中点；手动模式下换算后同步到实际居中点
+    /// </summary>
+    public float TargetScroll
+    {
+        get => -_targetFocusX * RenderScale;
+        set
+        {
+            _targetFocusX = -value / RenderScale;
+            if (ControlMode == ScrollingBackgroundControlMode.Manual)
+                _actualFocusX = _targetFocusX;
         }
     }
 
@@ -131,27 +173,41 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
     #region 目标控制
 
     /// <summary>
-    /// 位置到目标偏移的映射，默认空，支持只指定部分位置，求值规则见
-    /// <see cref="MapPositionToOffset"/>。修改映射不会重算当前目标偏移，只影响后续的目标位置设置
+    /// 位置到目标居中点的映射，值以纹理像素计，默认空，支持只指定部分位置，
+    /// 求值规则见 <see cref="TargetFocusXAt"/>。
+    /// 修改映射不会重算当前目标居中点，只影响后续的目标位置设置
     /// </summary>
-    public IReadOnlyDictionary<float, float> PositionToOffsetMapping { get; set; } =
+    public IReadOnlyDictionary<float, float> PositionToTargetFocusX { get; set; } =
         new Dictionary<float, float>();
 
     /// <summary>
-    /// 位置外推倍率。
-    /// 目标位置落在映射范围外时按它向最近端点外推，映射为空时目标偏移等于目标位置与该倍率的乘积
+    /// 位置外推目标居中点倍率：目标位置落在映射范围外时，每远离 1 个位置单位，
+    /// 目标居中点变化多少纹理像素；映射为空时目标居中点等于目标位置与该倍率的乘积。
+    /// 这是存储值，默认 960，视口尺寸改变时不变
     /// </summary>
-    public float PositionExtrapolationMultiplier { get; set; } = 960;
+    public float TargetFocusXPerPosition { get; set; } = 960;
 
     /// <summary>
-    /// 求目标位置对应的目标偏移：命中映射取指定值；在已指定位置之间线性插值；
-    /// 落在范围外按位置外推倍率向最近端点外推
+    /// 位置外推目标背景位移倍率：同一倍率以画面像素计，是
+    /// <see cref="TargetFocusXPerPosition"/> 按当前缩放换算的表述，视口尺寸改变时数值变化。
+    /// 写入任一属性会换算更新另一属性。
+    /// 目标居中点增大意味着画面左移，故换算带负号：目标背景位移倍率 = -目标居中点倍率 × 渲染缩放
     /// </summary>
-    private float MapPositionToOffset(float position)
+    public float TargetScrollPerPosition
     {
-        var mapping = PositionToOffsetMapping;
+        get => -TargetFocusXPerPosition * RenderScale;
+        set => TargetFocusXPerPosition = -value / RenderScale;
+    }
+
+    /// <summary>
+    /// 求目标位置对应的目标居中点：命中映射取指定值；在已指定位置之间线性插值；
+    /// 落在范围外按位置外推目标居中点倍率向最近端点外推
+    /// </summary>
+    private float TargetFocusXAt(float position)
+    {
+        var mapping = PositionToTargetFocusX;
         if (mapping.Count == 0)
-            return position * PositionExtrapolationMultiplier;
+            return position * TargetFocusXPerPosition;
 
         if (mapping.TryGetValue(position, out var specified))
             return specified;
@@ -170,30 +226,30 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
 
         if (lower is not null && upper is not null)
         {
-            var lowerOffset = mapping[lower.Value];
+            var lowerFocusX = mapping[lower.Value];
             var ratio = (position - lower.Value) / (upper.Value - lower.Value);
-            return lowerOffset + ratio * (mapping[upper.Value] - lowerOffset);
+            return lowerFocusX + ratio * (mapping[upper.Value] - lowerFocusX);
         }
 
         // 单侧缺位即落在范围外，按最近端点外推
         var anchor = lower ?? upper ?? throw new InvalidOperationException("位置映射无有效位置");
-        return mapping[anchor] + (position - anchor) * PositionExtrapolationMultiplier;
+        return mapping[anchor] + (position - anchor) * TargetFocusXPerPosition;
     }
 
     /// <summary>
-    /// 将目标位置按映射换算为目标偏移并写入
+    /// 将目标位置按映射求出目标居中点并写入
     /// </summary>
-    public void SetTargetPosition(float position) => TargetOffset = MapPositionToOffset(position);
+    public void SetTargetPosition(float position) => TargetFocusX = TargetFocusXAt(position);
 
     /// <summary>
-    /// 增量偏移倍率。通过增量形式修改目标偏移时施加于传入值的乘数
+    /// 增量位移倍率。通过增量形式修改目标背景位移时施加于传入值的乘数，作用于画面像素
     /// </summary>
-    public float DeltaMultiplier { get; set; } = 2;
+    public float DeltaScale { get; set; } = 2;
 
     /// <summary>
-    /// 传入目标偏移的变化量，乘以增量偏移倍率后累加到目标偏移
+    /// 传入目标背景位移的变化量（画面像素），乘上增量位移倍率后按当前缩放换算，累加到目标状态
     /// </summary>
-    public void ApplyOffsetDelta(float delta) => TargetOffset += delta * DeltaMultiplier;
+    public void ScrollBy(float delta) => TargetScroll += delta * DeltaScale;
 
     #endregion
 
@@ -209,11 +265,11 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
         if (ControlMode == ScrollingBackgroundControlMode.Manual)
             return;
 
-        var deviation = _targetOffset - _actualOffset;
+        var deviation = _targetFocusX - _actualFocusX;
         if (deviation == 0)
             return;
 
-        _actualOffset += ConvergenceRate * deviation * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        _actualFocusX += ConvergenceRate * deviation * (float)gameTime.ElapsedGameTime.TotalSeconds;
     }
 
     #endregion

@@ -466,7 +466,7 @@ internal class LevelPlayView
         return new GamePlayTransitionTargetState(
             targetPreviewLocation,
             currentSpeed,
-            _background.ActualOffset
+            _background.ActualScroll
         );
     }
 
@@ -484,7 +484,7 @@ internal class LevelPlayView
         ViewModel.SimulateSpeed = state.WorldSpeed;
 
         // 设置背景偏移
-        _background.TargetOffset = state.BackgroundOffset;
+        _background.TargetScroll = state.BackgroundOffset;
     }
 
     #endregion

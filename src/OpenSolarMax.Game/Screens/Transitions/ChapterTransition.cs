@@ -102,7 +102,7 @@ internal class ChapterTransitionScreen(
             _duration = TimeSpan.Zero;
             prevScreen.EnterConfigurationMode();
             _sourceDefaultState = prevScreen.GetDefaultVisualState()!;
-            _background.TargetOffset = _sourceDefaultState.BackgroundOffset;
+            _background.TargetScroll = _sourceDefaultState.BackgroundOffset;
         }
         else if (_stage == Stage.First && _duration >= _firstStageDuration)
         {

@@ -66,7 +66,7 @@ internal class MenuLikeView
         _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.PageBackground,
-            ActualOffset = 0,
+            ActualScroll = 0,
         };
         // 主、次背景的偏移由本视图按页面背景的实际偏移与条目索引合成，无需组件自行收敛
         _primaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
@@ -327,7 +327,7 @@ internal class MenuLikeView
         {
             // 位移增大 = 条目向左移动 = 背景向左移动，故取上次减本次
             var delta = _lastScrollOffset.Value - _scrollViewer.ScrollOffsetPixels;
-            _pageBackground.ApplyOffsetDelta(delta);
+            _pageBackground.ScrollBy(delta);
         }
         _lastScrollOffset = _scrollViewer.ScrollOffsetPixels;
 
@@ -344,12 +344,12 @@ internal class MenuLikeView
     public override void Draw(GameTime gameTime)
     {
         // 应用背景偏移：主、次背景锚定到各自的条目
-        var actualBackgroundLeft = _pageBackground.ActualOffset;
-        _primaryBackground.TargetOffset =
+        var actualBackgroundLeft = _pageBackground.ActualScroll;
+        _primaryBackground.TargetScroll =
             actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ItemSpacing;
         if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
         {
-            _secondaryBackground.TargetOffset =
+            _secondaryBackground.TargetScroll =
                 actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ItemSpacing;
         }
 
@@ -441,7 +441,7 @@ internal class MenuLikeView
         );
         return new GamePlayTransitionSourceState(
             sourcePreviewLocation,
-            _pageBackground.ActualOffset
+            _pageBackground.ActualScroll
         );
     }
 
@@ -456,7 +456,7 @@ internal class MenuLikeView
         _floatingPreview!.Height = state.WorldPreviewRegion.Height;
 
         // 渐出时, 以背景预览偏移为准
-        _pageBackground.TargetOffset = state.BackgroundOffset;
+        _pageBackground.TargetScroll = state.BackgroundOffset;
     }
 
     #endregion
@@ -477,7 +477,7 @@ internal class MenuLikeView
 
     ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionSourceState(1, _primaryBackground.ActualOffset);
+        return new ChapterTransitionSourceState(1, _primaryBackground.ActualScroll);
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
@@ -497,7 +497,7 @@ internal class MenuLikeView
         _primaryPreview.Scale = new(state.PreviewScaling);
 
         // 渐出时, 以第一预览偏移为准
-        _pageBackground.TargetOffset =
+        _pageBackground.TargetScroll =
             state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ItemSpacing;
     }
 
@@ -519,7 +519,7 @@ internal class MenuLikeView
 
     ChapterTransitionTargetState? IVisualConfigurable<ChapterTransitionTargetState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionTargetState(1, _pageBackground.ActualOffset);
+        return new ChapterTransitionTargetState(1, _pageBackground.ActualScroll);
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
@@ -539,7 +539,7 @@ internal class MenuLikeView
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
 
         // 渐入时, 以背景预览偏移为准
-        _pageBackground.TargetOffset = state.BackgroundOffset;
+        _pageBackground.TargetScroll = state.BackgroundOffset;
     }
 
     #endregion
