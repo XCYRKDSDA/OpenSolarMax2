@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using OneOf;
 using Zio;
 
 namespace OpenSolarMax.Game.Modding;
@@ -120,8 +121,46 @@ internal class ModsManager
         );
     }
 
+    /// <summary>
+    /// 按锁定模式的声明生成间距：绝对间距与相对倍数二选一，同时出现即报错，
+    /// 都缺席按未声明倍数的相对间距处理，默认倍数由界面层补
+    /// </summary>
+    private static OneOf<AbsoluteSpacing, RelativeSpacing> CreateSpacing(
+        LockedBackgroundScrollingDeclaration locked
+    ) =>
+        (locked.Spacing, locked.SpacingMultiplier) switch
+        {
+            (not null, null) => new AbsoluteSpacing(locked.Spacing.Value),
+            (null, not null) => new RelativeSpacing(locked.SpacingMultiplier),
+            (not null, not null) => throw new InvalidOperationException(
+                "锁定模式的背景滚动声明不能同时给出 spacing 与 spacingMultiplier"
+            ),
+            (null, null) => new RelativeSpacing(null),
+        };
+
     private static LevelModInfo CreateLevelModInfo(DirectoryEntry dir, ModManifest manifest)
     {
+        var backgroundScrolling = manifest.BackgroundScrolling switch
+        {
+            // 锁定模式
+            LockedBackgroundScrollingDeclaration locked => OneOf<
+                LockedBackgroundScrolling,
+                DeltaBackgroundScrolling
+            >.FromT0(new LockedBackgroundScrolling(0, locked.FirstFocus, CreateSpacing(locked))),
+            // 增量模式
+            DeltaBackgroundScrollingDeclaration delta => OneOf<
+                LockedBackgroundScrolling,
+                DeltaBackgroundScrolling
+            >.FromT1(new DeltaBackgroundScrolling(delta.DeltaScale)),
+            // 整个声明缺席时按未指定倍率的增量模式算
+            null => OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling>.FromT1(
+                new DeltaBackgroundScrolling(null)
+            ),
+            _ => throw new InvalidOperationException(
+                $"未知的背景滚动声明类型：{manifest.BackgroundScrolling.GetType().Name}"
+            ),
+        };
+
         return new LevelModInfo(
             dir,
             manifest.FullName,
@@ -133,6 +172,7 @@ internal class ModsManager
             manifest.Description,
             manifest.Link,
             dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
+            backgroundScrolling,
             manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
             manifest.Dependencies?.Content?.ToImmutableArray() ?? []
         );

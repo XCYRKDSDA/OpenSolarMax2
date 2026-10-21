@@ -11,6 +11,7 @@ using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
@@ -28,6 +29,11 @@ internal class MenuLikeView
     private readonly HorizontalScrollingBackground _pageBackground;
     private readonly HorizontalScrollingBackground _primaryBackground,
         _secondaryBackground;
+
+    // 页面背景的滚动配置未声明行为时统一使用的默认倍率：
+    // 增量模式作为增量位移倍率，锁定模式作为相对间距的倍数
+    private const float _defaultMultiplier = 2;
+
     private readonly FadableImage _primaryPreview,
         _secondaryPreview;
     private readonly Button _backwardButton;
@@ -66,9 +72,8 @@ internal class MenuLikeView
         _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.PageBackground,
-            ActualScroll = 0,
         };
-        // 主、次背景的偏移由本视图按页面背景的实际偏移与条目索引合成，无需组件自行收敛
+        // 主、次背景的实际位移完全跟随页面背景，不再有独立的收敛状态
         _primaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.PrimaryItemBackground,
@@ -129,6 +134,37 @@ internal class MenuLikeView
         };
         _scrollViewer.Scrolled += ScrollViewerOnScrolled;
         _scrollViewer.Confirmed += ScrollViewerOnConfirmed;
+
+        // 页面背景按该界面的配置落位：锁定模式按位置落位，增量模式按滚动量累加。
+        // 相对间距要用查看器的条目间距换算成画面位移增量，因此要等查看器建好再配置
+        viewModel.BackgroundScrolling.Switch(
+            // 锁定模式
+            locked =>
+            {
+                var spacing = locked.Spacing;
+                _pageBackground.PositionToTargetFocusX = new Dictionary<float, float>
+                {
+                    [locked.Position] = locked.TargetFocusX,
+                };
+                locked.Spacing.Switch(
+                    // 绝对距离间隔
+                    abs => _pageBackground.TargetFocusXPerPosition = abs.TargetFocusXPerPosition,
+                    // 相对距离间隔
+                    rel =>
+                        _pageBackground.TargetScrollPerPosition =
+                            -(rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+                );
+                _pageBackground.TargetFocusX = locked.TargetFocusX;
+                _pageBackground.ActualScroll = _pageBackground.TargetScroll;
+            },
+            // 增量模式
+            delta =>
+            {
+                _pageBackground.DeltaScale = -(delta.DeltaScale ?? _defaultMultiplier);
+                _pageBackground.TargetScrollPerPosition =
+                    _scrollViewer.ItemSpacing * _pageBackground.DeltaScale;
+            }
+        );
 
         _primaryPreview = new FadableImage()
         {
@@ -323,13 +359,29 @@ internal class MenuLikeView
         base.Update(gameTime);
         _scrollViewer.Update(gameTime);
 
-        if (_controlBackground && _lastScrollOffset is not null)
+        if (ViewModel.BackgroundScrolling.IsT0)
         {
-            // 位移增大 = 条目向左移动 = 背景向左移动，故取上次减本次
-            var delta = _lastScrollOffset.Value - _scrollViewer.ScrollOffsetPixels;
-            _pageBackground.ScrollBy(delta);
+            // 锁定模式：按当前聚焦的小数位置切换页面的目标背景位移，由收敛控制律滑过去。
+            // NormalizedOffset 以半条目为单位，折算成位置后加上最近的条目索引
+            var focus = _scrollViewer.Focus;
+            if (
+                _controlBackground
+                && _scrollViewer.Widgets.Count > 0
+                && !double.IsNaN(focus.NormalizedOffset)
+            )
+            {
+                _pageBackground.SetTargetPosition(focus.Index + (float)focus.NormalizedOffset / 2);
+            }
         }
-        _lastScrollOffset = _scrollViewer.ScrollOffsetPixels;
+        else
+        {
+            if (_controlBackground && _lastScrollOffset is not null)
+            {
+                var scrollDelta = _scrollViewer.ScrollOffsetPixels - _lastScrollOffset.Value;
+                _pageBackground.ScrollBy(scrollDelta);
+            }
+            _lastScrollOffset = _scrollViewer.ScrollOffsetPixels;
+        }
 
         _pageBackground.Update(gameTime);
     }
@@ -341,16 +393,54 @@ internal class MenuLikeView
         _desktop.RefreshInputSnapshot();
     }
 
+    /// <summary>
+    /// 让条目背景的实际位移与页面背景实际位移同步，只差固定偏置：
+    /// 声明居中点对应的位移 减去 页面背景在该条目位置处的静止位移。
+    /// 换算借组件的读写完成：先写居中点，读回画面位移读数后叠加偏差
+    /// </summary>
+    /// <param name="background">待同步的条目背景组件</param>
+    /// <param name="index">条目索引</param>
+    /// <param name="focus">条目声明的目标居中点，以纹理像素计</param>
+    /// <param name="position">查看器当前的小数位置，用于折算页面背景在该条目位置处的静止位移</param>
+    private void SyncItemBackground(
+        HorizontalScrollingBackground background,
+        int index,
+        float focus,
+        float position
+    )
+    {
+        // 页面背景在该条目位置处的静止位移 = 目标位移 + 每位置位移量折算的位置差
+        var pageRestScroll =
+            _pageBackground.TargetScroll
+            + (index - position) * _pageBackground.TargetScrollPerPosition;
+
+        background.ActualFocusX = focus;
+        background.ActualScroll += _pageBackground.ActualScroll - pageRestScroll;
+    }
+
     public override void Draw(GameTime gameTime)
     {
-        // 应用背景偏移：主、次背景锚定到各自的条目
-        var actualBackgroundLeft = _pageBackground.ActualScroll;
-        _primaryBackground.TargetScroll =
-            actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ItemSpacing;
-        if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
+        // 主、次背景的实际位移与页面背景完全同步，只差各自条目的固定偏置
+        var focus = _scrollViewer.Focus;
+        if (!double.IsNaN(focus.NormalizedOffset))
         {
-            _secondaryBackground.TargetScroll =
-                actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ItemSpacing;
+            var position = focus.Index + (float)focus.NormalizedOffset / 2;
+            if (ViewModel.PrimaryItemBackgroundFocusX is { } primaryFocus)
+            {
+                SyncItemBackground(
+                    _primaryBackground,
+                    ViewModel.PrimaryItemIndex,
+                    primaryFocus,
+                    position
+                );
+            }
+            if (
+                ViewModel.SecondaryItemIndex is { } secondaryIndex
+                && ViewModel.SecondaryItemBackgroundFocusX is { } secondaryFocus
+            )
+            {
+                SyncItemBackground(_secondaryBackground, secondaryIndex, secondaryFocus, position);
+            }
         }
 
         _pageBackground.Draw();
@@ -495,10 +585,6 @@ internal class MenuLikeView
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
-
-        // 渐出时, 以第一预览偏移为准
-        _pageBackground.TargetScroll =
-            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ItemSpacing;
     }
 
     #endregion

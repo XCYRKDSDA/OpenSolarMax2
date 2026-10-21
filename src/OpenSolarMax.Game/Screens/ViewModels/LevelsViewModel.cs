@@ -5,7 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OneOf;
 using OpenSolarMax.Game.Level;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Sessions;
@@ -55,6 +57,12 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     public int InitializeIndex { get; }
 
+    public float? PrimaryItemBackgroundFocusX => PrimaryItemBackground is null ? null : 0;
+
+    public float? SecondaryItemBackgroundFocusX => SecondaryItemBackground is null ? null : 0;
+
+    public OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling { get; }
+
     public LevelsViewModel(
         Lifetime<ModSession> modSessionHandle,
         List<(LevelInfo Info, Lifetime<LevelSession> Preview)> levelPreviews,
@@ -70,6 +78,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _modSessionHandle = modSessionHandle;
         _loadedLevelPreviews = levelPreviews;
         _pageBackground = background;
+        BackgroundScrolling = modSessionHandle.Value.Metadata.BackgroundScrolling;
 
         // 生成小字
         _items = [.. _loadedLevelPreviews.Select(p => p.Info.Name)];

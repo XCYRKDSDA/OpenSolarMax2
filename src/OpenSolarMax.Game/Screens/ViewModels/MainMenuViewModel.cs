@@ -6,6 +6,7 @@ using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Animations;
+using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
@@ -55,6 +56,12 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
 
     [ObservableProperty]
     private ICommand _selectItemCommand;
+
+    public float? PrimaryItemBackgroundFocusX { get; private set; }
+
+    public float? SecondaryItemBackgroundFocusX { get; private set; }
+
+    public OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling { get; }
 
     // 主菜单界面没有回退命令
     public ICommand? BackwardCommand => null;
@@ -118,6 +125,11 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         _secondaryItemIndex = null;
         _secondaryItemPreview = null;
         _secondaryItemBackground = null;
+
+        // 页面背景在「OS」条目上对齐背景图的 960 处，每过一个条目按两个条目间距左移
+        BackgroundScrolling = OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling>.FromT0(
+            new LockedBackgroundScrolling(InitializeIndex, 960, new RelativeSpacing(2))
+        );
     }
 
     partial void OnPrimaryItemIndexChanged(int index)
@@ -126,12 +138,16 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         {
             PrimaryItemPreview = _builtinPreviews[index];
             PrimaryItemBackground = null;
+            PrimaryItemBackgroundFocusX = null;
         }
         else
         {
             index -= _builtinPreviews.Count;
             PrimaryItemPreview = _levelMods[index].Preview;
             PrimaryItemBackground = _levelMods[index].Background;
+            PrimaryItemBackgroundFocusX = _levelMods[index].Background is null
+                ? null
+                : BackgroundFocusXOf(_levelMods[index].Info);
         }
     }
 
@@ -143,20 +159,31 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
             {
                 SecondaryItemPreview = _builtinPreviews[index];
                 SecondaryItemBackground = null;
+                SecondaryItemBackgroundFocusX = null;
             }
             else
             {
                 index -= _builtinPreviews.Count;
                 SecondaryItemPreview = _levelMods[index].Preview;
                 SecondaryItemBackground = _levelMods[index].Background;
+                SecondaryItemBackgroundFocusX = _levelMods[index].Background is null
+                    ? null
+                    : BackgroundFocusXOf(_levelMods[index].Info);
             }
         }
         else
         {
             SecondaryItemPreview = null;
             SecondaryItemBackground = null;
+            SecondaryItemBackgroundFocusX = null;
         }
     }
+
+    /// <summary>
+    /// 模组背景的目标居中点：锁定模式停在第一关对应的居中点处，增量模式没有声明居中点，取 0
+    /// </summary>
+    private static float BackgroundFocusXOf(LevelModInfo info) =>
+        info.BackgroundScrolling.IsT0 ? info.BackgroundScrolling.AsT0.TargetFocusX : 0;
 
     private void OnSelectItem(int idx)
     {

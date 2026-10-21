@@ -242,12 +242,13 @@ internal class HorizontalScrollingBackground(GraphicsDevice graphicsDevice)
     public void SetTargetPosition(float position) => TargetFocusX = TargetFocusXAt(position);
 
     /// <summary>
-    /// 增量位移倍率。通过增量形式修改目标背景位移时施加于传入值的乘数，作用于画面像素
+    /// 增量位移倍率。通过增量形式修改目标背景位移时施加于传入值的乘数，作用于画面像素；
+    /// 负值表示背景与条目同向移动
     /// </summary>
-    public float DeltaScale { get; set; } = 2;
+    public float DeltaScale { get; set; } = -2;
 
     /// <summary>
-    /// 传入目标背景位移的变化量（画面像素），乘上增量位移倍率后按当前缩放换算，累加到目标状态
+    /// 传入条目位移增量（画面像素，条目向左移动为正），乘上增量位移倍率后按当前缩放换算，累加到目标状态
     /// </summary>
     public void ScrollBy(float delta) => TargetScroll += delta * DeltaScale;
 

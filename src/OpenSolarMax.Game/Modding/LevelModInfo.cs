@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using OneOf;
 using Zio;
 
 namespace OpenSolarMax.Game.Modding;
@@ -14,6 +15,7 @@ internal record LevelModInfo(
     string Description,
     string Link,
     DirectoryEntry Levels,
+    OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling,
     ImmutableArray<string> BehaviorDeps = default,
     ImmutableArray<string> ContentDeps = default
 ) : ICommonModInfo;

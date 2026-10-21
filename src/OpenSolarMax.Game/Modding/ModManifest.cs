@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace OpenSolarMax.Game.Modding;
 
 internal enum ModType
@@ -12,6 +14,49 @@ internal class ModDependencies
     public string[]? Behaviors { get; set; }
 
     public string[]? Content { get; set; }
+}
+
+/// <summary>
+/// 模组背景滚动声明。按 mode 键二选一：locked 为锁定模式，delta 为增量模式
+/// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "mode")]
+[JsonDerivedType(typeof(LockedBackgroundScrollingDeclaration), "locked")]
+[JsonDerivedType(typeof(DeltaBackgroundScrollingDeclaration), "delta")]
+internal abstract class BackgroundScrollingDeclaration { }
+
+/// <summary>
+/// 锁定模式的背景滚动声明
+/// </summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+internal class LockedBackgroundScrollingDeclaration : BackgroundScrollingDeclaration
+{
+    /// <summary>
+    /// 第一个关卡对应的目标居中点在背景纹理中的横坐标
+    /// </summary>
+    public required float FirstFocus { get; set; }
+
+    /// <summary>
+    /// 各关卡期望聚焦的居中点在背景纹理中的水平间距，与 spacingMultiplier 二选一
+    /// </summary>
+    public float? Spacing { get; set; }
+
+    /// <summary>
+    /// 相邻关卡的间距，以条目间距的倍数计，与 spacing 二选一；
+    /// 两者都缺席时按相对间距处理，倍数由界面层补默认值
+    /// </summary>
+    public float? SpacingMultiplier { get; set; }
+}
+
+/// <summary>
+/// 增量模式的背景滚动声明
+/// </summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+internal class DeltaBackgroundScrollingDeclaration : BackgroundScrollingDeclaration
+{
+    /// <summary>
+    /// 增量位移倍率，省略时使用 UI 层的默认倍率
+    /// </summary>
+    public float? DeltaScale { get; set; }
 }
 
 /// <summary>
@@ -70,6 +115,11 @@ internal class ModManifest
     /// 模组的关卡目录
     /// </summary>
     public string? Levels { get; set; }
+
+    /// <summary>
+    /// 模组的背景滚动声明
+    /// </summary>
+    public BackgroundScrollingDeclaration? BackgroundScrolling { get; set; }
 
     /// <summary>
     /// 模组的所有依赖
