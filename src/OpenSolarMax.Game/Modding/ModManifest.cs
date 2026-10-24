@@ -43,6 +43,12 @@ internal class ModManifest
     /// </summary>
     public string? Background { get; set; }
 
+    /// <summary>
+    /// 模组的主题音乐在资产中的路径。进入模组后在选关页持续播放<br/>
+    /// 若不指定，则进入模组后不切换音乐
+    /// </summary>
+    public string? Music { get; set; }
+
     public string Author { get; set; }
 
     public string Version { get; set; }

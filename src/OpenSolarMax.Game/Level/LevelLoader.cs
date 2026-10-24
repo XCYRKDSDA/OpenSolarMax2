@@ -16,6 +16,9 @@ internal class LevelLoader(
 {
     private class JsonLevel
     {
+        [JsonPropertyName("info")] // 关卡中仍然使用 info 字段以简写
+        public LevelMetadata? Metadata { get; set; }
+
         public List<string> Includes { get; set; } = [];
 
         public Dictionary<string, JsonElement> Templates { get; set; } = [];
@@ -141,6 +144,8 @@ internal class LevelLoader(
 
         return new LevelFile
         {
+            // info 只取主文件（收集序列的最后一个），不参与 include 合并
+            Metadata = collected[^1].Level.Metadata,
             Templates = templates,
             Entities = entities,
             Configs = configBuilder.Sources.Count > 0 ? configBuilder.Build() : null,

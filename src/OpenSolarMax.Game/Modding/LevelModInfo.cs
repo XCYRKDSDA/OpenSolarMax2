@@ -13,6 +13,8 @@ internal record LevelModInfo(
     string Version,
     string Description,
     string Link,
+    string? Music,
+    DirectoryEntry? Content,
     DirectoryEntry Levels,
     ImmutableArray<string> BehaviorDeps = default,
     ImmutableArray<string> ContentDeps = default
