@@ -14,5 +14,9 @@ public abstract class ViewModelBase : ObservableObject, IViewModel
 
     public virtual void Update(GameTime gameTime) { }
 
+    public virtual void OnActivated() { }
+
+    public virtual void OnDeactivated() { }
+
     public virtual void Dispose() { }
 }

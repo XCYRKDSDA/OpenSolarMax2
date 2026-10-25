@@ -158,6 +158,12 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         }
     }
 
+    public override void OnActivated()
+    {
+        // 暂无主界面音乐。回到主界面时淡出到静音
+        Game.Music.Stop(TimeSpan.FromSeconds(1));
+    }
+
     private void OnSelectItem(int idx)
     {
         // 避免在正在过渡时触发过渡
@@ -197,7 +203,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         return new ChapterPageContext(
             modSessionHandle,
             levelPreviews,
-            previewableLevelMod.Background!
+            previewableLevelMod.Background!,
+            modSession.Music
         );
     }
 }
