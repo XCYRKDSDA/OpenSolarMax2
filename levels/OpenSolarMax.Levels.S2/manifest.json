@@ -11,5 +11,6 @@
         "behaviors": [
             "OpenSolarMax.Mods.S2"
         ]
-    }
+    },
+    "music": "BGM.bank:/Title"
 }

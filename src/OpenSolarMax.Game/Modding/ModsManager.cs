@@ -132,6 +132,8 @@ internal class ModsManager
             manifest.Version,
             manifest.Description,
             manifest.Link,
+            manifest.Music,
+            dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).FirstOrDefault(),
             dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
             manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
             manifest.Dependencies?.Content?.ToImmutableArray() ?? []

@@ -11,9 +11,15 @@ internal abstract class ViewBase<T>(T viewModel, SolarMax game) : IScreen
 
     public T ViewModel => viewModel;
 
-    public virtual void OnActivated() { }
+    public virtual void OnActivated()
+    {
+        viewModel.OnActivated();
+    }
 
-    public virtual void OnDeactivated() { }
+    public virtual void OnDeactivated()
+    {
+        viewModel.OnDeactivated();
+    }
 
     public virtual void Update(GameTime gameTime)
     {

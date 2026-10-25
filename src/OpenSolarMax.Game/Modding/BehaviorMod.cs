@@ -24,7 +24,7 @@ internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? A
 /// <param name="GameplayBehaviorsInfo">游玩时的行为信息</param>
 /// <param name="PreviewBehaviorsInfo">预览时的行为信息</param>
 internal record BehaviorMod(
-    BehaviorModInfo Metadata,
+    BehaviorModInfo Info,
     ImmutableArray<IFileSystem> ContentFileSystems,
     IConfigurationRoot? Configs,
     Assembly Assembly,

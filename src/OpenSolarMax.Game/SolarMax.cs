@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Nine.Assets;
 using Nine.Screens;
+using OpenSolarMax.Game.Audio;
 using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.ViewModels;
@@ -23,6 +24,8 @@ public class SolarMax : XNAGame
     private AssetsManager _globalAssets;
 
     private FmodStudioSystem _globalFmodSystem;
+
+    private MusicManager _musicManager;
 
     private ScreenManager _globalScreenManager;
     private RenderTarget2D _renderTarget;
@@ -58,6 +61,8 @@ public class SolarMax : XNAGame
     public TaskScheduler BackgroundScheduler => _loadingTaskScheduler;
 
     public FmodStudioSystem FmodSystem => _globalFmodSystem;
+
+    public MusicManager Music => _musicManager;
 
     public AssetsManager Assets => _globalAssets;
 
@@ -111,6 +116,10 @@ public class SolarMax : XNAGame
         // 初始化全局资产
         _globalAssets = new AssetsManager(Folders.Content);
 
+        // 初始化全局音乐管理器
+        _musicManager = new MusicManager(this);
+        Components.Add(_musicManager);
+
         // 初始化全局界面管理器
         _globalScreenManager = new ScreenManager(new ScreenFactory(this), this);
         Components.Add(_globalScreenManager);
@@ -127,6 +136,8 @@ public class SolarMax : XNAGame
     {
         base.UnloadContent();
 
+        // 先释放音乐实例，再释放 fmod 系统
+        _musicManager?.Dispose();
         _globalFmodSystem.release();
     }
 
