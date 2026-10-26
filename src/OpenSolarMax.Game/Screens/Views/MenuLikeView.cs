@@ -135,37 +135,6 @@ internal class MenuLikeView
         _scrollViewer.Scrolled += ScrollViewerOnScrolled;
         _scrollViewer.Confirmed += ScrollViewerOnConfirmed;
 
-        // 页面背景按该界面的配置落位：锁定模式按位置落位，增量模式按滚动量累加。
-        // 相对间距要用查看器的条目间距换算成画面位移增量，因此要等查看器建好再配置
-        viewModel.BackgroundScrolling.Switch(
-            // 锁定模式
-            locked =>
-            {
-                var spacing = locked.Spacing;
-                _pageBackground.PositionToTargetFocusX = new Dictionary<float, float>
-                {
-                    [locked.Position] = locked.TargetFocusX,
-                };
-                locked.Spacing.Switch(
-                    // 绝对距离间隔
-                    abs => _pageBackground.TargetFocusXPerPosition = abs.TargetFocusXPerPosition,
-                    // 相对距离间隔
-                    rel =>
-                        _pageBackground.TargetScrollPerPosition =
-                            -(rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
-                );
-                _pageBackground.TargetFocusX = locked.TargetFocusX;
-                _pageBackground.ActualScroll = _pageBackground.TargetScroll;
-            },
-            // 增量模式
-            delta =>
-            {
-                _pageBackground.DeltaScale = -(delta.DeltaScale ?? _defaultMultiplier);
-                _pageBackground.TargetScrollPerPosition =
-                    _scrollViewer.ItemSpacing * _pageBackground.DeltaScale;
-            }
-        );
-
         _primaryPreview = new FadableImage()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -361,7 +330,7 @@ internal class MenuLikeView
 
         if (ViewModel.BackgroundScrolling.IsT0)
         {
-            // 锁定模式：按当前聚焦的小数位置切换页面的目标背景位移，由收敛控制律滑过去。
+            // 锁定模式：纹理锚点 = 按归一化位置在相邻条目锚点间插值。视口目标点固定为 0，即锁定在视口中心。
             // NormalizedOffset 以半条目为单位，折算成位置后加上最近的条目索引
             var focus = _scrollViewer.Focus;
             if (
@@ -370,20 +339,29 @@ internal class MenuLikeView
                 && !double.IsNaN(focus.NormalizedOffset)
             )
             {
-                _pageBackground.SetTargetPosition(focus.Index + (float)focus.NormalizedOffset / 2);
+                var position = focus.Index + (float)focus.NormalizedOffset / 2;
+                var locked = ViewModel.BackgroundScrolling.AsT0;
+                var spacing = locked.Spacing.Match(
+                    // 绝对间距
+                    abs => abs.TextureAnchorPerPosition,
+                    // 相对间距
+                    rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+                );
+                _pageBackground.TextureAnchor =
+                    locked.TextureAnchor + (position - locked.Position) * spacing;
             }
         }
         else
         {
             if (_controlBackground && _lastScrollOffset is not null)
             {
+                var multiplier =
+                    ViewModel.BackgroundScrolling.AsT1.DeltaScale ?? _defaultMultiplier;
                 var scrollDelta = _scrollViewer.ScrollOffsetPixels - _lastScrollOffset.Value;
-                _pageBackground.ScrollBy(scrollDelta);
+                _pageBackground.TargetAnchorInViewport -= scrollDelta * multiplier;
             }
             _lastScrollOffset = _scrollViewer.ScrollOffsetPixels;
         }
-
-        _pageBackground.Update(gameTime);
     }
 
     public override void OnActivated()
@@ -394,58 +372,71 @@ internal class MenuLikeView
     }
 
     /// <summary>
-    /// 让条目背景的实际位移与页面背景实际位移同步，只差固定偏置：
-    /// 声明居中点对应的位移 减去 页面背景在该条目位置处的静止位移。
-    /// 换算借组件的读写完成：先写居中点，读回画面位移读数后叠加偏差
+    /// 让条目背景跟随页面背景。
+    /// 将条目背景纹理锚点锁在条目声明的值，视口目标点取页面背景的视口锚点 + (条目索引 − 小数位置) × 每位置间距
     /// </summary>
     /// <param name="background">待同步的条目背景组件</param>
     /// <param name="index">条目索引</param>
-    /// <param name="focus">条目声明的目标居中点，以纹理像素计</param>
-    /// <param name="position">查看器当前的小数位置，用于折算页面背景在该条目位置处的静止位移</param>
+    /// <param name="textureAnchor">条目声明的纹理锚点，以纹理像素计</param>
+    /// <param name="position">查看器当前的小数位置，决定该条目锚点相对页面背景锚点的距离</param>
     private void SyncItemBackground(
         HorizontalScrollingBackground background,
         int index,
-        float focus,
+        float textureAnchor,
         float position
     )
     {
-        // 页面背景在该条目位置处的静止位移 = 目标位移 + 每位置位移量折算的位置差
-        var pageRestScroll =
-            _pageBackground.TargetScroll
-            + (index - position) * _pageBackground.TargetScrollPerPosition;
+        var spacing = ViewModel.BackgroundScrolling.Match(
+            // 锁定式
+            locked =>
+                locked.Spacing.Match(
+                    // 绝对间距
+                    abs => abs.TextureAnchorPerPosition,
+                    // 相对间距
+                    rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+                ),
+            // 增量式
+            delta => (delta.DeltaScale ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+        );
 
-        background.ActualFocusX = focus;
-        background.ActualScroll += _pageBackground.ActualScroll - pageRestScroll;
+        background.TextureAnchor = textureAnchor;
+        background.TargetAnchorInViewport =
+            _pageBackground.ActualAnchorInViewport + (index - position) * spacing;
     }
 
     public override void Draw(GameTime gameTime)
     {
-        // 主、次背景的实际位移与页面背景完全同步，只差各自条目的固定偏置
+        // 主、次背景的锚点跟着页面背景的实际位置走，距离为条目与当前位置的间距
         var focus = _scrollViewer.Focus;
         if (!double.IsNaN(focus.NormalizedOffset))
         {
             var position = focus.Index + (float)focus.NormalizedOffset / 2;
-            if (ViewModel.PrimaryItemBackgroundFocusX is { } primaryFocus)
+            if (ViewModel.PrimaryItemBackgroundTextureAnchor is { } primaryTextureAnchor)
             {
                 SyncItemBackground(
                     _primaryBackground,
                     ViewModel.PrimaryItemIndex,
-                    primaryFocus,
+                    primaryTextureAnchor,
                     position
                 );
             }
             if (
                 ViewModel.SecondaryItemIndex is { } secondaryIndex
-                && ViewModel.SecondaryItemBackgroundFocusX is { } secondaryFocus
+                && ViewModel.SecondaryItemBackgroundTextureAnchor is { } secondaryTextureAnchor
             )
             {
-                SyncItemBackground(_secondaryBackground, secondaryIndex, secondaryFocus, position);
+                SyncItemBackground(
+                    _secondaryBackground,
+                    secondaryIndex,
+                    secondaryTextureAnchor,
+                    position
+                );
             }
         }
 
-        _pageBackground.Draw();
-        _secondaryBackground.Draw();
-        _primaryBackground.Draw();
+        _pageBackground.Draw(gameTime);
+        _secondaryBackground.Draw(gameTime);
+        _primaryBackground.Draw(gameTime);
         _desktop.Render();
 
         // 叠加曝光
@@ -531,7 +522,8 @@ internal class MenuLikeView
         );
         return new GamePlayTransitionSourceState(
             sourcePreviewLocation,
-            _pageBackground.ActualScroll
+            _pageBackground.TextureAnchor,
+            _pageBackground.TargetAnchorInViewport
         );
     }
 
@@ -545,8 +537,9 @@ internal class MenuLikeView
         _floatingPreview!.Width = state.WorldPreviewRegion.Width;
         _floatingPreview!.Height = state.WorldPreviewRegion.Height;
 
-        // 渐出时, 以背景预览偏移为准
-        _pageBackground.TargetScroll = state.BackgroundOffset;
+        // 渐出时, 以背景预览位置为准
+        _pageBackground.TextureAnchor = state.BackgroundTextureAnchor;
+        _pageBackground.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion
@@ -567,7 +560,11 @@ internal class MenuLikeView
 
     ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionSourceState(1, _primaryBackground.ActualScroll);
+        return new ChapterTransitionSourceState(
+            1,
+            _primaryBackground.TextureAnchor,
+            _primaryBackground.TargetAnchorInViewport
+        );
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
@@ -605,7 +602,11 @@ internal class MenuLikeView
 
     ChapterTransitionTargetState? IVisualConfigurable<ChapterTransitionTargetState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionTargetState(1, _pageBackground.ActualScroll);
+        return new ChapterTransitionTargetState(
+            1,
+            _pageBackground.TextureAnchor,
+            _pageBackground.TargetAnchorInViewport
+        );
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
@@ -624,8 +625,9 @@ internal class MenuLikeView
     {
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
 
-        // 渐入时, 以背景预览偏移为准
-        _pageBackground.TargetScroll = state.BackgroundOffset;
+        // 渐入时, 以背景预览位置为准
+        _pageBackground.TextureAnchor = state.BackgroundTextureAnchor;
+        _pageBackground.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion

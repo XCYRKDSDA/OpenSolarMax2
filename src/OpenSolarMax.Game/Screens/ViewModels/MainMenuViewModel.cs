@@ -57,9 +57,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
-    public float? PrimaryItemBackgroundFocusX { get; private set; }
+    public float? PrimaryItemBackgroundTextureAnchor { get; private set; }
 
-    public float? SecondaryItemBackgroundFocusX { get; private set; }
+    public float? SecondaryItemBackgroundTextureAnchor { get; private set; }
 
     public OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling { get; }
 
@@ -138,16 +138,16 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         {
             PrimaryItemPreview = _builtinPreviews[index];
             PrimaryItemBackground = null;
-            PrimaryItemBackgroundFocusX = null;
+            PrimaryItemBackgroundTextureAnchor = null;
         }
         else
         {
             index -= _builtinPreviews.Count;
             PrimaryItemPreview = _levelMods[index].Preview;
             PrimaryItemBackground = _levelMods[index].Background;
-            PrimaryItemBackgroundFocusX = _levelMods[index].Background is null
+            PrimaryItemBackgroundTextureAnchor = _levelMods[index].Background is null
                 ? null
-                : BackgroundFocusXOf(_levelMods[index].Info);
+                : BackgroundTextureAnchorOf(_levelMods[index].Info);
         }
     }
 
@@ -159,31 +159,31 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
             {
                 SecondaryItemPreview = _builtinPreviews[index];
                 SecondaryItemBackground = null;
-                SecondaryItemBackgroundFocusX = null;
+                SecondaryItemBackgroundTextureAnchor = null;
             }
             else
             {
                 index -= _builtinPreviews.Count;
                 SecondaryItemPreview = _levelMods[index].Preview;
                 SecondaryItemBackground = _levelMods[index].Background;
-                SecondaryItemBackgroundFocusX = _levelMods[index].Background is null
+                SecondaryItemBackgroundTextureAnchor = _levelMods[index].Background is null
                     ? null
-                    : BackgroundFocusXOf(_levelMods[index].Info);
+                    : BackgroundTextureAnchorOf(_levelMods[index].Info);
             }
         }
         else
         {
             SecondaryItemPreview = null;
             SecondaryItemBackground = null;
-            SecondaryItemBackgroundFocusX = null;
+            SecondaryItemBackgroundTextureAnchor = null;
         }
     }
 
     /// <summary>
-    /// 模组背景的目标居中点：锁定模式停在第一关对应的居中点处，增量模式没有声明居中点，取 0
+    /// 模组背景的纹理锚点：锁定模式取第一关对应的纹理锚点，增量模式没有声明，取 0
     /// </summary>
-    private static float BackgroundFocusXOf(LevelModInfo info) =>
-        info.BackgroundScrolling.IsT0 ? info.BackgroundScrolling.AsT0.TargetFocusX : 0;
+    private static float BackgroundTextureAnchorOf(LevelModInfo info) =>
+        info.BackgroundScrolling.IsT0 ? info.BackgroundScrolling.AsT0.TextureAnchor : 0;
 
     private void OnSelectItem(int idx)
     {

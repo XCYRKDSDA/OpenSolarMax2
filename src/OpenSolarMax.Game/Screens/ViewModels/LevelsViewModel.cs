@@ -57,9 +57,10 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     public int InitializeIndex { get; }
 
-    public float? PrimaryItemBackgroundFocusX => PrimaryItemBackground is null ? null : 0;
+    public float? PrimaryItemBackgroundTextureAnchor => PrimaryItemBackground is null ? null : 0;
 
-    public float? SecondaryItemBackgroundFocusX => SecondaryItemBackground is null ? null : 0;
+    public float? SecondaryItemBackgroundTextureAnchor =>
+        SecondaryItemBackground is null ? null : 0;
 
     public OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling { get; }
 

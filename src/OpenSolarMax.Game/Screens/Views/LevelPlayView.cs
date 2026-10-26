@@ -399,7 +399,7 @@ internal class LevelPlayView
     public override void Draw(GameTime gameTime)
     {
         // 先画背景
-        _background.Draw();
+        _background.Draw(gameTime);
 
         // 再画世界
         _desktop.UpdateLayout(); // 强行排版一次
@@ -466,7 +466,8 @@ internal class LevelPlayView
         return new GamePlayTransitionTargetState(
             targetPreviewLocation,
             currentSpeed,
-            _background.ActualScroll
+            _background.TextureAnchor,
+            _background.TargetAnchorInViewport
         );
     }
 
@@ -483,8 +484,9 @@ internal class LevelPlayView
         // 设置世界仿真速度
         ViewModel.SimulateSpeed = state.WorldSpeed;
 
-        // 设置背景偏移
-        _background.TargetScroll = state.BackgroundOffset;
+        // 设置背景位置
+        _background.TextureAnchor = state.BackgroundTextureAnchor;
+        _background.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion

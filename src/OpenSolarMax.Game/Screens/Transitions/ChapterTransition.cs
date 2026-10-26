@@ -9,16 +9,25 @@ namespace OpenSolarMax.Game.Screens.Transitions;
 /// 从主界面到选关界面或者选关界面内部过渡时, 前一个界面的视觉状态
 /// </summary>
 /// <param name="PreviewScaling">预览区域的放缩</param>
-/// <param name="BackgroundOffset">滚动背景的偏移</param>
-internal record ChapterTransitionSourceState(float PreviewScaling, float BackgroundOffset);
+/// <param name="BackgroundTextureAnchor">滚动背景的纹理锚点</param>
+/// <param name="BackgroundAnchorInViewport">滚动背景的视口目标点</param>
+internal record ChapterTransitionSourceState(
+    float PreviewScaling,
+    float BackgroundTextureAnchor,
+    float BackgroundAnchorInViewport
+);
 
 /// <summary>
 /// 从主界面到选关界面或者选关界面内部过渡时, 后一个界面的视觉状态
 /// </summary>
 /// <param name="PreviewCustomFadeIn">预览区域的内置淡化程度</param>
-/// <param name="BackgroundOffset">滚动背景的偏移</param>
-/// <returns></returns>
-internal record ChapterTransitionTargetState(float PreviewCustomFadeIn, float BackgroundOffset);
+/// <param name="BackgroundTextureAnchor">滚动背景的纹理锚点</param>
+/// <param name="BackgroundAnchorInViewport">滚动背景的视口目标点</param>
+internal record ChapterTransitionTargetState(
+    float PreviewCustomFadeIn,
+    float BackgroundTextureAnchor,
+    float BackgroundAnchorInViewport
+);
 
 internal record ChapterTransitionContext(Texture2D Background);
 
@@ -102,7 +111,8 @@ internal class ChapterTransitionScreen(
             _duration = TimeSpan.Zero;
             prevScreen.EnterConfigurationMode();
             _sourceDefaultState = prevScreen.GetDefaultVisualState()!;
-            _background.TargetScroll = _sourceDefaultState.BackgroundOffset;
+            _background.TextureAnchor = _sourceDefaultState.BackgroundTextureAnchor;
+            _background.TargetAnchorInViewport = _sourceDefaultState.BackgroundAnchorInViewport;
         }
         else if (_stage == Stage.First && _duration >= _firstStageDuration)
         {
@@ -192,7 +202,8 @@ internal class ChapterTransitionScreen(
             prevScreen.ApplyVisualState(
                 new ChapterTransitionSourceState(
                     prevPreviewScaling,
-                    _sourceDefaultState!.BackgroundOffset
+                    _sourceDefaultState!.BackgroundTextureAnchor,
+                    _sourceDefaultState!.BackgroundAnchorInViewport
                 )
             );
 
@@ -210,7 +221,8 @@ internal class ChapterTransitionScreen(
             nextScreen!.ApplyVisualState(
                 new ChapterTransitionTargetState(
                     nextPreviewFadeIn,
-                    _sourceDefaultState!.BackgroundOffset
+                    _sourceDefaultState!.BackgroundTextureAnchor,
+                    _sourceDefaultState!.BackgroundAnchorInViewport
                 )
             );
 
@@ -222,7 +234,7 @@ internal class ChapterTransitionScreen(
         // 画背景
         game.GraphicsDevice.SetRenderTargets(originalRenderTargets);
         game.GraphicsDevice.Clear(Color.Black);
-        _background.Draw();
+        _background.Draw(gameTime);
 
         // 叠加界面
         if (alpha is null)

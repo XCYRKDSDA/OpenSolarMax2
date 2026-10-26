@@ -20,10 +20,10 @@ internal interface IMenuLikeViewModel : IViewModel
     Texture2D? PrimaryItemBackground { get; }
 
     /// <summary>
-    /// 主条目背景的目标居中点，以纹理像素计。锁定模式取该模组第一关对应的目标居中点，
+    /// 主条目背景的纹理锚点，以纹理像素计。锁定模式取该模组第一关对应的纹理锚点，
     /// 增量模式取 0；背景为空时为 null
     /// </summary>
-    float? PrimaryItemBackgroundFocusX { get; }
+    float? PrimaryItemBackgroundTextureAnchor { get; }
 
     int? SecondaryItemIndex { get; set; }
 
@@ -32,9 +32,9 @@ internal interface IMenuLikeViewModel : IViewModel
     Texture2D? SecondaryItemBackground { get; }
 
     /// <summary>
-    /// 次条目背景的目标居中点，规则同 <see cref="PrimaryItemBackgroundFocusX"/>，背景为空时为 null
+    /// 次条目背景的纹理锚点，规则同 <see cref="PrimaryItemBackgroundTextureAnchor"/>，背景为空时为 null
     /// </summary>
-    float? SecondaryItemBackgroundFocusX { get; }
+    float? SecondaryItemBackgroundTextureAnchor { get; }
 
     Texture2D PageBackground { get; }
 
