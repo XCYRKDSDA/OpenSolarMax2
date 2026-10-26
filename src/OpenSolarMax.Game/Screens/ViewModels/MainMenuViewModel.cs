@@ -6,7 +6,6 @@ using FontStashSharp;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Animations;
-using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
@@ -61,7 +60,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
 
     public float? SecondaryItemBackgroundTextureAnchor { get; private set; }
 
-    public OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling { get; }
+    public BackgroundScrolling BackgroundScrolling { get; }
 
     // 主菜单界面没有回退命令
     public ICommand? BackwardCommand => null;
@@ -127,9 +126,7 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         _secondaryItemBackground = null;
 
         // 页面背景在「OS」条目上对齐背景图的 960 处，每过一个条目按两个条目间距左移
-        BackgroundScrolling = OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling>.FromT0(
-            new LockedBackgroundScrolling(InitializeIndex, 960, new RelativeSpacing(2))
-        );
+        BackgroundScrolling = new BackgroundScrolling(InitializeIndex, 960, new RelativeSpacing(2));
     }
 
     partial void OnPrimaryItemIndexChanged(int index)
@@ -180,10 +177,10 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     }
 
     /// <summary>
-    /// 模组背景的纹理锚点：锁定模式取第一关对应的纹理锚点，增量模式没有声明，取 0
+    /// 模组背景的纹理锚点：取模组声明的第一关对应的纹理锚点
     /// </summary>
     private static float BackgroundTextureAnchorOf(LevelModInfo info) =>
-        info.BackgroundScrolling.IsT0 ? info.BackgroundScrolling.AsT0.TextureAnchor : 0;
+        info.BackgroundScrolling.TextureAnchor;
 
     private void OnSelectItem(int idx)
     {

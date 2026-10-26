@@ -30,8 +30,7 @@ internal class MenuLikeView
     private readonly HorizontalScrollingBackground _primaryBackground,
         _secondaryBackground;
 
-    // 页面背景的滚动配置未声明行为时统一使用的默认倍率：
-    // 增量模式作为增量位移倍率，锁定模式作为相对间距的倍数
+    // 相对间距未声明倍数时使用的默认倍率
     private const float _defaultMultiplier = 2;
 
     private readonly FadableImage _primaryPreview,
@@ -43,8 +42,6 @@ internal class MenuLikeView
     private bool _controlBackground = true;
 
     private float _commonBackgroundAlpha = 1;
-
-    private int? _lastScrollOffset = null;
 
     #region 曝光相关
 
@@ -328,39 +325,25 @@ internal class MenuLikeView
         base.Update(gameTime);
         _scrollViewer.Update(gameTime);
 
-        if (ViewModel.BackgroundScrolling.IsT0)
+        // 纹理锚点 = 按归一化位置在相邻条目锚点间插值。视口目标点固定为 0，即锁定在视口中心。
+        // NormalizedOffset 以半条目为单位，折算成位置后加上最近的条目索引
+        var focus = _scrollViewer.Focus;
+        if (
+            _controlBackground
+            && _scrollViewer.Widgets.Count > 0
+            && !double.IsNaN(focus.NormalizedOffset)
+        )
         {
-            // 锁定模式：纹理锚点 = 按归一化位置在相邻条目锚点间插值。视口目标点固定为 0，即锁定在视口中心。
-            // NormalizedOffset 以半条目为单位，折算成位置后加上最近的条目索引
-            var focus = _scrollViewer.Focus;
-            if (
-                _controlBackground
-                && _scrollViewer.Widgets.Count > 0
-                && !double.IsNaN(focus.NormalizedOffset)
-            )
-            {
-                var position = focus.Index + (float)focus.NormalizedOffset / 2;
-                var locked = ViewModel.BackgroundScrolling.AsT0;
-                var spacing = locked.Spacing.Match(
-                    // 绝对间距
-                    abs => abs.TextureAnchorPerPosition,
-                    // 相对间距
-                    rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
-                );
-                _pageBackground.TextureAnchor =
-                    locked.TextureAnchor + (position - locked.Position) * spacing;
-            }
-        }
-        else
-        {
-            if (_controlBackground && _lastScrollOffset is not null)
-            {
-                var multiplier =
-                    ViewModel.BackgroundScrolling.AsT1.DeltaScale ?? _defaultMultiplier;
-                var scrollDelta = _scrollViewer.ScrollOffsetPixels - _lastScrollOffset.Value;
-                _pageBackground.TargetAnchorInViewport -= scrollDelta * multiplier;
-            }
-            _lastScrollOffset = _scrollViewer.ScrollOffsetPixels;
+            var position = focus.Index + (float)focus.NormalizedOffset / 2;
+            var scrolling = ViewModel.BackgroundScrolling;
+            var spacing = scrolling.Spacing.Match(
+                // 绝对间距
+                abs => abs.TextureAnchorPerPosition,
+                // 相对间距
+                rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+            );
+            _pageBackground.TextureAnchor =
+                scrolling.TextureAnchor + (position - scrolling.Position) * spacing;
         }
     }
 
@@ -386,17 +369,11 @@ internal class MenuLikeView
         float position
     )
     {
-        var spacing = ViewModel.BackgroundScrolling.Match(
-            // 锁定式
-            locked =>
-                locked.Spacing.Match(
-                    // 绝对间距
-                    abs => abs.TextureAnchorPerPosition,
-                    // 相对间距
-                    rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
-                ),
-            // 增量式
-            delta => (delta.DeltaScale ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+        var spacing = ViewModel.BackgroundScrolling.Spacing.Match(
+            // 绝对间距
+            abs => abs.TextureAnchorPerPosition,
+            // 相对间距
+            rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
         );
 
         background.TextureAnchor = textureAnchor;

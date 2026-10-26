@@ -17,18 +17,10 @@ internal class ModDependencies
 }
 
 /// <summary>
-/// 模组背景滚动声明。按 mode 键二选一：locked 为锁定模式，delta 为增量模式
-/// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "mode")]
-[JsonDerivedType(typeof(LockedBackgroundScrollingDeclaration), "locked")]
-[JsonDerivedType(typeof(DeltaBackgroundScrollingDeclaration), "delta")]
-internal abstract class BackgroundScrollingDeclaration { }
-
-/// <summary>
-/// 锁定模式的背景滚动声明
+/// 模组背景滚动声明
 /// </summary>
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-internal class LockedBackgroundScrollingDeclaration : BackgroundScrollingDeclaration
+internal class BackgroundScrollingDeclaration
 {
     /// <summary>
     /// 第一个关卡对应的目标居中点在背景纹理中的横坐标
@@ -45,18 +37,6 @@ internal class LockedBackgroundScrollingDeclaration : BackgroundScrollingDeclara
     /// 两者都缺席时按相对间距处理，倍数由界面层补默认值
     /// </summary>
     public float? SpacingMultiplier { get; set; }
-}
-
-/// <summary>
-/// 增量模式的背景滚动声明
-/// </summary>
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-internal class DeltaBackgroundScrollingDeclaration : BackgroundScrollingDeclaration
-{
-    /// <summary>
-    /// 增量位移倍率，省略时使用 UI 层的默认倍率
-    /// </summary>
-    public float? DeltaScale { get; set; }
 }
 
 /// <summary>

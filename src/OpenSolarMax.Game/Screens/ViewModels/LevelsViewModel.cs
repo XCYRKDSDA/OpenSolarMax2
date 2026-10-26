@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OneOf;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
@@ -62,7 +61,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     public float? SecondaryItemBackgroundTextureAnchor =>
         SecondaryItemBackground is null ? null : 0;
 
-    public OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling> BackgroundScrolling { get; }
+    public BackgroundScrolling BackgroundScrolling { get; }
 
     public LevelsViewModel(
         Lifetime<ModSession> modSessionHandle,

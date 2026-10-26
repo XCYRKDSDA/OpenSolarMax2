@@ -122,44 +122,30 @@ internal class ModsManager
     }
 
     /// <summary>
-    /// 按锁定模式的声明生成间距：绝对间距与相对倍数二选一，同时出现即报错，
+    /// 按声明生成间距：绝对间距与相对倍数二选一，同时出现即报错，
     /// 都缺席按未声明倍数的相对间距处理，默认倍数由界面层补
     /// </summary>
     private static OneOf<AbsoluteSpacing, RelativeSpacing> CreateSpacing(
-        LockedBackgroundScrollingDeclaration locked
+        BackgroundScrollingDeclaration declaration
     ) =>
-        (locked.Spacing, locked.SpacingMultiplier) switch
+        (declaration.Spacing, declaration.SpacingMultiplier) switch
         {
-            (not null, null) => new AbsoluteSpacing(locked.Spacing.Value),
-            (null, not null) => new RelativeSpacing(locked.SpacingMultiplier),
+            (not null, null) => new AbsoluteSpacing(declaration.Spacing.Value),
+            (null, not null) => new RelativeSpacing(declaration.SpacingMultiplier),
             (not null, not null) => throw new InvalidOperationException(
-                "锁定模式的背景滚动声明不能同时给出 spacing 与 spacingMultiplier"
+                "背景滚动声明不能同时给出 spacing 与 spacingMultiplier"
             ),
             (null, null) => new RelativeSpacing(null),
         };
 
     private static LevelModInfo CreateLevelModInfo(DirectoryEntry dir, ModManifest manifest)
     {
-        var backgroundScrolling = manifest.BackgroundScrolling switch
-        {
-            // 锁定模式
-            LockedBackgroundScrollingDeclaration locked => OneOf<
-                LockedBackgroundScrolling,
-                DeltaBackgroundScrolling
-            >.FromT0(new LockedBackgroundScrolling(0, locked.FirstFocus, CreateSpacing(locked))),
-            // 增量模式
-            DeltaBackgroundScrollingDeclaration delta => OneOf<
-                LockedBackgroundScrolling,
-                DeltaBackgroundScrolling
-            >.FromT1(new DeltaBackgroundScrolling(delta.DeltaScale)),
-            // 整个声明缺席时按未指定倍率的增量模式算
-            null => OneOf<LockedBackgroundScrolling, DeltaBackgroundScrolling>.FromT1(
-                new DeltaBackgroundScrolling(null)
-            ),
-            _ => throw new InvalidOperationException(
-                $"未知的背景滚动声明类型：{manifest.BackgroundScrolling.GetType().Name}"
-            ),
-        };
+        // 初始纹理锚点没有合理的默认值，关卡模组必须声明背景滚动方式
+        var backgroundScrollingDeclaration =
+            manifest.BackgroundScrolling
+            ?? throw new InvalidOperationException(
+                $"关卡模组 {manifest.FullName} 缺少 backgroundScrolling 声明"
+            );
 
         return new LevelModInfo(
             dir,
@@ -172,7 +158,11 @@ internal class ModsManager
             manifest.Description,
             manifest.Link,
             dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
-            backgroundScrolling,
+            new BackgroundScrolling(
+                0,
+                backgroundScrollingDeclaration.FirstFocus,
+                CreateSpacing(backgroundScrollingDeclaration)
+            ),
             manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
             manifest.Dependencies?.Content?.ToImmutableArray() ?? []
         );

@@ -13,7 +13,6 @@
         ]
     },
     "backgroundScrolling": {
-        "mode": "locked",
         "firstFocus": 960,
         "spacing": 179.2
     }
