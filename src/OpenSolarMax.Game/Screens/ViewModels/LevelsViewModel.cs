@@ -86,7 +86,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _loadedLevelPreviews = levelPreviews;
         _pageBackground = background;
         _music = themeMusic;
-        BackgroundScrolling = modSessionHandle.Value.Metadata.BackgroundScrolling;
+        BackgroundScrolling = modSessionHandle.Value.ModInfo.BackgroundScrolling;
 
         // 生成小字
         _items = [.. _loadedLevelPreviews.Select(p => p.Info.Name)];

@@ -50,7 +50,7 @@ internal sealed class ModSession : IDisposable
     /// <summary>
     /// 该模组的元数据
     /// </summary>
-    public LevelModInfo Metadata { get; }
+    public LevelModInfo ModInfo { get; }
 
     public ModSession(
         LevelModInfo info,
@@ -66,7 +66,7 @@ internal sealed class ModSession : IDisposable
     {
         _behaviorMods = behaviorMods;
         _contentMods = contentMods;
-        Metadata = metadata;
+        ModInfo = info;
         _localAssets = localAssets;
         _localConfigs = localConfigs;
         _game = game;
