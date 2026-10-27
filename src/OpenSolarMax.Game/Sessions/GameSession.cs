@@ -118,6 +118,13 @@ internal sealed class GameSession : IDisposable
             )
         )
             localFileSystem.AddFileSystem(fs);
+        // 最后添加关卡包的资产目录
+        if (info.Content is { } content)
+        {
+            localFileSystem.AddFileSystem(
+                new SubFileSystem(content.FileSystem, content.Path, owned: false)
+            );
+        }
 
         // 构建局部资产管理器
         var localAssets = new AssetsManager(localFileSystem);

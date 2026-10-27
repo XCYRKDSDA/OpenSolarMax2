@@ -7,6 +7,7 @@ using BitFaster.Caching.Lru;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
+using OpenSolarMax.Game.Audio;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
@@ -31,6 +32,8 @@ internal sealed class ModSession : IDisposable
     private readonly IConfigurationRoot _localConfigs;
     private readonly SolarMax _game;
 
+    private readonly SafeFmodEventDescription? _music;
+
     private readonly LevelLoader _levelLoader;
     private readonly BehaviorBranch _gameplayBranch;
     private readonly BehaviorBranch _previewBranch;
@@ -50,7 +53,7 @@ internal sealed class ModSession : IDisposable
     public LevelModInfo Metadata { get; }
 
     public ModSession(
-        LevelModInfo metadata,
+        LevelModInfo info,
         ImmutableArray<BehaviorMod> behaviorMods,
         ImmutableArray<ContentMod> contentMods,
         IAssetsManager localAssets,
@@ -68,12 +71,17 @@ internal sealed class ModSession : IDisposable
         _localConfigs = localConfigs;
         _game = game;
 
+        // 解析主题音乐；模组未声明则为 null
+        _music = info.Music is { } music
+            ? _localAssets.Load<SafeFmodEventDescription>(music)
+            : null;
+
         _levelLoader = new LevelLoader(declarationSchemaInfos);
 
         _gameplayBranch = BuildBranch(gameplayBehaviors);
         _previewBranch = BuildBranch(previewBehaviors);
 
-        _levels = metadata
+        _levels = info
             .Levels.EnumerateFiles("*.json")
             .Where(f => !f.Name.StartsWith('.'))
             .Select(f => new LevelInfo(f.NameWithoutExtension, f))
@@ -81,6 +89,11 @@ internal sealed class ModSession : IDisposable
     }
 
     public IReadOnlyList<LevelInfo> Levels => _levels;
+
+    /// <summary>
+    /// 模组的主题音乐；未声明时为 null
+    /// </summary>
+    public SafeFmodEventDescription? Music => _music;
 
     // TODO: 游玩关卡理想上应缓存（关卡数据或已构建的世界），实际进入时再拷贝一份，
     // 以免两次进入的状态互相续上；当前没有拷贝机制，故每次重新读取并构建。
@@ -131,63 +144,55 @@ internal sealed class ModSession : IDisposable
 
         var behaviors = branch.Behaviors;
 
+        // 解析关卡音乐：仅游玩分支需要；关卡未声明则为 null
+        SafeFmodEventDescription? music = null;
+        if (injectFmod && level.Metadata?.Music is { } musicPath)
+            music = _localAssets.Load<SafeFmodEventDescription>(musicPath);
+
         // 构造世界和四大系统
         var world = World.Create();
+
+        // 注入系统构造函数的服务。仅游玩阶段暴露音乐管理器，预览分支不注入
+        var dynamicArguments = new Dictionary<Type, object>
+        {
+            [typeof(IAssetsManager)] = _localAssets,
+            [typeof(IConceptFactory)] = branch.Factory,
+            [typeof(IConfigurationRoot)] = effectiveConfigs,
+        };
+        if (injectFmod)
+            dynamicArguments[typeof(MusicManager)] = _game.Music;
+
+        var hookImplMethods = behaviors.HookImplMethods.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value as IReadOnlyList<MethodInfo>
+        );
+
         var inputSystem = new AggregateSystem(
             world,
             behaviors.SystemTypes.Input,
-            new Dictionary<Type, object>
-            {
-                [typeof(IAssetsManager)] = _localAssets,
-                [typeof(IConceptFactory)] = branch.Factory,
-                [typeof(IConfigurationRoot)] = effectiveConfigs,
-            },
-            behaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key,
-                kv => kv.Value as IReadOnlyList<MethodInfo>
-            )
+            dynamicArguments,
+            hookImplMethods
         );
         var aiSystem = new AggregateSystem(
             world,
             behaviors.SystemTypes.Ai,
-            new Dictionary<Type, object>
-            {
-                [typeof(IAssetsManager)] = _localAssets,
-                [typeof(IConceptFactory)] = branch.Factory,
-                [typeof(IConfigurationRoot)] = effectiveConfigs,
-            },
-            behaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key,
-                kv => kv.Value as IReadOnlyList<MethodInfo>
-            )
+            dynamicArguments,
+            hookImplMethods
         );
         var simulateSystem = new AggregateSystem(
             world,
             behaviors.SystemTypes.Simulate,
-            new Dictionary<Type, object>
-            {
-                [typeof(IAssetsManager)] = _localAssets,
-                [typeof(IConceptFactory)] = branch.Factory,
-                [typeof(IConfigurationRoot)] = effectiveConfigs,
-            },
-            behaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key,
-                kv => kv.Value as IReadOnlyList<MethodInfo>
-            )
+            dynamicArguments,
+            hookImplMethods
         );
         var renderSystem = new AggregateSystem(
             world,
             behaviors.SystemTypes.Render,
-            new Dictionary<Type, object>
+            new Dictionary<Type, object>(dynamicArguments)
             {
                 [typeof(GraphicsDevice)] = _game.GraphicsDevice,
-                [typeof(IAssetsManager)] = _localAssets,
-                [typeof(IConfigurationRoot)] = effectiveConfigs,
             },
-            behaviors.HookImplMethods.ToDictionary(
-                kv => kv.Key,
-                kv => kv.Value as IReadOnlyList<MethodInfo>
-            )
+            hookImplMethods
         );
 
         // 加载关卡内容
@@ -209,7 +214,7 @@ internal sealed class ModSession : IDisposable
         }
 
         // 返回结果
-        return new LevelSession(world, inputSystem, aiSystem, simulateSystem, renderSystem);
+        return new LevelSession(world, inputSystem, aiSystem, simulateSystem, renderSystem, music);
     }
 
     public void Dispose()

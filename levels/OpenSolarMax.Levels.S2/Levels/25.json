@@ -1,4 +1,8 @@
 {
+    "info": {
+        "music": "BGM.bank:/Battle3"
+    },
+
     "includes": [ ".common.json" ],
 
     "entities": [

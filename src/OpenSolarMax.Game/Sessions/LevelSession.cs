@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using Nine.Assets;
 using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Sessions;
@@ -17,6 +18,11 @@ internal sealed class LevelSession : IDisposable
 
     public AggregateSystem RenderSystems { get; }
 
+    /// <summary>
+    /// 关卡声明的背景音乐；未声明时为 null
+    /// </summary>
+    public SafeFmodEventDescription? Music { get; }
+
     public bool Paused { get; set; } = false;
 
     public float SimulateSpeed { get; set; } = 1.0f;
@@ -26,7 +32,8 @@ internal sealed class LevelSession : IDisposable
         AggregateSystem inputSystems,
         AggregateSystem aiSystems,
         AggregateSystem simulateSystems,
-        AggregateSystem renderSystems
+        AggregateSystem renderSystems,
+        SafeFmodEventDescription? music
     )
     {
         World = world;
@@ -34,6 +41,7 @@ internal sealed class LevelSession : IDisposable
         _aiSystems = aiSystems;
         _simulateSystems = simulateSystems;
         RenderSystems = renderSystems;
+        Music = music;
     }
 
     public void Update(GameTime gameTime)

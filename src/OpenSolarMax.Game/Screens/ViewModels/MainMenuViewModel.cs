@@ -176,6 +176,12 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         }
     }
 
+    public override void OnActivated()
+    {
+        // 暂无主界面音乐。回到主界面时淡出到静音
+        Game.Music.Stop(TimeSpan.FromSeconds(1));
+    }
+
     /// <summary>
     /// 模组背景的纹理锚点：取模组声明的第一关对应的纹理锚点
     /// </summary>
@@ -221,7 +227,8 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         return new ChapterPageContext(
             modSessionHandle,
             levelPreviews,
-            previewableLevelMod.Background!
+            previewableLevelMod.Background!,
+            modSession.Music
         );
     }
 }

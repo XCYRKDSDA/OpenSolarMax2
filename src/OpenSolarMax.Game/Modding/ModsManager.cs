@@ -157,6 +157,8 @@ internal class ModsManager
             manifest.Version,
             manifest.Description,
             manifest.Link,
+            manifest.Music,
+            dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).FirstOrDefault(),
             dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
             new BackgroundScrolling(
                 0,

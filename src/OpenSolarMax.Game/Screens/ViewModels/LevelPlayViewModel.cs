@@ -68,6 +68,13 @@ internal partial class LevelPlayViewModel : ViewModelBase
         Game.ScreenManager.Backward();
     }
 
+    public override void OnActivated()
+    {
+        // 声明了关卡音乐就切换过去，未声明则维持当前曲目
+        if (_session.Music is { } music)
+            Game.Music.Play(music, TimeSpan.FromSeconds(1));
+    }
+
     public override void Update(GameTime gameTime)
     {
         _session.Update(gameTime);
