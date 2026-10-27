@@ -47,6 +47,11 @@ internal sealed class ModSession : IDisposable
         .AsScopedCache()
         .Build();
 
+    /// <summary>
+    /// 该模组的元数据
+    /// </summary>
+    public LevelModInfo ModInfo { get; }
+
     public ModSession(
         LevelModInfo info,
         ImmutableArray<BehaviorMod> behaviorMods,
@@ -61,6 +66,7 @@ internal sealed class ModSession : IDisposable
     {
         _behaviorMods = behaviorMods;
         _contentMods = contentMods;
+        ModInfo = info;
         _localAssets = localAssets;
         _localConfigs = localConfigs;
         _game = game;

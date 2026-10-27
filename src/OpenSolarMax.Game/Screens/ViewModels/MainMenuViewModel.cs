@@ -56,6 +56,12 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
     [ObservableProperty]
     private ICommand _selectItemCommand;
 
+    public float? PrimaryItemBackgroundTextureAnchor { get; private set; }
+
+    public float? SecondaryItemBackgroundTextureAnchor { get; private set; }
+
+    public BackgroundScrolling BackgroundScrolling { get; }
+
     // 主菜单界面没有回退命令
     public ICommand? BackwardCommand => null;
 
@@ -118,6 +124,9 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         _secondaryItemIndex = null;
         _secondaryItemPreview = null;
         _secondaryItemBackground = null;
+
+        // 页面背景在「OS」条目上对齐背景图的 960 处，每过一个条目按两个条目间距左移
+        BackgroundScrolling = new BackgroundScrolling(InitializeIndex, 960, new RelativeSpacing(2));
     }
 
     partial void OnPrimaryItemIndexChanged(int index)
@@ -126,12 +135,16 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         {
             PrimaryItemPreview = _builtinPreviews[index];
             PrimaryItemBackground = null;
+            PrimaryItemBackgroundTextureAnchor = null;
         }
         else
         {
             index -= _builtinPreviews.Count;
             PrimaryItemPreview = _levelMods[index].Preview;
             PrimaryItemBackground = _levelMods[index].Background;
+            PrimaryItemBackgroundTextureAnchor = _levelMods[index].Background is null
+                ? null
+                : BackgroundTextureAnchorOf(_levelMods[index].Info);
         }
     }
 
@@ -143,18 +156,23 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
             {
                 SecondaryItemPreview = _builtinPreviews[index];
                 SecondaryItemBackground = null;
+                SecondaryItemBackgroundTextureAnchor = null;
             }
             else
             {
                 index -= _builtinPreviews.Count;
                 SecondaryItemPreview = _levelMods[index].Preview;
                 SecondaryItemBackground = _levelMods[index].Background;
+                SecondaryItemBackgroundTextureAnchor = _levelMods[index].Background is null
+                    ? null
+                    : BackgroundTextureAnchorOf(_levelMods[index].Info);
             }
         }
         else
         {
             SecondaryItemPreview = null;
             SecondaryItemBackground = null;
+            SecondaryItemBackgroundTextureAnchor = null;
         }
     }
 
@@ -163,6 +181,12 @@ internal partial class MainMenuViewModel : ViewModelBase, IMenuLikeViewModel, IV
         // 暂无主界面音乐。回到主界面时淡出到静音
         Game.Music.Stop(TimeSpan.FromSeconds(1));
     }
+
+    /// <summary>
+    /// 模组背景的纹理锚点：取模组声明的第一关对应的纹理锚点
+    /// </summary>
+    private static float BackgroundTextureAnchorOf(LevelModInfo info) =>
+        info.BackgroundScrolling.TextureAnchor;
 
     private void OnSelectItem(int idx)
     {

@@ -33,9 +33,11 @@ internal class LevelPlayView
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
     {
+        // 背景偏移只由转场写入，无需组件自行收敛
         _background = new HorizontalScrollingBackground(game.GraphicsDevice)
         {
             Texture = viewModel.Background,
+            ControlMode = ScrollingBackgroundControlMode.Manual,
         };
 
         var pp = game.GraphicsDevice.PresentationParameters;
@@ -397,7 +399,7 @@ internal class LevelPlayView
     public override void Draw(GameTime gameTime)
     {
         // 先画背景
-        _background.Draw();
+        _background.Draw(gameTime);
 
         // 再画世界
         _desktop.UpdateLayout(); // 强行排版一次
@@ -464,7 +466,8 @@ internal class LevelPlayView
         return new GamePlayTransitionTargetState(
             targetPreviewLocation,
             currentSpeed,
-            _background.Left
+            _background.TextureAnchor,
+            _background.TargetAnchorInViewport
         );
     }
 
@@ -481,8 +484,9 @@ internal class LevelPlayView
         // 设置世界仿真速度
         ViewModel.SimulateSpeed = state.WorldSpeed;
 
-        // 设置背景偏移
-        _background.Left = state.BackgroundOffset;
+        // 设置背景位置
+        _background.TextureAnchor = state.BackgroundTextureAnchor;
+        _background.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion

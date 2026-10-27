@@ -8,17 +8,26 @@ namespace OpenSolarMax.Game.Screens.Transitions;
 /// 在选关界面和游玩界面之间过渡时, 源界面 (选关界面) 的视觉状态
 /// </summary>
 /// <param name="WorldPreviewRegion">关卡世界预览区域</param>
-internal record GamePlayTransitionSourceState(Rectangle WorldPreviewRegion, float BackgroundOffset);
+/// <param name="BackgroundTextureAnchor">滚动背景的纹理锚点</param>
+/// <param name="BackgroundAnchorInViewport">滚动背景的视口目标点</param>
+internal record GamePlayTransitionSourceState(
+    Rectangle WorldPreviewRegion,
+    float BackgroundTextureAnchor,
+    float BackgroundAnchorInViewport
+);
 
 /// <summary>
 /// 在选关界面和游玩界面之间过渡时, 目标界面 (游玩界面) 的视觉状态
 /// </summary>
 /// <param name="WorldRenderRegion">世界渲染区域</param>
 /// <param name="WorldSpeed">世界的运行速度</param>
+/// <param name="BackgroundTextureAnchor">滚动背景的纹理锚点</param>
+/// <param name="BackgroundAnchorInViewport">滚动背景的视口目标点</param>
 internal record GamePlayTransitionTargetState(
     Rectangle WorldRenderRegion,
     float WorldSpeed,
-    float BackgroundOffset
+    float BackgroundTextureAnchor,
+    float BackgroundAnchorInViewport
 );
 
 /// <summary>
@@ -83,12 +92,14 @@ internal class GamePlayTransitionScreen(
         return (
             new GamePlayTransitionSourceState(
                 new Rectangle(location, size),
-                sourceDefaultState.BackgroundOffset
+                sourceDefaultState.BackgroundTextureAnchor,
+                sourceDefaultState.BackgroundAnchorInViewport
             ),
             new GamePlayTransitionTargetState(
                 new Rectangle(location, size),
                 simulateSpeed,
-                sourceDefaultState.BackgroundOffset
+                sourceDefaultState.BackgroundTextureAnchor,
+                sourceDefaultState.BackgroundAnchorInViewport
             )
         );
     }

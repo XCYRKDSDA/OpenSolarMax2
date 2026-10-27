@@ -12,5 +12,9 @@
             "OpenSolarMax.Mods.S2"
         ]
     },
+    "backgroundScrolling": {
+        "firstFocus": 960,
+        "spacing": 179.2
+    },
     "music": "BGM.bank:/Title"
 }

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using OneOf;
 using Zio;
 
 namespace OpenSolarMax.Game.Modding;
@@ -120,8 +121,32 @@ internal class ModsManager
         );
     }
 
+    /// <summary>
+    /// 按声明生成间距：绝对间距与相对倍数二选一，同时出现即报错，
+    /// 都缺席按未声明倍数的相对间距处理，默认倍数由界面层补
+    /// </summary>
+    private static OneOf<AbsoluteSpacing, RelativeSpacing> CreateSpacing(
+        BackgroundScrollingDeclaration declaration
+    ) =>
+        (declaration.Spacing, declaration.SpacingMultiplier) switch
+        {
+            (not null, null) => new AbsoluteSpacing(declaration.Spacing.Value),
+            (null, not null) => new RelativeSpacing(declaration.SpacingMultiplier),
+            (not null, not null) => throw new InvalidOperationException(
+                "背景滚动声明不能同时给出 spacing 与 spacingMultiplier"
+            ),
+            (null, null) => new RelativeSpacing(null),
+        };
+
     private static LevelModInfo CreateLevelModInfo(DirectoryEntry dir, ModManifest manifest)
     {
+        // 初始纹理锚点没有合理的默认值，关卡模组必须声明背景滚动方式
+        var backgroundScrollingDeclaration =
+            manifest.BackgroundScrolling
+            ?? throw new InvalidOperationException(
+                $"关卡模组 {manifest.FullName} 缺少 backgroundScrolling 声明"
+            );
+
         return new LevelModInfo(
             dir,
             manifest.FullName,
@@ -135,6 +160,11 @@ internal class ModsManager
             manifest.Music,
             dir.EnumerateDirectories(manifest.Content ?? DefaultContentDir).FirstOrDefault(),
             dir.EnumerateDirectories(manifest.Levels ?? DefaultLevelsDir).First(),
+            new BackgroundScrolling(
+                0,
+                backgroundScrollingDeclaration.FirstFocus,
+                CreateSpacing(backgroundScrollingDeclaration)
+            ),
             manifest.Dependencies?.Behaviors?.ToImmutableArray() ?? [],
             manifest.Dependencies?.Content?.ToImmutableArray() ?? []
         );

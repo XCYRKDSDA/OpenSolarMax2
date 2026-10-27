@@ -16,6 +16,7 @@ internal record LevelModInfo(
     string? Music,
     DirectoryEntry? Content,
     DirectoryEntry Levels,
+    BackgroundScrolling BackgroundScrolling,
     ImmutableArray<string> BehaviorDeps = default,
     ImmutableArray<string> ContentDeps = default
 ) : ICommonModInfo;
