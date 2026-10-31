@@ -31,6 +31,8 @@ public abstract class ViewDefinition : IDefinition
             // 交互
             typeof(Camera),
             typeof(Projection),
+            typeof(FleetManipulationStatus), // 操作状态机
+            typeof(FleetManipulationSources), // 用户选择的飞行出发点来源
             typeof(MouseDeviceState), // 鼠标设备状态
             typeof(KeyboardDeviceState), // 键盘设备状态
             typeof(InputGesture), // 输入手势

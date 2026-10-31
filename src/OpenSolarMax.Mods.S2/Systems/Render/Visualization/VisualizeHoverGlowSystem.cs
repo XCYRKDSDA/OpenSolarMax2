@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -6,7 +5,6 @@ using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
@@ -20,6 +18,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [LateUpdate]
 [RenderSystem]
 [Priority((int)GraphicsLayer.Interface - 1)] // 内发光位于选择圈底部，要先行绘制
+[ReadCurr(typeof(PointingStatus))]
 [ReadCurr(typeof(Projection))]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize))]
@@ -30,7 +29,6 @@ public sealed partial class VisualizeHoverGlowSystem(
     [Section("systems:visualization:hover_glow")] IConfiguration configs
 ) : ICalcSystem
 {
-    private readonly int _minimalHitPixels = configs.RequireValue<int>("minimal_hit_pixels");
     private readonly float _radiusMultiplier = configs.RequireValue<float>("radius_multiplier");
     private readonly float _offset = configs.RequireValue<float>("offset");
     private readonly float _innerFactor = configs.RequireValue<float>("inner_factor");
@@ -41,19 +39,10 @@ public sealed partial class VisualizeHoverGlowSystem(
     public void Update() => DrawHoverGlowQuery(world);
 
     [Query]
-    [All<Projection>]
-    private void DrawHoverGlow(in Projection projection)
+    [All<PointingStatus, Projection>]
+    private void DrawHoverGlow(in PointingStatus pointing, in Projection projection)
     {
-        var mouse = Mouse.GetState();
-        var mouseInScreen = mouse.Position;
-
-        Entity? pointedPlanet = null;
-        var hoveringPlanet = pointedPlanet ??= GetHoveredPlanet(
-            in mouseInScreen,
-            in projection.WorldToScreen
-        );
-
-        if (hoveringPlanet == Entity.Null)
+        if (pointing.PointedEntity is not { } hoveringEntity)
             return;
 
         // 设置绘图参数
@@ -65,7 +54,7 @@ public sealed partial class VisualizeHoverGlowSystem(
         // 设置着色器坐标变换参数
         _glowRenderer.Effect.Projection = projection.ScreenToNdc;
 
-        var compos = hoveringPlanet.Get<ReferenceSize, AbsoluteTransform, Sprite>();
+        var compos = hoveringEntity.Get<ReferenceSize, AbsoluteTransform, Sprite>();
         ref readonly var refSize = ref compos.t0;
         ref readonly var pose = ref compos.t1;
         ref readonly var sprite = ref compos.t2;
@@ -82,54 +71,5 @@ public sealed partial class VisualizeHoverGlowSystem(
 
         var glowColor = sprite.Color * _alpha;
         _glowRenderer.DrawGlowCircle(ringInScreen, outerRadius, innerRadius, glowColor);
-    }
-
-    [Query]
-    [All<TreeRelationship<Anchorage>.AsParent, AbsoluteTransform>]
-    private void CheckHoveredPlanet(
-        Entity planet,
-        in AbsoluteTransform pose,
-        [Data] in Point mouseInScreen,
-        [Data] in Matrix worldToScreen,
-        [Data] ref Entity pointedPlanet,
-        [Data] ref float pointedPlanetZ
-    )
-    {
-        float radiusInScreen = _minimalHitPixels;
-        if (planet.Has<ReferenceSize>()) // 若对象没有参考尺寸，则按照最小命中像素数判定范围；否则按照参考尺寸判定，但不得小于最小值
-        {
-            ref readonly var refSize = ref planet.Get<ReferenceSize>();
-            var halfSizeInScreen = Vector2.TransformNormal(new(refSize.Radius), worldToScreen);
-            radiusInScreen = MathF.Max(
-                MathF.Abs(MathF.MaxMagnitude(halfSizeInScreen.X, halfSizeInScreen.Y)),
-                radiusInScreen
-            );
-        }
-
-        var positionInScreen = Vector3.Transform(pose.Translation, worldToScreen);
-        var delta = new Vector2(
-            positionInScreen.X - mouseInScreen.X,
-            positionInScreen.Y - mouseInScreen.Y
-        );
-        if (delta.Length() < radiusInScreen && positionInScreen.Z < pointedPlanetZ)
-        {
-            pointedPlanet = planet;
-            pointedPlanetZ = positionInScreen.Z;
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Entity GetHoveredPlanet(in Point mouseInScreen, in Matrix worldToScreen)
-    {
-        Entity pointedPlanet = Entity.Null;
-        float pointedPlanetZ = float.PositiveInfinity;
-        CheckHoveredPlanetQuery(
-            world,
-            in mouseInScreen,
-            in worldToScreen,
-            ref pointedPlanet,
-            ref pointedPlanetZ
-        );
-        return pointedPlanet;
     }
 }

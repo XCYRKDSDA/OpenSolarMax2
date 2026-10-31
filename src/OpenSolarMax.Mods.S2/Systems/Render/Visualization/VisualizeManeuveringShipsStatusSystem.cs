@@ -6,9 +6,9 @@ using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.Common.Utils;
@@ -30,7 +30,11 @@ public delegate bool? CheckLocationReachabilityCallback(
 [Priority((int)GraphicsLayer.Interface - 1)]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize))]
-[ReadCurr(typeof(ManeuveringShipsStatus))]
+[ReadCurr(typeof(FleetManipulationStatus))]
+[ReadCurr(typeof(FleetManipulationSources))]
+[ReadCurr(typeof(InputGesture))]
+[ReadCurr(typeof(MouseDeviceState))]
+[ReadCurr(typeof(PointingStatus))]
 [ReadCurr(typeof(Projection))]
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
@@ -235,10 +239,24 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
     }
 
     [Query]
-    [All<ManeuveringShipsStatus, Projection>]
-    private void DrawSelection(in ManeuveringShipsStatus status, in Projection projection)
+    [All<
+        FleetManipulationStatus,
+        FleetManipulationSources,
+        InputGesture,
+        PointingStatus,
+        Projection,
+        MouseDeviceState
+    >]
+    private void DrawSelection(
+        in FleetManipulationStatus manipulation,
+        in FleetManipulationSources sources,
+        in InputGesture gesture,
+        in PointingStatus pointing,
+        in Projection projection,
+        in MouseDeviceState mouseDevice
+    )
     {
-        var mouse = Mouse.GetState();
+        var mouseInScreen = mouseDevice.State.Position;
 
         // 设置绘图参数
         graphicsDevice.BlendState = BlendState.AlphaBlend;
@@ -252,104 +270,107 @@ public sealed partial class VisualizeManeuveringShipsStatusSystem(
             _segmentRenderer.Effect.Projection =
                 projection.ScreenToNdc;
 
-        ref readonly var selection = ref status.Selection;
-
-        var mouseInScreen = mouse.Position;
+        var state = manipulation.State;
 
         // 当处于默认状态时，绘制所有点选和正在选的星球
-        if (selection.State == ShipsSelection_State.SimpleSelecting)
+        if (state.IsT0)
         {
             // 绘制所有选中的星球
-            // TappingSource已经包含在SelectedSources中了，故不重复绘制
             DrawSelected(
-                selection.SimpleSelecting.SelectedSources,
+                sources.Departures,
                 in projection.WorldToScreen,
                 Enumerable.Repeat(_selectedRingColor, int.MaxValue),
                 _ringThickness
             );
 
-            // 绘制目标星球
-            if (selection.SimpleSelecting.TappingDestination != Entity.Null)
+            // 绘制候选出发星球
+            if (
+                state.AsT0.CandidateSource is { } candidateSource
+                && !sources.Departures.Contains(candidateSource)
+            )
                 DrawSelected(
-                    selection.SimpleSelecting.TappingDestination,
+                    candidateSource,
+                    in projection.WorldToScreen,
+                    _selectedRingColor,
+                    _ringThickness
+                );
+
+            // 绘制目标星球
+            if (state.AsT0.CandidateDestination is { } candidateDestination)
+                DrawSelected(
+                    candidateDestination,
                     in projection.WorldToScreen,
                     _selectedRingColor,
                     _ringThickness
                 );
         }
         // 当处于框选状态时，还需要绘制选框和选框内的星球
-        else if (selection.State == ShipsSelection_State.BoxSelectingSources)
+        else if (state.IsT1)
         {
+            var boxSelecting = state.AsT1;
+
             // 绘制所有选中的星球
             DrawSelected(
-                Enumerable.Concat(
-                    selection.BoxSelectingSources.OtherSelectedPlanets,
-                    selection.BoxSelectingSources.PlanetsInBox
-                ),
+                Enumerable.Concat(sources.Departures, boxSelecting.PlanetsInBox),
                 in projection.WorldToScreen,
                 Enumerable.Repeat(_selectedRingColor, int.MaxValue),
                 _ringThickness
             );
 
-            // 绘制选框
-            _boxRenderer.DrawBox(
-                selection.BoxSelectingSources.BoxInScreen,
-                _boxColor,
-                _boxThickness
-            );
+            // 绘制选框（矩形从拖拽手势的按下位置与当前位置计算）
+            if (gesture.State.TryPickT2(out var dragging, out _))
+            {
+                var boxInScreen = new Rectangle(
+                    new Point(
+                        Math.Min(dragging.CurrentPosition.X, dragging.PressedPosition.X),
+                        Math.Min(dragging.CurrentPosition.Y, dragging.PressedPosition.Y)
+                    ),
+                    new Point(
+                        Math.Abs(dragging.CurrentPosition.X - dragging.PressedPosition.X),
+                        Math.Abs(dragging.CurrentPosition.Y - dragging.PressedPosition.Y)
+                    )
+                );
+                _boxRenderer.DrawBox(boxInScreen, _boxColor, _boxThickness);
+            }
         }
         // 当处于拖拽状态时，还需要绘制起点到目标的线段
-        else if (selection.State == ShipsSelection_State.DraggingToDestination)
+        else if (state.IsT2)
         {
             // 所有不能抵达目标位置的出发点和边画红色圈
             // 如果所有出发点都无法到达目标点，则目标点画红色圈
 
-            var blockStates =
-                selection.DraggingToDestination.CandidateDestination == Entity.Null
-                    ? CalculateBlocking(
-                            selection.DraggingToDestination.SelectedSources,
-                            mouseInScreen.ToVector2(),
-                            Matrix.Invert(projection.WorldToScreen)
-                        )
-                        .ToArray()
-                    : CalculateBlocking(
-                            selection.DraggingToDestination.SelectedSources,
-                            selection.DraggingToDestination.CandidateDestination
-                        )
-                        .ToArray();
+            var candidateDestination = pointing.PointedEntity;
+            var blockStates = candidateDestination is { } target
+                ? CalculateBlocking(sources.Departures, target).ToArray()
+                : CalculateBlocking(
+                        sources.Departures,
+                        mouseInScreen.ToVector2(),
+                        Matrix.Invert(projection.WorldToScreen)
+                    )
+                    .ToArray();
 
             var sourceColors = blockStates.Select(b => b ? _blockedRingColor : _selectedRingColor);
             DrawSelected(
-                selection.DraggingToDestination.SelectedSources,
+                sources.Departures,
                 in projection.WorldToScreen,
                 sourceColors,
                 _ringThickness
             );
 
             var edgeColors = blockStates.Select(b => b ? _blockedLineColor : _lineColor);
-            if (selection.DraggingToDestination.CandidateDestination == Entity.Null)
+            if (candidateDestination is not { } lineTarget)
                 DrawLines(
-                    selection.DraggingToDestination.SelectedSources,
+                    sources.Departures,
                     mouseInScreen.ToVector2(),
                     in projection.WorldToScreen,
                     edgeColors
                 );
             else
             {
-                DrawLines(
-                    selection.DraggingToDestination.SelectedSources,
-                    selection.DraggingToDestination.CandidateDestination,
-                    in projection.WorldToScreen,
-                    edgeColors
-                );
+                DrawLines(sources.Departures, lineTarget, in projection.WorldToScreen, edgeColors);
 
                 var targetColor = blockStates.All(b => b) ? _blockedRingColor : _selectedRingColor;
-                DrawSelected(
-                    selection.DraggingToDestination.CandidateDestination,
-                    in projection.WorldToScreen,
-                    targetColor,
-                    _ringThickness
-                );
+                DrawSelected(lineTarget, in projection.WorldToScreen, targetColor, _ringThickness);
             }
         }
     }

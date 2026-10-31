@@ -23,9 +23,6 @@ minimal_select_pixels = 10
 dragging_threshold_pixels = 5
 holding_threshold_seconds = 0.5
 
-[systems.input.maneuvering]
-minimal_select_pixels = 10
-
 # 可视化系统相关
 
 [systems.visualization.anchored_ships]
@@ -71,7 +68,6 @@ line.blocked.color = "red"
 
 # 悬停发光的 radius_multiplier 与 offset 必须与上方 maneuvering_ships_status 的 ring.radius_multiplier、ring.offset 保持一致，保证发光外缘与细环重合
 [systems.visualization.hover_glow]
-minimal_hit_pixels = 10
 radius_multiplier = 2.4
 offset = -8
 inner_factor = 1.0
