@@ -386,6 +386,12 @@ internal class LevelPlayView
             new QueryDescription().WithAll<MouseDeviceState>(),
             (ref MouseDeviceState deviceState) => deviceState.State = mouseState
         );
+        // 广播键盘设备状态快照
+        var keyboardState = Keyboard.GetState();
+        ViewModel.World.Query(
+            new QueryDescription().WithAll<KeyboardDeviceState>(),
+            (ref KeyboardDeviceState deviceState) => deviceState.State = keyboardState
+        );
         ViewModel.InputSystem.Update(gameTime);
 
         base.Update(gameTime);
