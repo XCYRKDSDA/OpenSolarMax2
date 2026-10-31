@@ -380,17 +380,25 @@ internal class LevelPlayView
             (ref InputFocusState focusState2) => focusState2 = focusState
         );
 
-        // 广播鼠标设备状态快照
+        // 广播鼠标设备状态
         var mouseState = Mouse.GetState();
         ViewModel.World.Query(
             new QueryDescription().WithAll<MouseDeviceState>(),
-            (ref MouseDeviceState deviceState) => deviceState.State = mouseState
+            (ref MouseDeviceState deviceState) =>
+            {
+                deviceState.PreviousState = deviceState.State;
+                deviceState.State = mouseState;
+            }
         );
-        // 广播键盘设备状态快照
+        // 广播键盘设备状态
         var keyboardState = Keyboard.GetState();
         ViewModel.World.Query(
             new QueryDescription().WithAll<KeyboardDeviceState>(),
-            (ref KeyboardDeviceState deviceState) => deviceState.State = keyboardState
+            (ref KeyboardDeviceState deviceState) =>
+            {
+                deviceState.PreviousState = deviceState.State;
+                deviceState.State = keyboardState;
+            }
         );
         ViewModel.InputSystem.Update(gameTime);
 
