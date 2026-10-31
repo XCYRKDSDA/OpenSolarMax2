@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
@@ -365,6 +366,8 @@ internal class LevelPlayView
 
     public override void Update(GameTime gameTime)
     {
+        // TODO: 这里其实不该广播，只应当设置对应的那个 View 实体
+
         // 强行处理一次输入
         // _desktop.UpdateInput(); UpdateInput() 只修改状态不触发事件，但这就导致 Render() 中再次 UpdateInput() 后丢失了一些事件
         var focusState = new InputFocusState
@@ -375,6 +378,13 @@ internal class LevelPlayView
         ViewModel.World.Query(
             new QueryDescription().WithAll<InputFocusState>(),
             (ref InputFocusState focusState2) => focusState2 = focusState
+        );
+
+        // 广播鼠标设备状态快照
+        var mouseState = Mouse.GetState();
+        ViewModel.World.Query(
+            new QueryDescription().WithAll<MouseDeviceState>(),
+            (ref MouseDeviceState deviceState) => deviceState.State = mouseState
         );
         ViewModel.InputSystem.Update(gameTime);
 

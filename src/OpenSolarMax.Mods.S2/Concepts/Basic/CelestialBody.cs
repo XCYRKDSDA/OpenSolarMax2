@@ -44,7 +44,8 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(Colonizable), // 允许进行殖民
             typeof(ColonizationState), // 殖民状态
             // 其他
-            typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
+            typeof(ReferenceSize), // 参考尺寸，用于可视化相关
+            typeof(Pickable), // 可被点选
             // 选择圈相关
             typeof(PlanetSelectionRing.AsPlanet), // 星球的选择圈索引
             // AI 相关
@@ -156,6 +157,9 @@ public class CelestialBodyApplier(
 
         // 设置参考尺寸
         commandBuffer.Set(in entity, new ReferenceSize { Radius = desc.ReferenceRadius });
+
+        // 设置可点选命中半径
+        commandBuffer.Set(in entity, new Pickable { HitRadius = desc.ReferenceRadius });
 
         // 随机设置同步轨道
         var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;

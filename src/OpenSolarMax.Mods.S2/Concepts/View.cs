@@ -32,6 +32,8 @@ public abstract class ViewDefinition : IDefinition
             typeof(Camera),
             typeof(Projection),
             typeof(ManeuveringShipsStatus),
+            typeof(MouseDeviceState), // 鼠标设备状态快照
+            typeof(PointingStatus), // 点选状态
             typeof(FMOD.Studio.System),
             typeof(Viewport),
             typeof(InputFocusState),

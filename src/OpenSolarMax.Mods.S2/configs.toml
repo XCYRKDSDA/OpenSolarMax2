@@ -18,6 +18,9 @@ arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间
 
 # 输入系统相关
 
+[systems.input]
+minimal_select_pixels = 10
+
 [systems.input.maneuvering]
 minimal_select_pixels = 10
 
