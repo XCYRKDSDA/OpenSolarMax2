@@ -34,6 +34,7 @@ public abstract class ViewDefinition : IDefinition
             typeof(ManeuveringShipsStatus),
             typeof(MouseDeviceState), // 鼠标设备状态快照
             typeof(KeyboardDeviceState), // 键盘设备状态快照
+            typeof(InputGesture), // 输入手势
             typeof(PointingStatus), // 点选状态
             typeof(FMOD.Studio.System),
             typeof(Viewport),
