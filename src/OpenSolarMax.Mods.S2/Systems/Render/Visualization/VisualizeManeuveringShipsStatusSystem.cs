@@ -39,16 +39,17 @@ public delegate bool? CheckLocationReachabilityCallback(
 public sealed partial class VisualizeManeuveringShipsStatusSystem(
     World world,
     GraphicsDevice graphicsDevice,
-    [Section("systems:visualization:maneuvering_ships_status")] IConfiguration configs
+    [Section("systems:visualization:maneuvering_ships_status")] IConfiguration configs,
+    [Section("applier:selection_ring")] IConfiguration selectionRingConfigs
 ) : ICalcSystem
 {
-    private readonly float _ringRadiusFactor = configs.RequireValue<float>(
-        "ring:radius_multiplier"
+    private readonly float _ringRadiusFactor = selectionRingConfigs.RequireValue<float>(
+        "radius_multiplier"
     );
-    private readonly float _ringThickness = configs.RequireValue<float>("ring:thickness");
-    private readonly float _ringOffset = configs.RequireValue<float>("ring:offset");
+    private readonly float _ringThickness = selectionRingConfigs.RequireValue<float>("thickness");
+    private readonly float _ringOffset = selectionRingConfigs.RequireValue<float>("offset");
     private readonly Color _blockedRingColor = configs.RequireValue<Color>("ring:blocked:color");
-    private readonly Color _selectedRingColor = configs.RequireValue<Color>("ring:selected:color");
+    private readonly Color _selectedRingColor = selectionRingConfigs.RequireValue<Color>("color");
 
     private readonly float _boxThickness = configs.RequireValue<float>("box:thickness");
     private readonly Color _boxColor = configs.RequireValue<Color>("box:color");

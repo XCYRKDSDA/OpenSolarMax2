@@ -133,6 +133,7 @@ internal sealed class GameSession : IDisposable
         localAssets.RegisterLoader(new TextureRegionLoader());
         localAssets.RegisterLoader(new NinePatchRegionLoader());
         localAssets.RegisterLoader(new FontSystemLoader());
+        localAssets.RegisterLoader(new AposShapeFontLoader());
         localAssets.RegisterLoader(new ByteArrayLoader());
         localAssets.RegisterLoader(
             new EntityAnimationClipLoader()

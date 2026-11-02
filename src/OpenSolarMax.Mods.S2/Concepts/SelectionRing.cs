@@ -1,7 +1,11 @@
 using Arch.Buffer;
 using Arch.Core;
+using Arch.Core.Extensions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Components;
 
@@ -26,9 +30,12 @@ public abstract class SelectionRingDefinition : IDefinition
     /// </summary>
     public static Signature Signature { get; } =
         new(
-            typeof(SelectionRingVisual),
+            typeof(Shape),
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted),
+            typeof(AbsoluteTransform),
+            typeof(TreeRelationship<RelativeTransform>.AsChild),
+            typeof(TreeRelationship<RelativeTransform>.AsParent),
             typeof(PlanetSelectionRing.AsRing),
             typeof(ViewSelectionRing.AsRing)
         );
@@ -55,12 +62,45 @@ public class SelectionRingDescription : IDescription
 /// 选择圈实体应用器。创建选择圈实体并建立两个关系（Planet-SelectionRing 和 View-SelectionRing）。
 /// </summary>
 [Apply(ConceptNames.SelectionRing)]
-public class SelectionRingApplier(IConceptFactory factory) : IApplier<SelectionRingDescription>
+public class SelectionRingApplier(
+    IConceptFactory factory,
+    [Section("applier:selection_ring")] IConfiguration configs
+) : IApplier<SelectionRingDescription>
 {
+    private readonly float _radiusMultiplier = configs.RequireValue<float>("radius_multiplier");
+    private readonly float _offset = configs.RequireValue<float>("offset");
+    private readonly float _thickness = configs.RequireValue<float>("thickness");
+    private readonly Color _color = configs.RequireValue<Color>("color");
+
+    private readonly TransformableApplier _transformableApplier = new(factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, SelectionRingDescription desc)
     {
-        // 设置选择圈的初始视觉状态（选中状态，Alpha=1）
-        commandBuffer.Set(in entity, new SelectionRingVisual() { Alpha = 1, Scale = 1 });
+        var radius = desc.Planet.Get<ReferenceSize>().Radius * _radiusMultiplier;
+
+        commandBuffer.Set(
+            in entity,
+            new Shape
+            {
+                Geometry = new Shape.Ring(
+                    Vector2.Zero,
+                    radius,
+                    _thickness,
+                    _offset,
+                    Shape.ThicknessAlignment.Centered
+                ),
+                Color = _color,
+            }
+        );
+
+        _transformableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TransformableDescription
+            {
+                Transform = new RelativeTransformOptions { Parent = desc.Planet },
+            }
+        );
 
         // 创建 Planet-SelectionRing 关系实体
         var planetRingDesc = new PlanetSelectionRingDescription()
