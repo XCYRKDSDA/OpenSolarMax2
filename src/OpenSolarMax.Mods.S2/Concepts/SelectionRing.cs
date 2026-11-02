@@ -36,8 +36,7 @@ public abstract class SelectionRingDefinition : IDefinition
             typeof(AbsoluteTransform),
             typeof(TreeRelationship<RelativeTransform>.AsChild),
             typeof(TreeRelationship<RelativeTransform>.AsParent),
-            typeof(PlanetSelectionRing.AsRing),
-            typeof(ViewSelectionRing.AsRing)
+            typeof(PlanetSelectionRing.AsRing)
         );
 }
 
@@ -59,7 +58,7 @@ public class SelectionRingDescription : IDescription
 }
 
 /// <summary>
-/// 选择圈实体应用器。创建选择圈实体并建立两个关系（Planet-SelectionRing 和 View-SelectionRing）。
+/// 选择圈实体应用器。创建选择圈实体并建立与星球的 Planet-SelectionRing 关系。
 /// </summary>
 [Apply(ConceptNames.SelectionRing)]
 public class SelectionRingApplier(
@@ -114,15 +113,6 @@ public class SelectionRingApplier(
             ConceptNames.PlanetSelectionRing,
             planetRingDesc
         );
-
-        // 创建 View-SelectionRing 关系实体
-        var viewRingDesc = new ViewSelectionRingDescription() { View = desc.View, Ring = entity };
-        factory.Make(
-            World.Worlds[entity.WorldId],
-            commandBuffer,
-            ConceptNames.ViewSelectionRing,
-            viewRingDesc
-        );
     }
 }
 
@@ -155,33 +145,5 @@ public class PlanetSelectionRingApplier : IApplier<PlanetSelectionRingDescriptio
     )
     {
         commandBuffer.Set(in entity, new PlanetSelectionRing(desc.Planet, desc.Ring));
-    }
-}
-
-// 视图-选择圈关系概念
-public static partial class ConceptNames
-{
-    public const string ViewSelectionRing = "ViewSelectionRing";
-}
-
-[Define(ConceptNames.ViewSelectionRing)]
-public abstract class ViewSelectionRingDefinition : IDefinition
-{
-    public static Signature Signature { get; } = new(typeof(ViewSelectionRing));
-}
-
-[Describe(ConceptNames.ViewSelectionRing)]
-public class ViewSelectionRingDescription : IDescription
-{
-    public required Entity View { get; set; }
-    public required Entity Ring { get; set; }
-}
-
-[Apply(ConceptNames.ViewSelectionRing)]
-public class ViewSelectionRingApplier : IApplier<ViewSelectionRingDescription>
-{
-    public void Apply(CommandBuffer commandBuffer, Entity entity, ViewSelectionRingDescription desc)
-    {
-        commandBuffer.Set(in entity, new ViewSelectionRing(desc.View, desc.Ring));
     }
 }

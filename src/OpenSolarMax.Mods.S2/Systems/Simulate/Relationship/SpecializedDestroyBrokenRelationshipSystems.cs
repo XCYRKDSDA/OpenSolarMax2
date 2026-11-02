@@ -21,13 +21,6 @@ public sealed class DestroyBrokenPlanetSelectionRingsSystem(EventRegistry regist
     : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(registry) { }
 
 /// <summary>
-/// 清理已损坏的视图-选择圈关系。当视图或选择圈被销毁时，自动清理关系实体。
-/// </summary>
-[SimulateSystem, Reactive]
-public sealed class DestroyBrokenViewSelectionRingsSystem(EventRegistry registry)
-    : DestroyBrokenRelationshipsSystem<ViewSelectionRing>(registry) { }
-
-/// <summary>
 /// 清理已损坏的首府关系。当首府天体或阵营被销毁时，自动清理关系实体。
 /// </summary>
 [SimulateSystem, Reactive]
