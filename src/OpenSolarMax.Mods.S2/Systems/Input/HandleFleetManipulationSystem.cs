@@ -206,6 +206,10 @@ public sealed partial class HandleFleetManipulationSystem(
         var mouse = mouseDevice.State;
         var previousMouse = mouseDevice.PreviousState;
         var keepPrevious = keyboardDevice.State[Keys.LeftShift] == KeyState.Down;
+        var leftPressEdge =
+            previousMouse.LeftButton == ButtonState.Released
+            && mouse.LeftButton == ButtonState.Pressed
+            && focus.MouseFocused;
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // 简单选择
@@ -214,6 +218,9 @@ public sealed partial class HandleFleetManipulationSystem(
         {
             if (mouse.LeftButton == ButtonState.Pressed && focus.MouseFocused)
             {
+                if (leftPressEdge && pointing.PointedEntity is null && !keepPrevious)
+                    CommitSelection(view, ref sources, [], keepPrevious, commandBuffer);
+
                 if (gesture.State.TryPickT2(out _, out _) && pointing.PointedEntity is null)
                 {
                     if (simpleSelecting.CandidateSource is { } candidateSource)
@@ -240,7 +247,7 @@ public sealed partial class HandleFleetManipulationSystem(
                 && mouse.LeftButton == ButtonState.Released
             )
             {
-                // 松开时提交候选；没有候选则按点击空白处理
+                // 松开时提交候选
                 if (simpleSelecting.CandidateSource is { } candidateSource)
                     CommitSelection(
                         view,
@@ -249,8 +256,6 @@ public sealed partial class HandleFleetManipulationSystem(
                         keepPrevious,
                         commandBuffer
                     );
-                else
-                    CommitSelection(view, ref sources, [], keepPrevious, commandBuffer);
 
                 status.State = new FleetManipulation_SimpleSelecting();
             }
