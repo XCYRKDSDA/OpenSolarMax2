@@ -149,7 +149,7 @@ internal sealed class ModSession : IDisposable
         if (injectFmod && level.Metadata?.Music is { } musicPath)
             music = _localAssets.Load<SafeFmodEventDescription>(musicPath);
 
-        // 构造世界和四大系统
+        // 构造世界和模拟、渲染系统
         var world = World.Create();
 
         // 注入系统构造函数的服务。仅游玩阶段暴露音乐管理器，预览分支不注入
@@ -167,18 +167,6 @@ internal sealed class ModSession : IDisposable
             kv => kv.Value as IReadOnlyList<MethodInfo>
         );
 
-        var inputSystem = new AggregateSystem(
-            world,
-            behaviors.SystemTypes.Input,
-            dynamicArguments,
-            hookImplMethods
-        );
-        var aiSystem = new AggregateSystem(
-            world,
-            behaviors.SystemTypes.Ai,
-            dynamicArguments,
-            hookImplMethods
-        );
         var simulateSystem = new AggregateSystem(
             world,
             behaviors.SystemTypes.Simulate,
@@ -214,7 +202,7 @@ internal sealed class ModSession : IDisposable
         }
 
         // 返回结果
-        return new LevelSession(world, inputSystem, aiSystem, simulateSystem, renderSystem, music);
+        return new LevelSession(world, simulateSystem, renderSystem, music);
     }
 
     public void Dispose()

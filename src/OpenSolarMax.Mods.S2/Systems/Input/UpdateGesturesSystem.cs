@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 using InputGestureState = OneOf.OneOf<
     OpenSolarMax.Mods.S2.Components.InputGesture_Idle,
@@ -20,9 +21,10 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 手势系统。监控视图输入，识别特殊手势，写入 <see cref="InputGesture"/>
 /// </summary>
 [LateUpdate]
-[InputSystem]
+[SimulateSystem]
 [ReadCurr(typeof(MouseDeviceState))]
 [Calc(typeof(InputGesture))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(InputGesture))]
 public sealed partial class UpdateGesturesSystem(
     World world,
     [Section("systems:input")] IConfiguration configs

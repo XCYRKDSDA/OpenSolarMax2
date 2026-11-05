@@ -6,6 +6,6 @@ using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 
-[AiSystem, Update]
+[SimulateSystem, Update]
 [Tick(typeof(AiTimer))]
 public class AiCountDownSystem(World world) : CountDownSystemBase<AiTimer>(world), ITickSystem { }

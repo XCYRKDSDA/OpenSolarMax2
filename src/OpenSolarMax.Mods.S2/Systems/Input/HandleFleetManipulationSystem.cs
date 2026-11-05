@@ -22,7 +22,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 舰队操纵系统。维持视图上的操纵状态机，处理点选、框选、拖拽与右键派兵
 /// </summary>
 [LateUpdate]
-[InputSystem]
+[SimulateSystem]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(InputFocusState))]
@@ -36,6 +36,12 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(KeyboardDeviceState))]
 [Calc(typeof(FleetManipulationStatus))]
 [Calc(typeof(FleetManipulationSources))]
+[ExecuteAfter(
+    typeof(ApplyAnimationSystem),
+    "默认动画系统优先执行",
+    typeof(FleetManipulationStatus),
+    typeof(FleetManipulationSources)
+)]
 [DelayedCalc]
 public sealed partial class HandleFleetManipulationSystem(
     World world,

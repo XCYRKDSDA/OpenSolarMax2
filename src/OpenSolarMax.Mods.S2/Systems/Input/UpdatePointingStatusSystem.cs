@@ -17,13 +17,14 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 命中半径取 Pickable 的屏幕投影，但不小于最小选择像素数。
 /// </summary>
 [LateUpdate]
-[InputSystem]
+[SimulateSystem]
 [
     ReadCurr(typeof(MouseDeviceState)),
     ReadCurr(typeof(Projection)),
     ReadCurr(typeof(AbsoluteTransform)),
     Calc(typeof(PointingStatus))
 ]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(PointingStatus))]
 public sealed partial class UpdatePointingStatusSystem(
     World world,
     [Section("systems:input")] IConfiguration configs

@@ -4,11 +4,12 @@ using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 
-[AiSystem, Update]
+[SimulateSystem, Update]
 [Tick(typeof(PlanetAiTimers))]
 public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
 {
@@ -27,9 +28,10 @@ public partial class CountDownPlanetAiTimersSystem(World world) : ITickSystem
     public void Update(GameTime gameTime) => CountDownQuery(world, gameTime);
 }
 
-[AiSystem, LateUpdate]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(InTeam.AsTeam))]
 [Calc(typeof(PlanetAiTimers))]
+[ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(PlanetAiTimers))]
 public partial class CleanPlanetAiTimerEntry(World world) : ICalcSystem
 {
     [Query]

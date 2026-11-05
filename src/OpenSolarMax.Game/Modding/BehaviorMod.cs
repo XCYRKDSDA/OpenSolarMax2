@@ -293,12 +293,6 @@ internal record BehaviorMod(
             if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
                 systemTypes.Simulate.Add(type);
 
-            if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
-                systemTypes.Input.Add(type);
-
-            if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
-                systemTypes.Ai.Add(type);
-
             if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
                 systemTypes.Render.Add(type);
         }

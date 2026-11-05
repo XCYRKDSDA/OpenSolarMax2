@@ -130,6 +130,13 @@ internal sealed record SystemDeclaration
     /// <exception cref="Exception">阶段属性缺失、多于一个或阶段属性与实现接口不匹配时抛出</exception>
     public static SystemDeclaration CheckFrom(Type systemType)
     {
+        var hasSimulate = systemType.GetCustomAttributes<SimulateSystemAttribute>().Any();
+        var hasRender = systemType.GetCustomAttributes<RenderSystemAttribute>().Any();
+        if (new[] { hasSimulate, hasRender }.Count(f => f) != 1)
+            throw new Exception(
+                $"System {systemType} must declare exactly one of SimulateSystemAttribute or RenderSystemAttribute."
+            );
+
         var hasReactive = systemType.GetCustomAttributes<ReactiveAttribute>().Any();
         var hasUpdate = systemType.GetCustomAttributes<UpdateAttribute>().Any();
         var hasLateUpdate = systemType.GetCustomAttributes<LateUpdateAttribute>().Any();
@@ -149,6 +156,11 @@ internal sealed record SystemDeclaration
 
     private static SystemDeclaration CheckReactiveSystem(Type systemType)
     {
+        if (systemType.GetCustomAttributes<RenderSystemAttribute>().Any())
+            throw new Exception(
+                $"Render system {systemType} must not be reactive: reactive callbacks may create or destroy entities."
+            );
+
         // 必须实现 IReactiveSystem
         if (!systemType.GetInterfaces().Contains(typeof(IReactiveSystem)))
             throw new Exception(
@@ -214,6 +226,11 @@ internal sealed record SystemDeclaration
 
     private static SystemDeclaration CheckUpdateSystem(Type systemType)
     {
+        if (systemType.GetCustomAttributes<RenderSystemAttribute>().Any())
+            throw new Exception(
+                $"Render system {systemType} must not be an integration system: Render only allows LateUpdate."
+            );
+
         // 必须实现 ITickSystem
         if (!systemType.GetInterfaces().Contains(typeof(ITickSystem)))
             throw new Exception($"[Update] system {systemType} must implement ITickSystem.");
@@ -291,6 +308,11 @@ internal sealed record SystemDeclaration
 
         // DelayedCalc 声明需与 IDelayedCalcSystem 接口成对
         var hasDelayedCalc = systemType.GetCustomAttributes<DelayedCalcAttribute>().Any();
+        if (systemType.GetCustomAttributes<RenderSystemAttribute>().Any() && hasDelayedCalc)
+            throw new Exception(
+                $"Render system {systemType} must not perform delayed operations: Render must not create or destroy entities."
+            );
+
         if (hasDelayedCalc ^ isDelayedCalc)
             throw new Exception(
                 "A system declaring delayed calc must implement IDelayedCalcSystem, and vice versa!"

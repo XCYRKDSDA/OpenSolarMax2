@@ -400,7 +400,6 @@ internal class LevelPlayView
                 deviceState.State = keyboardState;
             }
         );
-        ViewModel.InputSystem.Update(gameTime);
 
         base.Update(gameTime);
 

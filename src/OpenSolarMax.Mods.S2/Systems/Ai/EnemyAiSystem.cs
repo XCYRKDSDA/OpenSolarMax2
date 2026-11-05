@@ -13,7 +13,7 @@ using OpenSolarMax.Mods.S2.Concepts;
 
 namespace OpenSolarMax.Mods.S2.Systems;
 
-[AiSystem, LateUpdate]
+[SimulateSystem, LateUpdate]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(InTeam.AsTeam))]
 [ReadCurr(typeof(CapitalOf.AsTeam))]

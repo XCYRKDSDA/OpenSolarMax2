@@ -11,7 +11,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 输入手势组件计时系统
 /// </summary>
 [Update]
-[InputSystem]
+[SimulateSystem]
 [Tick(typeof(InputGesture))]
 public sealed partial class CountUpInputGestureTimersSystem(World world) : ITickSystem
 {
