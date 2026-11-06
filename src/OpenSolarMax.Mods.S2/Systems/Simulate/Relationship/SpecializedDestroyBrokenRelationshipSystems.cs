@@ -21,6 +21,13 @@ public sealed class DestroyBrokenPlanetSelectionRingsSystem(EventRegistry regist
     : DestroyBrokenRelationshipsSystem<PlanetSelectionRing>(registry) { }
 
 /// <summary>
+/// 清理已损坏的世界-屏幕投影关系。当世界实体或屏幕实体被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenWorldToScreenProjectionsSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<WorldToScreenProjection>(registry) { }
+
+/// <summary>
 /// 清理已损坏的首府关系。当首府天体或阵营被销毁时，自动清理关系实体。
 /// </summary>
 [SimulateSystem, Reactive]
