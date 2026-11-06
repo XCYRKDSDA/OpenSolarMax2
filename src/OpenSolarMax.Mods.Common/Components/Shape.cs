@@ -46,7 +46,7 @@ public struct Shape()
         ThicknessAlignment ThicknessAlignment = ThicknessAlignment.Centered
     );
 
-    public record Line(Vector2 Head, Vector2 Tail, float Thickness, float Round, float Offset = 0);
+    public record Line(float StartX, float EndX, float Thickness, float Offset = 0);
 
     public record Rectangle(
         Vector2 Position,
