@@ -45,6 +45,12 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             // 其他
             typeof(ReferenceSize),
             typeof(Pickable), // 可被点选
+            // UI 相关
+            typeof(PlanetSelectionRing.AsPlanet),
+            typeof(PlanetCandidateRing.AsPlanet),
+            typeof(PlanetManeuveringLineSource.AsPlanet),
+            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(WorldToScreenProjection.AsSource),
             // 出兵相关
             typeof(DefaultLaunchPad)
         );

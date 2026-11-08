@@ -78,6 +78,11 @@ public sealed partial class CalculateCameraProjectionSystem(
 
         // 世界到屏幕的变换
         projection.WorldToScreen = projection.WorldToNdc * Matrix.Invert(screenToNdc);
+
+        // 世界单位到屏幕像素的缩放
+        projection.Scale = Vector2
+            .TransformNormal(Vector2.UnitX, projection.WorldToScreen)
+            .Length();
     }
 
     public void Update() => CalculateQuery(world);

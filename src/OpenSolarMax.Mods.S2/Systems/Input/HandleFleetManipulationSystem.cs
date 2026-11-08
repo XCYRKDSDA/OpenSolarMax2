@@ -6,8 +6,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Nine.Animations;
-using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
@@ -43,55 +41,9 @@ namespace OpenSolarMax.Mods.S2.Systems;
     typeof(FleetManipulationSources)
 )]
 [DelayedCalc]
-public sealed partial class HandleFleetManipulationSystem(
-    World world,
-    IConceptFactory factory,
-    IAssetsManager assets
-) : IDelayedCalcSystem
+public sealed partial class HandleFleetManipulationSystem(World world, IConceptFactory factory)
+    : IDelayedCalcSystem
 {
-    /// <summary>扩散式淡出动画</summary>
-    private readonly AnimationClip<Entity> _growFadeClip = assets.Load<AnimationClip<Entity>>(
-        Content.Animations.SelectionRingFadeOut_json
-    );
-
-    /// <summary>收缩式淡出动画</summary>
-    private readonly AnimationClip<Entity> _shrinkFadeClip = assets.Load<AnimationClip<Entity>>(
-        Content.Animations.SelectionRingShrinkFadeOut_json
-    );
-
-    /// <summary>
-    /// 为某个星球在某个视图创建选择圈实体，返回创建的实体
-    /// </summary>
-    private Entity CreateSelectionRing(Entity view, Entity planet, CommandBuffer commandBuffer) =>
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.SelectionRing,
-            new SelectionRingDescription() { Planet = planet, View = view }
-        );
-
-    private void SetFadeAnimation(
-        Entity ring,
-        AnimationClip<Entity> clip,
-        CommandBuffer commandBuffer
-    ) => commandBuffer.Set(in ring, new Animation() { Clip = clip });
-
-    /// <summary>
-    /// 为一组星球创建扩散式淡出圈
-    /// </summary>
-    private void CreateAndFadeOutSelectionRings(
-        Entity view,
-        IEnumerable<Entity> planets,
-        CommandBuffer commandBuffer
-    )
-    {
-        foreach (var planet in planets)
-        {
-            var ring = CreateSelectionRing(view, planet, commandBuffer);
-            SetFadeAnimation(ring, _growFadeClip, commandBuffer);
-        }
-    }
-
     [Query]
     [All<Pickable, AbsoluteTransform>]
     private static void CheckBoxedPlanets(
@@ -121,10 +73,9 @@ public sealed partial class HandleFleetManipulationSystem(
     }
 
     /// <summary>
-    /// 派兵。对每个满足条件的出发星球创建跳跃请求，并为出发星球生成扩散淡出圈、为目标星球生成收缩淡出圈
+    /// 派兵。对每个满足条件的出发星球创建跳跃请求。
     /// </summary>
     private void DispatchFleets(
-        Entity view,
         IEnumerable<Entity> departures,
         Entity destination,
         Entity team,
@@ -162,35 +113,25 @@ public sealed partial class HandleFleetManipulationSystem(
                 }
             );
         }
-
-        CreateAndFadeOutSelectionRings(view, departures, commandBuffer);
-        var destinationRing = CreateSelectionRing(view, destination, commandBuffer);
-        SetFadeAnimation(destinationRing, _shrinkFadeClip, commandBuffer);
     }
 
     /// <summary>
-    /// 把候选提交进选中集合。按住 Shift 时追加，否则替换；离开集合的天体生成淡出圈
+    /// 把候选提交进选中集合。按住 Shift 时追加，否则替换。
     /// </summary>
     private void CommitSelection(
-        Entity view,
         ref FleetManipulationSources sources,
         IEnumerable<Entity> candidates,
-        bool keepPrevious,
-        CommandBuffer commandBuffer
+        bool keepPrevious
     )
     {
         var next = keepPrevious ? new HashSet<Entity>(sources.Departures) : [];
         next.UnionWith(candidates);
-
-        var leaving = sources.Departures.Where(departure => !next.Contains(departure)).ToList();
-        CreateAndFadeOutSelectionRings(view, leaving, commandBuffer);
 
         sources.Departures.Clear();
         sources.Departures.UnionWith(next);
     }
 
     private void HandleStateTransition(
-        Entity view,
         ref FleetManipulationStatus status,
         ref FleetManipulationSources sources,
         float percentage,
@@ -219,20 +160,14 @@ public sealed partial class HandleFleetManipulationSystem(
             if (mouse.LeftButton == ButtonState.Pressed && focus.MouseFocused)
             {
                 if (leftPressEdge && pointing.PointedEntity is null && !keepPrevious)
-                    CommitSelection(view, ref sources, [], keepPrevious, commandBuffer);
+                    CommitSelection(ref sources, [], keepPrevious);
 
-                if (gesture.State.TryPickT2(out _, out _) && pointing.PointedEntity is null)
+                if (gesture.State.IsT2 && pointing.PointedEntity is null)
                 {
                     if (simpleSelecting.CandidateSource is { } candidateSource)
                     {
                         // 拖拽手势成立时提交候选，之后拖拽状态只依赖集合
-                        CommitSelection(
-                            view,
-                            ref sources,
-                            [candidateSource],
-                            keepPrevious,
-                            commandBuffer
-                        );
+                        CommitSelection(ref sources, [candidateSource], keepPrevious);
                         status.State = new FleetManipulation_DraggingToDestination();
                     }
                     else
@@ -249,13 +184,7 @@ public sealed partial class HandleFleetManipulationSystem(
             {
                 // 松开时提交候选
                 if (simpleSelecting.CandidateSource is { } candidateSource)
-                    CommitSelection(
-                        view,
-                        ref sources,
-                        [candidateSource],
-                        keepPrevious,
-                        commandBuffer
-                    );
+                    CommitSelection(ref sources, [candidateSource], keepPrevious);
 
                 status.State = new FleetManipulation_SimpleSelecting();
             }
@@ -266,13 +195,13 @@ public sealed partial class HandleFleetManipulationSystem(
             {
                 // 当前右键没有按下，但是之前有瞄准的目标，则派兵，并回到初始的简单选择状态
                 DispatchFleets(
-                    view,
                     sources.Departures,
                     candidateDestination,
                     team,
                     percentage,
                     commandBuffer
                 );
+                status.DispatchedTarget = candidateDestination;
                 sources.Departures.Clear();
                 status.State = new FleetManipulation_SimpleSelecting();
             }
@@ -284,33 +213,27 @@ public sealed partial class HandleFleetManipulationSystem(
         {
             if (mouse.LeftButton == ButtonState.Released)
             {
-                CommitSelection(
-                    view,
-                    ref sources,
-                    boxSelecting.PlanetsInBox,
-                    keepPrevious,
-                    commandBuffer
-                );
+                CommitSelection(ref sources, boxSelecting.PlanetsInBox, keepPrevious);
                 status.State = new FleetManipulation_SimpleSelecting();
             }
         }
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // 拖拽至目标
         //
-        else if (status.State.TryPickT2(out _, out _))
+        else if (status.State.IsT2)
         {
             if (mouse.LeftButton == ButtonState.Released)
             {
                 if (pointing.PointedEntity is { } destination)
                 {
                     DispatchFleets(
-                        view,
                         sources.Departures,
                         destination,
                         team,
                         percentage,
                         commandBuffer
                     );
+                    status.DispatchedTarget = destination;
                     sources.Departures.Clear();
                 }
                 status.State = new FleetManipulation_SimpleSelecting();
@@ -319,12 +242,10 @@ public sealed partial class HandleFleetManipulationSystem(
     }
 
     private void RefreshTransientFields(
-        Entity view,
         ref FleetManipulationStatus status,
         ref FleetManipulationSources sources,
         in Matrix worldToScreen,
         in InputFocusState focus,
-        CommandBuffer commandBuffer,
         in PointingStatus pointing,
         in InputGesture gesture,
         in MouseDeviceState mouseDevice,
@@ -388,6 +309,14 @@ public sealed partial class HandleFleetManipulationSystem(
                 status.State = boxSelecting;
             }
         }
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        // 拖拽至目标
+        //
+        else if (status.State.TryPickT2(out var dragging, out _))
+        {
+            dragging.Target = pointing.PointedEntity;
+            status.State = dragging;
+        }
     }
 
     [Query]
@@ -404,7 +333,6 @@ public sealed partial class HandleFleetManipulationSystem(
         KeyboardDeviceState
     >]
     private void HandleInputs(
-        Entity entity, // View 实体
         ref FleetManipulationStatus status,
         ref FleetManipulationSources sources,
         in FleetSliderWidget fleetSlider,
@@ -420,8 +348,9 @@ public sealed partial class HandleFleetManipulationSystem(
     {
         var team = ofTeam.Relationship!.Value.Copy.Team;
 
+        status.DispatchedTarget = null;
+
         HandleStateTransition(
-            entity, // 传入 View 实体
             ref status,
             ref sources,
             fleetSlider.Percentage,
@@ -434,12 +363,10 @@ public sealed partial class HandleFleetManipulationSystem(
             in keyboardDevice
         );
         RefreshTransientFields(
-            entity,
             ref status,
             ref sources,
             in projection.WorldToScreen,
             in focus,
-            commandBuffer,
             in pointing,
             in gesture,
             in mouseDevice,

@@ -21,6 +21,33 @@ public sealed class IndexPlanetSelectionRingSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<PlanetSelectionRing>(registry) { }
 
 /// <summary>
+/// 索引星球与候选选择圈的关系，维护 AsPlanet 和 AsRing 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPlanetCandidateRingSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PlanetCandidateRing>(registry) { }
+
+/// <summary>
+/// 索引视图与选框的关系，维护 AsView 和 AsBox 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexViewSelectionBoxSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<ViewSelectionBox>(registry) { }
+
+/// <summary>
+/// 索引星球与拖拽线段的关系，维护 AsPlanet 和 AsLine 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPlanetManeuveringLineSourceSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PlanetManeuveringLineSource>(registry) { }
+
+/// <summary>
+/// 索引目标星球与拖拽线段的关系，维护 AsPlanet 和 AsLine 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPlanetManeuveringLineTargetSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PlanetManeuveringLineTarget>(registry) { }
+
 /// <summary>
 /// 索引世界实体与屏幕实体的投影关系，维护 AsSource、AsTarget 和 AsView 索引组件。
 /// </summary>
@@ -28,6 +55,7 @@ public sealed class IndexPlanetSelectionRingSystem(EventRegistry registry)
 public sealed class IndexWorldToScreenProjectionSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<WorldToScreenProjection>(registry) { }
 
+/// <summary>
 /// 索引天体与阵营的首府关系，维护 AsCapital 和 AsTeam 索引组件。
 /// 两端独占，重复声明首府时在此抛出异常。
 /// </summary>

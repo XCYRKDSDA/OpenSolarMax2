@@ -46,8 +46,12 @@ public abstract class CelestialBodyDefinition : IDefinition
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于可视化相关
             typeof(Pickable), // 可被点选
-            // 选择圈相关
-            typeof(PlanetSelectionRing.AsPlanet), // 星球的选择圈索引
+            // UI 相关
+            typeof(PlanetSelectionRing.AsPlanet),
+            typeof(PlanetCandidateRing.AsPlanet),
+            typeof(PlanetManeuveringLineSource.AsPlanet),
+            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(WorldToScreenProjection.AsSource),
             // AI 相关
             typeof(PlanetAiTimers), // AI 操作计时器
             // 首府关系

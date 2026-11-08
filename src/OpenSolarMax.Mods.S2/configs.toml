@@ -53,16 +53,20 @@ ring.default_alpha = 0.2
 text.size = 18
 text.color = "red"
 
-[systems.visualization.maneuvering_ships_status]
+[systems.visualization.maneuvering_visual_appearance]
+ring.radius_multiplier = 2.4
+ring.offset = -8
+ring.thickness = 4
 ring.blocked.color = "red"
-box.thickness = 4
-box.color = "white * 0.5"
 line.thickness = 4
-line.round = 1
 line.color = "white"
 line.blocked.color = "red"
 
-# 悬停发光的 radius_multiplier 与 offset 必须与 applier.selection_ring 的 radius_multiplier、offset 保持一致，保证发光外缘与细环重合
+[systems.visualization.selection_box]
+thickness = 4
+color = "white * 0.5"
+
+# 悬停发光的 radius_multiplier 与 offset 必须与 systems.visualization.maneuvering_visual_appearance 的 ring.radius_multiplier、ring.offset 保持一致，保证发光外缘与细环重合
 [systems.visualization.hover_glow]
 radius_multiplier = 2.4
 offset = -8
@@ -116,9 +120,6 @@ edge.preview.width = 6
 width = 2 # 4 / 2
 
 [applier.selection_ring]
-radius_multiplier = 2.4
-offset = -8
-thickness = 4
 color = "white"
 
 # 人口可视化标签

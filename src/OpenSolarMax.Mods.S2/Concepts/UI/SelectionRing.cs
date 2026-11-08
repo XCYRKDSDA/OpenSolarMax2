@@ -20,7 +20,7 @@ public static partial class ConceptNames
 }
 
 /// <summary>
-/// 选择圈实体定义。选择圈是 View 和 Planet 的交叉实体，用于可视化选择状态。
+/// 选择圈实体定义。选择圈是星球的可视化实体，用于表示选择状态。
 /// </summary>
 [Define(ConceptNames.SelectionRing)]
 public abstract class SelectionRingDefinition : IDefinition
@@ -31,12 +31,12 @@ public abstract class SelectionRingDefinition : IDefinition
     public static Signature Signature { get; } =
         new(
             typeof(Shape),
+            typeof(ScreenTransform),
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted),
-            typeof(AbsoluteTransform),
-            typeof(TreeRelationship<RelativeTransform>.AsChild),
-            typeof(TreeRelationship<RelativeTransform>.AsParent),
-            typeof(PlanetSelectionRing.AsRing)
+            typeof(WorldToScreenProjection.AsTarget),
+            typeof(PlanetSelectionRing.AsRing),
+            typeof(PlanetCandidateRing.AsRing)
         );
 }
 
@@ -66,38 +66,30 @@ public class SelectionRingApplier(
     [Section("applier:selection_ring")] IConfiguration configs
 ) : IApplier<SelectionRingDescription>
 {
-    private readonly float _radiusMultiplier = configs.RequireValue<float>("radius_multiplier");
-    private readonly float _offset = configs.RequireValue<float>("offset");
-    private readonly float _thickness = configs.RequireValue<float>("thickness");
     private readonly Color _color = configs.RequireValue<Color>("color");
-
-    private readonly TransformableApplier _transformableApplier = new(factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, SelectionRingDescription desc)
     {
-        var radius = desc.Planet.Get<ReferenceSize>().Radius * _radiusMultiplier;
-
         commandBuffer.Set(
             in entity,
             new Shape
             {
-                Geometry = new Shape.Ring(
-                    Vector2.Zero,
-                    radius,
-                    _thickness,
-                    _offset,
-                    Shape.ThicknessAlignment.Centered
-                ),
+                Geometry = new Shape.Ring(Vector2.Zero, 0, 0, 0, Shape.ThicknessAlignment.Centered),
                 Color = _color,
             }
         );
+        commandBuffer.Set(in entity, new ScreenTransform());
 
-        _transformableApplier.Apply(
+        factory.Make(
+            World.Worlds[entity.WorldId],
             commandBuffer,
-            entity,
-            new TransformableDescription
+            ConceptNames.WorldToScreenProjection,
+            new WorldToScreenProjectionDescription
             {
-                Transform = new RelativeTransformOptions { Parent = desc.Planet },
+                Source = desc.Planet,
+                Target = entity,
+                View = desc.View,
+                ProjectRotation = false,
             }
         );
 
@@ -106,6 +98,7 @@ public class SelectionRingApplier(
         {
             Planet = desc.Planet,
             Ring = entity,
+            View = desc.View,
         };
         factory.Make(
             World.Worlds[entity.WorldId],
@@ -113,37 +106,5 @@ public class SelectionRingApplier(
             ConceptNames.PlanetSelectionRing,
             planetRingDesc
         );
-    }
-}
-
-// 行星-选择圈关系概念
-public static partial class ConceptNames
-{
-    public const string PlanetSelectionRing = "PlanetSelectionRing";
-}
-
-[Define(ConceptNames.PlanetSelectionRing)]
-public abstract class PlanetSelectionRingDefinition : IDefinition
-{
-    public static Signature Signature { get; } = new(typeof(PlanetSelectionRing));
-}
-
-[Describe(ConceptNames.PlanetSelectionRing)]
-public class PlanetSelectionRingDescription : IDescription
-{
-    public required Entity Planet { get; set; }
-    public required Entity Ring { get; set; }
-}
-
-[Apply(ConceptNames.PlanetSelectionRing)]
-public class PlanetSelectionRingApplier : IApplier<PlanetSelectionRingDescription>
-{
-    public void Apply(
-        CommandBuffer commandBuffer,
-        Entity entity,
-        PlanetSelectionRingDescription desc
-    )
-    {
-        commandBuffer.Set(in entity, new PlanetSelectionRing(desc.Planet, desc.Ring));
     }
 }

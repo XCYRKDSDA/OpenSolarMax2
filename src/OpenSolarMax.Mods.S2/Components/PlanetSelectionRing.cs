@@ -7,7 +7,7 @@ namespace OpenSolarMax.Mods.S2.Components;
 /// 星球与选择圈的一对一关系。一个星球可以有多个选择圈（多视图场景），一个选择圈只属于一个星球。
 /// </summary>
 [Relationship]
-public readonly partial struct PlanetSelectionRing(Entity planet, Entity ring)
+public readonly partial struct PlanetSelectionRing(Entity planet, Entity ring, Entity view)
 {
     /// <summary>
     /// 星球实体。非独占：一个星球可以被多个视图选中，因此可以有多个选择圈。
@@ -20,4 +20,10 @@ public readonly partial struct PlanetSelectionRing(Entity planet, Entity ring)
     /// </summary>
     [Participant]
     public readonly Entity Ring = ring;
+
+    /// <summary>
+    /// 所属视图。非独占：一个视图可以显示多个选择圈。
+    /// </summary>
+    [Participant(exclusive: false)]
+    public readonly Entity View = view;
 }

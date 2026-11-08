@@ -34,7 +34,13 @@ public struct FleetManipulation_BoxSelectingSources()
 /// <summary>
 /// 拖拽至目标状态。松开左键时若存在候选目标则派兵
 /// </summary>
-public struct FleetManipulation_DraggingToDestination() { }
+public struct FleetManipulation_DraggingToDestination()
+{
+    /// <summary>
+    /// 当前拖拽指向的目标天体；鼠标在空白区域时为空
+    /// </summary>
+    public Entity? Target = null;
+}
 
 /// <summary>
 /// 舰队操纵状态
@@ -50,4 +56,9 @@ public struct FleetManipulationStatus()
         FleetManipulation_BoxSelectingSources,
         FleetManipulation_DraggingToDestination
     > State = new FleetManipulation_SimpleSelecting();
+
+    /// <summary>
+    /// 本帧派兵的目标星球
+    /// </summary>
+    public Entity? DispatchedTarget = null;
 }
