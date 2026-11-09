@@ -6,7 +6,7 @@ namespace OpenSolarMax.Mods.S2.Components;
 /// <summary>
 /// 世界实体到屏幕实体的投影关系
 /// </summary>
-[Relationship]
+[Relationship(generateConcept: true)]
 public readonly partial struct WorldToScreenProjection(
     Entity source,
     Entity target,

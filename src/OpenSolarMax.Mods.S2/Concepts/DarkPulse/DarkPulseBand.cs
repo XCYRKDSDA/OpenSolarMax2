@@ -208,7 +208,6 @@ public class DarkPulseBandApplier(IAssetsManager assets, IConceptFactory factory
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = baseCoord, Dependency = entity }
         );
 

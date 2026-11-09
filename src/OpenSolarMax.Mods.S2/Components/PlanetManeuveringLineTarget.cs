@@ -6,7 +6,7 @@ namespace OpenSolarMax.Mods.S2.Components;
 /// <summary>
 /// 目标星球与拖拽线段的对应关系
 /// </summary>
-[Relationship]
+[Relationship(generateConcept: true)]
 public readonly partial struct PlanetManeuveringLineTarget(Entity planet, Entity line, Entity view)
 {
     /// <summary>

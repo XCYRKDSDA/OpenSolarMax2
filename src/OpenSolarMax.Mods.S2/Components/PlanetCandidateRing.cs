@@ -6,7 +6,7 @@ namespace OpenSolarMax.Mods.S2.Components;
 /// <summary>
 /// 星球与候选选择圈的一对一关系。一个星球可以有多个候选圈（多视图场景），一个候选圈只属于一个星球。
 /// </summary>
-[Relationship]
+[Relationship(generateConcept: true)]
 public readonly partial struct PlanetCandidateRing(Entity planet, Entity ring, Entity view)
 {
     /// <summary>

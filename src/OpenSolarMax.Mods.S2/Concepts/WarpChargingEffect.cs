@@ -113,7 +113,6 @@ public class WarpChargingEffectApplier(IAssetsManager assets, IConceptFactory fa
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Warp }
         );
 

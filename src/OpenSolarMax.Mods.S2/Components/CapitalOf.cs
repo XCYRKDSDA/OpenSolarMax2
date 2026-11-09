@@ -8,7 +8,7 @@ namespace OpenSolarMax.Mods.S2.Components;
 /// 两端独占——一个阵营只有一个首府，一个天体只能是一个阵营的首府；
 /// 重复声明时独占索引在添加第二条关系时抛出异常，即关卡加载期失败。
 /// </summary>
-[Relationship]
+[Relationship(generateConcept: true)]
 public readonly partial struct CapitalOf(Entity capital, Entity team)
 {
     /// <summary>

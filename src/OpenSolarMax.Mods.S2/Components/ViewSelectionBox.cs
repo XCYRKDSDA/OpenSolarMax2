@@ -6,7 +6,7 @@ namespace OpenSolarMax.Mods.S2.Components;
 /// <summary>
 /// 视图与选框的对应关系
 /// </summary>
-[Relationship]
+[Relationship(generateConcept: true)]
 public readonly partial struct ViewSelectionBox(Entity view, Entity box)
 {
     /// <summary>

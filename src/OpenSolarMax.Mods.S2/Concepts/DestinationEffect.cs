@@ -84,7 +84,6 @@ public class DestinationEffectApplier(IConceptFactory factory)
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Warp }
         );
 

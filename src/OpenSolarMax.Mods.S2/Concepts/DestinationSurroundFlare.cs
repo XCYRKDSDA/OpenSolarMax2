@@ -103,7 +103,6 @@ public class DestinationSurroundFlareApplier(IAssetsManager assets, IConceptFact
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Effect }
         );
         var baseCoord = factory.Make(
