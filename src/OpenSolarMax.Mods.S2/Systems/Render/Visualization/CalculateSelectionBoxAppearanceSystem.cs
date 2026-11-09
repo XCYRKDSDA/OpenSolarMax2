@@ -58,7 +58,7 @@ public sealed partial class CalculateSelectionBoxAppearanceSystem(
             0,
             Shape.ThicknessAlignment.Centered
         );
-        shape.Color = _color;
+        shape.Fill = _color;
         shape.Alpha = 1f;
 
         transform.Position = new Vector2(rectangle.X, rectangle.Y);

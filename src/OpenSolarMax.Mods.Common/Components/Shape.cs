@@ -28,6 +28,8 @@ public struct Shape()
         RightBottom,
     }
 
+    public record Circle(Vector2 Position, float Radius);
+
     public record Ring(
         Vector2 Position,
         float Radius,
@@ -59,14 +61,16 @@ public struct Shape()
     public record Text(
         Vector2 Position,
         string Content,
-        int FontSize,
+        float FontSize,
         ShapeFont Font,
-        TextAlignment Alignment = TextAlignment.LeftTop
+        TextAlignment Alignment = TextAlignment.LeftTop,
+        Gradient? Shadow = null,
+        Vector2 ShadowOffset = default
     );
 
-    public OneOf<Ring, Arc, Line, Rectangle, Text> Geometry;
+    public OneOf<Circle, Ring, Arc, Line, Rectangle, Text> Geometry;
 
-    public Color Color = Color.White;
+    public Gradient Fill = Color.White;
 
     public float Alpha = 1.0f;
 

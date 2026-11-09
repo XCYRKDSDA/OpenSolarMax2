@@ -23,13 +23,68 @@ internal static class ShapeBatchRenderer
         return actualBorder > 0;
     }
 
+    private static Color Unpremultiply(Color color)
+    {
+        // Shape 的颜色使用预乘 Alpha；Apos 要求非预乘颜色，按颜色自身的 Alpha 还原 RGB。
+        var colorAlpha = color.A / 255f;
+
+        return color.A > 0
+            ? new Color(
+                (byte)Math.Min(255f, color.R / colorAlpha),
+                (byte)Math.Min(255f, color.G / colorAlpha),
+                (byte)Math.Min(255f, color.B / colorAlpha),
+                color.A
+            )
+            : color;
+    }
+
+    private static Color MultiplyAlpha(Color color, float multiplier) =>
+        new(color.R, color.G, color.B, (byte)Math.Clamp(color.A * multiplier, 0, 255));
+
+    private static Gradient TransformGradient(Gradient gradient, in Matrix localToScreen)
+    {
+        if (gradient.S == Gradient.Shape.None)
+            return gradient;
+
+        var result = gradient;
+        result.AXY = Vector2.Transform(gradient.AXY, localToScreen);
+        result.BXY = Vector2.Transform(gradient.BXY, localToScreen);
+        result.IsLocal = false;
+
+        return result;
+    }
+
+    private static Gradient PrepareGradient(Gradient gradient, in Matrix localToScreen, float alpha)
+    {
+        var result = TransformGradient(gradient, localToScreen);
+        result.AC = MultiplyAlpha(Unpremultiply(result.AC), alpha);
+        result.BC = MultiplyAlpha(Unpremultiply(result.BC), alpha);
+
+        return result;
+    }
+
+    private static void DrawCircle(
+        ShapeBatch batch,
+        in Shape.Circle circle,
+        in Matrix localToScreen,
+        float scale,
+        Gradient fill
+    )
+    {
+        batch.FillCircle(
+            Vector2.Transform(circle.Position, localToScreen),
+            circle.Radius * scale,
+            fill
+        );
+    }
+
     private static void DrawRing(
         ShapeBatch batch,
         in Shape.Ring ring,
         in Matrix localToScreen,
         float scale,
         float shapeScale,
-        Color color
+        Gradient fill
     )
     {
         var thickness = ring.Thickness * shapeScale;
@@ -50,7 +105,7 @@ internal static class ShapeBatchRenderer
             MathF.Tau,
             actualBorder,
             thickness / 2,
-            color
+            fill
         );
     }
 
@@ -60,7 +115,7 @@ internal static class ShapeBatchRenderer
         in Matrix localToScreen,
         float scale,
         float shapeScale,
-        Color color
+        Gradient fill
     )
     {
         var thickness = arc.Thickness * shapeScale;
@@ -81,7 +136,7 @@ internal static class ShapeBatchRenderer
             arc.StartAngle + arc.SweepAngle,
             actualBorder,
             thickness / 2,
-            color
+            fill
         );
     }
 
@@ -90,7 +145,7 @@ internal static class ShapeBatchRenderer
         in Shape.Line line,
         in Matrix localToScreen,
         float shapeScale,
-        Color color
+        Gradient fill
     )
     {
         var head = Vector2.Transform(new Vector2(line.StartX, 0), localToScreen);
@@ -105,7 +160,7 @@ internal static class ShapeBatchRenderer
             tail -= unit * line.Offset;
         }
 
-        batch.FillLine(head, tail, line.Thickness * shapeScale / 2, color);
+        batch.FillLine(head, tail, line.Thickness * shapeScale / 2, fill);
     }
 
     private static void DrawRectangle(
@@ -114,7 +169,7 @@ internal static class ShapeBatchRenderer
         in Matrix localToScreen,
         float scale,
         float shapeScale,
-        Color color
+        Gradient fill
     )
     {
         var thickness = rectangle.Thickness * shapeScale;
@@ -144,7 +199,7 @@ internal static class ShapeBatchRenderer
         batch.BorderRectangle(
             center - sizeInScreen / 2,
             sizeInScreen,
-            color,
+            fill,
             thickness,
             rotation: rotation
         );
@@ -155,7 +210,8 @@ internal static class ShapeBatchRenderer
         in Shape.Text text,
         in Matrix localToScreen,
         float shapeScale,
-        Color color
+        Gradient fill,
+        Gradient? shadow
     )
     {
         var position = Vector2.Transform(text.Position, localToScreen);
@@ -175,7 +231,18 @@ internal static class ShapeBatchRenderer
             _ => Vector2.Zero,
         };
 
-        batch.DrawString(text.Font, text.Content, position - size * anchor, fontSize, color);
+        var anchored = position - size * anchor;
+
+        if (shadow is { } shadowFill)
+            batch.DrawString(
+                text.Font,
+                text.Content,
+                anchored + text.ShadowOffset,
+                fontSize,
+                shadowFill
+            );
+
+        batch.DrawString(text.Font, text.Content, anchored, fontSize, fill);
     }
 
     public static void DrawEntity(
@@ -186,26 +253,25 @@ internal static class ShapeBatchRenderer
         float shapeScale
     )
     {
-        // Shape.Color 使用预乘 Alpha；Apos 要求非预乘颜色，按颜色自身的 Alpha 还原 RGB。
-        var colorAlpha = shape.Color.A / 255f;
-        var alpha = (byte)Math.Clamp(shape.Color.A * shape.Alpha, 0, 255);
-        var color =
-            colorAlpha > 0
-                ? new Color(
-                    (byte)Math.Min(255f, shape.Color.R / colorAlpha),
-                    (byte)Math.Min(255f, shape.Color.G / colorAlpha),
-                    (byte)Math.Min(255f, shape.Color.B / colorAlpha),
-                    alpha
-                )
-                : new Color(shape.Color.R, shape.Color.G, shape.Color.B, alpha);
+        var fill = PrepareGradient(shape.Fill, localToScreen, shape.Alpha);
+        var alpha = shape.Alpha;
         var matrix = localToScreen;
 
         shape.Geometry.Switch(
-            ring => DrawRing(batch, in ring, in matrix, geometryScale, shapeScale, color),
-            arc => DrawArc(batch, in arc, in matrix, geometryScale, shapeScale, color),
-            line => DrawLine(batch, in line, in matrix, shapeScale, color),
-            rect => DrawRectangle(batch, in rect, in matrix, geometryScale, shapeScale, color),
-            text => DrawText(batch, in text, in matrix, shapeScale, color)
+            circle => DrawCircle(batch, in circle, in matrix, geometryScale, fill),
+            ring => DrawRing(batch, in ring, in matrix, geometryScale, shapeScale, fill),
+            arc => DrawArc(batch, in arc, in matrix, geometryScale, shapeScale, fill),
+            line => DrawLine(batch, in line, in matrix, shapeScale, fill),
+            rect => DrawRectangle(batch, in rect, in matrix, geometryScale, shapeScale, fill),
+            text =>
+                DrawText(
+                    batch,
+                    in text,
+                    in matrix,
+                    shapeScale,
+                    fill,
+                    text.Shadow is { } shadow ? PrepareGradient(shadow, matrix, alpha) : null
+                )
         );
     }
 }

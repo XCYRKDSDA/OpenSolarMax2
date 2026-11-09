@@ -118,7 +118,7 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
         ref readonly var projection = ref relation.View.Get<Projection>();
 
         shape.Geometry = MakeRingGeometry(relation.Planet, projection.Scale);
-        shape.Color = CalculateRingColor(relation.Planet, relation.View);
+        shape.Fill = CalculateRingColor(relation.Planet, relation.View);
         shape.Alpha = 1f;
     }
 
@@ -133,7 +133,7 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
         ref readonly var projection = ref relation.View.Get<Projection>();
 
         shape.Geometry = MakeRingGeometry(relation.Planet, projection.Scale);
-        shape.Color = CalculateRingColor(relation.Planet, relation.View);
+        shape.Fill = CalculateRingColor(relation.Planet, relation.View);
         shape.Alpha = 1f;
     }
 
@@ -182,7 +182,7 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
             targetInScreen = view.Get<MouseDeviceState>().State.Position.ToVector2();
 
         // 根据可达性设置颜色
-        shape.Color = reachability.Reachable ? _lineColor : _blockedLineColor;
+        shape.Fill = reachability.Reachable ? _lineColor : _blockedLineColor;
 
         // 线段从出发圈边缘画到目标圈边缘；没有目标天体时直接画到鼠标位置
         var delta = targetInScreen - transform.Position;

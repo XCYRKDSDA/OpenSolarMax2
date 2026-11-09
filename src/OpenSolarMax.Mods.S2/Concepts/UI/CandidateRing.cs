@@ -56,7 +56,7 @@ public class CandidateRingApplier(
             new Shape
             {
                 Geometry = new Shape.Ring(Vector2.Zero, 0, 0, 0, Shape.ThicknessAlignment.Centered),
-                Color = _color,
+                Fill = _color,
             }
         );
         commandBuffer.Set(in entity, new ScreenTransform());
