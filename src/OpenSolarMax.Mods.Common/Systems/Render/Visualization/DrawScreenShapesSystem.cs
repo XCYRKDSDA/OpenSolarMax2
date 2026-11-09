@@ -28,6 +28,14 @@ public sealed class DrawScreenShapesSystem(World world, GraphicsDevice graphicsD
         if (drawableEntities.Count == 0)
             return;
 
+        drawableEntities.Sort(
+            (l, r) =>
+            {
+                var order = l.Get<ScreenTransform>().Z.CompareTo(r.Get<ScreenTransform>().Z);
+                return order != 0 ? order : l.Id.CompareTo(r.Id);
+            }
+        );
+
         _batch.Begin();
 
         foreach (var entity in drawableEntities)

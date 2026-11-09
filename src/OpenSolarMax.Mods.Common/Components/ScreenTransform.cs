@@ -9,4 +9,6 @@ public struct ScreenTransform()
     public Vector2 Position;
 
     public float Rotation;
+
+    public float Z;
 }
