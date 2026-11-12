@@ -2,7 +2,7 @@ using Apos.Shapes;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Mods.Common.Components;
 
-namespace OpenSolarMax.Mods.Common.Systems;
+namespace OpenSolarMax.Mods.Common.Graphics;
 
 internal static class ShapeBatchRenderer
 {

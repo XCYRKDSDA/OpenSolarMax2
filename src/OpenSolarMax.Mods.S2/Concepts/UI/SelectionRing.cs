@@ -7,7 +7,7 @@ using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Common.Components;
-using OpenSolarMax.Mods.Common.Systems;
+using OpenSolarMax.Mods.Common.Graphics;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;

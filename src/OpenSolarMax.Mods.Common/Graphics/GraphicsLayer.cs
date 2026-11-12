@@ -1,4 +1,4 @@
-namespace OpenSolarMax.Mods.Common.Systems;
+namespace OpenSolarMax.Mods.Common.Graphics;
 
 public enum GraphicsLayer
 {
