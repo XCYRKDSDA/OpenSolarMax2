@@ -69,3 +69,31 @@ public sealed class IndexCapitalOfSystem(EventRegistry registry)
 [SimulateSystem, Reactive]
 public sealed class IndexJumpingRequestSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<StartJumpingRequest>(registry) { }
+
+/// <summary>
+/// 索引被点选实体与悬停发光的关系，维护 AsPointedEntity、AsGlow 和 AsView 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPointedEntityHoverGlowSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PointedEntityHoverGlow>(registry) { }
+
+/// <summary>
+/// 索引天体与殖民环的关系，维护 AsPlanet 和 AsRing 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPlanetColonizationRingSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PlanetColonizationRing>(registry) { }
+
+/// <summary>
+/// 索引天体与舰船构成弧的关系，维护 AsPlanet 和 AsArc 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPlanetAnchoredShipsArcSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PlanetAnchoredShipsArc>(registry) { }
+
+/// <summary>
+/// 索引天体与舰船数量标签的关系，维护 AsPlanet 和 AsLabel 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexPlanetAnchoredShipsLabelSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<PlanetAnchoredShipsLabel>(registry) { }

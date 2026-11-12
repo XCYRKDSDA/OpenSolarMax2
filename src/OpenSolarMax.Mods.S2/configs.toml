@@ -26,7 +26,7 @@ holding_threshold_seconds = 0.5
 # 可视化系统相关
 
 [systems.visualization.anchored_ships]
-text.size = 36
+text.size = 28
 text.template = "{0}"
 shadow.distance = 2
 shadow.density = 0.6

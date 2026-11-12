@@ -4,6 +4,7 @@ using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -35,7 +36,7 @@ public class SelectionBoxApplier(IConceptFactory factory) : IApplier<SelectionBo
             in entity,
             new Shape { Geometry = new Shape.Rectangle(Vector2.Zero, Vector2.Zero, 0), Alpha = 0f }
         );
-        commandBuffer.Set(in entity, new ScreenTransform());
+        commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface + 1 });
 
         factory.Make(
             World.Worlds[entity.WorldId],

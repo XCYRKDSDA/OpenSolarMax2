@@ -68,3 +68,31 @@ public sealed class DestroyBrokenCapitalOfSystem(EventRegistry registry)
 [SimulateSystem, Reactive]
 public sealed class DestroyBrokenJumpingRequestSystem(EventRegistry registry)
     : DestroyBrokenRelationshipsSystem<StartJumpingRequest>(registry) { }
+
+/// <summary>
+/// 清理已损坏的被点选实体-悬停发光关系。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenPointedEntityHoverGlowsSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<PointedEntityHoverGlow>(registry) { }
+
+/// <summary>
+/// 清理已损坏的天体-殖民环关系。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenPlanetColonizationRingsSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<PlanetColonizationRing>(registry) { }
+
+/// <summary>
+/// 清理已损坏的天体-舰船构成弧关系。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenPlanetAnchoredShipsArcsSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<PlanetAnchoredShipsArc>(registry) { }
+
+/// <summary>
+/// 清理已损坏的天体-舰船数量标签关系。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenPlanetAnchoredShipsLabelsSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<PlanetAnchoredShipsLabel>(registry) { }

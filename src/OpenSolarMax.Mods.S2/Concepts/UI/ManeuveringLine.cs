@@ -2,6 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -39,7 +40,7 @@ public class ManeuveringLineApplier(IConceptFactory factory) : IApplier<Maneuver
     public void Apply(CommandBuffer commandBuffer, Entity entity, ManeuveringLineDescription desc)
     {
         commandBuffer.Set(in entity, new Shape { Geometry = new Shape.Line(0, 0, 0), Alpha = 0f });
-        commandBuffer.Set(in entity, new ScreenTransform());
+        commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface + 1 });
 
         factory.Make(
             World.Worlds[entity.WorldId],

@@ -7,6 +7,7 @@ using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -78,7 +79,7 @@ public class SelectionRingApplier(
                 Fill = _color,
             }
         );
-        commandBuffer.Set(in entity, new ScreenTransform());
+        commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface + 1 });
 
         factory.Make(
             World.Worlds[entity.WorldId],

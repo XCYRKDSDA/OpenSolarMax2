@@ -52,6 +52,10 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(PlanetCandidateRing.AsPlanet),
             typeof(PlanetManeuveringLineSource.AsPlanet),
             typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(PointedEntityHoverGlow.AsPointedEntity),
+            typeof(PlanetColonizationRing.AsPlanet),
+            typeof(PlanetAnchoredShipsArc.AsPlanet),
+            typeof(PlanetAnchoredShipsLabel.AsPlanet),
             typeof(WorldToScreenProjection.AsSource),
             // AI 相关
             typeof(PlanetAiTimers), // AI 操作计时器

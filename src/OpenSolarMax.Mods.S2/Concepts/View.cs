@@ -42,6 +42,7 @@ public abstract class ViewDefinition : IDefinition
             typeof(PlanetCandidateRing.AsView),
             typeof(PlanetManeuveringLineSource.AsView),
             typeof(PlanetManeuveringLineTarget.AsView),
+            typeof(PointedEntityHoverGlow.AsView),
             typeof(WorldToScreenProjection.AsView),
             typeof(FMOD.Studio.System),
             typeof(Viewport),
