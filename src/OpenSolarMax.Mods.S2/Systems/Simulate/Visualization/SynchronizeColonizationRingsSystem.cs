@@ -25,7 +25,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(Colonizable))]
 [ReadCurr(typeof(ColonizationState))]
 [ReadCurr(typeof(ReferenceSize))]
-[ReadCurr(typeof(RecommendedVisualStyle))]
+[ReadCurr(typeof(ColonizationRingDisplayData))]
 [ReadCurr(typeof(Projection))]
 [ReadCurr(typeof(PlanetColonizationRing.AsPlanet))]
 [Calc(typeof(Shape))]
@@ -38,11 +38,6 @@ public sealed partial class SynchronizeColonizationRingsSystem(
     [Section("systems:visualization:colonization")] IConfiguration configs
 ) : IDelayedCalcSystem
 {
-    /// <summary>
-    /// 天体一级的殖民进度数据，各视图共用
-    /// </summary>
-    public readonly record struct ColonizationData(Color Color, float Angle);
-
     private readonly float _radiusMultiplier = configs.RequireValue<float>(
         "ring:radius_multiplier"
     );
@@ -117,7 +112,7 @@ public sealed partial class SynchronizeColonizationRingsSystem(
         [Data] CommandBuffer commandBuffer,
         [Data] Entity planet,
         [Data] ReferenceSize size,
-        [Data] ColonizationData data,
+        [Data] ColonizationRingDisplayData data,
         [Data] in PlanetColonizationRing.AsPlanet asPlanet
     )
     {
@@ -169,7 +164,8 @@ public sealed partial class SynchronizeColonizationRingsSystem(
         Colonizable,
         ColonizationState,
         ReferenceSize,
-        PlanetColonizationRing.AsPlanet
+        PlanetColonizationRing.AsPlanet,
+        ColonizationRingDisplayData
     >]
     private void SynchronizeColonizationRing(
         Entity planet,
@@ -178,6 +174,7 @@ public sealed partial class SynchronizeColonizationRingsSystem(
         in ColonizationState state,
         in ReferenceSize size,
         in PlanetColonizationRing.AsPlanet asPlanet,
+        in ColonizationRingDisplayData display,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -197,18 +194,12 @@ public sealed partial class SynchronizeColonizationRingsSystem(
             return;
         }
 
-        // 统计数据供各个视图共用
-        var data = new ColonizationData(
-            state.Team.Get<RecommendedVisualStyle>().Color,
-            MathHelper.TwoPi * state.Progress / colonizable.Volume
-        );
-
         SynchronizeColonizationRingForEachViewQuery(
             world,
             commandBuffer,
             planet,
             size,
-            data,
+            display,
             in asPlanet
         );
     }

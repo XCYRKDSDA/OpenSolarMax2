@@ -35,6 +35,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(PlanetGeostationaryOrbit), // 同步轨道，用于生成新舰船轨道
             typeof(TreeRelationship<Anchorage>.AsParent), // 挂载关系父方
             typeof(AnchoredShipsRegistry), // 挂载舰船的索引
+            typeof(AnchoredShipsDisplayData), // 构成弧与数目标签的显示数据
             // 移动相关
             typeof(JumpingShipsRegistry), // 前往该天体的舰船的索引
             typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
@@ -44,6 +45,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(Battlefield), // 允许发生战争
             typeof(Colonizable), // 允许进行殖民
             typeof(ColonizationState), // 殖民状态
+            typeof(ColonizationRingDisplayData), // 殖民进度环的显示数据
             // 其他
             typeof(ReferenceSize), // 参考尺寸，用于可视化相关
             typeof(Pickable), // 可被点选
