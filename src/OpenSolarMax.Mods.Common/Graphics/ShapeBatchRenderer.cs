@@ -130,7 +130,7 @@ internal static class ShapeBatchRenderer
         )
             return;
 
-        batch.FillArc(
+        batch.FillRing(
             Vector2.Transform(arc.Position, localToScreen),
             arc.StartAngle,
             arc.StartAngle + arc.SweepAngle,
@@ -160,7 +160,7 @@ internal static class ShapeBatchRenderer
             tail -= unit * line.Offset;
         }
 
-        batch.FillLine(head, tail, line.Thickness * shapeScale / 2, fill);
+        batch.FillPath([head, tail], line.Thickness * shapeScale / 2, fill, cap: PathCap.Butt);
     }
 
     private static void DrawRectangle(
