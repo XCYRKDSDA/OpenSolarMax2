@@ -15,7 +15,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 同步天体的殖民进度环实体的存在性
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(Colonizable))]
 [ReadCurr(typeof(ColonizationState))]
@@ -82,7 +82,7 @@ public sealed partial class SynchronizeColonizationRingsPresenceSystem(
             commandBuffer.Destroy(relationship.Remainder);
         }
 
-        // 本视图下没有进度环时新建一对弧段，外观由渲染阶段的外观系统负责
+        // 本视图下没有进度环时新建一对弧段，外观由外观系统负责
         if (!existing)
             MakeColonizationRings(planet, view, commandBuffer);
     }

@@ -4,7 +4,7 @@ using OpenSolarMax.Mods.Common.Components;
 
 namespace OpenSolarMax.Mods.Common.Systems;
 
-[SimulateSystem, Reactive]
+[SimulateSystem, RenderSystem, Reactive]
 public sealed class IndexDependenceSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<Dependence>(registry) { }
 

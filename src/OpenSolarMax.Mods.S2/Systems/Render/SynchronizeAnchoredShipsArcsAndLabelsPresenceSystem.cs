@@ -16,7 +16,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 同步天体的舰船构成弧和数量标签实体的存在性
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(AnchoredShipsDisplayData))]
 [ReadCurr(typeof(PlanetAnchoredShipsArc.AsPlanet))]
@@ -132,7 +132,7 @@ public sealed partial class SynchronizeAnchoredShipsArcsAndLabelsPresenceSystem(
             if (!data.LabelledParties.Contains(theTeam))
                 return;
 
-            // 天体上没有现成的该阵营标签时新建一个，外观由渲染阶段的外观系统负责
+            // 天体上没有现成的该阵营标签时新建一个，外观由外观系统负责
             if (!TryFindLabel(in asPlanetOfLabels, theTeam, view, out _))
                 MakeLabel(planet, theTeam, view, commandBuffer);
 

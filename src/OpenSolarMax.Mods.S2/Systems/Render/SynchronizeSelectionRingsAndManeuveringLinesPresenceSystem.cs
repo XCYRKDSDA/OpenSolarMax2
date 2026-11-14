@@ -17,7 +17,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 根据操纵状态同步选中圈、候选圈与拖拽线段的存在性，并触发选中圈淡出。
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(FleetManipulationStatus))]
 [ReadCurr(typeof(FleetManipulationSources))]
 [ReadCurr(typeof(PlanetSelectionRing.AsView))]

@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Utils;
-using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
@@ -16,16 +15,11 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 按天体上停靠舰船的阵营构成，计算构成弧与数目标签的显示数据。
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(RecommendedVisualStyle))]
 [ReadCurr(typeof(TeamVisualization))]
 [Calc(typeof(AnchoredShipsDisplayData))]
-[ExecuteAfter(
-    typeof(ApplyAnimationSystem),
-    "默认动画系统优先执行",
-    typeof(AnchoredShipsDisplayData)
-)]
 public sealed partial class CalculateAnchoredShipsDisplayDataSystem(
     World world,
     [Section("systems:visualization:anchored_ships")] IConfiguration configs

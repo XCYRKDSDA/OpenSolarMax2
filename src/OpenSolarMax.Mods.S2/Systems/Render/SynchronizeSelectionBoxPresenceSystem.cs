@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 根据操纵状态创建或销毁每个视图的选框实体
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(FleetManipulationStatus))]
 [ReadCurr(typeof(ViewSelectionBox.AsView))]
 [DelayedCalc]

@@ -4,7 +4,6 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
@@ -13,16 +12,11 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 按殖民状态计算天体殖民进度环的显示数据。
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(Colonizable))]
 [ReadCurr(typeof(ColonizationState))]
 [ReadCurr(typeof(RecommendedVisualStyle))]
 [Calc(typeof(ColonizationRingDisplayData))]
-[ExecuteAfter(
-    typeof(ApplyAnimationSystem),
-    "默认动画系统优先执行",
-    typeof(ColonizationRingDisplayData)
-)]
 public sealed partial class CalculateColonizationRingDisplayDataSystem(World world) : ICalcSystem
 {
     [Query]

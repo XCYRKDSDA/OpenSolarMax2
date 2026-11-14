@@ -13,7 +13,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// 按视图的点选状态同步悬停发光实体的存在性
 /// </summary>
 [LateUpdate]
-[SimulateSystem]
+[RenderSystem]
 [ReadCurr(typeof(PointingStatus))]
 [ReadCurr(typeof(PointedEntityHoverGlow.AsView))]
 [DelayedCalc]
@@ -51,7 +51,7 @@ public sealed partial class SynchronizeHoverGlowPresenceSystem(World world, ICon
             commandBuffer.Destroy(relationship.Glow);
         }
 
-        // 没有现存的内发光实体则新建一个，外观由渲染阶段的外观系统负责
+        // 没有现存的内发光实体则新建一个，外观由外观系统负责
         if (existingGlow is null)
         {
             factory.Make(
