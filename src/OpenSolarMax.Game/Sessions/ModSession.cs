@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Reflection;
-using Arch.Buffer;
 using Arch.Core;
 using BitFaster.Caching;
 using BitFaster.Caching.Lru;
@@ -184,13 +183,7 @@ internal sealed class ModSession : IDisposable
         );
 
         // 加载关卡内容
-        var commandBuffer = new CommandBuffer();
-        var enumerator = branch.WorldLoader.LoadStepByStep(level, world, commandBuffer);
-        while (enumerator.MoveNext())
-        {
-            commandBuffer.Playback(world);
-            simulateSystem.LateUpdate();
-        }
+        branch.WorldLoader.Load(level, world, simulateSystem);
 
         // 仅游戏阶段注入 FMOD 系统
         if (injectFmod)

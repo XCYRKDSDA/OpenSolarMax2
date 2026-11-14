@@ -42,6 +42,7 @@ internal class AggregateSystem : IDisposable
     }
 
     private readonly World _world;
+    private readonly EventRegistry _eventRegistry;
 
     private readonly List<ITickSystem> _updateSystems = [];
     private readonly List<object> _lateUpdate1Systems = [];
@@ -59,7 +60,7 @@ internal class AggregateSystem : IDisposable
     )
     {
         _world = world;
-        var eventRegistry = new EventRegistry(world, this);
+        _eventRegistry = new EventRegistry(world, this);
 
         var updateSystems = sortedSystemTypes
             .UpdateSystems.Select(t =>
@@ -79,7 +80,7 @@ internal class AggregateSystem : IDisposable
         var reactiveSystems = sortedSystemTypes
             .ReactiveSystems.Select(t =>
                 (IReactiveSystem)
-                    PluginFactory.Instantiate(t, [(typeof(EventRegistry), eventRegistry)], @params)
+                    PluginFactory.Instantiate(t, [(typeof(EventRegistry), _eventRegistry)], @params)
             )
             .ToList();
 
@@ -115,6 +116,8 @@ internal class AggregateSystem : IDisposable
 
     public void LateUpdate()
     {
+        using var _ = _eventRegistry.Begin();
+
         // 不动点迭代：反复执行参与环路的随动系统，直到本轮没有任何延迟操作
         // 外循环：执行 LateUpdate1 系统并检查是否有延迟操作，有则经内循环一次性播放后继续循环
         for (var iteration = 0; ; iteration++)
