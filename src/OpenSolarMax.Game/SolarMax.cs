@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Nine.Assets;
 using Nine.Screens;
+using OpenSolarMax.Game.Assets;
 using OpenSolarMax.Game.Audio;
 using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.Pages;
@@ -109,6 +110,7 @@ public class SolarMax : XNAGame
         AssetsManager.RegisterDefaultLoader(new TextureRegionLoader());
         AssetsManager.RegisterDefaultLoader(new NinePatchRegionLoader());
         AssetsManager.RegisterDefaultLoader(new FontSystemLoader());
+        AssetsManager.RegisterDefaultLoader(new AposShapeFontLoader());
         AssetsManager.RegisterDefaultLoader(new ByteArrayLoader());
         AssetsManager.RegisterDefaultLoader(new FmodBankLoader(_globalFmodSystem));
         AssetsManager.RegisterDefaultLoader(new FmodEventLoader(_globalFmodSystem));

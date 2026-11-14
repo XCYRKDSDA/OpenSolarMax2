@@ -9,6 +9,7 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Concepts;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -44,6 +45,13 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             typeof(StartJumpingRequest.AsDestination),
             // 其他
             typeof(ReferenceSize),
+            typeof(Pickable), // 可被点选
+            // UI 相关
+            typeof(PlanetSelectionRing.AsPlanet),
+            typeof(PlanetCandidateRing.AsPlanet),
+            typeof(PlanetManeuveringLineSource.AsPlanet),
+            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(WorldToScreenProjection.AsSource),
             // 出兵相关
             typeof(DefaultLaunchPad)
         );
@@ -126,6 +134,9 @@ public class TemporaryDilatorApplier(
         // 设置参考尺寸
         commandBuffer.Set(in entity, new ReferenceSize { Radius = _referenceRadius });
 
+        // 设置可点选命中半径
+        commandBuffer.Set(in entity, new Pickable { HitRadius = _referenceRadius });
+
         // 随机设置同步轨道
         var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
         var roll = (float)random.NextDouble() * (_orbitMaxRoll - _orbitMinRoll) + _orbitMinRoll;
@@ -179,7 +190,6 @@ public class TemporaryDilatorApplier(
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = glow, Dependency = entity }
         );
     }

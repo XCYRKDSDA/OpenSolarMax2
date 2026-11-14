@@ -74,7 +74,6 @@ public class ColonizationFlareApplier(IAssetsManager assets, IConceptFactory fac
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Planet }
         );
 

@@ -3,7 +3,7 @@ using OpenSolarMax.Mods.Common.SourceGenerators;
 
 namespace OpenSolarMax.Mods.S2.Components;
 
-[Relationship]
+[Relationship(generateConcept: true)]
 public partial struct TrailOf(Entity ship, Entity trail)
 {
     [Participant]

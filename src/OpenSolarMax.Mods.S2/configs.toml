@@ -18,13 +18,15 @@ arrival_time_max_offset_ratio = 0.1 # 抵达时间的绝对偏差相对总时间
 
 # 输入系统相关
 
-[systems.input.maneuvering]
+[systems.input]
 minimal_select_pixels = 10
+dragging_threshold_pixels = 5
+holding_threshold_seconds = 0.5
 
 # 可视化系统相关
 
 [systems.visualization.anchored_ships]
-text.size = 36
+text.size = 28
 text.template = "{0}"
 shadow.distance = 2
 shadow.density = 0.6
@@ -51,22 +53,21 @@ ring.default_alpha = 0.2
 text.size = 18
 text.color = "red"
 
-[systems.visualization.maneuvering_ships_status]
+[systems.visualization.maneuvering_visual_appearance]
 ring.radius_multiplier = 2.4
 ring.offset = -8
 ring.thickness = 4
 ring.blocked.color = "red"
-ring.selected.color = "white"
-box.thickness = 4
-box.color = "white * 0.5"
 line.thickness = 4
-line.round = 1
 line.color = "white"
 line.blocked.color = "red"
 
-# 悬停发光的 radius_multiplier 与 offset 必须与上方 maneuvering_ships_status 的 ring.radius_multiplier、ring.offset 保持一致，保证发光外缘与细环重合
+[systems.visualization.selection_box]
+thickness = 4
+color = "white * 0.5"
+
+# 悬停发光的 radius_multiplier 与 offset 必须与 systems.visualization.maneuvering_visual_appearance 的 ring.radius_multiplier、ring.offset 保持一致，保证发光外缘与细环重合
 [systems.visualization.hover_glow]
-minimal_hit_pixels = 10
 radius_multiplier = 2.4
 offset = -8
 inner_factor = 1.0
@@ -117,6 +118,9 @@ edge.preview.width = 6
 
 [applier.laser_beam]
 width = 2 # 4 / 2
+
+[applier.selection_ring]
+color = "white"
 
 # 人口可视化标签
 [applier.view.total_population_label]

@@ -20,4 +20,9 @@ public struct Projection
     /// 屏幕坐标到 NDC 的变换矩阵
     /// </summary>
     public Matrix ScreenToNdc;
+
+    /// <summary>
+    /// 世界单位到屏幕像素的缩放比例
+    /// </summary>
+    public float Scale;
 }

@@ -10,8 +10,6 @@ internal record ImmutableSortedSystemTypesCollection(
 );
 
 internal record StageSystemTypesCollection(
-    ImmutableSortedSystemTypesCollection Input,
-    ImmutableSortedSystemTypesCollection Ai,
     ImmutableSortedSystemTypesCollection Simulate,
     ImmutableSortedSystemTypesCollection Render
 );

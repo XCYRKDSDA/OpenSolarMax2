@@ -31,8 +31,6 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public World World => _session.World;
 
-    public AggregateSystem InputSystem => _session.InputSystems;
-
     public AggregateSystem RenderSystem => _session.RenderSystems;
 
     public Entity ViewEntity => _viewEntity;

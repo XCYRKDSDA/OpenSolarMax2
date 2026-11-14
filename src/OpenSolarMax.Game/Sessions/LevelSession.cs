@@ -9,12 +9,9 @@ internal sealed class LevelSession : IDisposable
 {
     private readonly GameTime _playTime = new();
 
-    private readonly AggregateSystem _aiSystems;
     private readonly AggregateSystem _simulateSystems;
 
     public World World { get; }
-
-    public AggregateSystem InputSystems { get; }
 
     public AggregateSystem RenderSystems { get; }
 
@@ -29,16 +26,12 @@ internal sealed class LevelSession : IDisposable
 
     public LevelSession(
         World world,
-        AggregateSystem inputSystems,
-        AggregateSystem aiSystems,
         AggregateSystem simulateSystems,
         AggregateSystem renderSystems,
         SafeFmodEventDescription? music
     )
     {
         World = world;
-        InputSystems = inputSystems;
-        _aiSystems = aiSystems;
         _simulateSystems = simulateSystems;
         RenderSystems = renderSystems;
         Music = music;
@@ -55,15 +48,12 @@ internal sealed class LevelSession : IDisposable
         _playTime.IsRunningSlowly = gameTime.IsRunningSlowly;
 
         // 更新世界
-        _aiSystems.Update(_playTime);
         _simulateSystems.Update(_playTime);
     }
 
     public void Dispose()
     {
         World.Dispose();
-        InputSystems.Dispose();
-        _aiSystems.Dispose();
         _simulateSystems.Dispose();
         RenderSystems.Dispose();
     }

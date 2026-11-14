@@ -31,13 +31,23 @@ public abstract class ViewDefinition : IDefinition
             // 交互
             typeof(Camera),
             typeof(Projection),
-            typeof(ManeuveringShipsStatus),
+            typeof(FleetManipulationStatus), // 操作状态机
+            typeof(FleetManipulationSources), // 用户选择的飞行出发点来源
+            typeof(MouseDeviceState), // 鼠标设备状态
+            typeof(KeyboardDeviceState), // 键盘设备状态
+            typeof(InputGesture), // 输入手势
+            typeof(PointingStatus), // 点选状态
+            typeof(ViewSelectionBox.AsView),
+            typeof(PlanetSelectionRing.AsView),
+            typeof(PlanetCandidateRing.AsView),
+            typeof(PlanetManeuveringLineSource.AsView),
+            typeof(PlanetManeuveringLineTarget.AsView),
+            typeof(PointedEntityHoverGlow.AsView),
+            typeof(WorldToScreenProjection.AsView),
             typeof(FMOD.Studio.System),
             typeof(Viewport),
             typeof(InputFocusState),
             typeof(RenderSettings),
-            // 选择圈相关
-            typeof(ViewSelectionRing.AsView), // 视图的选择圈索引
             // UI 插件
             typeof(TotalPopulationWidget),
             typeof(FleetSliderWidget),

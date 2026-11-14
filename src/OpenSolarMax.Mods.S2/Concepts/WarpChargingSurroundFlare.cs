@@ -111,7 +111,6 @@ public class WarpChargingSurroundFlareApplier(IAssetsManager assets, IConceptFac
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Effect }
         );
         var baseCoord = factory.Make(
