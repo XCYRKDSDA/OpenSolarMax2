@@ -39,6 +39,7 @@
                 "-c",
                 "Debug"
             ],
+            "dependsOrder": "sequence",
             "dependsOn": [
                 "publish OpenSolarMax.Mods.Common",
                 "publish OpenSolarMax.Mods.S2"
