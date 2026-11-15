@@ -2,6 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using OneOf;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.S2.Components;
 
@@ -12,14 +13,14 @@ public static partial class ConceptNames
     public const string PredefinedOrbit = "PredefinedOrbit";
 }
 
-[Define(ConceptNames.PredefinedOrbit)]
+[Define(ConceptNames.PredefinedOrbit), BothForGameplayAndPreview]
 public abstract class PredefinedOrbitDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         TransformableDefinition.Signature + new Signature(typeof(PredefinedOrbit));
 }
 
-[Describe(ConceptNames.PredefinedOrbit)]
+[Describe(ConceptNames.PredefinedOrbit), BothForGameplayAndPreview]
 public class PredefinedOrbitDescription : IDescription
 {
     /// <summary>
@@ -47,7 +48,7 @@ public class PredefinedOrbitDescription : IDescription
     > Transform { get; set; } = new AbsoluteTransformOptions();
 }
 
-[Apply(ConceptNames.PredefinedOrbit)]
+[Apply(ConceptNames.PredefinedOrbit), BothForGameplayAndPreview]
 public class PredefinedOrbitApplier(IConceptFactory factory) : IApplier<PredefinedOrbitDescription>
 {
     private readonly TransformableApplier _transformableApplier = new(factory);

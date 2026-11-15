@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.Common.Utils;
 using OpenSolarMax.Mods.S2.Concepts;
@@ -38,7 +39,7 @@ public class PredefinedOrbitDeclaration : IDeclaration<PredefinedOrbitDeclaratio
     }
 }
 
-[Translate("orbit", ConceptNames.PredefinedOrbit)]
+[Translate("orbit", ConceptNames.PredefinedOrbit), BothForGameplayAndPreview]
 public class PredefinedOrbitDeclarationTranslator
     : ITranslator<PredefinedOrbitDeclaration, PredefinedOrbitDescription>
 {
