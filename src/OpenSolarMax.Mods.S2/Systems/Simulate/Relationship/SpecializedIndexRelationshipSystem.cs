@@ -71,6 +71,13 @@ public sealed class IndexJumpingRequestSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<StartJumpingRequest>(registry) { }
 
 /// <summary>
+/// 索引天体间可达性关系，维护 AsDeparture 和 AsDestination 索引组件。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class IndexReachabilityRelationSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<ReachabilityRelation>(registry) { }
+
+/// <summary>
 /// 索引被点选实体与悬停发光的关系，维护 AsPointedEntity、AsGlow 和 AsView 索引组件。
 /// </summary>
 [SimulateSystem, RenderSystem, Reactive]

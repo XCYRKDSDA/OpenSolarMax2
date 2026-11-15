@@ -70,6 +70,13 @@ public sealed class DestroyBrokenJumpingRequestSystem(EventRegistry registry)
     : DestroyBrokenRelationshipsSystem<StartJumpingRequest>(registry) { }
 
 /// <summary>
+/// 清理已损坏的天体间可达性关系。当出发或目的天体被销毁时，自动销毁关系实体。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenReachabilityRelationSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<ReachabilityRelation>(registry) { }
+
+/// <summary>
 /// 清理已损坏的被点选实体-悬停发光关系。
 /// </summary>
 [SimulateSystem, RenderSystem, Reactive]

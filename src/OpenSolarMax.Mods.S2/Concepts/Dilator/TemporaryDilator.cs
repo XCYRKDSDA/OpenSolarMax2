@@ -40,7 +40,8 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             typeof(AnchoredShipsRegistry),
             // 移动相关
             typeof(JumpingShipsRegistry),
-            typeof(ReachabilityRegistry),
+            typeof(ReachabilityRelation.AsDeparture),
+            typeof(ReachabilityRelation.AsDestination),
             typeof(StartJumpingRequest.AsDeparture),
             typeof(StartJumpingRequest.AsDestination),
             // 其他
