@@ -4,3 +4,6 @@
 [submodule "Third Party/Arch"]
 	path = third_party/Arch
 	url = git@github.com:XCYRKDSDA/Arch.git
+[submodule "third_party/Apos.Shapes"]
+	path = third_party/Apos.Shapes
+	url = git@github.com:XCYRKDSDA/Apos.Shapes.git

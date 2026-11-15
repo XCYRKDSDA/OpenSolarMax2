@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Apos.Shapes" Version="0.9.4" />
     <PackageReference Include="Arch" Version="2.1.0" ExcludeAssets="all" />
     <PackageReference Include="Arch.System" Version="1.1.0" />
     <PackageReference Include="BitFaster.Caching" Version="2.6.1" />
@@ -33,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\third_party\Apos.Shapes\Source\Apos.Shapes.csproj" />
     <ProjectReference Include="..\..\third_party\Nine\Nine\Nine.MG.csproj" />
     <ProjectReference Include="..\..\third_party\FMOD\FMOD.csproj" />
     <ProjectReference Include="..\..\third_party\Arch\src\Arch\Arch.csproj">
