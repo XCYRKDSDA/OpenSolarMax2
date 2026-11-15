@@ -51,7 +51,7 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             typeof(PlanetSelectionRing.AsPlanet),
             typeof(PlanetCandidateRing.AsPlanet),
             typeof(PlanetManeuveringLineSource.AsPlanet),
-            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(ManeuveringLineTarget.AsTarget),
             typeof(WorldToScreenProjection.AsSource),
             // 出兵相关
             typeof(DefaultLaunchPad)

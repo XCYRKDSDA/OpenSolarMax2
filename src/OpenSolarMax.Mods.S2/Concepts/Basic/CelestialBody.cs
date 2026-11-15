@@ -54,7 +54,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(PlanetSelectionRing.AsPlanet),
             typeof(PlanetCandidateRing.AsPlanet),
             typeof(PlanetManeuveringLineSource.AsPlanet),
-            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(ManeuveringLineTarget.AsTarget),
             typeof(PointedEntityHoverGlow.AsPointedEntity),
             typeof(PlanetColonizationRing.AsPlanet),
             typeof(PlanetAnchoredShipsArc.AsPlanet),

@@ -23,7 +23,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(PlanetSelectionRing.AsView))]
 [ReadCurr(typeof(PlanetCandidateRing.AsView))]
 [ReadCurr(typeof(PlanetManeuveringLineSource.AsView))]
-[ReadCurr(typeof(PlanetManeuveringLineTarget.AsLine))]
+[ReadCurr(typeof(ManeuveringLineTarget.AsLine))]
+[ReadCurr(typeof(ViewCursor.AsView))]
 [DelayedCalc]
 public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresenceSystem(
     World world,
@@ -109,24 +110,33 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
 
     private static (HashSet<Entity> Sources, Entity? Target) CollectLinesForDraggingToDestination(
         FleetManipulation_DraggingToDestination dragging,
-        FleetManipulationSources sources
-    ) => (sources.Departures.ToHashSet(), dragging.Target);
+        FleetManipulationSources sources,
+        Entity? cursor
+    ) => (sources.Departures.ToHashSet(), dragging.Target ?? cursor);
 
     private static (HashSet<Entity> Sources, Entity? Target) CollectLines(
         in FleetManipulationStatus status,
-        FleetManipulationSources sources
+        FleetManipulationSources sources,
+        Entity? cursor
     )
     {
         return status.State.Match(
             _ => CollectLinesForSimpleSelecting(),
             _ => CollectLinesForBoxSelecting(),
-            dragging => CollectLinesForDraggingToDestination(dragging, sources)
+            dragging => CollectLinesForDraggingToDestination(dragging, sources, cursor)
         );
     }
 
     #endregion
 
     #region 收集世界中实际存在的选择圈和目标线
+
+    private static Entity? CollectCursor(Entity view)
+    {
+        if (view.Get<ViewCursor.AsView>().Relationship is not { } relationship)
+            return null;
+        return relationship.Copy.Cursor;
+    }
 
     private static (
         Dictionary<Entity, (Entity Ring, Entity Relation)> SelectionRings,
@@ -153,8 +163,8 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
 
     private static (Entity Line, Entity? Target, Entity? Relation) CollectLine(Entity line)
     {
-        var relationship = line.Get<PlanetManeuveringLineTarget.AsLine>().Relationship;
-        return (line, relationship?.Copy.Planet, relationship?.Ref);
+        var relationship = line.Get<ManeuveringLineTarget.AsLine>().Relationship;
+        return (line, relationship?.Copy.Target, relationship?.Ref);
     }
 
     private static Dictionary<
@@ -277,10 +287,10 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.PlanetManeuveringLineTarget,
-            new PlanetManeuveringLineTargetDescription
+            ConceptNames.ManeuveringLineTarget,
+            new ManeuveringLineTargetDescription
             {
-                Planet = target,
+                Target = target,
                 Line = line,
                 View = view,
             }
@@ -327,7 +337,8 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
     {
         // 计算应当为哪些天体创建选中圈、候选圈和目标线
         var (desiredSelectedPlanets, desiredCandidatePlanets) = CollectPlanets(in status, sources);
-        var (desiredLineSources, desiredLineTarget) = CollectLines(in status, sources);
+        var cursor = CollectCursor(view);
+        var (desiredLineSources, desiredLineTarget) = CollectLines(in status, sources, cursor);
 
         // 统计当前已有的圈和目标线
         var (actualSelectionRings, actualCandidateRings) = CollectActualRings(view);
@@ -376,7 +387,7 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
         )
             RemoveLineTarget(presence, commandBuffer);
 
-        // 若目标是与当前目标不同的另一个天体，则创建新的关系
+        // 若目标是与当前目标不同的另一个实体，则创建新的关系
         if (desiredLineTarget is not null)
         {
             foreach (

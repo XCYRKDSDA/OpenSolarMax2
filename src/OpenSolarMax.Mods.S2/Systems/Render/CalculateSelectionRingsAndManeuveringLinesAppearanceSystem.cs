@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
@@ -6,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Components;
 
@@ -19,7 +19,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [RenderSystem]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(ReferenceSize))]
-[ReadCurr(typeof(MouseDeviceState))]
 [ReadCurr(typeof(Projection))]
 [ReadCurr(typeof(ManeuveringLineReachability))]
 [ReadCurr(typeof(PlanetSelectionRing.AsRing))]
@@ -27,8 +26,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(PlanetCandidateRing.AsRing))]
 [ReadCurr(typeof(PlanetManeuveringLineSource.AsLine))]
 [ReadCurr(typeof(PlanetManeuveringLineSource.AsPlanet))]
-[ReadCurr(typeof(PlanetManeuveringLineTarget.AsLine))]
-[ReadCurr(typeof(PlanetManeuveringLineTarget.AsPlanet))]
+[ReadCurr(typeof(ManeuveringLineTarget.AsLine))]
+[ReadCurr(typeof(ManeuveringLineTarget.AsTarget))]
 [Calc(typeof(Shape))]
 [Calc(typeof(ScreenTransform))]
 [ExecuteAfter(typeof(ProjectWorldToScreenSystem), "投影先确定线段起点", typeof(ScreenTransform))]
@@ -88,7 +87,7 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
                 return _blockedRingColor;
         }
 
-        ref readonly var asTarget = ref planet.TryGetRef<PlanetManeuveringLineTarget.AsPlanet>(
+        ref readonly var asTarget = ref planet.TryGetRef<ManeuveringLineTarget.AsTarget>(
             out var canBeTarget
         );
         if (canBeTarget)
@@ -144,7 +143,7 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
     [Query]
     [All<
         PlanetManeuveringLineSource.AsLine,
-        PlanetManeuveringLineTarget.AsLine,
+        ManeuveringLineTarget.AsLine,
         ManeuveringLineReachability,
         Shape,
         ScreenTransform
@@ -158,9 +157,11 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
     {
         // 两个组件类型都叫 AsLine，Arch.System.SourceGenerator 生成时会冲突，因此只能专门 Get
         var asSource = entity.Get<PlanetManeuveringLineSource.AsLine>();
-        var asTarget = entity.Get<PlanetManeuveringLineTarget.AsLine>();
+        var asTarget = entity.Get<ManeuveringLineTarget.AsLine>();
 
         var source = asSource.Relationship!.Value.Copy;
+        var target = asTarget.Relationship!.Value.Copy;
+        Debug.Assert(source.View == target.View);
         var view = source.View;
 
         ref readonly var projection = ref view.Get<Projection>();
@@ -168,23 +169,19 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
         var startRadius = CalculateRingRadius(source.Planet, projection.Scale) + _ringOffset;
 
         // 计算目标位置和目标选择圈尺寸
-        Vector2 targetInScreen;
-        var endRadius = 0f;
-        if (asTarget.Relationship is { } relationship)
-        {
-            var target = relationship.Copy.Planet;
-            ref readonly var targetPose = ref target.Get<AbsoluteTransform>();
-            var projected = Vector3.Transform(targetPose.Translation, projection.WorldToScreen);
-            targetInScreen = new Vector2(projected.X, projected.Y);
-            endRadius = CalculateRingRadius(target, projection.Scale) + _ringOffset;
-        }
-        else
-            targetInScreen = view.Get<MouseDeviceState>().State.Position.ToVector2();
+        ref readonly var targetPose = ref target.Target.Get<AbsoluteTransform>();
+        var projected = Vector3.Transform(targetPose.Translation, projection.WorldToScreen);
+        var targetInScreen = new Vector2(projected.X, projected.Y);
+
+        // 目标可能是天体，也可能是视图的光标；通过参考尺寸组件决定线段终点与圈边缘的距离
+        var endRadius = target.Target.Has<ReferenceSize>()
+            ? CalculateRingRadius(target.Target, projection.Scale) + _ringOffset
+            : 0f;
 
         // 根据可达性设置颜色
         shape.Fill = reachability.Reachable ? _lineColor : _blockedLineColor;
 
-        // 线段从出发圈边缘画到目标圈边缘；没有目标天体时直接画到鼠标位置
+        // 线段从出发圈边缘画到目标边缘
         var delta = targetInScreen - transform.Position;
         var distance = delta.Length();
         var end = distance - endRadius;
