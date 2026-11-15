@@ -1,6 +1,8 @@
 using Apos.Shapes;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.System;
+using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Modding.ECS;
@@ -10,9 +12,10 @@ using OpenSolarMax.Mods.Common.Graphics;
 namespace OpenSolarMax.Mods.Common.Systems;
 
 [RenderSystem, LateUpdate]
-[ReadCurr(typeof(Shape)), ReadCurr(typeof(ScreenTransform))]
+[ReadCurr(typeof(Projection)), ReadCurr(typeof(Shape)), ReadCurr(typeof(ScreenTransform))]
 [Priority((int)GraphicsLayer.Interface + 1)]
-public sealed class DrawScreenShapesSystem(World world, GraphicsDevice graphicsDevice) : ICalcSystem
+public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice graphicsDevice)
+    : ICalcSystem
 {
     private static readonly QueryDescription _shapeDesc = new QueryDescription().WithAll<
         Shape,
@@ -21,25 +24,13 @@ public sealed class DrawScreenShapesSystem(World world, GraphicsDevice graphicsD
 
     private readonly ShapeBatch _batch = new(graphicsDevice, null, false);
 
-    public void Update()
+    [Query]
+    [All<Projection>]
+    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Projection projection)
     {
-        var drawableEntities = new List<Entity>();
-        world.Query(in _shapeDesc, entity => drawableEntities.Add(entity));
+        _batch.Begin(null, projection.ScreenToNdc);
 
-        if (drawableEntities.Count == 0)
-            return;
-
-        drawableEntities.Sort(
-            (l, r) =>
-            {
-                var order = l.Get<ScreenTransform>().Z.CompareTo(r.Get<ScreenTransform>().Z);
-                return order != 0 ? order : l.Id.CompareTo(r.Id);
-            }
-        );
-
-        _batch.Begin();
-
-        foreach (var entity in drawableEntities)
+        foreach (var entity in entities)
         {
             ref readonly var shape = ref entity.Get<Shape>();
             ref readonly var transform = ref entity.Get<ScreenTransform>();
@@ -60,5 +51,20 @@ public sealed class DrawScreenShapesSystem(World world, GraphicsDevice graphicsD
         }
 
         _batch.End();
+    }
+
+    public void Update()
+    {
+        var drawableEntities = new List<Entity>();
+        world.Query(in _shapeDesc, entity => drawableEntities.Add(entity));
+        drawableEntities.Sort(
+            (l, r) =>
+            {
+                var order = l.Get<ScreenTransform>().Z.CompareTo(r.Get<ScreenTransform>().Z);
+                return order != 0 ? order : l.Id.CompareTo(r.Id);
+            }
+        );
+
+        RenderToCameraQuery(world, drawableEntities);
     }
 }
