@@ -5,14 +5,21 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Game.Modding.UI;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Graphics;
 
 namespace OpenSolarMax.Mods.Common.Systems;
 
-[RenderSystem, LateUpdate]
-[ReadCurr(typeof(Projection)), ReadCurr(typeof(Shape)), ReadCurr(typeof(ScreenTransform))]
+[RenderSystem, LateUpdate, BothForGameplayAndPreview]
+[
+    ReadCurr(typeof(Projection)),
+    ReadCurr(typeof(Shape)),
+    ReadCurr(typeof(ScreenTransform)),
+    ReadCurr(typeof(RenderSettings))
+]
 [Priority((int)GraphicsLayer.Interface + 1)]
 public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice graphicsDevice)
     : ICalcSystem
@@ -24,18 +31,41 @@ public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice g
 
     private readonly ShapeBatch _batch = new(graphicsDevice, null, false);
 
+    private static BlendState GetBlendState(SpriteBlend blend) =>
+        blend switch
+        {
+            SpriteBlend.Alpha => BlendState.AlphaBlend,
+            SpriteBlend.Additive => BlendState.Additive,
+            SpriteBlend.Opaque => BlendState.Opaque,
+            SpriteBlend.NonPremultiplied => BlendState.NonPremultiplied,
+            _ => throw new ArgumentOutOfRangeException(nameof(blend)),
+        };
+
     [Query]
-    [All<Projection>]
-    private void RenderToCamera([Data] IEnumerable<Entity> entities, in Projection projection)
+    [All<RenderSettings, Projection>]
+    private void RenderToCamera(
+        [Data] IEnumerable<Entity> entities,
+        in RenderSettings renderSettings,
+        in Projection projection
+    )
     {
-        _batch.Begin(null, projection.ScreenToNdc);
+        SpriteBlend? currentBlend = null;
 
         foreach (var entity in entities)
         {
             ref readonly var shape = ref entity.Get<Shape>();
             ref readonly var transform = ref entity.Get<ScreenTransform>();
 
-            var shapeScale = shape.Scale;
+            if (currentBlend != shape.Blend)
+            {
+                if (currentBlend is not null)
+                    _batch.End();
+
+                _batch.Begin(null, projection.ScreenToNdc, GetBlendState(shape.Blend));
+                currentBlend = shape.Blend;
+            }
+
+            var shapeScale = shape.Scale * renderSettings.SpriteScaling;
             var localToScreen =
                 Matrix.CreateScale(shapeScale)
                 * Matrix.CreateRotationZ(transform.Rotation)
@@ -50,7 +80,8 @@ public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice g
             );
         }
 
-        _batch.End();
+        if (currentBlend is not null)
+            _batch.End();
     }
 
     public void Update()
