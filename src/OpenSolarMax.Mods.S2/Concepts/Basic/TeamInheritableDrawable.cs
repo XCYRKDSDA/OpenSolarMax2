@@ -47,11 +47,6 @@ public class TeamInheritableDrawableDescription : IDescription
     public required OneOf<string, TextureRegion> Texture { get; set; }
 
     /// <summary>
-    /// 纹理的过渡
-    /// </summary>
-    public TextureUV<float> Gradient { get; set; } = 1.0f;
-
-    /// <summary>
     /// 精灵的掩膜颜色
     /// </summary>
     public Color Color { get; set; } = Color.White;
@@ -127,7 +122,6 @@ public class TeamInheritableDrawableApplier(IAssetsManager assets, IConceptFacto
             {
                 Transform = desc.Transform,
                 Texture = desc.Texture,
-                Gradient = desc.Gradient,
                 Color = desc.Color,
                 Alpha = desc.Alpha,
                 Size = desc.Size,
