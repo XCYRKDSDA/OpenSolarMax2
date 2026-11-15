@@ -17,7 +17,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(ReachabilityRelation))]
 [Calc(typeof(Reachability))]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Reachability))]
-[ExecuteAfter(typeof(CountBarrierReachabilitySystem), "传送门优先级最高", typeof(Reachability))]
+[ExecuteAfter(typeof(CountBarrierReachabilitySystem), "传送门优先级更高", typeof(Reachability))]
+[ExecuteBefore(typeof(CountSelfReachabilitySystem), "回环可达性优先级最高", typeof(Reachability))]
 public sealed partial class CountWarpReachabilitySystem(World world) : ICalcSystem
 {
     [Query]

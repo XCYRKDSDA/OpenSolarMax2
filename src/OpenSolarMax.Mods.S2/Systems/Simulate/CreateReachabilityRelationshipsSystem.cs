@@ -57,7 +57,7 @@ public sealed class CreateReachabilityRelationshipsSystem(World world, IConceptF
         {
             foreach (var destination in destinations)
             {
-                if (departure == destination || existing.Contains((departure, destination)))
+                if (existing.Contains((departure, destination)))
                     continue;
 
                 factory.Make(
