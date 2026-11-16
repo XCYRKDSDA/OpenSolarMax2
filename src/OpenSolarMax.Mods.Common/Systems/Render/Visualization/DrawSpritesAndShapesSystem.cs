@@ -1,10 +1,11 @@
+using Apos.Shapes;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nine.Assets;
+using MonoGame.Extended;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
@@ -17,14 +18,9 @@ namespace OpenSolarMax.Mods.Common.Systems;
 [RenderSystem, LateUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(Projection)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
-public sealed partial class DrawSpritesSystem(
-    World world,
-    GraphicsDevice graphicsDevice,
-    IAssetsManager assets
-) : ICalcSystem
+public sealed partial class DrawSpritesAndShapesSystem(World world, GraphicsDevice graphicsDevice)
+    : ICalcSystem
 {
-    private static readonly short[] _indices = [0, 1, 2, 3, 2, 1];
-
     // 加法混合的状态只建一次。BlendState 是 GraphicsResource，在循环里新建会让它反复被
     // 登记进 GraphicsDevice 的资源表，并在终结时线性查找移除，与主线程抢同一把锁，
     // 造成偶发的长停顿。
@@ -41,8 +37,7 @@ public sealed partial class DrawSpritesSystem(
         AbsoluteTransform
     >();
 
-    private readonly Effect _effect = new(graphicsDevice, EffectResource.TintEffect.Bytecode);
-    private readonly VertexPositionColorTexture[] _vertices = new VertexPositionColorTexture[4];
+    private readonly ShapeBatch _batch = new(graphicsDevice, null, false);
 
     public void Update()
     {
@@ -95,69 +90,38 @@ public sealed partial class DrawSpritesSystem(
             * Matrix.CreateScale(renderSettings.SpriteScaling, renderSettings.SpriteScaling, 1)
             * anchorToWorld;
 
+        // 计算四边形投影到世界系 XY 平面后的变换
         var leftTop = new Vector3(-sprite.Texture.Anchor.X, sprite.Texture.Anchor.Y, 0);
-        var leftToRight = new Vector3(sprite.Texture.Bounds.Width, 0, 0);
-        var topToBottom = new Vector3(0, -sprite.Texture.Bounds.Height, 0);
-
-        // 计算四个顶点的坐标
-        _vertices[0].Position = Vector3.Transform(leftTop, anchorToWorld);
-        _vertices[1].Position = Vector3.Transform(leftTop + leftToRight, anchorToWorld);
-        _vertices[2].Position = Vector3.Transform(leftTop + topToBottom, anchorToWorld);
-        _vertices[3].Position = Vector3.Transform(
-            leftTop + leftToRight + topToBottom,
+        var origin = Vector3.Transform(leftTop, anchorToWorld);
+        var right = Vector3.TransformNormal(
+            new Vector3(sprite.Texture.Bounds.Width, 0, 0),
             anchorToWorld
         );
+        var down = Vector3.TransformNormal(
+            new Vector3(0, -sprite.Texture.Bounds.Height, 0),
+            anchorToWorld
+        );
+        var toWorld = new Matrix3x2(right.X, right.Y, down.X, down.Y, origin.X, origin.Y);
 
-        // 计算四个顶点对应的原始纹理的UV坐标
-        _vertices[0].TextureCoordinate = new(
-            sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
-            sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height
-        );
-        _vertices[1].TextureCoordinate = new(
-            sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
-            sprite.Texture.Bounds.Top / (float)sprite.Texture.Texture.Height
-        );
-        _vertices[2].TextureCoordinate = new(
-            sprite.Texture.Bounds.Left / (float)sprite.Texture.Texture.Width,
-            sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height
-        );
-        _vertices[3].TextureCoordinate = new(
-            sprite.Texture.Bounds.Right / (float)sprite.Texture.Texture.Width,
-            sprite.Texture.Bounds.Bottom / (float)sprite.Texture.Texture.Height
-        );
+        // 以像素为单位选取原始纹理中的子区域
+        var bounds = sprite.Texture.Bounds;
+        var toSource =
+            Matrix3x2.CreateScale(bounds.Width, bounds.Height)
+            * Matrix3x2.CreateTranslation(bounds.Left, bounds.Top);
 
-        // 设置四个顶点的颜色
-        _vertices[0].Color = sprite.Color * sprite.Alpha;
-        _vertices[1].Color = sprite.Color * sprite.Alpha;
-        _vertices[2].Color = sprite.Color * sprite.Alpha;
-        _vertices[3].Color = sprite.Color * sprite.Alpha;
+        // 设置掩膜颜色
+        var mask = sprite.Color * sprite.Alpha;
 
-        // 设置混合模式
-        graphicsDevice.BlendState = sprite.Blend switch
+        _batch.Draw(sprite.Texture.Texture, toWorld, toSource, mask);
+    }
+
+    private static BlendState BlendStateOf(SpriteBlend blend) =>
+        blend switch
         {
             SpriteBlend.Alpha => BlendState.AlphaBlend,
             SpriteBlend.Additive => _additiveBlendState,
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(blend)),
         };
-
-        // 设置Shader纹理
-        _effect.Parameters["tex_sampler+tex"].SetValue(sprite.Texture.Texture);
-
-        // 绘制图元
-        foreach (var pass in _effect.CurrentTechnique.Passes)
-        {
-            pass.Apply();
-            graphicsDevice.DrawUserIndexedPrimitives(
-                PrimitiveType.TriangleList,
-                _vertices,
-                0,
-                4,
-                _indices,
-                0,
-                2
-            );
-        }
-    }
 
     [Query]
     [All<RenderSettings, Projection>]
@@ -167,19 +131,26 @@ public sealed partial class DrawSpritesSystem(
         in Projection projection
     )
     {
-        _effect.Parameters["to_ndc"].SetValue(projection.WorldToNdc);
+        var currentBlend = SpriteBlend.Alpha;
+        _batch.Begin(null, projection.WorldToNdc, BlendStateOf(currentBlend));
 
-        // 设置绘图设备参数
-        graphicsDevice.BlendState = BlendState.AlphaBlend;
-        graphicsDevice.DepthStencilState = DepthStencilState.None;
-        graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-        graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
-
-        // 逐个绘制
         foreach (var entity in entities)
         {
             var refs = entity.Get<Sprite, AbsoluteTransform>();
+            if (refs.t0.Texture is null)
+                continue;
+
+            // 混合模式变化时分段：结束当前批次，以新的混合状态重开
+            if (refs.t0.Blend != currentBlend)
+            {
+                currentBlend = refs.t0.Blend;
+                _batch.End();
+                _batch.Begin(null, projection.WorldToNdc, BlendStateOf(currentBlend));
+            }
+
             DrawEntity(in refs.t0, in refs.t1, in renderSettings);
         }
+
+        _batch.End();
     }
 }
