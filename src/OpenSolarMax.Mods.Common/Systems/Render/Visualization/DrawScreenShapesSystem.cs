@@ -4,7 +4,6 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Graphics;
@@ -14,21 +13,18 @@ namespace OpenSolarMax.Mods.Common.Systems;
 [RenderSystem, LateUpdate]
 [ReadCurr(typeof(Projection)), ReadCurr(typeof(Shape)), ReadCurr(typeof(ScreenTransform))]
 [Priority((int)GraphicsLayer.Interface + 1)]
-public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice graphicsDevice)
-    : ICalcSystem
+public sealed partial class DrawScreenShapesSystem(World world, ShapeBatch batch) : ICalcSystem
 {
     private static readonly QueryDescription _shapeDesc = new QueryDescription().WithAll<
         Shape,
         ScreenTransform
     >();
 
-    private readonly ShapeBatch _batch = new(graphicsDevice, null, false);
-
     [Query]
     [All<Projection>]
     private void RenderToCamera([Data] IEnumerable<Entity> entities, in Projection projection)
     {
-        _batch.Begin(null, projection.ScreenToNdc);
+        batch.Begin(null, projection.ScreenToNdc);
 
         foreach (var entity in entities)
         {
@@ -42,7 +38,7 @@ public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice g
                 * Matrix.CreateTranslation(transform.Position.X, transform.Position.Y, 0);
 
             ShapeBatchRenderer.DrawEntity(
-                _batch,
+                batch,
                 in shape,
                 in localToScreen,
                 shapeScale,
@@ -50,7 +46,7 @@ public sealed partial class DrawScreenShapesSystem(World world, GraphicsDevice g
             );
         }
 
-        _batch.End();
+        batch.End();
     }
 
     public void Update()

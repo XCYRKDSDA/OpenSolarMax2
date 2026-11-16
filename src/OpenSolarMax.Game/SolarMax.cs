@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Apos.Shapes;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -31,6 +32,7 @@ public class SolarMax : XNAGame
     private ScreenManager _globalScreenManager;
     private RenderTarget2D _renderTarget;
     private SpriteBatch _spriteBatch;
+    private ShapeBatch _shapeBatch;
 
     private TaskScheduler _loadingTaskScheduler;
 
@@ -65,6 +67,8 @@ public class SolarMax : XNAGame
 
     public MusicManager Music => _musicManager;
 
+    public ShapeBatch ShapeBatch => _shapeBatch;
+
     public AssetsManager Assets => _globalAssets;
 
     internal GameSession GameSession => _gameSession;
@@ -97,6 +101,7 @@ public class SolarMax : XNAGame
             RenderTargetUsage.PreserveContents // 保留
         );
         _spriteBatch = new SpriteBatch(GraphicsDevice, 1);
+        _shapeBatch = new ShapeBatch(GraphicsDevice);
 
         // 初始化全局 fmod 音频系统
         FmodException.Check(FmodStudioSystem.create(out _globalFmodSystem));
@@ -146,7 +151,10 @@ public class SolarMax : XNAGame
     protected override void Dispose(bool disposing)
     {
         if (disposing)
+        {
             _gameSession?.Dispose();
+            _shapeBatch?.Dispose();
+        }
 
         base.Dispose(disposing);
     }

@@ -18,8 +18,7 @@ namespace OpenSolarMax.Mods.Common.Systems;
 [RenderSystem, LateUpdate, BothForGameplayAndPreview]
 [ReadCurr(typeof(Projection)), ReadCurr(typeof(Sprite)), ReadCurr(typeof(AbsoluteTransform))]
 [Priority((int)GraphicsLayer.Entities)]
-public sealed partial class DrawSpritesAndShapesSystem(World world, GraphicsDevice graphicsDevice)
-    : ICalcSystem
+public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch batch) : ICalcSystem
 {
     // 加法混合的状态只建一次。BlendState 是 GraphicsResource，在循环里新建会让它反复被
     // 登记进 GraphicsDevice 的资源表，并在终结时线性查找移除，与主线程抢同一把锁，
@@ -36,8 +35,6 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, GraphicsDevi
         Sprite,
         AbsoluteTransform
     >();
-
-    private readonly ShapeBatch _batch = new(graphicsDevice, null, false);
 
     public void Update()
     {
@@ -112,7 +109,7 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, GraphicsDevi
         // 设置掩膜颜色
         var mask = sprite.Color * sprite.Alpha;
 
-        _batch.Draw(sprite.Texture.Texture, toWorld, toSource, mask);
+        batch.Draw(sprite.Texture.Texture, toWorld, toSource, mask);
     }
 
     private static BlendState BlendStateOf(SpriteBlend blend) =>
@@ -132,7 +129,7 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, GraphicsDevi
     )
     {
         var currentBlend = SpriteBlend.Alpha;
-        _batch.Begin(null, projection.WorldToNdc, BlendStateOf(currentBlend));
+        batch.Begin(null, projection.WorldToNdc, BlendStateOf(currentBlend));
 
         foreach (var entity in entities)
         {
@@ -144,13 +141,13 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, GraphicsDevi
             if (refs.t0.Blend != currentBlend)
             {
                 currentBlend = refs.t0.Blend;
-                _batch.End();
-                _batch.Begin(null, projection.WorldToNdc, BlendStateOf(currentBlend));
+                batch.End();
+                batch.Begin(null, projection.WorldToNdc, BlendStateOf(currentBlend));
             }
 
             DrawEntity(in refs.t0, in refs.t1, in renderSettings);
         }
 
-        _batch.End();
+        batch.End();
     }
 }
