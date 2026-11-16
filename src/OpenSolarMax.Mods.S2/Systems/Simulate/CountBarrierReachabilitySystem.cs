@@ -30,11 +30,15 @@ public sealed partial class CountBarrierReachabilitySystem(World world) : ICalcS
         ref readonly var departurePose = ref relationship.Departure.Get<AbsoluteTransform>();
         ref readonly var destinationPose = ref relationship.Destination.Get<AbsoluteTransform>();
 
-        result.Reachable = !ManeuveringUtils.CheckBarriersBlocking(
+        var reachable = !ManeuveringUtils.CheckBarriersBlocking(
             world,
             departurePose.Translation,
             destinationPose.Translation
         );
+
+        // 屏障与阵营无关，两类阵营得到同一个结果
+        result.OwnerReachable = reachable;
+        result.NonOwnerReachable = reachable;
     }
 
     public void Update() => CountReachabilityQuery(world);

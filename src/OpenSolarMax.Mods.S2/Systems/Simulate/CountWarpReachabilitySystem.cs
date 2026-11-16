@@ -9,7 +9,7 @@ using OpenSolarMax.Mods.S2.Components;
 namespace OpenSolarMax.Mods.S2.Systems;
 
 /// <summary>
-/// 传送门可达性判定：出发天体带有 <see cref="WarpTerminal"/> 时，它到任何目的天体都可直达
+/// 传送门可达性判定：占领带有 <see cref="WarpTerminal"/> 的出发天体的阵营，可借它直达任何目的天体
 /// </summary>
 [LateUpdate]
 [SimulateSystem]
@@ -28,8 +28,9 @@ public sealed partial class CountWarpReachabilitySystem(World world) : ICalcSyst
         ref Reachability result
     )
     {
+        // 传送门只对其占领阵营开放
         if (relationship.Departure.Has<WarpTerminal>())
-            result.Reachable = true;
+            result.OwnerReachable = true;
     }
 
     public void Update() => OverrideReachabilityQuery(world);

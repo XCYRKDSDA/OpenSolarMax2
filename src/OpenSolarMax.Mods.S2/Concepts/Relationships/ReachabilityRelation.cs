@@ -42,7 +42,7 @@ public class ReachabilityRelationApplier : IApplier<ReachabilityRelationDescript
     {
         commandBuffer.Set(in entity, new ReachabilityRelation(desc.Departure, desc.Destination));
 
-        // 默认不可达
-        commandBuffer.Set(in entity, new Reachability { Reachable = false });
+        // 默认两类阵营都不可达
+        commandBuffer.Set(in entity, new Reachability());
     }
 }

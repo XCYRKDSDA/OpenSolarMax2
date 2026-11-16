@@ -25,7 +25,10 @@ public sealed partial class CountSelfReachabilitySystem(World world) : ICalcSyst
     )
     {
         if (relationship.Departure == relationship.Destination)
-            result.Reachable = true;
+        {
+            result.OwnerReachable = true;
+            result.NonOwnerReachable = true;
+        }
     }
 
     public void Update() => OverrideReachabilityQuery(world);

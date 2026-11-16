@@ -81,11 +81,12 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private static bool CheckBlocked(
         PlanetInfo departure,
         PlanetInfo destination,
-        Dictionary<(Entity, Entity), bool> reachability
+        Entity team,
+        Dictionary<(Entity, Entity), Reachability> reachability
     ) =>
         !(
-            reachability.TryGetValue((departure.Entity, destination.Entity), out var reachable)
-            && reachable
+            reachability.TryGetValue((departure.Entity, destination.Entity), out var result)
+            && (team == departure.Team ? result.OwnerReachable : result.NonOwnerReachable)
         );
 
     /// <summary>
@@ -296,8 +297,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private static void CollectReachability(
         in ReachabilityRelation relationship,
         in Reachability result,
-        [Data] Dictionary<(Entity, Entity), bool> reachability
-    ) => reachability[(relationship.Departure, relationship.Destination)] = result.Reachable;
+        [Data] Dictionary<(Entity, Entity), Reachability> reachability
+    ) => reachability[(relationship.Departure, relationship.Destination)] = result;
 
     /// <summary>
     /// 统计某阵营飞行途中（已飞行距离超过 50）的舰船数
@@ -500,7 +501,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
         Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
-        Dictionary<(Entity, Entity), bool> reachability
+        Dictionary<(Entity, Entity), Reachability> reachability
     )
     {
         // 寻找目标防守星球
@@ -518,7 +519,10 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             foreach (var sender in defendSenders)
             {
                 // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
+                if (
+                    sender.Entity == target.Entity
+                    || CheckBlocked(sender, target, team, reachability)
+                )
                     continue;
                 // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
                 var combined = sender.ActualFriendShips + target.PredictedFriendShips;
@@ -688,7 +692,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
         Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
-        Dictionary<(Entity, Entity), bool> reachability
+        Dictionary<(Entity, Entity), Reachability> reachability
     )
     {
         // 寻找可进攻的天体
@@ -701,7 +705,10 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             foreach (var sender in attackSenders)
             {
                 // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
+                if (
+                    sender.Entity == target.Entity
+                    || CheckBlocked(sender, target, team, reachability)
+                )
                     continue;
                 // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
                 var combined = sender.ActualFriendShips + target.PredictedFriendShips;
@@ -761,19 +768,24 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     private static Dictionary<Entity, int> CalculateGatherValues(
         Dictionary<Entity, PlanetInfo> planetInfos,
         Entity team,
-        Dictionary<(Entity, Entity), bool> reachability
+        Dictionary<(Entity, Entity), Reachability> reachability
     )
     {
         return planetInfos.ToDictionary(
             pair => pair.Key,
             pair =>
             {
+                var isOwner = team == planetInfos[pair.Key].Team;
                 var value = -planetInfos.Values.Count(target =>
-                    target.Entity != pair.Key
-                    && (target.Team != team || target.PredictedEnemyShips > 0)
-                    && reachability.TryGetValue((pair.Key, target.Entity), out var reachable)
-                    && reachable
-                );
+                {
+                    if (target.Entity == pair.Key)
+                        return false;
+                    if (target.Team == team && target.PredictedEnemyShips <= 0)
+                        return false;
+
+                    var result = reachability[(pair.Key, target.Entity)];
+                    return isOwner ? result.OwnerReachable : result.NonOwnerReachable;
+                });
                 if (pair.Key.Has<AiValueBonus>())
                     value -= pair.Key.Get<AiValueBonus>().Value;
                 return value;
@@ -830,7 +842,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
         Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
-        Dictionary<(Entity, Entity), bool> reachability
+        Dictionary<(Entity, Entity), Reachability> reachability
     )
     {
         // 计算各天体的聚兵价值
@@ -844,7 +856,10 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             foreach (var sender in gatherSenders)
             {
                 // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
+                if (
+                    sender.Entity == target.Entity
+                    || CheckBlocked(sender, target, team, reachability)
+                )
                     continue;
                 // 目标天体价值高于出兵天体价值才派兵
                 if (gatherValues[target.Entity] >= gatherValues[sender.Entity])
@@ -903,7 +918,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
         Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
-        Dictionary<(Entity, Entity), bool> reachability
+        Dictionary<(Entity, Entity), Reachability> reachability
     )
     {
         // 寻找可出兵回防的天体
@@ -912,7 +927,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         foreach (var sender in senders)
         {
             // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-            if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
+            if (sender.Entity == target.Entity || CheckBlocked(sender, target, team, reachability))
                 continue;
             // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
             var combined = sender.ActualFriendShips + target.PredictedFriendShips;
@@ -1029,7 +1044,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in CapitalOf.AsTeam asCapital,
         [Data] CommandBuffer commandBuffer,
         [Data] Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
-        [Data] Dictionary<(Entity, Entity), bool> reachability
+        [Data] Dictionary<(Entity, Entity), Reachability> reachability
     )
     {
         // 决策节奏：冷却未到则跳过本次决策
@@ -1132,7 +1147,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     public void Update(CommandBuffer commandBuffer)
     {
         // 局部可达性字典。每帧从全部可达性关系收集一次，供本轮所有决策查询，避免频繁遍历
-        var reachability = new Dictionary<(Entity, Entity), bool>();
+        var reachability = new Dictionary<(Entity, Entity), Reachability>();
         CollectReachabilityQuery(world, reachability);
 
         // 本轮调用内待写回的出兵冷却（星球 → 队伍 → 冷却）：经 [Data] 传入查询、由 SendShips 记录，
