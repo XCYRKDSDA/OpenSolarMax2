@@ -38,7 +38,8 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(AnchoredShipsDisplayData), // 构成弧与数目标签的显示数据
             // 移动相关
             typeof(JumpingShipsRegistry), // 前往该天体的舰船的索引
-            typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
+            typeof(ReachabilityRelation.AsDeparture), // 作为出发端的可达性关系索引
+            typeof(ReachabilityRelation.AsDestination), // 作为目的端的可达性关系索引
             typeof(StartJumpingRequest.AsDeparture),
             typeof(StartJumpingRequest.AsDestination),
             // 战争相关
@@ -53,7 +54,7 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(PlanetSelectionRing.AsPlanet),
             typeof(PlanetCandidateRing.AsPlanet),
             typeof(PlanetManeuveringLineSource.AsPlanet),
-            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(ManeuveringLineTarget.AsTarget),
             typeof(PointedEntityHoverGlow.AsPointedEntity),
             typeof(PlanetColonizationRing.AsPlanet),
             typeof(PlanetAnchoredShipsArc.AsPlanet),

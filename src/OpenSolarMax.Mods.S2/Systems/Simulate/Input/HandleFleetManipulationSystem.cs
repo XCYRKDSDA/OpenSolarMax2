@@ -25,7 +25,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(InputFocusState))]
 [ReadCurr(typeof(FleetSliderWidget))]
-[ReadCurr(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(ReachabilityRelation.AsDeparture))]
+[ReadCurr(typeof(Reachability))]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(Projection))]
 [ReadCurr(typeof(PointingStatus))]
@@ -67,9 +68,16 @@ public sealed partial class HandleFleetManipulationSystem(World world, IConceptF
         return boxedPlanets;
     }
 
-    private bool CheckReachability(Entity departure, Entity destination)
+    private static bool CheckReachability(Entity departure, Entity destination)
     {
-        return departure.Get<ReachabilityRegistry>().FromHereTo[destination];
+        ref readonly var asDeparture = ref departure.Get<ReachabilityRelation.AsDeparture>();
+        foreach (var (relationship, record) in asDeparture.Relationships)
+        {
+            if (record.Destination != destination)
+                continue;
+            return relationship.Get<Reachability>().Reachable;
+        }
+        return false;
     }
 
     /// <summary>

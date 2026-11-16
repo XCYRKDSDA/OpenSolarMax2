@@ -25,7 +25,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(Ai))]
 [ReadCurr(typeof(TeamPopulationRegistry))]
-[ReadCurr(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(ReachabilityRelation))]
+[ReadCurr(typeof(Reachability))]
 [ReadCurr(typeof(AiValueBonus))]
 [ReadCurr(typeof(ProductionCondition))]
 [ReadCurr(typeof(JumpingStatus))]
@@ -74,8 +75,18 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
 
     #region 共享工具
 
-    private static bool CheckBlocked(PlanetInfo departure, PlanetInfo destination) =>
-        !departure.Entity.Get<ReachabilityRegistry>().FromHereTo[destination.Entity];
+    /// <summary>
+    /// 判断两个天体之间是否被拦截。可达性字典中不存在条目时（如关系实体当帧尚未建立）视为被拦截。
+    /// </summary>
+    private static bool CheckBlocked(
+        PlanetInfo departure,
+        PlanetInfo destination,
+        Dictionary<(Entity, Entity), bool> reachability
+    ) =>
+        !(
+            reachability.TryGetValue((departure.Entity, destination.Entity), out var reachable)
+            && reachable
+        );
 
     /// <summary>
     /// 出兵来源准入：未在战斗才允许派兵。防御/进攻段战斗中且己方占优则排除（抽兵会失守），聚兵段战斗中即排除。原版 S2 在难度 1/2 下有「teamStrength &lt; 10 的低兵力出兵来源门槛」（currentDifficulty &lt; 3 时排除），难度 3 时该门槛失效；本游戏对应难度 3，故未实现。
@@ -278,6 +289,17 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     #region 数据收集
 
     /// <summary>
+    /// 收集全部可达性关系实体的判定结果，构建「(出发天体, 目的天体) → 可达性」局部字典
+    /// </summary>
+    [Query]
+    [All<ReachabilityRelation, Reachability>]
+    private static void CollectReachability(
+        in ReachabilityRelation relationship,
+        in Reachability result,
+        [Data] Dictionary<(Entity, Entity), bool> reachability
+    ) => reachability[(relationship.Departure, relationship.Destination)] = result.Reachable;
+
+    /// <summary>
     /// 统计某阵营飞行途中（已飞行距离超过 50）的舰船数
     /// </summary>
     private static int CountTravellingShips(IEnumerable<Entity> ships, Entity team)
@@ -477,7 +499,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         Vector2 friendPlanetsCenter,
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
-        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
+        Dictionary<(Entity, Entity), bool> reachability
     )
     {
         // 寻找目标防守星球
@@ -495,7 +518,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             foreach (var sender in defendSenders)
             {
                 // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
                     continue;
                 // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
                 var combined = sender.ActualFriendShips + target.PredictedFriendShips;
@@ -664,7 +687,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         Vector2 friendPlanetsCenter,
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
-        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
+        Dictionary<(Entity, Entity), bool> reachability
     )
     {
         // 寻找可进攻的天体
@@ -677,7 +701,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             foreach (var sender in attackSenders)
             {
                 // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
                     continue;
                 // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
                 var combined = sender.ActualFriendShips + target.PredictedFriendShips;
@@ -736,19 +760,19 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
     /// </summary>
     private static Dictionary<Entity, int> CalculateGatherValues(
         Dictionary<Entity, PlanetInfo> planetInfos,
-        Entity team
+        Entity team,
+        Dictionary<(Entity, Entity), bool> reachability
     )
     {
         return planetInfos.ToDictionary(
             pair => pair.Key,
             pair =>
             {
-                // lambda 内无法捕获 ref 局部变量，故取一份结构体副本
-                var reachabilityRegistry = pair.Key.Get<ReachabilityRegistry>();
                 var value = -planetInfos.Values.Count(target =>
                     target.Entity != pair.Key
                     && (target.Team != team || target.PredictedEnemyShips > 0)
-                    && reachabilityRegistry.FromHereTo[target.Entity]
+                    && reachability.TryGetValue((pair.Key, target.Entity), out var reachable)
+                    && reachable
                 );
                 if (pair.Key.Has<AiValueBonus>())
                     value -= pair.Key.Get<AiValueBonus>().Value;
@@ -805,11 +829,12 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         Dictionary<Entity, PlanetInfo> planetInfos,
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
-        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
+        Dictionary<(Entity, Entity), bool> reachability
     )
     {
         // 计算各天体的聚兵价值
-        var gatherValues = CalculateGatherValues(planetInfos, team);
+        var gatherValues = CalculateGatherValues(planetInfos, team, reachability);
         // 寻找可出兵聚兵的天体
         var gatherSenders = ExtractGatherSenders(planetInfos, team, ai.Gather, capital);
         // 聚兵目标按价值升序排序
@@ -819,7 +844,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
             foreach (var sender in gatherSenders)
             {
                 // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-                if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+                if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
                     continue;
                 // 目标天体价值高于出兵天体价值才派兵
                 if (gatherValues[target.Entity] >= gatherValues[sender.Entity])
@@ -877,7 +902,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         Dictionary<Entity, PlanetInfo> planetInfos,
         in TeamPopulationRegistry populationRegistry,
         CommandBuffer commandBuffer,
-        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
+        Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
+        Dictionary<(Entity, Entity), bool> reachability
     )
     {
         // 寻找可出兵回防的天体
@@ -886,7 +912,7 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         foreach (var sender in senders)
         {
             // 出兵天体和目标天体不为同一个，且二者之间没有被拦截
-            if (sender.Entity == target.Entity || CheckBlocked(sender, target))
+            if (sender.Entity == target.Entity || CheckBlocked(sender, target, reachability))
                 continue;
             // 出兵天体和目标天体的己方综合兵力须达到目标预测敌方兵力
             var combined = sender.ActualFriendShips + target.PredictedFriendShips;
@@ -1002,7 +1028,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
         in AiTimer timer,
         in CapitalOf.AsTeam asCapital,
         [Data] CommandBuffer commandBuffer,
-        [Data] Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns
+        [Data] Dictionary<Entity, Dictionary<Entity, TimeSpan>> pendingPlanetCooldowns,
+        [Data] Dictionary<(Entity, Entity), bool> reachability
     )
     {
         // 决策节奏：冷却未到则跳过本次决策
@@ -1047,7 +1074,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 planetInfos,
                 in populationRegistry,
                 commandBuffer,
-                pendingPlanetCooldowns
+                pendingPlanetCooldowns,
+                reachability
             );
             return;
         }
@@ -1063,7 +1091,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 friendPlanetsCenter,
                 in populationRegistry,
                 commandBuffer,
-                pendingPlanetCooldowns
+                pendingPlanetCooldowns,
+                reachability
             )
         )
             return;
@@ -1077,7 +1106,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 friendPlanetsCenter,
                 in populationRegistry,
                 commandBuffer,
-                pendingPlanetCooldowns
+                pendingPlanetCooldowns,
+                reachability
             )
         )
             return;
@@ -1090,7 +1120,8 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
                 planetInfos,
                 in populationRegistry,
                 commandBuffer,
-                pendingPlanetCooldowns
+                pendingPlanetCooldowns,
+                reachability
             )
         )
             return;
@@ -1100,10 +1131,14 @@ public partial class EnemyAiSystem(World world, IConceptFactory factory) : IDela
 
     public void Update(CommandBuffer commandBuffer)
     {
+        // 局部可达性字典。每帧从全部可达性关系收集一次，供本轮所有决策查询，避免频繁遍历
+        var reachability = new Dictionary<(Entity, Entity), bool>();
+        CollectReachabilityQuery(world, reachability);
+
         // 本轮调用内待写回的出兵冷却（星球 → 队伍 → 冷却）：经 [Data] 传入查询、由 SendShips 记录，
         // 查询结束后合并写回命令缓冲。生命周期仅限本次调用，不引入跨调用的外部状态。
         var pendingPlanetCooldowns = new Dictionary<Entity, Dictionary<Entity, TimeSpan>>();
-        ExecuteQuery(world, commandBuffer, pendingPlanetCooldowns);
+        ExecuteQuery(world, commandBuffer, pendingPlanetCooldowns, reachability);
         FlushPendingPlanetCooldowns(pendingPlanetCooldowns, commandBuffer);
     }
 

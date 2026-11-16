@@ -42,11 +42,18 @@ public sealed class IndexPlanetManeuveringLineSourceSystem(EventRegistry registr
     : IndexRelationshipSystemBase<PlanetManeuveringLineSource>(registry) { }
 
 /// <summary>
-/// 索引目标星球与拖拽线段的关系，维护 AsPlanet 和 AsLine 索引组件。
+/// 索引目标与拖拽线段的关系，维护 AsTarget、AsLine 和 AsView 索引组件。
 /// </summary>
 [SimulateSystem, RenderSystem, Reactive]
-public sealed class IndexPlanetManeuveringLineTargetSystem(EventRegistry registry)
-    : IndexRelationshipSystemBase<PlanetManeuveringLineTarget>(registry) { }
+public sealed class IndexManeuveringLineTargetSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<ManeuveringLineTarget>(registry) { }
+
+/// <summary>
+/// 索引视图与其光标实体的关系，维护 AsView 和 AsCursor 索引组件。
+/// </summary>
+[SimulateSystem, RenderSystem, Reactive]
+public sealed class IndexViewCursorSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<ViewCursor>(registry) { }
 
 /// <summary>
 /// 索引世界实体与屏幕实体的投影关系，维护 AsSource、AsTarget 和 AsView 索引组件。
@@ -69,6 +76,13 @@ public sealed class IndexCapitalOfSystem(EventRegistry registry)
 [SimulateSystem, Reactive]
 public sealed class IndexJumpingRequestSystem(EventRegistry registry)
     : IndexRelationshipSystemBase<StartJumpingRequest>(registry) { }
+
+/// <summary>
+/// 索引天体间可达性关系，维护 AsDeparture 和 AsDestination 索引组件。
+/// </summary>
+[SimulateSystem, RenderSystem, Reactive]
+public sealed class IndexReachabilityRelationSystem(EventRegistry registry)
+    : IndexRelationshipSystemBase<ReachabilityRelation>(registry) { }
 
 /// <summary>
 /// 索引被点选实体与悬停发光的关系，维护 AsPointedEntity、AsGlow 和 AsView 索引组件。
