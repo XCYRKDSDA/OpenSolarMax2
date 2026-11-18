@@ -142,3 +142,8 @@ knot.thickness = 4
 text.size = 36
 text.alpha = 0.6
 padding = 16
+
+# 轨道预览
+[applier.preview_orbit]
+thickness = 2
+color = "white * 0.4"
