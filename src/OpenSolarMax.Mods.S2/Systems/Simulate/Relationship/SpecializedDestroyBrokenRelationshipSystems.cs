@@ -42,11 +42,18 @@ public sealed class DestroyBrokenPlanetManeuveringLineSourcesSystem(EventRegistr
     : DestroyBrokenRelationshipsSystem<PlanetManeuveringLineSource>(registry) { }
 
 /// <summary>
-/// 清理已损坏的目标星球-拖拽线段关系。当星球或线段被销毁时，自动清理关系实体。
+/// 清理已损坏的目标-拖拽线段关系。当目标、线段或视图被销毁时，自动清理关系实体。
 /// </summary>
 [SimulateSystem, RenderSystem, Reactive]
-public sealed class DestroyBrokenPlanetManeuveringLineTargetsSystem(EventRegistry registry)
-    : DestroyBrokenRelationshipsSystem<PlanetManeuveringLineTarget>(registry) { }
+public sealed class DestroyBrokenManeuveringLineTargetsSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<ManeuveringLineTarget>(registry) { }
+
+/// <summary>
+/// 清理已损坏的视图-光标关系。当视图或光标被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, RenderSystem, Reactive]
+public sealed class DestroyBrokenViewCursorSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<ViewCursor>(registry) { }
 
 /// <summary>
 /// 清理已损坏的世界-屏幕投影关系。当世界实体或屏幕实体被销毁时，自动清理关系实体。
@@ -68,6 +75,13 @@ public sealed class DestroyBrokenCapitalOfSystem(EventRegistry registry)
 [SimulateSystem, Reactive]
 public sealed class DestroyBrokenJumpingRequestSystem(EventRegistry registry)
     : DestroyBrokenRelationshipsSystem<StartJumpingRequest>(registry) { }
+
+/// <summary>
+/// 清理已损坏的天体间可达性关系。当出发端或目的端被销毁时，自动销毁关系实体。
+/// </summary>
+[SimulateSystem, RenderSystem, Reactive]
+public sealed class DestroyBrokenReachabilityRelationSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<ReachabilityRelation>(registry) { }
 
 /// <summary>
 /// 清理已损坏的被点选实体-悬停发光关系。

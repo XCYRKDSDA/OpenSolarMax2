@@ -25,7 +25,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(InputFocusState))]
 [ReadCurr(typeof(FleetSliderWidget))]
-[ReadCurr(typeof(ReachabilityRegistry))]
+[ReadCurr(typeof(ReachabilityRelation.AsDeparture))]
+[ReadCurr(typeof(Reachability))]
 [ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(Projection))]
 [ReadCurr(typeof(PointingStatus))]
@@ -67,9 +68,19 @@ public sealed partial class HandleFleetManipulationSystem(World world, IConceptF
         return boxedPlanets;
     }
 
-    private bool CheckReachability(Entity departure, Entity destination)
+    private static bool CheckReachability(Entity departure, Entity destination, Entity team)
     {
-        return departure.Get<ReachabilityRegistry>().FromHereTo[destination];
+        ref readonly var asDeparture = ref departure.Get<ReachabilityRelation.AsDeparture>();
+        foreach (var (relationship, record) in asDeparture.Relationships)
+        {
+            if (record.Destination != destination)
+                continue;
+
+            ref readonly var result = ref relationship.Get<Reachability>();
+            var owner = departure.Get<InTeam.AsAffiliate>().Relationship?.Copy.Team;
+            return team == owner ? result.OwnerReachable : result.NonOwnerReachable;
+        }
+        return false;
     }
 
     /// <summary>
@@ -90,7 +101,7 @@ public sealed partial class HandleFleetManipulationSystem(World world, IConceptF
                 continue;
 
             // 排除目标星球和出发星球之间被障碍物遮挡的情况
-            if (!CheckReachability(departure, destination))
+            if (!CheckReachability(departure, destination, team))
                 continue;
 
             // 排除选兵数量为零的情况

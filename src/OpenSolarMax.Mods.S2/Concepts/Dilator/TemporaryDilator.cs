@@ -40,7 +40,8 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             typeof(AnchoredShipsRegistry),
             // 移动相关
             typeof(JumpingShipsRegistry),
-            typeof(ReachabilityRegistry),
+            typeof(ReachabilityRelation.AsDeparture),
+            typeof(ReachabilityRelation.AsDestination),
             typeof(StartJumpingRequest.AsDeparture),
             typeof(StartJumpingRequest.AsDestination),
             // 其他
@@ -50,7 +51,7 @@ public abstract class TemporaryDilatorDefinition : IDefinition
             typeof(PlanetSelectionRing.AsPlanet),
             typeof(PlanetCandidateRing.AsPlanet),
             typeof(PlanetManeuveringLineSource.AsPlanet),
-            typeof(PlanetManeuveringLineTarget.AsPlanet),
+            typeof(ManeuveringLineTarget.AsTarget),
             typeof(WorldToScreenProjection.AsSource),
             // 出兵相关
             typeof(DefaultLaunchPad)

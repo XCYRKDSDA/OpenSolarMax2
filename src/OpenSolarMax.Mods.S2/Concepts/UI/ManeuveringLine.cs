@@ -22,7 +22,7 @@ public abstract class ManeuveringLineDefinition : IDefinition
             typeof(WorldToScreenProjection.AsTarget),
             typeof(ManeuveringLineReachability),
             typeof(PlanetManeuveringLineSource.AsLine),
-            typeof(PlanetManeuveringLineTarget.AsLine)
+            typeof(ManeuveringLineTarget.AsLine)
         );
 }
 
@@ -73,10 +73,10 @@ public class ManeuveringLineApplier(IConceptFactory factory) : IApplier<Maneuver
         factory.Make(
             World.Worlds[entity.WorldId],
             commandBuffer,
-            ConceptNames.PlanetManeuveringLineTarget,
-            new PlanetManeuveringLineTargetDescription
+            ConceptNames.ManeuveringLineTarget,
+            new ManeuveringLineTargetDescription
             {
-                Planet = target,
+                Target = target,
                 Line = entity,
                 View = desc.View,
             }
