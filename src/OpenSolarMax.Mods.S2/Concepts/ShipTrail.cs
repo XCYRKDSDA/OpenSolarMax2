@@ -1,6 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
@@ -39,9 +40,16 @@ public class ShipTrailDescription : IDescription
 public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<ShipTrailDescription>
 {
-    private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>(
-        Content.Textures.SolarMax2_Atlas_json + ":Quad8x4"
-    );
+    private readonly TextureRegion _trailTexture = CreateTrailTexture(assets);
+
+    /// <summary>
+    /// 尾迹纹理锚定在右边缘垂直中点，使尾迹从舰船向反方向延伸
+    /// </summary>
+    private static TextureRegion CreateTrailTexture(IAssetsManager assets)
+    {
+        var texture = assets.Load<Texture2D>(Content.Textures.ShipTrail_png);
+        return new TextureRegion(texture, anchor: new Vector2(texture.Width, texture.Height / 2f));
+    }
 
     private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
 
@@ -57,13 +65,6 @@ public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
             {
                 Transform = new RelativeTransformOptions { Parent = desc.Ship },
                 Texture = _trailTexture,
-                Gradient = new()
-                {
-                    LeftTop = 0,
-                    LeftBottom = 0,
-                    RightTop = 1,
-                    RightBottom = 1,
-                },
                 Alpha = 0.5f,
                 Size = new(4, 2),
                 Scale = new Vector2(0, 1),

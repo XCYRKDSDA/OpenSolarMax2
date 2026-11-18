@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Reflection;
+using Apos.Shapes;
 using Arch.Core;
 using BitFaster.Caching;
 using BitFaster.Caching.Lru;
@@ -178,6 +179,7 @@ internal sealed class ModSession : IDisposable
             new Dictionary<Type, object>(dynamicArguments)
             {
                 [typeof(GraphicsDevice)] = _game.GraphicsDevice,
+                [typeof(ShapeBatch)] = _game.ShapeBatch,
             },
             hookImplMethods
         );
