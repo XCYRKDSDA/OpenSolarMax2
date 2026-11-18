@@ -75,4 +75,14 @@ public struct Shape()
     public float Alpha = 1.0f;
 
     public float Scale = 1.0f;
+
+    /// <summary>
+    /// 形状的混合模式
+    /// </summary>
+    public SpriteBlend Blend = SpriteBlend.Alpha;
+
+    /// <summary>
+    /// 是否永远直接面向相机
+    /// </summary>
+    public bool Billboard = true;
 }
