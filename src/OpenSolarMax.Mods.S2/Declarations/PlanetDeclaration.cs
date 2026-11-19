@@ -14,7 +14,15 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
 
     public Vector2? Position { get; set; }
 
-    public OrbitDeclaration? Orbit { get; set; }
+    /// <summary>
+    /// 所挂载的预定义轨道实体的名称
+    /// </summary>
+    public string? Orbit { get; set; }
+
+    /// <summary>
+    /// 在预定义轨道上的初始相位，单位为弧度
+    /// </summary>
+    public float? Phase { get; set; }
 
     public float? Radius { get; set; }
 
@@ -38,16 +46,16 @@ public class PlanetDeclaration : IDeclaration<PlanetDeclaration>
     /// </summary>
     public int? Garrison { get; set; }
 
+    public IReadOnlyList<string> Requirements => Orbit is null ? [] : [Orbit];
+
     public PlanetDeclaration Aggregate(PlanetDeclaration newCfg)
     {
         return new PlanetDeclaration()
         {
             Parent = newCfg.Parent ?? Parent,
             Position = newCfg.Position ?? Position,
-            Orbit =
-                Orbit is not null && newCfg.Orbit is not null
-                    ? Orbit.Aggregate(newCfg.Orbit)
-                    : newCfg.Orbit ?? Orbit,
+            Orbit = newCfg.Orbit ?? Orbit,
+            Phase = newCfg.Phase ?? Phase,
             Radius = newCfg.Radius ?? Radius,
             Team = newCfg.Team ?? Team,
             Volume = newCfg.Volume ?? Volume,
@@ -93,14 +101,24 @@ public class PlanetDeclarationTranslator : ITranslator<PlanetDeclaration, Planet
             ),
         };
 
-        var tfCfg = new TransformableDeclaration()
+        if (declaration.Orbit is not null)
         {
-            Parent = declaration.Parent,
-            Position = declaration.Position,
-            Orbit = declaration.Orbit,
-        };
-        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
-        desc.Transform = tfDesc.Transform;
+            desc.Transform = PredefinedOrbitReference.ToRevolutionOptions(
+                declaration.Orbit,
+                declaration.Phase,
+                otherEntities
+            );
+        }
+        else
+        {
+            var tfCfg = new TransformableDeclaration()
+            {
+                Parent = declaration.Parent,
+                Position = declaration.Position,
+            };
+            var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+            desc.Transform = tfDesc.Transform;
+        }
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];
@@ -129,14 +147,24 @@ public class PlanetPreviewDeclarationTranslator
 
         var desc = new PlanetPreviewDescription() { ReferenceRadius = declaration.Radius.Value };
 
-        var tfCfg = new TransformableDeclaration()
+        if (declaration.Orbit is not null)
         {
-            Parent = declaration.Parent,
-            Position = declaration.Position,
-            Orbit = declaration.Orbit,
-        };
-        var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
-        desc.Transform = tfDesc.Transform;
+            desc.Transform = PredefinedOrbitReference.ToRevolutionOptions(
+                declaration.Orbit,
+                declaration.Phase,
+                otherEntities
+            );
+        }
+        else
+        {
+            var tfCfg = new TransformableDeclaration()
+            {
+                Parent = declaration.Parent,
+                Position = declaration.Position,
+            };
+            var tfDesc = _transformableDeclarationTranslator.ToDescription(tfCfg, otherEntities);
+            desc.Transform = tfDesc.Transform;
+        }
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];

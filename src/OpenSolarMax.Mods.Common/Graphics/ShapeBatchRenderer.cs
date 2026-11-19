@@ -163,6 +163,49 @@ internal static class ShapeBatchRenderer
         batch.FillPath([head, tail], line.Thickness * shapeScale / 2, fill, cap: PathCap.Butt);
     }
 
+    private static void DrawEllipse(
+        ShapeBatch batch,
+        in Shape.Ellipse ellipse,
+        in Matrix localToScreen,
+        float scale,
+        float shapeScale,
+        Gradient fill
+    )
+    {
+        var thickness = ellipse.Thickness * shapeScale;
+        var radiusX = ellipse.RadiusX * scale + ellipse.Offset;
+        var radiusY = ellipse.RadiusY * scale + ellipse.Offset;
+
+        switch (ellipse.ThicknessAlignment)
+        {
+            case Shape.ThicknessAlignment.Inside:
+                break;
+            case Shape.ThicknessAlignment.Centered:
+                radiusX += thickness / 2;
+                radiusY += thickness / 2;
+                break;
+            case Shape.ThicknessAlignment.Outside:
+                radiusX += thickness;
+                radiusY += thickness;
+                break;
+        }
+
+        if (radiusX <= 0 || radiusY <= 0)
+            return;
+
+        var axis = Vector2.TransformNormal(Vector2.UnitX, localToScreen);
+        var rotation = MathF.Atan2(axis.Y, axis.X);
+
+        batch.BorderEllipse(
+            Vector2.Transform(ellipse.Position, localToScreen),
+            radiusX,
+            radiusY,
+            fill,
+            thickness,
+            rotation
+        );
+    }
+
     private static void DrawRectangle(
         ShapeBatch batch,
         in Shape.Rectangle rectangle,
@@ -262,6 +305,7 @@ internal static class ShapeBatchRenderer
             ring => DrawRing(batch, in ring, in matrix, geometryScale, shapeScale, fill),
             arc => DrawArc(batch, in arc, in matrix, geometryScale, shapeScale, fill),
             line => DrawLine(batch, in line, in matrix, shapeScale, fill),
+            ellipse => DrawEllipse(batch, in ellipse, in matrix, geometryScale, shapeScale, fill),
             rect => DrawRectangle(batch, in rect, in matrix, geometryScale, shapeScale, fill),
             text =>
                 DrawText(

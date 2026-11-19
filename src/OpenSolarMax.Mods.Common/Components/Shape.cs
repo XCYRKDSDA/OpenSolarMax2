@@ -50,6 +50,15 @@ public struct Shape()
 
     public record Line(float StartX, float EndX, float Thickness, float Offset = 0);
 
+    public record Ellipse(
+        Vector2 Position,
+        float RadiusX,
+        float RadiusY,
+        float Thickness,
+        float Offset = 0,
+        ThicknessAlignment ThicknessAlignment = ThicknessAlignment.Centered
+    );
+
     public record Rectangle(
         Vector2 Position,
         Vector2 Size,
@@ -68,7 +77,7 @@ public struct Shape()
         Vector2 ShadowOffset = default
     );
 
-    public OneOf<Circle, Ring, Arc, Line, Rectangle, Text> Geometry;
+    public OneOf<Circle, Ring, Arc, Line, Ellipse, Rectangle, Text> Geometry;
 
     public Gradient Fill = Color.White;
 
