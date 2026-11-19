@@ -8,15 +8,14 @@
     "entities": [
         { "$id": "dilator", "$base": "converting_dilator", "position": [ 512, 384 ], "conversionSpeed": 80, "conversionTeam": "dark" },
 
-        { "$id": "orbit_0", "$base": "orbit", "parent": "dilator", "shape": [ 224, 224 ], "period": 62.831853 },
-        { "$id": "orbit_1", "$base": "orbit", "parent": "dilator", "shape": [ 222.279104, 222.279104 ], "period": 62.831853 },
+        { "$id": "orbit", "$base": "orbit", "parent": "dilator", "shape": [ 224, 224 ], "period": 62.831853 },
 
-        { "$base": "tower", "team": "gray", "orbit": "orbit_0", "phase": -0.25, "ships": 30 },
-        { "$base": "tower", "team": "gray", "orbit": "orbit_0", "phase": 0.25, "ships": 30 },
-        { "$base": "tower", "team": "gray", "orbit": "orbit_1", "phase": -0.084046, "ships": 30 },
-        { "$base": "tower", "team": "gray", "orbit": "orbit_1", "phase": -0.415954, "ships": 30 },
-        { "$base": "tower", "team": "gray", "orbit": "orbit_1", "phase": 0.415954, "ships": 30 },
-        { "$base": "tower", "team": "gray", "orbit": "orbit_1", "phase": 0.084046, "ships": 30 },
+        { "$base": "tower", "team": "gray", "orbit": "orbit", "phase": -0.25, "ships": 30 },
+        { "$base": "tower", "team": "gray", "orbit": "orbit", "phase": 0.25, "ships": 30 },
+        { "$base": "tower", "team": "gray", "orbit": "orbit", "phase": -0.084046, "ships": 30 },
+        { "$base": "tower", "team": "gray", "orbit": "orbit", "phase": -0.415954, "ships": 30 },
+        { "$base": "tower", "team": "gray", "orbit": "orbit", "phase": 0.415954, "ships": 30 },
+        { "$base": "tower", "team": "gray", "orbit": "orbit", "phase": 0.084046, "ships": 30 },
 
         { "$base": "starbase", "team": "blue", "position": [ 144, 384 ], "ships": 100 },
         { "$base": "starbase", "team": "red", "position": [ 880, 384 ], "ships": 100 },
