@@ -96,7 +96,11 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
             * anchorToWorld;
 
         // 计算四边形投影到世界系 XY 平面后的变换
-        var leftTop = new Vector3(-sprite.Texture.Anchor.X, -sprite.Texture.Anchor.Y, 0);
+        var leftTop = new Vector3(
+            -sprite.Texture.Anchor.X,
+            sprite.Texture.Anchor.Y - sprite.Texture.Bounds.Height,
+            0
+        );
         var origin = Vector3.Transform(leftTop, anchorToWorld);
         var right = Vector3.TransformNormal(
             new Vector3(sprite.Texture.Bounds.Width, 0, 0),
