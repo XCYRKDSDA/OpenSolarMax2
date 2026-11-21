@@ -112,7 +112,11 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
         FleetManipulation_DraggingToDestination dragging,
         FleetManipulationSources sources,
         Entity? cursor
-    ) => (sources.Departures.ToHashSet(), dragging.Target ?? cursor);
+    ) =>
+        (
+            sources.Departures.Where(planet => planet != dragging.Target).ToHashSet(), // 排除自身
+            dragging.Target ?? cursor
+        );
 
     private static (HashSet<Entity> Sources, Entity? Target) CollectLines(
         in FleetManipulationStatus status,
