@@ -359,8 +359,6 @@ public sealed partial class HandleFleetManipulationSystem(World world, IConceptF
     {
         var team = ofTeam.Relationship!.Value.Copy.Team;
 
-        status.DispatchedTarget = null;
-
         HandleStateTransition(
             ref status,
             ref sources,
