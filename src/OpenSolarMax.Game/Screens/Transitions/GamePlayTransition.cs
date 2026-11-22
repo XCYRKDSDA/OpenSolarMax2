@@ -43,7 +43,7 @@ internal class GamePlayTransitionScreen(
         GamePlayTransitionTargetState
     >(game.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
 {
-    private const float _durationS = 0.8f;
+    private const float _durationS = 1f;
 
     private float EaseInOut(float x)
     {

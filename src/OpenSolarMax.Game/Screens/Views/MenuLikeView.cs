@@ -22,7 +22,8 @@ internal class MenuLikeView
     : ViewBase<IMenuLikeViewModel>,
         IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
-        IVisualConfigurableScreen<ChapterTransitionTargetState>
+        IVisualConfigurableScreen<ChapterTransitionTargetState>,
+        IQueryAttributable
 {
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持预览悬浮动画
@@ -40,6 +41,9 @@ internal class MenuLikeView
     private FadableImage? _floatingPreview;
 
     private bool _controlBackground = true;
+
+    // 暂存的 reveal 条目索引, 在本界面激活时应用
+    private int? _pendingRevealIndex;
 
     private float _commonBackgroundAlpha = 1;
 
@@ -218,6 +222,15 @@ internal class MenuLikeView
         }
     }
 
+    void IQueryAttributable.ApplyQueryAttributes(IReadOnlyDictionary<string, object> query)
+    {
+        if (query.TryGetValue("reveal", out var reveal) && reveal is int index)
+        {
+            // reveal 聚焦在本界面激活后应用, 暂存该索引
+            _pendingRevealIndex = index;
+        }
+    }
+
     // private void ViewModelOnNavigateIn(object? sender, IViewModel e)
     // {
     //     if (e is LevelsViewModel levelsViewModel)
@@ -352,6 +365,19 @@ internal class MenuLikeView
         base.OnActivated();
 
         _desktop.RefreshInputSnapshot();
+
+        ApplyPendingReveal();
+    }
+
+    private void ApplyPendingReveal()
+    {
+        if (_pendingRevealIndex is not int index)
+            return;
+        _pendingRevealIndex = null;
+
+        // 聚焦到目标条目
+        if (_scrollViewer.Widgets.Count > 0)
+            _scrollViewer.TargetIndex = Math.Clamp(index, 0, _scrollViewer.Widgets.Count - 1);
     }
 
     /// <summary>

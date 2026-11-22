@@ -140,7 +140,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         Game.ScreenManager.Forward(
             typeof(LevelPlayPage),
-            new LevelPlayPageContext(session, PageBackground),
+            new LevelPlayPageContext(session, PageBackground, idx),
             typeof(GamePlayTransitionScreen)
         );
     }

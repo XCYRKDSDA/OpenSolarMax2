@@ -317,7 +317,7 @@ public sealed class CustomHorizontalScrollViewer : Container
     private int _itemSpacing = 240;
     private int _navigationBarHeight = 160;
     private float _opacityDecay = 0.2f;
-    private float _convergenceRate = 10f;
+    private float _convergenceRate = 6f;
     private int _clickThreshold = 5;
     private int _clickItemDistanceThreshold = 80;
     private TimeSpan _dragVelocitySampleWindow = TimeSpan.FromMilliseconds(100);

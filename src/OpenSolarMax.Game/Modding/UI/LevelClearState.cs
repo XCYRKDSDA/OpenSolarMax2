@@ -1,6 +1,4 @@
-using OpenSolarMax.Game.Modding.ECS;
-
-namespace OpenSolarMax.Mods.S2.Components;
+namespace OpenSolarMax.Game.Modding.UI;
 
 /// <summary>
 /// 通关状态取值
@@ -23,7 +21,6 @@ public enum ClearStatus
     Failed,
 }
 
-[Component]
 public struct LevelClearState
 {
     /// <summary>
