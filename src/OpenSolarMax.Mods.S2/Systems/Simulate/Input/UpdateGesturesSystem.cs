@@ -18,11 +18,13 @@ using InputGestureState = OneOf.OneOf<
 namespace OpenSolarMax.Mods.S2.Systems;
 
 /// <summary>
-/// 手势系统。监控视图输入，识别特殊手势，写入 <see cref="InputGesture"/>
+/// 手势系统。监控视图输入，识别特殊手势，写入 <see cref="InputGesture"/>。
+/// 只有在世界聚焦时开始的按住才会被跟踪；从 UI 开始的按住在整个按住期间都不产生手势
 /// </summary>
 [LateUpdate]
 [SimulateSystem]
 [ReadCurr(typeof(MouseDeviceState))]
+[ReadCurr(typeof(InputFocusState))]
 [Calc(typeof(InputGesture))]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(InputGesture))]
 public sealed partial class UpdateGesturesSystem(
@@ -54,11 +56,17 @@ public sealed partial class UpdateGesturesSystem(
     }
 
     [Query]
-    [All<MouseDeviceState, InputGesture>]
-    private void UpdateGesture(in MouseDeviceState mouse, ref InputGesture gesture)
+    [All<MouseDeviceState, InputGesture, InputFocusState>]
+    private void UpdateGesture(
+        in MouseDeviceState mouse,
+        in InputFocusState focus,
+        ref InputGesture gesture
+    )
     {
         // in 参数不能被 lambda 捕获，先复制到局部变量
         var mouseState = mouse.State;
+        var previousMouseState = mouse.PreviousState;
+        var mouseFocused = focus.MouseFocused;
 
         if (mouseState.LeftButton != ButtonState.Pressed)
         {
@@ -81,12 +89,15 @@ public sealed partial class UpdateGesturesSystem(
                         : idle.HeldTime >= _holdingThreshold
                             ? new InputGesture_Holding { PressedPosition = pressed }
                             : idle
-                    // 如果之前没有按下，则开始按下并开始计时
-                    : new InputGesture_Idle
-                    {
-                        PressedPosition = mouseState.Position,
-                        HeldTime = TimeSpan.Zero,
-                    },
+                    // 如果之前没有按下，仅在按下边缘且世界聚焦时开始按下并计时；
+                    // 从 UI 开始的按住不记录按下位置，整个按住期间都不会产生手势
+                    : previousMouseState.LeftButton == ButtonState.Released && mouseFocused
+                        ? new InputGesture_Idle
+                        {
+                            PressedPosition = mouseState.Position,
+                            HeldTime = TimeSpan.Zero,
+                        }
+                        : idle,
             holding =>
                 // 即使位于长按状态，如果移动量超过阈值，也变为拖拽
                 ExceedsThreshold(mouseState.Position, holding.PressedPosition)
