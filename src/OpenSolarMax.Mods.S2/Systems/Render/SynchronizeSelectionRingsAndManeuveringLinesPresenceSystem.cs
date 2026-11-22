@@ -199,7 +199,7 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
 
         // 根据选中星球是不是派发的目标星球来选择淡出动画
         var clip = dispatchedTarget == planet ? _shrinkFadeClip : _growFadeClip;
-        commandBuffer.Set(in ring, new Animation { Clip = clip });
+        commandBuffer.Set(in ring, new UiAnimation { Clip = clip });
     }
 
     private void FadeOutCandidateRing(
@@ -215,7 +215,7 @@ public sealed partial class SynchronizeSelectionRingsAndManeuveringLinesPresence
         {
             // 选中星球是派发的目标，则淡出
             commandBuffer.Destroy(relation);
-            commandBuffer.Set(in ring, new Animation { Clip = _shrinkFadeClip });
+            commandBuffer.Set(in ring, new UiAnimation { Clip = _shrinkFadeClip });
         }
         else
         {

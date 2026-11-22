@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
@@ -21,6 +22,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [Calc(typeof(Shape))]
 [Calc(typeof(ScreenTransform))]
 [FineWith(typeof(ProjectWorldToScreenSystem), "选框位置不从世界投影而来", typeof(ScreenTransform))]
+[ExecuteAfter(typeof(ApplyUiAnimationSystem), "默认动画系统优先执行", typeof(Shape))]
 public sealed partial class CalculateSelectionBoxAppearanceSystem(
     World world,
     [Section("systems:visualization:selection_box")] IConfiguration configs
