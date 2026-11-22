@@ -129,18 +129,26 @@ public sealed partial class GameOverSystem(
     }
 
     [Query]
-    [All<ViewTag, LevelClearState>]
+    [All<ViewTag, LevelClearState, InTeam.AsAffiliate>]
     private static void ClaimViews(
         Entity viewEntity,
         in LevelClearState clearState,
+        in InTeam.AsAffiliate asAffiliate,
+        [Data] Entity winner,
         [Data] CommandBuffer commandBuffer
     )
     {
         if (clearState.Status != ClearStatus.NotCleared)
             return;
 
+        // 视图阵营与胜利者一致记为通关，否则记为失败
+        var status =
+            asAffiliate.Relationship?.Copy.Team == winner
+                ? ClearStatus.Cleared
+                : ClearStatus.Failed;
+
         // 经缓冲写入裁决结果，下一轮迭代起对所有系统可见
-        commandBuffer.Set(in viewEntity, new LevelClearState { Status = ClearStatus.Cleared });
+        commandBuffer.Set(in viewEntity, new LevelClearState { Status = status });
     }
 
     public void Update(CommandBuffer commandBuffer)
@@ -161,6 +169,6 @@ public sealed partial class GameOverSystem(
         SpawnVictoryEffects(winner, commandBuffer);
 
         // 设置所有视图上的通关状态
-        ClaimViewsQuery(world, commandBuffer);
+        ClaimViewsQuery(world, winner, commandBuffer);
     }
 }

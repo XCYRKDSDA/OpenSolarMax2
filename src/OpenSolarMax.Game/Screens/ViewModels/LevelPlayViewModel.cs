@@ -1,13 +1,13 @@
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Arch.Core;
+using Arch.Core.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Game.Modding.UI;
-using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Sessions;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;
@@ -16,6 +16,12 @@ internal partial class LevelPlayViewModel : ViewModelBase
 {
     private readonly LevelSession _session;
     private readonly Entity _viewEntity;
+    private readonly int _levelIndex;
+
+    /// <summary>
+    /// 自动退出是否已触发，保证只退出一次
+    /// </summary>
+    private bool _autoExitHandled;
 
     [ObservableProperty]
     private bool _paused = false;
@@ -35,12 +41,18 @@ internal partial class LevelPlayViewModel : ViewModelBase
 
     public Entity ViewEntity => _viewEntity;
 
-    public LevelPlayViewModel(LevelSession session, Texture2D background, SolarMax game)
+    public LevelPlayViewModel(
+        LevelSession session,
+        Texture2D background,
+        int levelIndex,
+        SolarMax game
+    )
         : base(game)
     {
         // 记录会话
         _session = session;
         _background = background;
+        _levelIndex = levelIndex;
 
         _exitCommand = new RelayCommand(OnExit);
 
@@ -76,6 +88,24 @@ internal partial class LevelPlayViewModel : ViewModelBase
     public override void Update(GameTime gameTime)
     {
         _session.Update(gameTime);
+
+        if (_autoExitHandled)
+            return;
+        World.Query(
+            new QueryDescription().WithAll<LevelExitState>(),
+            (ref LevelExitState state) =>
+            {
+                if (state.ShouldExit && !_autoExitHandled)
+                {
+                    var cleared = _viewEntity.Get<LevelClearState>().Status == ClearStatus.Cleared;
+                    _autoExitHandled = true;
+                    var query = cleared
+                        ? new Dictionary<string, object> { ["reveal"] = _levelIndex + 1 }
+                        : null;
+                    Game.ScreenManager.Backward(query: query);
+                }
+            }
+        );
     }
 
     public override void Dispose()
