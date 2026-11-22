@@ -33,7 +33,7 @@ public abstract class SelectionRingDefinition : IDefinition
         new(
             typeof(Shape),
             typeof(ScreenTransform),
-            typeof(Animation),
+            typeof(UiAnimation),
             typeof(ExpireAfterAnimationCompleted),
             typeof(WorldToScreenProjection.AsTarget),
             typeof(PlanetSelectionRing.AsRing),

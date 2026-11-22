@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
@@ -37,6 +38,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
     typeof(Shape),
     typeof(ScreenTransform)
 )]
+[ExecuteAfter(typeof(ApplyUiAnimationSystem), "默认动画系统优先执行", typeof(Shape))]
 public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearanceSystem(
     World world,
     [Section("systems:visualization:maneuvering_visual_appearance")] IConfiguration configs,

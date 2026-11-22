@@ -26,7 +26,7 @@ public abstract class CandidateRingDefinition : IDefinition
         new(
             typeof(Shape),
             typeof(ScreenTransform),
-            typeof(Animation),
+            typeof(UiAnimation),
             typeof(ExpireAfterAnimationCompleted),
             typeof(WorldToScreenProjection.AsTarget),
             typeof(PlanetCandidateRing.AsRing),

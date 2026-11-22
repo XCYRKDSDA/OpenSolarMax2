@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Systems;
@@ -42,7 +43,8 @@ namespace OpenSolarMax.Mods.S2.Systems;
         typeof(CalculateAnchoredShipsArcsAndLabelsAppearanceSystem),
         "悬停发光与构成弧和数目标签属于不同实体，互不影响",
         typeof(Shape)
-    )
+    ),
+    ExecuteAfter(typeof(ApplyUiAnimationSystem), "默认动画系统优先执行", typeof(Shape))
 ]
 public sealed partial class CalculateHoverGlowAppearanceSystem(
     World world,
