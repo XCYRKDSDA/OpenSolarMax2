@@ -19,4 +19,9 @@ public struct RecommendedVisualStyle
     /// 发光外观（<see cref="VisualStyle.Effect"/>）的混合模式。实心外观恒用 Alpha
     /// </summary>
     public SpriteBlend Blend;
+
+    /// <summary>
+    /// 该阵营天体在预览中的不透明度
+    /// </summary>
+    public float PreviewAlpha;
 }

@@ -76,6 +76,7 @@ alpha = 0.5
 # 概念构造相关
 
 [applier.celestial_body]
+preview_alpha = 0.4 # 天体预览的默认不透明度
 orbit.pitch.min.deg = -82.5
 orbit.pitch.max.deg = -67.5
 orbit.roll.min.deg = 0
@@ -146,4 +147,4 @@ padding = 16
 # 轨道预览
 [applier.preview_orbit]
 thickness = 2
-color = "white * 0.4"
+color = "white * 0.2"

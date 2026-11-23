@@ -17,6 +17,11 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
     /// </summary>
     public SpriteBlend? Blend { get; set; }
 
+    /// <summary>
+    /// 该阵营天体在预览中的不透明度
+    /// </summary>
+    public float? PreviewAlpha { get; set; }
+
     public float? Workload { get; set; }
 
     public float? Attack { get; set; }
@@ -44,6 +49,7 @@ public class TeamDeclaration : IDeclaration<TeamDeclaration>
         {
             Color = newCfg.Color ?? Color,
             Blend = newCfg.Blend ?? Blend,
+            PreviewAlpha = newCfg.PreviewAlpha ?? PreviewAlpha,
             Workload = newCfg.Workload ?? Workload,
             Attack = newCfg.Attack ?? Attack,
             Health = newCfg.Health ?? Health,
@@ -106,6 +112,9 @@ public class TeamPreviewDeclarationTranslator : ITranslator<TeamDeclaration, Tea
 
         if (declaration.Blend is { } blend)
             desc.Blend = blend;
+
+        if (declaration.PreviewAlpha is { } previewAlpha)
+            desc.PreviewAlpha = previewAlpha;
 
         return desc;
     }
