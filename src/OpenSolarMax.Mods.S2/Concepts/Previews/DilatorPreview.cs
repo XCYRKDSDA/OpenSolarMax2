@@ -53,7 +53,11 @@ public class DilatorPreviewApplier(
         Content.Textures.SolarMax2_Atlas_json + ":DilatorShape"
     );
 
-    private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);
+    private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(
+        assets,
+        factory,
+        configs
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, DilatorPreviewDescription desc)
     {

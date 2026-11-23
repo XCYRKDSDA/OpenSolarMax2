@@ -10,8 +10,6 @@ namespace OpenSolarMax.Game.UI;
 internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevice graphicsDevice)
     : IFadableImage
 {
-    private const float _alpha = 0.5f;
-
     public Point Size => new(-1); // 尽量放大
 
     public void Draw(RenderContext context, Rectangle dest, Color color, float fadeIn)
@@ -19,8 +17,8 @@ internal class WorldRenderer(World world, AggregateSystem renderer, GraphicsDevi
         // 预览区域经控件变换后的屏幕位置
         var rect = context.Transform.Apply(dest);
 
-        // 整体不透明度: 控件颜色 × 上下文不透明度 × 淡入进度 × 预览统一不透明度
-        var opacity = color.A / 255f * context.Opacity * fadeIn * _alpha;
+        // 整体不透明度: 控件颜色 × 上下文不透明度 × 淡入进度
+        var opacity = color.A / 255f * context.Opacity * fadeIn;
 
         // 先落盘已排队的界面绘制, 避免与世界的绘制交错
         context.Flush();

@@ -1,11 +1,13 @@
 using System.Numerics;
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.S2.Components;
 
@@ -51,10 +53,14 @@ public class CelestialBodyPreviewDescription : IDescription
 }
 
 [Apply(ConceptNames.CelestialBodyPreview), OnlyForPreview]
-public class CelestialBodyPreviewApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<CelestialBodyPreviewDescription>
+public class CelestialBodyPreviewApplier(
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body")] IConfiguration configs
+) : IApplier<CelestialBodyPreviewDescription>
 {
     private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+    private readonly float _previewAlpha = configs.RequireValue<float>("preview_alpha");
 
     public void Apply(
         CommandBuffer commandBuffer,
@@ -72,6 +78,8 @@ public class CelestialBodyPreviewApplier(IAssetsManager assets, IConceptFactory 
                 Texture = desc.Shape,
                 Size = new Vector2(desc.ReferenceRadius * 2),
                 Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
+                Alpha = _previewAlpha,
             }
         );
     }
