@@ -37,6 +37,13 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
         AlphaDestinationBlend = Blend.One,
     };
 
+    // 启用裁剪测试的光栅化状态
+    private static readonly RasterizerState _scissorRasterizerState = new()
+    {
+        CullMode = CullMode.CullClockwiseFace,
+        ScissorTestEnable = true,
+    };
+
     private static readonly QueryDescription _drawableDesc = new QueryDescription()
         .WithAll<AbsoluteTransform>()
         .WithAny<Sprite, Shape>();
@@ -119,7 +126,7 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
             * Matrix3x2.CreateTranslation(bounds.Left, bounds.Top + bounds.Height);
 
         // 设置掩膜颜色
-        var mask = sprite.Color * sprite.Alpha;
+        var mask = sprite.Color * sprite.Alpha * renderSettings.Opacity;
 
         batch.Draw(sprite.Texture.Texture, toWorld, toSource, mask);
     }
@@ -152,7 +159,14 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
         var scale = shape.Scale * renderSettings.SpriteScaling;
         anchorToWorld = Matrix.CreateScale(scale, scale, 1) * anchorToWorld;
 
-        ShapeBatchRenderer.DrawEntity(batch, in shape, in anchorToWorld, scale, scale);
+        ShapeBatchRenderer.DrawEntity(
+            batch,
+            in shape,
+            in anchorToWorld,
+            scale,
+            scale,
+            renderSettings.Opacity
+        );
     }
 
     private static BlendState BlendStateOf(SpriteBlend blend) =>
@@ -166,19 +180,15 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
     private void TrySwitchBlendState(
         ref SpriteBlend currentBlend,
         in Matrix worldToNdc,
-        SpriteBlend blend
+        SpriteBlend blend,
+        RasterizerState rasterizerState
     )
     {
         if (blend == currentBlend)
             return;
         currentBlend = blend;
         batch.End();
-        batch.Begin(
-            null,
-            worldToNdc,
-            BlendStateOf(currentBlend),
-            rasterizerState: RasterizerState.CullClockwise
-        );
+        batch.Begin(null, worldToNdc, BlendStateOf(currentBlend), rasterizerState: rasterizerState);
     }
 
     [Query]
@@ -191,12 +201,10 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
     {
         var currentBlend = SpriteBlend.Alpha;
         var worldToNdc = projection.WorldToNdc;
-        batch.Begin(
-            null,
-            worldToNdc,
-            BlendStateOf(currentBlend),
-            rasterizerState: RasterizerState.CullClockwise
-        );
+        var rasterizerState = renderSettings.ScissorTestEnable
+            ? _scissorRasterizerState
+            : RasterizerState.CullClockwise;
+        batch.Begin(null, worldToNdc, BlendStateOf(currentBlend), rasterizerState: rasterizerState);
 
         foreach (var entity in entities)
         {
@@ -208,14 +216,19 @@ public sealed partial class DrawSpritesAndShapesSystem(World world, ShapeBatch b
                 ref readonly var sprite = ref entity.Get<Sprite>();
                 if (sprite.Texture is not null)
                 {
-                    TrySwitchBlendState(ref currentBlend, worldToNdc, sprite.Blend);
+                    TrySwitchBlendState(
+                        ref currentBlend,
+                        worldToNdc,
+                        sprite.Blend,
+                        rasterizerState
+                    );
                     DrawEntity(in sprite, in transform, in renderSettings);
                 }
             }
             if (entity.Has<Shape>())
             {
                 ref readonly var shape = ref entity.Get<Shape>();
-                TrySwitchBlendState(ref currentBlend, worldToNdc, shape.Blend);
+                TrySwitchBlendState(ref currentBlend, worldToNdc, shape.Blend, rasterizerState);
                 DrawShapeEntity(in shape, in transform, in renderSettings);
             }
         }

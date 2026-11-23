@@ -7,6 +7,7 @@ using Nine.Graphics;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Utils;
 using OpenSolarMax.Mods.S2.Components;
 
@@ -69,6 +70,8 @@ public class BarrierPreviewApplier(
                 },
                 Texture = _barrierNodeShape,
                 Size = _barrierNodeTextureSize,
+                Alpha = 0.4f,
+                Blend = SpriteBlend.Additive,
             }
         );
         var node2 = factory.Make(
@@ -82,6 +85,8 @@ public class BarrierPreviewApplier(
                 },
                 Texture = _barrierNodeShape,
                 Size = _barrierNodeTextureSize,
+                Alpha = 0.4f,
+                Blend = SpriteBlend.Additive,
             }
         );
 
@@ -103,6 +108,8 @@ public class BarrierPreviewApplier(
                 Texture = _barrierEdgePixel,
                 Color = _barrierEdgeColor,
                 Size = new Vector2(dist, _barrierEdgeWidth),
+                Alpha = 0.4f,
+                Blend = SpriteBlend.Additive,
             }
         );
 

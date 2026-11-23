@@ -293,11 +293,12 @@ internal static class ShapeBatchRenderer
         in Shape shape,
         in Matrix localToScreen,
         float geometryScale,
-        float shapeScale
+        float shapeScale,
+        float opacity = 1
     )
     {
-        var fill = PrepareGradient(shape.Fill, localToScreen, shape.Alpha);
-        var alpha = shape.Alpha;
+        var alpha = shape.Alpha * opacity;
+        var fill = PrepareGradient(shape.Fill, localToScreen, alpha);
         var matrix = localToScreen;
 
         shape.Geometry.Switch(
