@@ -39,7 +39,7 @@ public class ManeuveringLineApplier(IConceptFactory factory) : IApplier<Maneuver
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, ManeuveringLineDescription desc)
     {
-        commandBuffer.Set(in entity, new Shape { Geometry = new Shape.Line(0, 0, 0), Alpha = 0f });
+        commandBuffer.Set(in entity, new Shape { Geometry = new Shape.Line(0, 0), Alpha = 0f });
         commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface + 1 });
 
         factory.Make(

@@ -56,8 +56,9 @@ public class CandidateRingApplier(
             in entity,
             new Shape
             {
-                Geometry = new Shape.Ring(Vector2.Zero, 0, 0, 0, Shape.ThicknessAlignment.Centered),
-                Fill = _color,
+                Geometry = new Shape.Circle(Vector2.Zero, 0),
+                Fill = Color.Transparent,
+                Border = _color,
             }
         );
         commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface + 1 });

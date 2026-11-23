@@ -23,6 +23,18 @@ internal static class ShapeBatchRenderer
         return actualBorder > 0;
     }
 
+    private static float AdjustBorderRadius(
+        float radius,
+        float thickness,
+        Shape.ThicknessAlignment borderAlignment
+    ) =>
+        borderAlignment switch
+        {
+            Shape.ThicknessAlignment.Inside => radius,
+            Shape.ThicknessAlignment.Outside => radius + thickness,
+            _ => radius + thickness / 2,
+        };
+
     private static Color Unpremultiply(Color color)
     {
         // Shape 的颜色使用预乘 Alpha；Apos 要求非预乘颜色，按颜色自身的 Alpha 还原 RGB。
@@ -68,44 +80,30 @@ internal static class ShapeBatchRenderer
         in Shape.Circle circle,
         in Matrix localToScreen,
         float scale,
-        Gradient fill
-    )
-    {
-        batch.FillCircle(
-            Vector2.Transform(circle.Position, localToScreen),
-            circle.Radius * scale,
-            fill
-        );
-    }
-
-    private static void DrawRing(
-        ShapeBatch batch,
-        in Shape.Ring ring,
-        in Matrix localToScreen,
-        float scale,
         float shapeScale,
-        Gradient fill
+        Gradient fill,
+        Gradient border,
+        float borderThickness,
+        float borderOffset,
+        Shape.ThicknessAlignment borderAlignment
     )
     {
-        var thickness = ring.Thickness * shapeScale;
+        var thickness = borderThickness * shapeScale;
+        var radius = AdjustBorderRadius(
+            circle.Radius * scale + borderOffset,
+            thickness,
+            borderAlignment
+        );
 
-        if (
-            !TryGetActualBorder(
-                ring.Radius * scale + ring.Offset,
-                thickness,
-                ring.ThicknessAlignment,
-                out var actualBorder
-            )
-        )
+        if (radius <= 0)
             return;
 
-        batch.FillRing(
-            Vector2.Transform(ring.Position, localToScreen),
-            0,
-            MathF.Tau,
-            actualBorder,
-            thickness / 2,
-            fill
+        batch.DrawCircle(
+            Vector2.Transform(circle.Position, localToScreen),
+            radius,
+            fill,
+            border,
+            thickness
         );
     }
 
@@ -115,16 +113,19 @@ internal static class ShapeBatchRenderer
         in Matrix localToScreen,
         float scale,
         float shapeScale,
-        Gradient fill
+        Gradient border,
+        float borderThickness,
+        float borderOffset,
+        Shape.ThicknessAlignment borderAlignment
     )
     {
-        var thickness = arc.Thickness * shapeScale;
+        var thickness = borderThickness * shapeScale;
 
         if (
             !TryGetActualBorder(
-                arc.Radius * scale + arc.Offset,
+                arc.Radius * scale + borderOffset,
                 thickness,
-                arc.ThicknessAlignment,
+                borderAlignment,
                 out var actualBorder
             )
         )
@@ -136,7 +137,7 @@ internal static class ShapeBatchRenderer
             arc.StartAngle + arc.SweepAngle,
             actualBorder,
             thickness / 2,
-            fill
+            border
         );
     }
 
@@ -145,22 +146,14 @@ internal static class ShapeBatchRenderer
         in Shape.Line line,
         in Matrix localToScreen,
         float shapeScale,
-        Gradient fill
+        Gradient border,
+        float borderThickness
     )
     {
         var head = Vector2.Transform(new Vector2(line.StartX, 0), localToScreen);
         var tail = Vector2.Transform(new Vector2(line.EndX, 0), localToScreen);
-        var direction = tail - head;
-        var length = direction.Length();
 
-        if (length > 0)
-        {
-            var unit = direction / length;
-            head += unit * line.Offset;
-            tail -= unit * line.Offset;
-        }
-
-        batch.FillPath([head, tail], line.Thickness * shapeScale / 2, fill, cap: PathCap.Butt);
+        batch.FillPath([head, tail], borderThickness * shapeScale / 2, border, cap: PathCap.Butt);
     }
 
     private static void DrawEllipse(
@@ -169,26 +162,24 @@ internal static class ShapeBatchRenderer
         in Matrix localToScreen,
         float scale,
         float shapeScale,
-        Gradient fill
+        Gradient fill,
+        Gradient border,
+        float borderThickness,
+        float borderOffset,
+        Shape.ThicknessAlignment borderAlignment
     )
     {
-        var thickness = ellipse.Thickness * shapeScale;
-        var radiusX = ellipse.RadiusX * scale + ellipse.Offset;
-        var radiusY = ellipse.RadiusY * scale + ellipse.Offset;
-
-        switch (ellipse.ThicknessAlignment)
-        {
-            case Shape.ThicknessAlignment.Inside:
-                break;
-            case Shape.ThicknessAlignment.Centered:
-                radiusX += thickness / 2;
-                radiusY += thickness / 2;
-                break;
-            case Shape.ThicknessAlignment.Outside:
-                radiusX += thickness;
-                radiusY += thickness;
-                break;
-        }
+        var thickness = borderThickness * shapeScale;
+        var radiusX = AdjustBorderRadius(
+            ellipse.RadiusX * scale + borderOffset,
+            thickness,
+            borderAlignment
+        );
+        var radiusY = AdjustBorderRadius(
+            ellipse.RadiusY * scale + borderOffset,
+            thickness,
+            borderAlignment
+        );
 
         if (radiusX <= 0 || radiusY <= 0)
             return;
@@ -196,11 +187,12 @@ internal static class ShapeBatchRenderer
         var axis = Vector2.TransformNormal(Vector2.UnitX, localToScreen);
         var rotation = MathF.Atan2(axis.Y, axis.X);
 
-        batch.BorderEllipse(
+        batch.DrawEllipse(
             Vector2.Transform(ellipse.Position, localToScreen),
             radiusX,
             radiusY,
             fill,
+            border,
             thickness,
             rotation
         );
@@ -212,25 +204,24 @@ internal static class ShapeBatchRenderer
         in Matrix localToScreen,
         float scale,
         float shapeScale,
-        Gradient fill
+        Gradient fill,
+        Gradient border,
+        float borderThickness,
+        float borderOffset,
+        Shape.ThicknessAlignment borderAlignment
     )
     {
-        var thickness = rectangle.Thickness * shapeScale;
+        var thickness = borderThickness * shapeScale;
         var sizeInScreen = rectangle.Size * scale;
 
-        switch (rectangle.ThicknessAlignment)
+        sizeInScreen += borderAlignment switch
         {
-            case Shape.ThicknessAlignment.Inside:
-                break;
-            case Shape.ThicknessAlignment.Centered:
-                sizeInScreen += new Vector2(thickness);
-                break;
-            case Shape.ThicknessAlignment.Outside:
-                sizeInScreen += new Vector2(thickness * 2);
-                break;
-        }
+            Shape.ThicknessAlignment.Inside => Vector2.Zero,
+            Shape.ThicknessAlignment.Outside => new Vector2(thickness * 2),
+            _ => new Vector2(thickness),
+        };
 
-        sizeInScreen += new Vector2(rectangle.Offset * 2);
+        sizeInScreen += new Vector2(borderOffset * 2);
 
         if (sizeInScreen.X <= 0 || sizeInScreen.Y <= 0)
             return;
@@ -239,12 +230,14 @@ internal static class ShapeBatchRenderer
         var axis = Vector2.TransformNormal(Vector2.UnitX, localToScreen);
         var rotation = MathF.Atan2(axis.Y, axis.X);
 
-        batch.BorderRectangle(
+        batch.DrawRectangle(
             center - sizeInScreen / 2,
             sizeInScreen,
             fill,
+            border,
             thickness,
-            rotation: rotation
+            default(CornerRadii),
+            rotation
         );
     }
 
@@ -297,16 +290,66 @@ internal static class ShapeBatchRenderer
     )
     {
         var fill = PrepareGradient(shape.Fill, localToScreen, shape.Alpha);
+        var border = PrepareGradient(shape.Border, localToScreen, shape.Alpha);
         var alpha = shape.Alpha;
         var matrix = localToScreen;
+        var borderThickness = shape.BorderThickness;
+        var borderOffset = shape.BorderOffset;
+        var borderAlignment = shape.BorderAlignment;
 
         shape.Geometry.Switch(
-            circle => DrawCircle(batch, in circle, in matrix, geometryScale, fill),
-            ring => DrawRing(batch, in ring, in matrix, geometryScale, shapeScale, fill),
-            arc => DrawArc(batch, in arc, in matrix, geometryScale, shapeScale, fill),
-            line => DrawLine(batch, in line, in matrix, shapeScale, fill),
-            ellipse => DrawEllipse(batch, in ellipse, in matrix, geometryScale, shapeScale, fill),
-            rect => DrawRectangle(batch, in rect, in matrix, geometryScale, shapeScale, fill),
+            circle =>
+                DrawCircle(
+                    batch,
+                    in circle,
+                    in matrix,
+                    geometryScale,
+                    shapeScale,
+                    fill,
+                    border,
+                    borderThickness,
+                    borderOffset,
+                    borderAlignment
+                ),
+            arc =>
+                DrawArc(
+                    batch,
+                    in arc,
+                    in matrix,
+                    geometryScale,
+                    shapeScale,
+                    border,
+                    borderThickness,
+                    borderOffset,
+                    borderAlignment
+                ),
+            line => DrawLine(batch, in line, in matrix, shapeScale, border, borderThickness),
+            ellipse =>
+                DrawEllipse(
+                    batch,
+                    in ellipse,
+                    in matrix,
+                    geometryScale,
+                    shapeScale,
+                    fill,
+                    border,
+                    borderThickness,
+                    borderOffset,
+                    borderAlignment
+                ),
+            rect =>
+                DrawRectangle(
+                    batch,
+                    in rect,
+                    in matrix,
+                    geometryScale,
+                    shapeScale,
+                    fill,
+                    border,
+                    borderThickness,
+                    borderOffset,
+                    borderAlignment
+                ),
             text =>
                 DrawText(
                     batch,

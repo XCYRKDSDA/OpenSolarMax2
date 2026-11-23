@@ -43,10 +43,7 @@ public class ColonizationArcApplier(IConceptFactory factory) : IApplier<Coloniza
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, ColonizationArcDescription desc)
     {
-        commandBuffer.Set(
-            in entity,
-            new Shape { Geometry = new Shape.Arc(Vector2.Zero, 0, 0, 0, 0) }
-        );
+        commandBuffer.Set(in entity, new Shape { Geometry = new Shape.Arc(Vector2.Zero, 0, 0, 0) });
         commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface - 2 });
 
         var world = World.Worlds[entity.WorldId];

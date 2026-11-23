@@ -62,14 +62,8 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
     private float CalculateRingRadius(Entity planet, float projectionScale) =>
         planet.Get<ReferenceSize>().Radius * _ringRadiusFactor * projectionScale;
 
-    private Shape.Ring MakeRingGeometry(Entity planet, float projectionScale) =>
-        new(
-            Vector2.Zero,
-            CalculateRingRadius(planet, projectionScale),
-            _ringThickness,
-            _ringOffset,
-            Shape.ThicknessAlignment.Centered
-        );
+    private Shape.Circle MakeRingGeometry(Entity planet, float projectionScale) =>
+        new(Vector2.Zero, CalculateRingRadius(planet, projectionScale));
 
     private Color CalculateRingColor(Entity planet, Entity view)
     {
@@ -119,7 +113,10 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
         ref readonly var projection = ref relation.View.Get<Projection>();
 
         shape.Geometry = MakeRingGeometry(relation.Planet, projection.Scale);
-        shape.Fill = CalculateRingColor(relation.Planet, relation.View);
+        shape.Fill = Color.Transparent;
+        shape.Border = CalculateRingColor(relation.Planet, relation.View);
+        shape.BorderThickness = _ringThickness;
+        shape.BorderOffset = _ringOffset;
         shape.Alpha = 1f;
     }
 
@@ -134,7 +131,10 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
         ref readonly var projection = ref relation.View.Get<Projection>();
 
         shape.Geometry = MakeRingGeometry(relation.Planet, projection.Scale);
-        shape.Fill = CalculateRingColor(relation.Planet, relation.View);
+        shape.Fill = Color.Transparent;
+        shape.Border = CalculateRingColor(relation.Planet, relation.View);
+        shape.BorderThickness = _ringThickness;
+        shape.BorderOffset = _ringOffset;
         shape.Alpha = 1f;
     }
 
@@ -181,7 +181,9 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
             : 0f;
 
         // 根据可达性设置颜色
-        shape.Fill = reachability.Reachable ? _lineColor : _blockedLineColor;
+        shape.Fill = Color.Transparent;
+        shape.Border = reachability.Reachable ? _lineColor : _blockedLineColor;
+        shape.BorderThickness = _lineThickness;
 
         // 线段从出发圈边缘画到目标边缘
         var delta = targetInScreen - transform.Position;
@@ -189,7 +191,7 @@ public sealed partial class CalculateSelectionRingsAndManeuveringLinesAppearance
         var end = distance - endRadius;
 
         transform.Rotation = MathF.Atan2(delta.Y, delta.X);
-        shape.Geometry = new Shape.Line(startRadius, end, _lineThickness);
+        shape.Geometry = new Shape.Line(startRadius, end);
         shape.Alpha = 1f;
         shape.Scale = 1f;
     }

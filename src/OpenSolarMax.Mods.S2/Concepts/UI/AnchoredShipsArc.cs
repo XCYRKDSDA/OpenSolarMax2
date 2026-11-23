@@ -44,10 +44,7 @@ public class AnchoredShipsArcApplier(IConceptFactory factory)
 {
     public void Apply(CommandBuffer commandBuffer, Entity entity, AnchoredShipsArcDescription desc)
     {
-        commandBuffer.Set(
-            in entity,
-            new Shape { Geometry = new Shape.Arc(Vector2.Zero, 0, 0, 0, 0) }
-        );
+        commandBuffer.Set(in entity, new Shape { Geometry = new Shape.Arc(Vector2.Zero, 0, 0, 0) });
         commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface - 2 });
 
         var world = World.Worlds[entity.WorldId];
