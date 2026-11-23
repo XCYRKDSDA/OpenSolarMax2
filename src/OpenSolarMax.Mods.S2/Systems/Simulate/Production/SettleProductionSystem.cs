@@ -18,7 +18,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [
     ReadCurr(typeof(ProductionState)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
-    ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(PlanetGeostationaryOrbit)),
     DelayedCalc
 ]
@@ -60,11 +59,7 @@ public sealed partial class SettleProductionSystem(World world, IConceptFactory 
             factory.Make(
                 world,
                 commandBuffer,
-                new ShipBornPulseDescription()
-                {
-                    Ship = newShip,
-                    Color = team.Get<TeamReferenceColor>().Value,
-                }
+                new ShipBornPulseDescription() { Ship = newShip, Team = team }
             );
         }
 

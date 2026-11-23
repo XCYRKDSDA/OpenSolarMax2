@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
@@ -28,14 +29,15 @@ internal class LevelPlayView
 
     private readonly RenderTarget2D _uiRenderTarget;
     private readonly SpriteBatch _uiSpriteBatch;
-    private bool _exited = false;
 
     public LevelPlayView(LevelPlayViewModel viewModel, SolarMax game)
         : base(viewModel, game)
     {
+        // 背景偏移只由转场写入，无需组件自行收敛
         _background = new HorizontalScrollingBackground(game.GraphicsDevice)
         {
             Texture = viewModel.Background,
+            ControlMode = ScrollingBackgroundControlMode.Manual,
         };
 
         var pp = game.GraphicsDevice.PresentationParameters;
@@ -354,8 +356,17 @@ internal class LevelPlayView
         ViewModel.SimulateSpeed = _speedButtonsMap[theButton];
     }
 
+    public override void OnActivated()
+    {
+        base.OnActivated();
+
+        _desktop.RefreshInputSnapshot();
+    }
+
     public override void Update(GameTime gameTime)
     {
+        // TODO: 这里其实不该广播，只应当设置对应的那个 View 实体
+
         // 强行处理一次输入
         // _desktop.UpdateInput(); UpdateInput() 只修改状态不触发事件，但这就导致 Render() 中再次 UpdateInput() 后丢失了一些事件
         var focusState = new InputFocusState
@@ -367,30 +378,35 @@ internal class LevelPlayView
             new QueryDescription().WithAll<InputFocusState>(),
             (ref InputFocusState focusState2) => focusState2 = focusState
         );
-        ViewModel.InputSystem.Update(gameTime);
+
+        // 广播鼠标设备状态
+        var mouseState = Mouse.GetState();
+        ViewModel.World.Query(
+            new QueryDescription().WithAll<MouseDeviceState>(),
+            (ref MouseDeviceState deviceState) =>
+            {
+                deviceState.PreviousState = deviceState.State;
+                deviceState.State = mouseState;
+            }
+        );
+        // 广播键盘设备状态
+        var keyboardState = Keyboard.GetState();
+        ViewModel.World.Query(
+            new QueryDescription().WithAll<KeyboardDeviceState>(),
+            (ref KeyboardDeviceState deviceState) =>
+            {
+                deviceState.PreviousState = deviceState.State;
+                deviceState.State = keyboardState;
+            }
+        );
 
         base.Update(gameTime);
-
-        if (!_exited)
-        {
-            ViewModel.World.Query(
-                new QueryDescription().WithAll<GameState>(),
-                (ref GameState state) =>
-                {
-                    if (state.Status != GameStatus.Playing && !_exited)
-                    {
-                        Game.ScreenManager.Backward();
-                        _exited = true;
-                    }
-                }
-            );
-        }
     }
 
     public override void Draw(GameTime gameTime)
     {
         // 先画背景
-        _background.Draw();
+        _background.Draw(gameTime);
 
         // 再画世界
         _desktop.UpdateLayout(); // 强行排版一次
@@ -430,6 +446,8 @@ internal class LevelPlayView
 
     void IVisualConfigurable<GamePlayTransitionTargetState>.EnterConfigurationMode()
     {
+        _desktop.RefreshInputSnapshot();
+
         // 创建悬浮世界视图控件
         _floatingWorldView = new InputPassthroughWidget();
         _rootPanel.Widgets.Add(_floatingWorldView);
@@ -455,7 +473,8 @@ internal class LevelPlayView
         return new GamePlayTransitionTargetState(
             targetPreviewLocation,
             currentSpeed,
-            _background.Left
+            _background.TextureAnchor,
+            _background.TargetAnchorInViewport
         );
     }
 
@@ -472,8 +491,9 @@ internal class LevelPlayView
         // 设置世界仿真速度
         ViewModel.SimulateSpeed = state.WorldSpeed;
 
-        // 设置背景偏移
-        _background.Left = state.BackgroundOffset;
+        // 设置背景位置
+        _background.TextureAnchor = state.BackgroundTextureAnchor;
+        _background.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion

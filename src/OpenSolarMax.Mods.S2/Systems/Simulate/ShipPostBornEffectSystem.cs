@@ -60,7 +60,7 @@ public partial class RemoveShipPostBornEffectSystem(World world) : IDelayedCalcS
 [
     ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(Sprite)),
     FineWith(
-        typeof(ApplyTeamColorSystem),
+        typeof(ApplyVisualStyleSystem),
         "当前系统仅设置透明度和缩放，与应用颜色不冲突",
         typeof(Sprite)
     ),

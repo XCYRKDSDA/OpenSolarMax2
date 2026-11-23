@@ -9,6 +9,7 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Game.Utils;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Concepts;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -23,10 +24,9 @@ public abstract class CelestialBodyDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
             // 效果
-            typeof(Sprite),
             typeof(Flare),
             // 动画
             typeof(Animation),
@@ -35,21 +35,37 @@ public abstract class CelestialBodyDefinition : IDefinition
             typeof(PlanetGeostationaryOrbit), // 同步轨道，用于生成新舰船轨道
             typeof(TreeRelationship<Anchorage>.AsParent), // 挂载关系父方
             typeof(AnchoredShipsRegistry), // 挂载舰船的索引
+            typeof(AnchoredShipsDisplayData), // 构成弧与数目标签的显示数据
             // 移动相关
             typeof(JumpingShipsRegistry), // 前往该天体的舰船的索引
-            typeof(ReachabilityRegistry), // 该天体到其他天体之间的可达性索引
+            typeof(ReachabilityRelation.AsDeparture), // 作为出发端的可达性关系索引
+            typeof(ReachabilityRelation.AsDestination), // 作为目的端的可达性关系索引
+            typeof(StartJumpingRequest.AsDeparture),
+            typeof(StartJumpingRequest.AsDestination),
             // 战争相关
             typeof(Battlefield), // 允许发生战争
             typeof(Colonizable), // 允许进行殖民
             typeof(ColonizationState), // 殖民状态
-            typeof(InTeam.AsAffiliate), // 可以隶属于某个阵营
+            typeof(ColonizationRingDisplayData), // 殖民进度环的显示数据
             // 其他
-            typeof(ReferenceSize), // 参考尺寸，用于计算输入和可视化相关
-            typeof(TreeRelationship<ColorSync>.AsParent), // 颜色同步关系父方
-            // 选择圈相关
-            typeof(PlanetSelectionRing.AsPlanet), // 星球的选择圈索引
+            typeof(ReferenceSize), // 参考尺寸，用于可视化相关
+            typeof(Pickable), // 可被点选
+            // UI 相关
+            typeof(PlanetSelectionRing.AsPlanet),
+            typeof(PlanetCandidateRing.AsPlanet),
+            typeof(PlanetManeuveringLineSource.AsPlanet),
+            typeof(ManeuveringLineTarget.AsTarget),
+            typeof(PointedEntityHoverGlow.AsPointedEntity),
+            typeof(PlanetColonizationRing.AsPlanet),
+            typeof(PlanetAnchoredShipsArc.AsPlanet),
+            typeof(PlanetAnchoredShipsLabel.AsPlanet),
+            typeof(WorldToScreenProjection.AsSource),
             // AI 相关
-            typeof(PlanetAiTimers) // AI 操作计时器
+            typeof(PlanetAiTimers), // AI 操作计时器
+            // 首府关系
+            typeof(CapitalOf.AsCapital), // 作为阵营首府的索引
+            // 出兵来源的留守驻军
+            typeof(Garrison) // 派兵数不超过「驻留兵力 − 留守数」
         );
 }
 
@@ -96,6 +112,16 @@ public class CelestialBodyDescription : IDescription
     public required OneOf<string, TextureRegion> GlowTexture { get; set; }
 
     public OneOf<int, Dictionary<Entity, int>>? InitialShips { get; set; }
+
+    /// <summary>
+    /// 该天体是否为其所属阵营的首府
+    /// </summary>
+    public bool Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int Garrison { get; set; }
 }
 
 [Apply(ConceptNames.CelestialBody)]
@@ -110,32 +136,25 @@ public class CelestialBodyApplier(
     private readonly float _orbitMinRoll = configs.RequireValue<Angle>("orbit:roll:min");
     private readonly float _orbitMaxRoll = configs.RequireValue<Angle>("orbit:roll:max");
 
-    private readonly TransformableApplier _transformableApplier = new(factory);
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, CelestialBodyDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
         var random = new Random();
 
-        // 设置位姿
-        _transformableApplier.Apply(
+        // 设置位姿与外观
+        _drawableApplier.Apply(
             commandBuffer,
             entity,
-            new TransformableDescription() { Transform = desc.Transform }
-        );
-
-        // 设置纹理和外形
-        commandBuffer.Set(
-            in entity,
-            new Sprite()
+            new TeamInheritableDrawableDescription()
             {
-                Texture = desc.Texture.Match(path => assets.Load<TextureRegion>(path), tex => tex),
+                Transform = desc.Transform,
+                Texture = desc.Texture,
                 Alpha = 1,
                 Size = new Vector2(desc.ReferenceRadius * 2),
-                Position = Vector2.Zero,
-                Rotation = 0,
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Alpha,
+                Team = desc.Team,
             }
         );
 
@@ -150,6 +169,9 @@ public class CelestialBodyApplier(
 
         // 设置参考尺寸
         commandBuffer.Set(in entity, new ReferenceSize { Radius = desc.ReferenceRadius });
+
+        // 设置可点选命中半径
+        commandBuffer.Set(in entity, new Pickable { HitRadius = desc.ReferenceRadius });
 
         // 随机设置同步轨道
         var pitch = (float)random.NextDouble() * (_orbitMaxPitch - _orbitMinPitch) + _orbitMinPitch;
@@ -167,16 +189,12 @@ public class CelestialBodyApplier(
         // 设置殖民体量
         commandBuffer.Set(in entity, new Colonizable { Volume = desc.Volume });
 
-        // 设置阵营
+        // 设置留守驻军
+        commandBuffer.Set(in entity, new Garrison { Ships = desc.Garrison });
+
+        // 设置殖民状态
         if (desc.Team != Entity.Null)
         {
-            factory.Make(
-                world,
-                commandBuffer,
-                ConceptNames.InTeam,
-                new InTeamDescription { Team = desc.Team, Affiliate = entity }
-            );
-
             commandBuffer.Set(
                 in entity,
                 new ColonizationState
@@ -185,6 +203,19 @@ public class CelestialBodyApplier(
                     Progress = desc.Volume,
                     Event = ColonizationEvent.Idle,
                 }
+            );
+        }
+
+        // 建立首府关系：天体声明为首府时，与所属阵营建立一对一的独占关系
+        if (desc.Capital)
+        {
+            if (desc.Team == Entity.Null)
+                throw new InvalidOperationException("首府天体必须有阵营");
+            factory.Make(
+                world,
+                commandBuffer,
+                ConceptNames.CapitalOf,
+                new CapitalOfDescription { Capital = entity, Team = desc.Team }
             );
         }
 
@@ -234,12 +265,12 @@ public class CelestialBodyApplier(
         }
 
         // 创建光晕子实体
-        factory.Make(
+        var glow = factory.Make(
             world,
             commandBuffer,
-            new ColorSyncableDrawableDescription
+            new TeamInheritableDrawableDescription
             {
-                ColorSource = entity,
+                Parent = entity,
                 Transform = new RelativeTransformOptions
                 {
                     Parent = entity,
@@ -252,7 +283,15 @@ public class CelestialBodyApplier(
                 Size = new Vector2(desc.ReferenceRadius * 2),
                 Color = Color.White,
                 Blend = SpriteBlend.Additive,
+                VisualStyle = VisualStyle.Effect,
             }
+        );
+
+        // 光晕依赖本体：本体被销毁时光晕随之销毁
+        factory.Make(
+            world,
+            commandBuffer,
+            new DependenceDescription { Dependent = glow, Dependency = entity }
         );
     }
 }

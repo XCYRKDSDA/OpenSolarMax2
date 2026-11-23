@@ -37,7 +37,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [FineWith(typeof(UpdateShipChargingEffectSystem), "跃迁和飞行完全不相干", typeof(Sprite))]
 [FineWith(typeof(UpdateShipTrailEffectSystem), "跃迁和飞行完全不相干", typeof(Sprite))]
 [FineWith(typeof(UpdateShipTravellingEffectSystem), "跃迁和飞行完全不相干", typeof(Sprite))]
-[FineWith(typeof(ApplyTeamColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite))]
+[FineWith(typeof(ApplyVisualStyleSystem), "本系统不设置颜色与混合模式，无冲突", typeof(Sprite))]
 [FineWith(typeof(SynchronizeColorSystem), "本系统不设置颜色，无冲突", typeof(Sprite))]
 public sealed partial class ApplyShipsWarpingEffectSystem(World world, IAssetsManager assets)
     : ICalcSystem

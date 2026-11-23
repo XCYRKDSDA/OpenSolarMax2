@@ -3,7 +3,7 @@ using OpenSolarMax.Mods.Common.SourceGenerators;
 
 namespace OpenSolarMax.Mods.Common.Components;
 
-[Relationship]
+[Relationship(generateConcept: true, scenes: ConceptScenes.Both)]
 public readonly partial struct InTeam(in Entity team, in Entity affiliate)
 {
     [Participant(exclusive: false)]

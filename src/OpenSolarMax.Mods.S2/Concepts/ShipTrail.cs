@@ -1,10 +1,12 @@
 using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Concepts;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
@@ -19,16 +21,12 @@ public abstract class ShipTrailDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
-            // 效果
-            typeof(Sprite),
             // 动画
             typeof(Animation),
             //
-            typeof(TrailOf.AsTrail),
-            // 颜色同步子节点
-            typeof(TreeRelationship<ColorSync>.AsChild)
+            typeof(TrailOf.AsTrail)
         );
 }
 
@@ -42,32 +40,37 @@ public class ShipTrailDescription : IDescription
 public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
     : IApplier<ShipTrailDescription>
 {
-    private readonly TextureRegion _trailTexture = assets.Load<TextureRegion>(
-        Content.Textures.SolarMax2_Atlas_json + ":Quad8x4"
-    );
+    private readonly TextureRegion _trailTexture = CreateTrailTexture(assets);
+
+    /// <summary>
+    /// 尾迹纹理锚定在右边缘垂直中点，使尾迹从舰船向反方向延伸
+    /// </summary>
+    private static TextureRegion CreateTrailTexture(IAssetsManager assets)
+    {
+        var texture = assets.Load<Texture2D>(Content.Textures.ShipTrail_png);
+        return new TextureRegion(texture, anchor: new Vector2(texture.Width, texture.Height / 2f));
+    }
+
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipTrailDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观，并从舰船继承阵营
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new RelativeTransformOptions { Parent = desc.Ship },
                 Texture = _trailTexture,
-                Gradient = new()
-                {
-                    LeftTop = 0,
-                    LeftBottom = 0,
-                    RightTop = 1,
-                    RightBottom = 1,
-                },
-                Color = Color.White,
                 Alpha = 0.5f,
                 Size = new(4, 2),
                 Scale = new Vector2(0, 1),
                 Blend = SpriteBlend.Additive,
+                Parent = desc.Ship,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 
@@ -78,27 +81,12 @@ public class ShipTrailApplier(IAssetsManager assets, IConceptFactory factory)
             ConceptNames.TrailOf,
             new TrailOfDescription { Ship = desc.Ship, Trail = entity }
         );
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Child = entity, Parent = desc.Ship }
-        );
 
         // 设置依赖关系
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
-        );
-
-        // 设置颜色同步关系（ship 为父，trail 为子）
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.ColorSyncRelationship,
-            new ColorSyncRelationshipDescription { Parent = desc.Ship, Child = entity }
         );
     }
 }

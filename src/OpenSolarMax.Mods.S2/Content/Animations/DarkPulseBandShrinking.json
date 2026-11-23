@@ -1,0 +1,13 @@
+{
+    "duration": "END",
+    "variables": {
+        "DELAY": 0,
+        "END": 1
+    },
+    "curves": {
+        "RelativeTransform::Rotation": [
+            { "time": "DELAY", "value": [ "xyz", 0, 0, 0 ] },
+            { "time": "END", "value": [ "xyz", 0, -1.570796327, 0 ] }
+        ]
+    }
+}

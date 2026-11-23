@@ -1,10 +1,12 @@
 using Arch.Buffer;
 using Arch.Core;
+using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
 using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Game.Modding.Configuration;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -43,14 +45,21 @@ public class PlanetPreviewDescription : IDescription
 }
 
 [Apply(ConceptNames.PlanetPreview), OnlyForPreview]
-public class PlanetPreviewApplier(IAssetsManager assets, IConceptFactory factory)
-    : IApplier<PlanetPreviewDescription>
+public class PlanetPreviewApplier(
+    IAssetsManager assets,
+    IConceptFactory factory,
+    [Section("applier:celestial_body")] IConfiguration configs
+) : IApplier<PlanetPreviewDescription>
 {
     private readonly TextureRegion _defaultPlanetShape = assets.Load<TextureRegion>(
         Content.Textures.SolarMax2_Atlas_json + ":PlanetShape"
     );
 
-    private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(assets, factory);
+    private readonly CelestialBodyPreviewApplier _celestialBodyApplier = new(
+        assets,
+        factory,
+        configs
+    );
 
     public void Apply(CommandBuffer commandBuffer, Entity entity, PlanetPreviewDescription desc)
     {

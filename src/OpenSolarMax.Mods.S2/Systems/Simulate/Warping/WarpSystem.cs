@@ -18,7 +18,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [SimulateSystem]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(Sprite))]
-[ReadCurr(typeof(TeamReferenceColor))]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(WarpingStatus))]
@@ -64,7 +63,7 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
                 {
                     Position = pose.Translation,
                     Rotation = pose.Rotation,
-                    Color = sprite.Color,
+                    Team = asAffiliate.Relationship!.Value.Copy.Team,
                 }
             );
 
@@ -105,9 +104,7 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
                             .TransformToParent
                         * destination.Get<AbsoluteTransform>().TransformToRoot
                     ).Translation,
-                    Color = asAffiliate
-                        .Relationship!.Value.Copy.Team.Get<TeamReferenceColor>()
-                        .Value,
+                    Team = asAffiliate.Relationship!.Value.Copy.Team,
                 }
             );
 
@@ -150,7 +147,7 @@ public sealed partial class WarpSystem(World world, IAssetsManager assets, IConc
                 new DestinationEffectDescription()
                 {
                     Warp = destination,
-                    Color = team.Get<TeamReferenceColor>().Value,
+                    Team = team,
                     WarpRadius = destination.Get<ReferenceSize>().Radius,
                 }
             );

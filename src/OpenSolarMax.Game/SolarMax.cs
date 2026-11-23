@@ -1,10 +1,13 @@
 using System.ComponentModel;
+using Apos.Shapes;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Nine.Assets;
 using Nine.Screens;
+using OpenSolarMax.Game.Assets;
+using OpenSolarMax.Game.Audio;
 using OpenSolarMax.Game.Screens;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.ViewModels;
@@ -24,9 +27,12 @@ public class SolarMax : XNAGame
 
     private FmodStudioSystem _globalFmodSystem;
 
+    private MusicManager _musicManager;
+
     private ScreenManager _globalScreenManager;
     private RenderTarget2D _renderTarget;
     private SpriteBatch _spriteBatch;
+    private ShapeBatch _shapeBatch;
 
     private TaskScheduler _loadingTaskScheduler;
 
@@ -58,6 +64,10 @@ public class SolarMax : XNAGame
     public TaskScheduler BackgroundScheduler => _loadingTaskScheduler;
 
     public FmodStudioSystem FmodSystem => _globalFmodSystem;
+
+    public MusicManager Music => _musicManager;
+
+    public ShapeBatch ShapeBatch => _shapeBatch;
 
     public AssetsManager Assets => _globalAssets;
 
@@ -91,6 +101,7 @@ public class SolarMax : XNAGame
             RenderTargetUsage.PreserveContents // 保留
         );
         _spriteBatch = new SpriteBatch(GraphicsDevice, 1);
+        _shapeBatch = new ShapeBatch(GraphicsDevice);
 
         // 初始化全局 fmod 音频系统
         FmodException.Check(FmodStudioSystem.create(out _globalFmodSystem));
@@ -104,12 +115,17 @@ public class SolarMax : XNAGame
         AssetsManager.RegisterDefaultLoader(new TextureRegionLoader());
         AssetsManager.RegisterDefaultLoader(new NinePatchRegionLoader());
         AssetsManager.RegisterDefaultLoader(new FontSystemLoader());
+        AssetsManager.RegisterDefaultLoader(new AposShapeFontLoader());
         AssetsManager.RegisterDefaultLoader(new ByteArrayLoader());
         AssetsManager.RegisterDefaultLoader(new FmodBankLoader(_globalFmodSystem));
         AssetsManager.RegisterDefaultLoader(new FmodEventLoader(_globalFmodSystem));
 
         // 初始化全局资产
         _globalAssets = new AssetsManager(Folders.Content);
+
+        // 初始化全局音乐管理器
+        _musicManager = new MusicManager(this);
+        Components.Add(_musicManager);
 
         // 初始化全局界面管理器
         _globalScreenManager = new ScreenManager(new ScreenFactory(this), this);
@@ -127,13 +143,18 @@ public class SolarMax : XNAGame
     {
         base.UnloadContent();
 
+        // 先释放音乐实例，再释放 fmod 系统
+        _musicManager?.Dispose();
         _globalFmodSystem.release();
     }
 
     protected override void Dispose(bool disposing)
     {
         if (disposing)
+        {
             _gameSession?.Dispose();
+            _shapeBatch?.Dispose();
+        }
 
         base.Dispose(disposing);
     }

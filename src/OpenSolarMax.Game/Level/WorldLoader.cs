@@ -1,16 +1,15 @@
-using System.Collections;
 using System.Diagnostics;
-using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Level;
 
 internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry translators)
 {
-    public IEnumerator LoadStepByStep(LevelFile level, World world, CommandBuffer commandBuffer)
+    public void Load(LevelFile level, World world, AggregateSystem simulateSystem)
     {
         // 所有经过仿真系统后处理过至少一次的实体的代号
         var satisfiedEntities = new HashSet<string>();
@@ -51,8 +50,8 @@ internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry t
             // 检查是否所有依赖均已满足
             if (configuration.Requirements.Any(s => !satisfiedEntities.Contains(s)))
             {
-                // 有依赖的实体未初始化过，需要交给外部计算一帧
-                yield return null;
+                // 有依赖的实体未初始化过。执行一轮仿真，创建已记录的实体并让系统处理它们
+                simulateSystem.LateUpdate();
                 Debug.Assert(namedEntities.Values.All(e => e.GetComponentTypes().Count > 0));
                 satisfiedEntities.UnionWith(namedEntities.Keys);
             }
@@ -60,14 +59,20 @@ internal sealed class WorldLoader(IConceptFactory factory, ITranslatorRegistry t
             // 生成描述对象
             var description = translator.ToDescription(configuration, namedEntities);
 
-            // 构造实体
-            var entity = factory.Make(world, commandBuffer, conceptName, description);
+            // 构造实体，命令记录进聚合系统当前的命令缓冲
+            var entity = factory.Make(
+                world,
+                simulateSystem.CurrentCommandBuffer,
+                conceptName,
+                description
+            );
 
             // 记录实体
             if (optionalId is not null)
                 namedEntities[optionalId] = entity;
         }
 
-        yield return null;
+        // 创建并处理最后一批实体
+        simulateSystem.LateUpdate();
     }
 }

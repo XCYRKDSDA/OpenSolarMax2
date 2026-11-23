@@ -10,7 +10,7 @@ namespace OpenSolarMax.Mods.Common.Systems;
 /// 依赖管理系统。当被依赖的父实体死亡后，依赖其的子实体也需要一并销毁。<br/>
 /// 注意：该系统仅仅处理由<see cref="Dependence"/>定义的依赖关系，且在销毁实体时不提供hook。有个性化需求的请自行实现系统
 /// </summary>
-[SimulateSystem, Reactive]
+[SimulateSystem, RenderSystem, Reactive]
 public sealed class ManageDependenceSystem : IReactiveSystem
 {
     public ManageDependenceSystem(EventRegistry registry)

@@ -8,6 +8,7 @@ using Nine.Assets;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.ECS;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Concepts;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Concepts;
 
@@ -20,7 +21,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [
     ReadCurr(typeof(AbsoluteTransform)),
     ReadCurr(typeof(ReferenceSize)),
-    ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(Victory)),
     ReadCurr(typeof(ColonizationState)),
@@ -32,7 +32,7 @@ public sealed partial class SettleColonizationSystem(
     IConceptFactory factory
 ) : IDelayedCalcSystem
 {
-    private void CreateHaloExplosion(CommandBuffer commandBuffer, Entity planet, Color color)
+    private void CreateHaloExplosion(CommandBuffer commandBuffer, Entity planet, Entity team)
     {
         ref var planetAbsoluteTransform = ref planet.Get<AbsoluteTransform>();
         ref readonly var refSize = ref planet.Get<ReferenceSize>();
@@ -41,7 +41,7 @@ public sealed partial class SettleColonizationSystem(
             commandBuffer,
             new HaloExplosionDescription()
             {
-                Color = color,
+                Team = team,
                 Position = planetAbsoluteTransform.Translation,
                 PlanetRadius = refSize.Radius,
             }
@@ -49,7 +49,7 @@ public sealed partial class SettleColonizationSystem(
         factory.Make(
             world,
             commandBuffer,
-            new ColonizationFlareDescription() { Planet = planet, AfterColor = color }
+            new ColonizationFlareDescription() { Planet = planet, Team = team }
         );
     }
 
@@ -77,11 +77,7 @@ public sealed partial class SettleColonizationSystem(
         {
             // 胜利已判定时不播放殖民完成特效，归属变更照常执行
             if (!hasWon)
-                CreateHaloExplosion(
-                    commandBuffer,
-                    planet,
-                    state.Team.Get<TeamReferenceColor>().Value
-                );
+                CreateHaloExplosion(commandBuffer, planet, state.Team);
 
             // 完成殖民
             if (planetTeam is null)
@@ -97,7 +93,7 @@ public sealed partial class SettleColonizationSystem(
         {
             // 胜利已判定时不播放解除特效，归属变更照常执行
             if (!hasWon)
-                CreateHaloExplosion(commandBuffer, planet, Color.White);
+                CreateHaloExplosion(commandBuffer, planet, Entity.Null);
 
             // 解除当前阵营的殖民
             if (planetTeam is not null)

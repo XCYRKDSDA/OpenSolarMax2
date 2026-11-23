@@ -1,5 +1,6 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Modding.Declaration;
 using OpenSolarMax.Mods.S2.Concepts;
 
@@ -28,7 +29,7 @@ public class EmptyObjectDeclaration : IDeclaration<EmptyObjectDeclaration>
     }
 }
 
-[Translate("empty", ConceptNames.EmptyCoord)]
+[Translate("empty", ConceptNames.EmptyCoord), BothForGameplayAndPreview]
 public class EmptyObjectDeclarationTranslator
     : ITranslator<EmptyObjectDeclaration, EmptyCoordDescription>
 {

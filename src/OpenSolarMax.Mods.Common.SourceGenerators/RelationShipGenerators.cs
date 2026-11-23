@@ -33,10 +33,15 @@ public class RelationShipGenerator : ISourceGenerator
         "Templates/NonExclusiveParticipant.in"
     );
 
+    private static readonly string _conceptTemplate = ResourceHelper.GetEmbeddedText(
+        "Templates/RelationshipConcept.in"
+    );
+
     public void Initialize(GeneratorInitializationContext context) { }
 
     private static void GenerateRelationship(
         string fullname,
+        INamedTypeSymbol typeSymbol,
         RelationshipInfo info,
         GeneratorExecutionContext context
     )
@@ -118,6 +123,74 @@ public class RelationShipGenerator : ISourceGenerator
                 .Replace("@PARTICIPANT_TYPE@", participant.Type);
             context.AddSource($"{fullname}.{participant.Type}.g.cs", participantsCs);
         }
+
+        if (info.Attr.GenerateConcept)
+            GenerateRelationshipConcept(fullname, typeSymbol, info, context);
+    }
+
+    private static void GenerateRelationshipConcept(
+        string fullname,
+        INamedTypeSymbol typeSymbol,
+        RelationshipInfo info,
+        GeneratorExecutionContext context
+    )
+    {
+        // 泛型关系的概念名和描述字段由每个具体概念自行决定，不能自动生成
+        if (typeSymbol.IsGenericType)
+            return;
+
+        var constructor = typeSymbol
+            .InstanceConstructors.Where(c => c.Parameters.Length > 0)
+            .OrderByDescending(c => c.Parameters.Length)
+            .FirstOrDefault();
+        if (constructor is null)
+            return;
+
+        var members = typeSymbol
+            .GetMembers()
+            .Where(m =>
+                m is IFieldSymbol { IsStatic: false } or IPropertySymbol { IsStatic: false }
+            )
+            .ToList();
+
+        var properties = new List<string>();
+        var arguments = new List<string>();
+
+        foreach (var parameter in constructor.Parameters)
+        {
+            var member = members.FirstOrDefault(m =>
+                string.Equals(m.Name, parameter.Name, StringComparison.OrdinalIgnoreCase)
+            );
+            var propertyName =
+                member?.Name
+                ?? char.ToUpperInvariant(parameter.Name[0]) + parameter.Name.Substring(1);
+            var propertyType = parameter.Type.ToDisplayString(
+                SymbolDisplayFormat.FullyQualifiedFormat
+            );
+
+            properties.Add($"    public required {propertyType} {propertyName} {{ get; set; }}");
+            arguments.Add($"desc.{propertyName}");
+        }
+
+        var sceneAttribute =
+            (info.Attr.Scenes & ConceptScenes.Preview) != 0
+                ? (info.Attr.Scenes & ConceptScenes.Gameplay) != 0
+                    ? "[global::OpenSolarMax.Game.Modding.BothForGameplayAndPreview]\n"
+                    : "[global::OpenSolarMax.Game.Modding.OnlyForPreview]\n"
+                : string.Empty;
+
+        var conceptCs = _conceptTemplate
+            .Replace("@NAMESPACE@", $"{context.Compilation.AssemblyName}.Concepts")
+            .Replace("@NAME@", typeSymbol.Name)
+            .Replace("@SCENE_ATTRIBUTE@", sceneAttribute)
+            .Replace(
+                "@RELATIONSHIP_TYPE@",
+                typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            )
+            .Replace("@PROPERTIES@", string.Join("\n\n", properties))
+            .Replace("@ARGUMENTS@", string.Join(", ", arguments));
+
+        context.AddSource($"{fullname}.Concept.g.cs", conceptCs);
     }
 
     private static bool IsMultiple(ISymbol memberSymbol, Compilation compilation)
@@ -208,7 +281,12 @@ public class RelationShipGenerator : ISourceGenerator
                     globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
                     typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces
                 );
-                GenerateRelationship(namedTypeSymbol.ToDisplayString(fullnameStyle), info, context);
+                GenerateRelationship(
+                    namedTypeSymbol.ToDisplayString(fullnameStyle),
+                    namedTypeSymbol,
+                    info,
+                    context
+                );
             }
         }
     }

@@ -20,7 +20,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
     ReadCurr(typeof(AttackCooldown)),
     ReadCurr(typeof(InTeam.AsAffiliate)),
     ReadCurr(typeof(AbsoluteTransform)),
-    ReadCurr(typeof(TeamReferenceColor)),
     ReadCurr(typeof(AttackTimer)),
     Calc(typeof(ShipDeathState)),
     DelayedCalc
@@ -73,7 +72,6 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
         commandBuffer.Set(entity, timer with { TimeLeft = cooldown.Duration });
 
         var targetPosition = target.Value.Get<AbsoluteTransform>().Translation;
-        var shooterColor = shooterTeam.Get<TeamReferenceColor>().Value;
         factory.Make(
             world,
             commandBuffer,
@@ -81,7 +79,7 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
             {
                 Planet = entity,
                 TargetPosition = targetPosition,
-                Color = shooterColor,
+                Team = shooterTeam,
             }
         );
 
@@ -90,12 +88,7 @@ public sealed partial class ShootJumpingShipsSystem(World world, IConceptFactory
             factory.Make(
                 world,
                 commandBuffer,
-                new LaserFlashDescription()
-                {
-                    Tower = entity,
-                    Color = Color.White,
-                    Texture = attackFlash.Texture,
-                }
+                new LaserFlashDescription() { Tower = entity, Texture = attackFlash.Texture }
             );
         }
 

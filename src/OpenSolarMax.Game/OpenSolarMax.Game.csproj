@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Apos.Shapes" Version="0.9.4" />
     <PackageReference Include="Arch" Version="2.1.0" ExcludeAssets="all" />
     <PackageReference Include="Arch.System" Version="1.1.0" />
     <PackageReference Include="BitFaster.Caching" Version="2.6.1" />
@@ -22,7 +23,7 @@
       Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
       Version="10.0.1"
     />
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.6">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Myra" Version="1.5.9" />

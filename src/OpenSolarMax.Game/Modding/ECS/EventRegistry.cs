@@ -54,9 +54,11 @@ public delegate void ComponentRemovedHandlerWithBuffer<T>(
 /// <summary>
 ///     响应式事件处理程序的中央注册表。事件回调在这里订阅，而不是直接在 <see cref="World"/> 上订阅。
 ///
-///     registry 不存储任何回调，也不存储缓冲区：每次 <c>Subscribe</c> 调用都会包装给定的
-///     handler 并直接注册到 world 上，每个 handler 对应一个 world 订阅。接收缓冲区参数的
-///     handler 会在调用时从所属的 <see cref="AggregateSystem"/> 获取当前写入目标。
+///     registry 不存储任何回调，也不存储缓冲区：每次 <c>Subscribe</c> 调用都会把一个中转函数
+///     注册到 world 上，每个中转函数对应一个 world 订阅。接收缓冲区参数的 handler 会在调用时
+///     从所属的 <see cref="AggregateSystem"/> 获取当前写入目标。
+///
+///     订阅的派发由 <see cref="Begin"/> 返回的作用域控制：作用域之外，中转函数不调用用户回调。
 /// </summary>
 public sealed class EventRegistry
 {
@@ -69,42 +71,85 @@ public sealed class EventRegistry
         _owner = owner;
     }
 
+    private bool _dispatching;
+
+    /// <summary>
+    /// 打开世界事件的派发并返回派发作用域，作用域释放时关闭派发。
+    /// </summary>
+    internal IDisposable Begin()
+    {
+        _dispatching = true;
+        return new DispatchScope(this);
+    }
+
+    private sealed class DispatchScope(EventRegistry registry) : IDisposable
+    {
+        public void Dispose() => registry._dispatching = false;
+    }
+
     public void SubscribeComponentAdded<T>(ComponentAddedHandler<T> handler)
     {
-        _world.SubscribeComponentAdded(handler);
+        _world.SubscribeComponentAdded(
+            (in Entity entity, ref T comp) =>
+            {
+                if (_dispatching)
+                    handler(in entity, ref comp);
+            }
+        );
     }
 
     public void SubscribeComponentAdded<T>(ComponentAddedHandlerWithBuffer<T> handler)
     {
         _world.SubscribeComponentAdded(
             (in Entity entity, ref T comp) =>
-                handler(in entity, ref comp, _owner.CurrentCommandBuffer)
+            {
+                if (_dispatching)
+                    handler(in entity, ref comp, _owner.CurrentCommandBuffer);
+            }
         );
     }
 
     public void SubscribeComponentSet<T>(ComponentSetHandler<T> handler)
     {
-        _world.SubscribeComponentSet(handler);
+        _world.SubscribeComponentSet(
+            (in Entity entity, in T oldValue, ref T newValue) =>
+            {
+                if (_dispatching)
+                    handler(in entity, in oldValue, ref newValue);
+            }
+        );
     }
 
     public void SubscribeComponentSet<T>(ComponentSetHandlerWithBuffer<T> handler)
     {
         _world.SubscribeComponentSet(
             (in Entity entity, in T oldValue, ref T newValue) =>
-                handler(in entity, in oldValue, ref newValue, _owner.CurrentCommandBuffer)
+            {
+                if (_dispatching)
+                    handler(in entity, in oldValue, ref newValue, _owner.CurrentCommandBuffer);
+            }
         );
     }
 
     public void SubscribeComponentRemoved<T>(ComponentRemovedHandler<T> handler)
     {
-        _world.SubscribeComponentRemoved(handler);
+        _world.SubscribeComponentRemoved(
+            (in Entity entity, ref T comp) =>
+            {
+                if (_dispatching)
+                    handler(in entity, ref comp);
+            }
+        );
     }
 
     public void SubscribeComponentRemoved<T>(ComponentRemovedHandlerWithBuffer<T> handler)
     {
         _world.SubscribeComponentRemoved(
             (in Entity entity, ref T comp) =>
-                handler(in entity, ref comp, _owner.CurrentCommandBuffer)
+            {
+                if (_dispatching)
+                    handler(in entity, ref comp, _owner.CurrentCommandBuffer);
+            }
         );
     }
 }

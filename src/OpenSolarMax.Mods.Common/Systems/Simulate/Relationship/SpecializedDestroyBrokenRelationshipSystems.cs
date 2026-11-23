@@ -17,3 +17,10 @@ public sealed class DestroyBrokenTransformRelationshipSystem(EventRegistry regis
 [SimulateSystem, Reactive]
 public sealed class DestroyBrokenColorSyncRelationshipSystem(EventRegistry registry)
     : DestroyBrokenRelationshipsSystem<TreeRelationship<ColorSync>>(registry) { }
+
+/// <summary>
+/// 清理已损坏的阵营继承关系。当参与方（父/子）被销毁时，自动清理关系实体。
+/// </summary>
+[SimulateSystem, Reactive]
+public sealed class DestroyBrokenInTeamTreeRelationshipSystem(EventRegistry registry)
+    : DestroyBrokenRelationshipsSystem<TreeRelationship<InTeam>>(registry) { }

@@ -20,6 +20,16 @@ public class WarpDeclaration : IDeclaration<WarpDeclaration>
 
     public OneOf<int, Dictionary<string, int>>? Ships { get; set; }
 
+    /// <summary>
+    /// 是否为所属阵营的首府
+    /// </summary>
+    public bool? Capital { get; set; }
+
+    /// <summary>
+    /// 该天体作为出兵来源时的留守舰船数
+    /// </summary>
+    public int? Garrison { get; set; }
+
     public WarpDeclaration Aggregate(WarpDeclaration newCfg)
     {
         return new WarpDeclaration()
@@ -32,6 +42,8 @@ public class WarpDeclaration : IDeclaration<WarpDeclaration>
                     : newCfg.Orbit ?? Orbit,
             Team = newCfg.Team ?? Team,
             Ships = newCfg.Ships ?? Ships,
+            Capital = newCfg.Capital ?? Capital,
+            Garrison = newCfg.Garrison ?? Garrison,
         };
     }
 }
@@ -68,6 +80,10 @@ public class WarpDeclarationTranslator : ITranslator<WarpDeclaration, WarpDescri
 
         if (declaration.Team is not null)
             desc.Team = otherEntities[declaration.Team];
+        if (declaration.Capital is not null)
+            desc.Capital = declaration.Capital.Value;
+        if (declaration.Garrison is not null)
+            desc.Garrison = declaration.Garrison.Value;
 
         return desc;
     }

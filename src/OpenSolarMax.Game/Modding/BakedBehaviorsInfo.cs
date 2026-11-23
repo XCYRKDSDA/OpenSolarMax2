@@ -54,12 +54,6 @@ internal record BakedBehaviorsInfo(
 
         // 合并系统类型。合并后完成拓扑排序
         var mergedSystemTypes = new StageSystemTypesCollection(
-            Input: SystemsTopology.BakeSortedSystemTypes(
-                layers.SelectMany(l => l.SystemTypes.Input).ToImmutableHashSet()
-            ),
-            Ai: SystemsTopology.BakeSortedSystemTypes(
-                layers.SelectMany(l => l.SystemTypes.Ai).ToImmutableHashSet()
-            ),
             Simulate: SystemsTopology.BakeSortedSystemTypes(
                 layers.SelectMany(l => l.SystemTypes.Simulate).ToImmutableHashSet()
             ),

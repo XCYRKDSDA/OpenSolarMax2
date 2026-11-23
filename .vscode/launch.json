@@ -7,6 +7,9 @@
             "request": "launch",
             "preLaunchTask": "build OpenSolarMax.Launcher",
             "program": "${workspaceFolder}/src/OpenSolarMax.Launcher/bin/Debug/net8.0/OpenSolarMax.Launcher.dll",
+            "windows": {
+                "program": "${workspaceFolder}/src/OpenSolarMax.Launcher/bin/Debug/net8.0/OpenSolarMax.Launcher.exe"
+            },
             "cwd": "${workspaceFolder}",
             "env": {
                 "OSM_LEVEL_MOD_PATHS": "levels",

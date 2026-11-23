@@ -6,6 +6,8 @@ using Nine.Assets;
 using Nine.Graphics;
 using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Mods.Common.Components;
+using OpenSolarMax.Mods.Common.Concepts;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -19,10 +21,8 @@ public abstract class ShipBornPulseDefinition : IDefinition
 {
     public static Signature Signature { get; } =
         DependencyCapableDefinition.Signature
-        + TransformableDefinition.Signature
+        + TeamInheritableDrawableDefinition.Signature
         + new Signature(
-            // 效果
-            typeof(Sprite),
             // 动画
             typeof(Animation),
             typeof(ExpireAfterAnimationCompleted)
@@ -34,7 +34,7 @@ public class ShipBornPulseDescription : IDescription
 {
     public required Entity Ship { get; set; }
 
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 }
 
 [Apply(ConceptNames.ShipBornPulse)]
@@ -49,21 +49,25 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
         AnimationClip<Entity>
     >(Content.Animations.ShipBornPulse_json);
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, ShipBornPulseDescription desc)
     {
         var world = World.Worlds[entity.WorldId];
 
-        // 设置颜色
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new RelativeTransformOptions { Parent = desc.Ship },
                 Texture = _pulseTexture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new(4, 4),
                 Scale = Vector2.Zero,
                 Blend = SpriteBlend.Additive,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 
@@ -78,19 +82,10 @@ public class ShipBornPulseApplier(IAssetsManager assets, IConceptFactory factory
             }
         );
 
-        // 设置相对位置
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription { Parent = desc.Ship, Child = entity }
-        );
-
         // 设置依赖关系
         factory.Make(
             world,
             commandBuffer,
-            ConceptNames.Dependence,
             new DependenceDescription { Dependent = entity, Dependency = desc.Ship }
         );
     }

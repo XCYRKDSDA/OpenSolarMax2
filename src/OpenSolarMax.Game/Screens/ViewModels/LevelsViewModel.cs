@@ -5,7 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nine.Assets;
 using OpenSolarMax.Game.Level;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Sessions;
@@ -20,6 +22,11 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     private readonly Lifetime<ModSession> _modSessionHandle;
 
     private readonly List<(LevelInfo Info, Lifetime<LevelSession> Preview)> _loadedLevelPreviews;
+
+    /// <summary>
+    /// 选关界面背景音乐。进入模组时是主题音乐，进入关卡后换成关卡音乐
+    /// </summary>
+    private SafeFmodEventDescription? _music;
 
     #endregion
 
@@ -55,10 +62,18 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
     public int InitializeIndex { get; }
 
+    public float? PrimaryItemBackgroundTextureAnchor => PrimaryItemBackground is null ? null : 0;
+
+    public float? SecondaryItemBackgroundTextureAnchor =>
+        SecondaryItemBackground is null ? null : 0;
+
+    public BackgroundScrolling BackgroundScrolling { get; }
+
     public LevelsViewModel(
         Lifetime<ModSession> modSessionHandle,
         List<(LevelInfo Info, Lifetime<LevelSession> Preview)> levelPreviews,
         Texture2D background,
+        SafeFmodEventDescription? themeMusic,
         SolarMax game
     )
         : base(game)
@@ -70,6 +85,8 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _modSessionHandle = modSessionHandle;
         _loadedLevelPreviews = levelPreviews;
         _pageBackground = background;
+        _music = themeMusic;
+        BackgroundScrolling = modSessionHandle.Value.ModInfo.BackgroundScrolling;
 
         // 生成小字
         _items = [.. _loadedLevelPreviews.Select(p => p.Info.Name)];
@@ -118,9 +135,12 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
 
         var session = _modSessionHandle.Value.LoadLevel(_loadedLevelPreviews[idx].Info);
 
+        // 关卡声明了音乐就换成它；未声明则维持主题音乐
+        _music = session.Music ?? _music;
+
         Game.ScreenManager.Forward(
             typeof(LevelPlayPage),
-            new LevelPlayPageContext(session, PageBackground),
+            new LevelPlayPageContext(session, PageBackground, idx),
             typeof(GamePlayTransitionScreen)
         );
     }
@@ -131,6 +151,12 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         if (Game.ScreenManager.Transitioning)
             return;
         Game.ScreenManager.Backward();
+    }
+
+    public override void OnActivated()
+    {
+        if (_music is { } music)
+            Game.Music.Play(music, TimeSpan.FromSeconds(1));
     }
 
     public override void Update(GameTime gameTime)

@@ -10,6 +10,7 @@ using OpenSolarMax.Game.Modding.Concept;
 using OpenSolarMax.Game.Modding.Configuration;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Utils;
+using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 
@@ -22,10 +23,9 @@ public static partial class ConceptNames
 public abstract class LaserBeamDefinition : IDefinition
 {
     public static Signature Signature { get; } =
-        TransformableDefinition.Signature
+        TeamInheritableDrawableDefinition.Signature
         + new Signature(
             // 效果
-            typeof(Sprite),
             typeof(SoundEffect),
             // 动画
             typeof(Animation),
@@ -36,7 +36,7 @@ public abstract class LaserBeamDefinition : IDefinition
 [Describe(ConceptNames.LaserBeam)]
 public class LaserBeamDescription : IDescription
 {
-    public required Color Color { get; set; }
+    public Entity Team { get; set; } = Entity.Null;
 
     public required Entity Planet { get; set; }
 
@@ -63,38 +63,31 @@ public class LaserBeamApplier(
     private readonly SafeFmodEventDescription _laserSoundEffect =
         assets.Load<SafeFmodEventDescription>($"{Content.Sounds.Master_bank}:/LaserShoot");
 
+    private readonly TeamInheritableDrawableApplier _drawableApplier = new(assets, factory);
+
     public void Apply(CommandBuffer commandBuffer, Entity entity, LaserBeamDescription desc)
     {
-        var world = World.Worlds[entity.WorldId];
-
-        // 摆放位置
+        // 计算射向
         ref readonly var towerPose = ref desc.Planet.Get<AbsoluteTransform>();
         var vector = desc.TargetPosition - towerPose.Translation;
-        factory.Make(
-            world,
-            commandBuffer,
-            ConceptNames.RelativeTransform,
-            new RelativeTransformDescription
-            {
-                Parent = desc.Planet,
-                Child = entity,
-                Translation = Vector3.Zero,
-                Rotation = TransformProjection.UprightAim(vector),
-            }
-        );
 
-        // 设置纹理
-        commandBuffer.Set(
-            in entity,
-            new Sprite
+        // 设置位姿与外观
+        _drawableApplier.Apply(
+            commandBuffer,
+            entity,
+            new TeamInheritableDrawableDescription()
             {
+                Transform = new RelativeTransformOptions
+                {
+                    Parent = desc.Planet,
+                    Rotation = TransformProjection.UprightAim(vector),
+                },
                 Texture = _beamTexture,
-                Color = desc.Color,
-                Alpha = 1,
                 Size = new Vector2(vector.Length(), _beamWidth),
-                Scale = Vector2.One,
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
+                Team = desc.Team,
+                VisualStyle = VisualStyle.Effect,
             }
         );
 

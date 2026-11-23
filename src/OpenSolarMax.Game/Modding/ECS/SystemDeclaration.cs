@@ -127,9 +127,16 @@ internal sealed record SystemDeclaration
     /// </summary>
     /// <param name="systemType">待检查的系统类型</param>
     /// <returns>校验通过后构造的 SystemDeclaration</returns>
-    /// <exception cref="Exception">阶段属性缺失、多于一个或阶段属性与实现接口不匹配时抛出</exception>
+    /// <exception cref="Exception">阶段属性缺失或阶段属性与实现接口不匹配时抛出</exception>
     public static SystemDeclaration CheckFrom(Type systemType)
     {
+        var hasSimulate = systemType.GetCustomAttributes<SimulateSystemAttribute>().Any();
+        var hasRender = systemType.GetCustomAttributes<RenderSystemAttribute>().Any();
+        if (!hasSimulate && !hasRender)
+            throw new Exception(
+                $"System {systemType} must declare SimulateSystemAttribute or RenderSystemAttribute."
+            );
+
         var hasReactive = systemType.GetCustomAttributes<ReactiveAttribute>().Any();
         var hasUpdate = systemType.GetCustomAttributes<UpdateAttribute>().Any();
         var hasLateUpdate = systemType.GetCustomAttributes<LateUpdateAttribute>().Any();

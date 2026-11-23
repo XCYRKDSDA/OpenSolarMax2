@@ -11,6 +11,7 @@ using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
+using OpenSolarMax.Game.Modding;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;
@@ -21,13 +22,18 @@ internal class MenuLikeView
     : ViewBase<IMenuLikeViewModel>,
         IVisualConfigurableScreen<GamePlayTransitionSourceState>,
         IVisualConfigurableScreen<ChapterTransitionSourceState>,
-        IVisualConfigurableScreen<ChapterTransitionTargetState>
+        IVisualConfigurableScreen<ChapterTransitionTargetState>,
+        IQueryAttributable
 {
     private readonly Desktop _desktop;
     private readonly Panel _rootPanel; // 使用 Panel 作为根控件以支持预览悬浮动画
     private readonly HorizontalScrollingBackground _pageBackground;
     private readonly HorizontalScrollingBackground _primaryBackground,
         _secondaryBackground;
+
+    // 相对间距未声明倍数时使用的默认倍率
+    private const float _defaultMultiplier = 2;
+
     private readonly FadableImage _primaryPreview,
         _secondaryPreview;
     private readonly Button _backwardButton;
@@ -36,11 +42,10 @@ internal class MenuLikeView
 
     private bool _controlBackground = true;
 
-    private float _actualBackgroundLeft = 0;
-    private float _commonBackgroundAlpha = 1;
+    // 暂存的 reveal 条目索引, 在本界面激活时应用
+    private int? _pendingRevealIndex;
 
-    private int? _lastThumbnailsOffset = null;
-    private float _targetBackgroundLeft = 0;
+    private float _commonBackgroundAlpha = 1;
 
     #region 曝光相关
 
@@ -68,15 +73,17 @@ internal class MenuLikeView
         _pageBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.PageBackground,
-            Left = 0,
         };
+        // 主、次背景的实际位移完全跟随页面背景，不再有独立的收敛状态
         _primaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.PrimaryItemBackground,
+            ControlMode = ScrollingBackgroundControlMode.Manual,
         };
         _secondaryBackground = new HorizontalScrollingBackground(MyraEnvironment.GraphicsDevice)
         {
             Texture = viewModel.SecondaryItemBackground,
+            ControlMode = ScrollingBackgroundControlMode.Manual,
         };
 
         if (enableExposure)
@@ -126,8 +133,8 @@ internal class MenuLikeView
         {
             Margin = new Thickness(20, 0, 20, 20),
         };
-        _scrollViewer.ThumbnailsPositionChanged += ScrollViewerOnThumbnailsPositionChanged;
-        _scrollViewer.ItemTapped += ScrollViewerOnItemTapped;
+        _scrollViewer.Scrolled += ScrollViewerOnScrolled;
+        _scrollViewer.Confirmed += ScrollViewerOnConfirmed;
 
         _primaryPreview = new FadableImage()
         {
@@ -160,7 +167,12 @@ internal class MenuLikeView
         foreach (var name in viewModel.Items)
             _scrollViewer.Widgets.Add(GenerateLabel(name));
 
-        _scrollViewer.TargetWidgetIndex = viewModel.PrimaryItemIndex;
+        if (_scrollViewer.Widgets.Count > 0)
+        {
+            _scrollViewer.TargetIndex = viewModel.PrimaryItemIndex;
+            // 写入聚焦状态使导航条立即跳转到目标条目精准居中处
+            _scrollViewer.Focus = new FocusState(viewModel.PrimaryItemIndex, 0);
+        }
         _primaryPreview.Renderable = viewModel.PrimaryItemPreview;
 
         // 绑定 view model
@@ -169,7 +181,9 @@ internal class MenuLikeView
         viewModel.PropertyChanged += ViewModelOnPropertyChanged;
 
         _desktop.UpdateLayout();
-        _scrollViewer.ConvergeImmediately();
+
+        // 进入界面即把键盘焦点交给查看器，方向键与确认键无需先点击
+        _scrollViewer.SetKeyboardFocus();
     }
 
     private static TextureRegion ToMyra(Nine.Graphics.TextureRegion region) =>
@@ -205,6 +219,15 @@ internal class MenuLikeView
         {
             _backwardButton.Visible = _backwardButton.Enabled =
                 ViewModel.BackwardCommand is not null;
+        }
+    }
+
+    void IQueryAttributable.ApplyQueryAttributes(IReadOnlyDictionary<string, object> query)
+    {
+        if (query.TryGetValue("reveal", out var reveal) && reveal is int index)
+        {
+            // reveal 聚焦在本界面激活后应用, 暂存该索引
+            _pendingRevealIndex = index;
         }
     }
 
@@ -265,50 +288,42 @@ internal class MenuLikeView
         }
     }
 
-    private void ScrollViewerOnThumbnailsPositionChanged(object? sender, EventArgs e)
+    private void ScrollViewerOnScrolled(object? sender, int delta)
     {
-        var primaryOnly =
-            _scrollViewer.Offset == 0
-            || (_scrollViewer.NearestIndex == 0 && _scrollViewer.Offset < 0)
-            || (
-                _scrollViewer.NearestIndex == _scrollViewer.Widgets.Count - 1
-                && _scrollViewer.Offset > 0
-            );
+        var focus = _scrollViewer.Focus;
+        if (double.IsNaN(focus.NormalizedOffset))
+            return;
 
-        ViewModel.PrimaryItemIndex = _scrollViewer.NearestIndex;
+        var absOffset = Math.Abs(focus.NormalizedOffset);
+        var primaryOnly =
+            focus.NormalizedOffset == 0
+            || (focus.Index == 0 && focus.NormalizedOffset < 0)
+            || (focus.Index == _scrollViewer.Widgets.Count - 1 && focus.NormalizedOffset > 0);
+
+        ViewModel.PrimaryItemIndex = focus.Index;
         ViewModel.SecondaryItemIndex = primaryOnly
             ? null
-            : _scrollViewer.NearestIndex + int.Sign(_scrollViewer.Offset);
+            : focus.Index + Math.Sign(focus.NormalizedOffset);
 
-        _primaryPreview.FadeIn = MathF.Max(
-            1 - int.Abs(_scrollViewer.Offset) / (_scrollViewer.ThumbnailsInterval / 2f),
-            0
-        );
-        _secondaryPreview.FadeIn = MathF.Max(
-            1
-                - (_scrollViewer.ThumbnailsInterval - int.Abs(_scrollViewer.Offset))
-                    / (_scrollViewer.ThumbnailsInterval / 2f),
-            0
-        );
+        _primaryPreview.FadeIn = (float)Math.Max(1 - absOffset, 0);
+        _secondaryPreview.FadeIn = 0;
         _secondaryPreview.Visible = !primaryOnly;
 
         // 永远保持 secondary 背景在下
         if (_primaryBackground.Texture is not null)
         {
-            _primaryBackground.Alpha =
-                MathF.Max(1 - float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0)
-                * _commonBackgroundAlpha;
-            _secondaryBackground.Alpha = 1 * _commonBackgroundAlpha;
+            _primaryBackground.Opacity =
+                (float)Math.Max(1 - absOffset / 2, 0) * _commonBackgroundAlpha;
+            _secondaryBackground.Opacity = 1 * _commonBackgroundAlpha;
         }
         else
         {
-            _secondaryBackground.Alpha =
-                MathF.Max(float.Abs(_scrollViewer.Offset) / _scrollViewer.ThumbnailsInterval, 0)
-                * _commonBackgroundAlpha;
+            _secondaryBackground.Opacity =
+                (float)Math.Max(absOffset / 2, 0) * _commonBackgroundAlpha;
         }
     }
 
-    private void ScrollViewerOnItemTapped(object? sender, int idx)
+    private void ScrollViewerOnConfirmed(object? sender, int idx)
     {
         ViewModel.SelectItemCommand.Execute(idx);
     }
@@ -322,35 +337,109 @@ internal class MenuLikeView
     {
         base.Update(gameTime);
         _scrollViewer.Update(gameTime);
+
+        // 纹理锚点 = 按归一化位置在相邻条目锚点间插值。视口目标点固定为 0，即锁定在视口中心。
+        // NormalizedOffset 以半条目为单位，折算成位置后加上最近的条目索引
+        var focus = _scrollViewer.Focus;
+        if (
+            _controlBackground
+            && _scrollViewer.Widgets.Count > 0
+            && !double.IsNaN(focus.NormalizedOffset)
+        )
+        {
+            var position = focus.Index + (float)focus.NormalizedOffset / 2;
+            var scrolling = ViewModel.BackgroundScrolling;
+            var spacing = scrolling.Spacing.Match(
+                // 绝对间距
+                abs => abs.TextureAnchorPerPosition,
+                // 相对间距
+                rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+            );
+            _pageBackground.TextureAnchor =
+                scrolling.TextureAnchor + (position - scrolling.Position) * spacing;
+        }
+    }
+
+    public override void OnActivated()
+    {
+        base.OnActivated();
+
+        _desktop.RefreshInputSnapshot();
+
+        ApplyPendingReveal();
+    }
+
+    private void ApplyPendingReveal()
+    {
+        if (_pendingRevealIndex is not int index)
+            return;
+        _pendingRevealIndex = null;
+
+        // 聚焦到目标条目
+        if (_scrollViewer.Widgets.Count > 0)
+            _scrollViewer.TargetIndex = Math.Clamp(index, 0, _scrollViewer.Widgets.Count - 1);
+    }
+
+    /// <summary>
+    /// 让条目背景跟随页面背景。
+    /// 将条目背景纹理锚点锁在条目声明的值，视口目标点取页面背景的视口锚点 + (条目索引 − 小数位置) × 每位置间距
+    /// </summary>
+    /// <param name="background">待同步的条目背景组件</param>
+    /// <param name="index">条目索引</param>
+    /// <param name="textureAnchor">条目声明的纹理锚点，以纹理像素计</param>
+    /// <param name="position">查看器当前的小数位置，决定该条目锚点相对页面背景锚点的距离</param>
+    private void SyncItemBackground(
+        HorizontalScrollingBackground background,
+        int index,
+        float textureAnchor,
+        float position
+    )
+    {
+        var spacing = ViewModel.BackgroundScrolling.Spacing.Match(
+            // 绝对间距
+            abs => abs.TextureAnchorPerPosition,
+            // 相对间距
+            rel => (rel.Multiplier ?? _defaultMultiplier) * _scrollViewer.ItemSpacing
+        );
+
+        background.TextureAnchor = textureAnchor;
+        background.TargetAnchorInViewport =
+            _pageBackground.ActualAnchorInViewport + (index - position) * spacing;
     }
 
     public override void Draw(GameTime gameTime)
     {
-        // 计算背景偏移
-        if (_controlBackground && _lastThumbnailsOffset is not null)
+        // 主、次背景的锚点跟着页面背景的实际位置走，距离为条目与当前位置的间距
+        var focus = _scrollViewer.Focus;
+        if (!double.IsNaN(focus.NormalizedOffset))
         {
-            var delta = _scrollViewer.ThumbnailsOffset - _lastThumbnailsOffset.Value;
-            _targetBackgroundLeft += delta * 2;
-            var error = _targetBackgroundLeft - _actualBackgroundLeft;
-            var velocity = error * 5;
-            var movement = velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _actualBackgroundLeft += movement;
+            var position = focus.Index + (float)focus.NormalizedOffset / 2;
+            if (ViewModel.PrimaryItemBackgroundTextureAnchor is { } primaryTextureAnchor)
+            {
+                SyncItemBackground(
+                    _primaryBackground,
+                    ViewModel.PrimaryItemIndex,
+                    primaryTextureAnchor,
+                    position
+                );
+            }
+            if (
+                ViewModel.SecondaryItemIndex is { } secondaryIndex
+                && ViewModel.SecondaryItemBackgroundTextureAnchor is { } secondaryTextureAnchor
+            )
+            {
+                SyncItemBackground(
+                    _secondaryBackground,
+                    secondaryIndex,
+                    secondaryTextureAnchor,
+                    position
+                );
+            }
         }
-        _lastThumbnailsOffset = _scrollViewer.ThumbnailsOffset;
 
-        // 应用背景偏移
-        _pageBackground.Left = _actualBackgroundLeft;
-        _primaryBackground.Left =
-            _actualBackgroundLeft + ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
-        if (ViewModel.SecondaryItemIndex is { } secondaryItemIndex)
-        {
-            _secondaryBackground.Left =
-                _actualBackgroundLeft + secondaryItemIndex * _scrollViewer.ThumbnailsInterval;
-        }
-
-        _pageBackground.Draw();
-        _secondaryBackground.Draw();
-        _primaryBackground.Draw();
+        _pageBackground.Draw(gameTime);
+        _secondaryBackground.Draw(gameTime);
+        _primaryBackground.Draw(gameTime);
         _desktop.Render();
 
         // 叠加曝光
@@ -358,7 +447,7 @@ internal class MenuLikeView
         {
             Debug.Assert(_exposureWhiteBase is not null);
             var exposureFadeSpeed =
-                _scrollViewer.NearestIndex == ViewModel.InitializeIndex
+                _scrollViewer.Focus.Index == ViewModel.InitializeIndex
                     ? _exposureFadeSpeedSlow
                     : _exposureFadeSpeedFast;
             _exposure -= exposureFadeSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -408,12 +497,16 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+        _pageBackground.ControlMode = ScrollingBackgroundControlMode.Manual;
+
+        _desktop.RefreshInputSnapshot();
     }
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.ExitConfigurationMode()
     {
         // 恢复背景控制
         _controlBackground = true;
+        _pageBackground.ControlMode = ScrollingBackgroundControlMode.Auto;
 
         // 开启嵌入的自带控件的渲染
         _secondaryPreview.Visible = true;
@@ -430,7 +523,11 @@ internal class MenuLikeView
             _primaryPreview.ToGlobal(Point.Zero),
             _primaryPreview.ActualBounds.Size
         );
-        return new GamePlayTransitionSourceState(sourcePreviewLocation, _pageBackground.Left);
+        return new GamePlayTransitionSourceState(
+            sourcePreviewLocation,
+            _pageBackground.TextureAnchor,
+            _pageBackground.TargetAnchorInViewport
+        );
     }
 
     void IVisualConfigurable<GamePlayTransitionSourceState>.ApplyVisualState(
@@ -443,8 +540,9 @@ internal class MenuLikeView
         _floatingPreview!.Width = state.WorldPreviewRegion.Width;
         _floatingPreview!.Height = state.WorldPreviewRegion.Height;
 
-        // 渐出时, 以背景预览偏移为准
-        _targetBackgroundLeft = _actualBackgroundLeft = state.BackgroundOffset;
+        // 渐出时, 以背景预览位置为准
+        _pageBackground.TextureAnchor = state.BackgroundTextureAnchor;
+        _pageBackground.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion
@@ -458,17 +556,25 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+        _pageBackground.ControlMode = ScrollingBackgroundControlMode.Manual;
+
+        _desktop.RefreshInputSnapshot();
     }
 
     ChapterTransitionSourceState? IVisualConfigurable<ChapterTransitionSourceState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionSourceState(1, _primaryBackground.Left);
+        return new ChapterTransitionSourceState(
+            1,
+            _primaryBackground.TextureAnchor,
+            _primaryBackground.TargetAnchorInViewport
+        );
     }
 
     void IVisualConfigurable<ChapterTransitionSourceState>.ExitConfigurationMode()
     {
         // 恢复背景控制
         _controlBackground = true;
+        _pageBackground.ControlMode = ScrollingBackgroundControlMode.Auto;
 
         // 恢复第二预览
         _secondaryPreview.Visible = true;
@@ -479,10 +585,6 @@ internal class MenuLikeView
     )
     {
         _primaryPreview.Scale = new(state.PreviewScaling);
-
-        // 渐出时, 以第一预览偏移为准
-        _targetBackgroundLeft = _actualBackgroundLeft =
-            state.BackgroundOffset - ViewModel.PrimaryItemIndex * _scrollViewer.ThumbnailsInterval;
     }
 
     #endregion
@@ -496,17 +598,25 @@ internal class MenuLikeView
 
         // 关闭背景控制
         _controlBackground = false;
+        _pageBackground.ControlMode = ScrollingBackgroundControlMode.Manual;
+
+        _desktop.RefreshInputSnapshot();
     }
 
     ChapterTransitionTargetState? IVisualConfigurable<ChapterTransitionTargetState>.GetDefaultVisualState()
     {
-        return new ChapterTransitionTargetState(1, _pageBackground.Left);
+        return new ChapterTransitionTargetState(
+            1,
+            _pageBackground.TextureAnchor,
+            _pageBackground.TargetAnchorInViewport
+        );
     }
 
     void IVisualConfigurable<ChapterTransitionTargetState>.ExitConfigurationMode()
     {
         // 恢复背景控制
         _controlBackground = true;
+        _pageBackground.ControlMode = ScrollingBackgroundControlMode.Auto;
 
         // 恢复第二预览
         _secondaryPreview.Visible = true;
@@ -518,8 +628,9 @@ internal class MenuLikeView
     {
         _primaryPreview.FadeIn = state.PreviewCustomFadeIn;
 
-        // 渐入时, 以背景预览偏移为准
-        _targetBackgroundLeft = _actualBackgroundLeft = state.BackgroundOffset;
+        // 渐入时, 以背景预览位置为准
+        _pageBackground.TextureAnchor = state.BackgroundTextureAnchor;
+        _pageBackground.TargetAnchorInViewport = state.BackgroundAnchorInViewport;
     }
 
     #endregion

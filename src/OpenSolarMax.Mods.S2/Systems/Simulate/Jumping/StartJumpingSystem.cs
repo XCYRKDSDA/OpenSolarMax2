@@ -23,7 +23,6 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// </summary>
 [LateUpdate]
 [SimulateSystem]
-[ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(Jumpable))]
 [ReadCurr(typeof(AbsoluteTransform))]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
@@ -32,6 +31,7 @@ namespace OpenSolarMax.Mods.S2.Systems;
 [ReadCurr(typeof(PlanetGeostationaryOrbit))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(StartJumpingRequest))]
+[ReadCurr(typeof(StartJumpingAssignedShips))]
 [Calc(typeof(SoundEffect))]
 [DelayedCalc]
 [FineWith(typeof(TransitFromChargingToTravellingSystem), "飞行状态是互斥的", typeof(SoundEffect))]
@@ -63,10 +63,11 @@ public sealed partial class StartJumpingSystem(
     );
 
     [Query]
-    [All<StartJumpingRequest>]
+    [All<StartJumpingRequest, StartJumpingAssignedShips>]
     private void StartJumping(
         Entity requestEntity,
         in StartJumpingRequest request,
+        in StartJumpingAssignedShips assigned,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -95,8 +96,7 @@ public sealed partial class StartJumpingSystem(
             return;
         }
 
-        var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
+        Debug.Assert(assigned.Ships is not null);
 
         var jumpable = request.Team.Get<Jumpable>();
         var (
@@ -110,12 +110,8 @@ public sealed partial class StartJumpingSystem(
             expectedArrivalPlanetPosition - departurePlanetPosition
         );
 
-        using var shipsEnumerator = allShips.GetEnumerator();
-        while (shipsRemain > 0 && shipsEnumerator.MoveNext())
+        foreach (var ship in assigned.Ships)
         {
-            var ship = shipsEnumerator.Current;
-            shipsRemain -= 1;
-
             // 获取相关信息
             ref readonly var pose = ref ship.Get<AbsoluteTransform>();
             var transformRelationship =

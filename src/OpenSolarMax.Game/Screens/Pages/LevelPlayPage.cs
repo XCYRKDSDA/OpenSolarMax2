@@ -5,7 +5,14 @@ using OpenSolarMax.Game.Sessions;
 
 namespace OpenSolarMax.Game.Screens.Pages;
 
-internal record LevelPlayPageContext(LevelSession LevelSession, Texture2D Background);
+internal record LevelPlayPageContext(
+    LevelSession LevelSession,
+    Texture2D Background,
+    int LevelIndex
+);
 
 internal class LevelPlayPage(LevelPlayPageContext ctx, SolarMax game)
-    : LevelPlayView(new LevelPlayViewModel(ctx.LevelSession, ctx.Background, game), game) { }
+    : LevelPlayView(
+        new LevelPlayViewModel(ctx.LevelSession, ctx.Background, ctx.LevelIndex, game),
+        game
+    ) { }

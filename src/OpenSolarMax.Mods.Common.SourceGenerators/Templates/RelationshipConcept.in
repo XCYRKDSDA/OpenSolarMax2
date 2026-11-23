@@ -1,0 +1,31 @@
+namespace @NAMESPACE@;
+
+public static partial class ConceptNames
+{
+    public const string @NAME@ = "@NAME@";
+}
+
+@SCENE_ATTRIBUTE@[global::OpenSolarMax.Game.Modding.Concept.Define(ConceptNames.@NAME@)]
+public abstract class @NAME@Definition : global::OpenSolarMax.Game.Modding.Concept.IDefinition
+{
+    public static global::Arch.Core.Signature Signature { get; } = new(typeof(@RELATIONSHIP_TYPE@));
+}
+
+@SCENE_ATTRIBUTE@[global::OpenSolarMax.Game.Modding.Concept.Describe(ConceptNames.@NAME@)]
+public class @NAME@Description : global::OpenSolarMax.Game.Modding.Concept.IDescription
+{
+@PROPERTIES@
+}
+
+@SCENE_ATTRIBUTE@[global::OpenSolarMax.Game.Modding.Concept.Apply(ConceptNames.@NAME@)]
+public class @NAME@Applier : global::OpenSolarMax.Game.Modding.Concept.IApplier<@NAME@Description>
+{
+    public void Apply(
+        global::Arch.Buffer.CommandBuffer commandBuffer,
+        global::Arch.Core.Entity entity,
+        @NAME@Description desc
+    )
+    {
+        commandBuffer.Set(in entity, new @RELATIONSHIP_TYPE@(@ARGUMENTS@));
+    }
+}

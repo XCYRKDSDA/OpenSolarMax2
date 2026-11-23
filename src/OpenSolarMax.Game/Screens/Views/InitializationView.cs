@@ -6,6 +6,7 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using OpenSolarMax.Game.Screens.ViewModels;
+using OpenSolarMax.Game.UI;
 
 namespace OpenSolarMax.Game.Screens.Views;
 
@@ -74,6 +75,8 @@ internal class InitializationView : ViewBase<InitializationViewModel>
 
     public override void OnActivated()
     {
+        _desktop.RefreshInputSnapshot();
+
         ViewModel.StartLoadingCommand.Execute(null);
     }
 

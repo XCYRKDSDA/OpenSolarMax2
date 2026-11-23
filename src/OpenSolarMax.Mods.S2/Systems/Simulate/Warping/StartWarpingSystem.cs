@@ -18,15 +18,14 @@ namespace OpenSolarMax.Mods.S2.Systems;
 /// </summary>
 [LateUpdate]
 [SimulateSystem]
-[ReadCurr(typeof(AnchoredShipsRegistry))]
 [ReadCurr(typeof(TreeRelationship<RelativeTransform>.AsChild))]
 [ReadCurr(typeof(RevolutionOrbit))]
 [ReadCurr(typeof(RevolutionState))]
 [ReadCurr(typeof(PlanetGeostationaryOrbit))]
 [ReadCurr(typeof(ReferenceSize))]
-[ReadCurr(typeof(TeamReferenceColor))]
 [ReadCurr(typeof(InTeam.AsAffiliate))]
 [ReadCurr(typeof(StartJumpingRequest))]
+[ReadCurr(typeof(StartJumpingAssignedShips))]
 [Calc(typeof(WarpingStatus))]
 [DelayedCalc]
 [ExecuteAfter(typeof(ApplyAnimationSystem), "默认动画系统优先执行", typeof(WarpingStatus))]
@@ -34,10 +33,11 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
     : IDelayedCalcSystem
 {
     [Query]
-    [All<StartJumpingRequest>]
+    [All<StartJumpingRequest, StartJumpingAssignedShips>]
     private void StartWarping(
         Entity requestEntity,
         in StartJumpingRequest request,
+        in StartJumpingAssignedShips assigned,
         [Data] CommandBuffer commandBuffer
     )
     {
@@ -64,15 +64,11 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
             return;
         }
 
-        // 设置舰船传送状态
-        var shipsRemain = request.ExpectedNum;
-        var allShips = request.Departure.Get<AnchoredShipsRegistry>().Ships[request.Team];
-        using var shipsEnumerator = allShips.GetEnumerator();
-        while (shipsRemain > 0 && shipsEnumerator.MoveNext())
-        {
-            var ship = shipsEnumerator.Current;
-            shipsRemain -= 1;
+        Debug.Assert(assigned.Ships is not null);
 
+        // 设置舰船传送状态
+        foreach (var ship in assigned.Ships)
+        {
             // 获取相关信息
             var transformRelationship =
                 ship.Get<TreeRelationship<RelativeTransform>.AsChild>().Relationship!.Value.Ref;
@@ -120,7 +116,7 @@ public sealed partial class StartWarpingSystem(World world, IConceptFactory fact
             {
                 Warp = request.Departure,
                 WarpRadius = request.Departure.Get<ReferenceSize>().Radius,
-                Color = request.Team.Get<TeamReferenceColor>().Value,
+                Team = request.Team,
             }
         );
 

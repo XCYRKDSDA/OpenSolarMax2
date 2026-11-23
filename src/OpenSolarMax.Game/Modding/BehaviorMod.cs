@@ -24,7 +24,7 @@ internal record ConceptRelatedTypes(Type? Definition, Type? Description, Type? A
 /// <param name="GameplayBehaviorsInfo">游玩时的行为信息</param>
 /// <param name="PreviewBehaviorsInfo">预览时的行为信息</param>
 internal record BehaviorMod(
-    BehaviorModInfo Metadata,
+    BehaviorModInfo Info,
     ImmutableArray<IFileSystem> ContentFileSystems,
     IConfigurationRoot? Configs,
     Assembly Assembly,
@@ -292,12 +292,6 @@ internal record BehaviorMod(
 
             if (type.GetCustomAttribute<SimulateSystemAttribute>() is not null)
                 systemTypes.Simulate.Add(type);
-
-            if (type.GetCustomAttribute<InputSystemAttribute>() is not null)
-                systemTypes.Input.Add(type);
-
-            if (type.GetCustomAttribute<AiSystemAttribute>() is not null)
-                systemTypes.Ai.Add(type);
 
             if (type.GetCustomAttribute<RenderSystemAttribute>() is not null)
                 systemTypes.Render.Add(type);
