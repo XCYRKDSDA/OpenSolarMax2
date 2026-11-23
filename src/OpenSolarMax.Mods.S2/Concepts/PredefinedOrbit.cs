@@ -128,15 +128,10 @@ public class PredefinedOrbitPreviewApplier(
             in entity,
             new Shape
             {
-                Geometry = new Shape.Ellipse(
-                    Vector2.Zero,
-                    desc.Shape.X / 2,
-                    desc.Shape.Y / 2,
-                    _thickness,
-                    0,
-                    Shape.ThicknessAlignment.Centered
-                ),
-                Fill = _color,
+                Geometry = new Shape.Ellipse(Vector2.Zero, desc.Shape.X / 2, desc.Shape.Y / 2),
+                Fill = Color.Transparent,
+                Border = _color,
+                BorderThickness = _thickness,
                 Blend = SpriteBlend.Additive,
                 Billboard = false,
             }

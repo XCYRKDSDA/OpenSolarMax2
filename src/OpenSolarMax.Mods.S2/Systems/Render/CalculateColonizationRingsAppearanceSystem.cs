@@ -80,11 +80,12 @@ public sealed partial class CalculateColonizationRingsAppearanceSystem(
         shape.Geometry = new Shape.Arc(
             Vector2.Zero,
             size.Radius * _radiusMultiplier * projection.Scale,
-            _thickness,
             startAngle,
             sweepAngle
         );
-        shape.Fill = display.Color;
+        shape.Fill = Color.Transparent;
+        shape.Border = display.Color;
+        shape.BorderThickness = _thickness;
         shape.Alpha = alpha;
     }
 

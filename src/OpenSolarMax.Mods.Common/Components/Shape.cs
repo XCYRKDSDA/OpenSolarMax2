@@ -30,42 +30,13 @@ public struct Shape()
 
     public record Circle(Vector2 Position, float Radius);
 
-    public record Ring(
-        Vector2 Position,
-        float Radius,
-        float Thickness,
-        float Offset = 0,
-        ThicknessAlignment ThicknessAlignment = ThicknessAlignment.Centered
-    );
+    public record Arc(Vector2 Position, float Radius, float StartAngle, float SweepAngle);
 
-    public record Arc(
-        Vector2 Position,
-        float Radius,
-        float Thickness,
-        float StartAngle,
-        float SweepAngle,
-        float Offset = 0,
-        ThicknessAlignment ThicknessAlignment = ThicknessAlignment.Centered
-    );
+    public record Line(float StartX, float EndX);
 
-    public record Line(float StartX, float EndX, float Thickness, float Offset = 0);
+    public record Ellipse(Vector2 Position, float RadiusX, float RadiusY);
 
-    public record Ellipse(
-        Vector2 Position,
-        float RadiusX,
-        float RadiusY,
-        float Thickness,
-        float Offset = 0,
-        ThicknessAlignment ThicknessAlignment = ThicknessAlignment.Centered
-    );
-
-    public record Rectangle(
-        Vector2 Position,
-        Vector2 Size,
-        float Thickness,
-        float Offset = 0,
-        ThicknessAlignment ThicknessAlignment = ThicknessAlignment.Centered
-    );
+    public record Rectangle(Vector2 Position, Vector2 Size);
 
     public record Text(
         Vector2 Position,
@@ -77,9 +48,17 @@ public struct Shape()
         Vector2 ShadowOffset = default
     );
 
-    public OneOf<Circle, Ring, Arc, Line, Ellipse, Rectangle, Text> Geometry;
+    public OneOf<Circle, Arc, Line, Ellipse, Rectangle, Text> Geometry;
 
     public Gradient Fill = Color.White;
+
+    public Gradient Border = Color.Transparent;
+
+    public float BorderThickness = 0f;
+
+    public float BorderOffset = 0f;
+
+    public ThicknessAlignment BorderAlignment = ThicknessAlignment.Centered;
 
     public float Alpha = 1.0f;
 

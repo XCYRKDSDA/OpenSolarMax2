@@ -113,11 +113,12 @@ public sealed partial class CalculateAnchoredShipsArcsAndLabelsAppearanceSystem(
         shape.Geometry = new Shape.Arc(
             Vector2.Zero,
             size.Radius * _ringRadiusFactor * projection.Scale,
-            _ringThickness,
             startAngle,
             sweepAngle
         );
-        shape.Fill = display.Colors[index];
+        shape.Fill = Color.Transparent;
+        shape.Border = display.Colors[index];
+        shape.BorderThickness = _ringThickness;
     }
 
     [Query]

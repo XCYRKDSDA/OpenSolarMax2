@@ -34,7 +34,7 @@ public class SelectionBoxApplier(IConceptFactory factory) : IApplier<SelectionBo
     {
         commandBuffer.Set(
             in entity,
-            new Shape { Geometry = new Shape.Rectangle(Vector2.Zero, Vector2.Zero, 0), Alpha = 0f }
+            new Shape { Geometry = new Shape.Rectangle(Vector2.Zero, Vector2.Zero), Alpha = 0f }
         );
         commandBuffer.Set(in entity, new ScreenTransform { Z = (int)GraphicsLayer.Interface + 1 });
 
