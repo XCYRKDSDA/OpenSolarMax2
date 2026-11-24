@@ -15,9 +15,15 @@ internal record ChapterPageContext(
     SafeFmodEventDescription? ThemeMusic
 );
 
-internal class ChapterPage(ChapterPageContext ctx, SolarMax game)
+internal class ChapterPage(ChapterPageContext ctx, IUiServices uiServices)
     : MenuLikeView(
-        new LevelsViewModel(ctx.ModHandle, ctx.LevelPreviews, ctx.Background, ctx.ThemeMusic, game),
+        new LevelsViewModel(
+            ctx.ModHandle,
+            ctx.LevelPreviews,
+            ctx.Background,
+            ctx.ThemeMusic,
+            uiServices
+        ),
         false,
-        game
+        uiServices
     );

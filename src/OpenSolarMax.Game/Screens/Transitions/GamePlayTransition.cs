@@ -36,12 +36,12 @@ internal record GamePlayTransitionTargetState(
 internal class GamePlayTransitionScreen(
     IVisualConfigurableScreen<GamePlayTransitionSourceState> prevScreen,
     IVisualConfigurableScreen<GamePlayTransitionTargetState> nextScreen,
-    SolarMax game
+    IUiServices uiServices
 )
     : StatefulTimedFadeInTransitionScreen<
         GamePlayTransitionSourceState,
         GamePlayTransitionTargetState
-    >(game.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
+    >(uiServices.GraphicsDevice, prevScreen, nextScreen, TimeSpan.FromSeconds(_durationS))
 {
     private const float _durationS = 1f;
 

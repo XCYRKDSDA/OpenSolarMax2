@@ -45,9 +45,9 @@ internal partial class LevelPlayViewModel : ViewModelBase
         LevelSession session,
         Texture2D background,
         int levelIndex,
-        SolarMax game
+        IUiServices uiServices
     )
-        : base(game)
+        : base(uiServices)
     {
         // 记录会话
         _session = session;
@@ -73,16 +73,16 @@ internal partial class LevelPlayViewModel : ViewModelBase
     private void OnExit()
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
-        Game.ScreenManager.Backward();
+        UiServices.ScreenManager.Backward();
     }
 
     public override void OnActivated()
     {
         // 声明了关卡音乐就切换过去，未声明则维持当前曲目
         if (_session.Music is { } music)
-            Game.Music.Play(music, TimeSpan.FromSeconds(1));
+            UiServices.Music.Play(music, TimeSpan.FromSeconds(1));
     }
 
     public override void Update(GameTime gameTime)
@@ -102,7 +102,7 @@ internal partial class LevelPlayViewModel : ViewModelBase
                     var query = cleared
                         ? new Dictionary<string, object> { ["reveal"] = _levelIndex + 1 }
                         : null;
-                    Game.ScreenManager.Backward(query: query);
+                    UiServices.ScreenManager.Backward(query: query);
                 }
             }
         );

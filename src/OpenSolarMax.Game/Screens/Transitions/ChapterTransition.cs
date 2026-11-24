@@ -35,7 +35,7 @@ internal class ChapterTransitionScreen(
     IVisualConfigurableScreen<ChapterTransitionSourceState> prevScreen,
     ITaskLike<IVisualConfigurableScreen<ChapterTransitionTargetState>> nextScreenTask,
     ChapterTransitionContext ctx,
-    SolarMax game
+    IUiServices uiServices
 ) : AsyncTransitionScreenBase(prevScreen, nextScreenTask)
 {
     public new IVisualConfigurableScreen<ChapterTransitionSourceState> PrevScreen => prevScreen;
@@ -52,9 +52,9 @@ internal class ChapterTransitionScreen(
     private readonly TimeSpan _secondStageDuration = TimeSpan.FromSeconds(_secondStageDurationMs);
 
     private readonly RenderTarget2D _renderCache = new(
-        game.GraphicsDevice,
-        game.GraphicsDevice.PresentationParameters.BackBufferWidth,
-        game.GraphicsDevice.PresentationParameters.BackBufferHeight,
+        uiServices.GraphicsDevice,
+        uiServices.GraphicsDevice.PresentationParameters.BackBufferWidth,
+        uiServices.GraphicsDevice.PresentationParameters.BackBufferHeight,
         false,
         SurfaceFormat.Color,
         DepthFormat.None,
@@ -62,9 +62,9 @@ internal class ChapterTransitionScreen(
         RenderTargetUsage.PreserveContents
     );
 
-    private readonly SpriteBatch _spriteBatch = new(game.GraphicsDevice, 1);
+    private readonly SpriteBatch _spriteBatch = new(uiServices.GraphicsDevice, 1);
 
-    private readonly HorizontalScrollingBackground _background = new(game.GraphicsDevice)
+    private readonly HorizontalScrollingBackground _background = new(uiServices.GraphicsDevice)
     {
         Texture = ctx.Background,
         ControlMode = ScrollingBackgroundControlMode.Manual,
@@ -186,13 +186,13 @@ internal class ChapterTransitionScreen(
 
     public override void Draw(GameTime gameTime)
     {
-        var originalRenderTargets = game.GraphicsDevice.GetRenderTargets();
+        var originalRenderTargets = uiServices.GraphicsDevice.GetRenderTargets();
 
         float? alpha = null;
 
         // 按阶段绘制叠加层
-        game.GraphicsDevice.SetRenderTarget(_renderCache);
-        game.GraphicsDevice.Clear(Color.Transparent);
+        uiServices.GraphicsDevice.SetRenderTarget(_renderCache);
+        uiServices.GraphicsDevice.Clear(Color.Transparent);
         if (_stage is Stage.Start or Stage.First)
         {
             var progress = (float)(_duration / _firstStageDuration);
@@ -232,8 +232,8 @@ internal class ChapterTransitionScreen(
         }
 
         // 画背景
-        game.GraphicsDevice.SetRenderTargets(originalRenderTargets);
-        game.GraphicsDevice.Clear(Color.Black);
+        uiServices.GraphicsDevice.SetRenderTargets(originalRenderTargets);
+        uiServices.GraphicsDevice.Clear(Color.Black);
         _background.Draw(gameTime);
 
         // 叠加界面

@@ -74,9 +74,9 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         List<(LevelInfo Info, Lifetime<LevelSession> Preview)> levelPreviews,
         Texture2D background,
         SafeFmodEventDescription? themeMusic,
-        SolarMax game
+        IUiServices uiServices
     )
-        : base(game)
+        : base(uiServices)
     {
         _selectItemCommand = new RelayCommand<int>(OnSelectItem);
         _backwardCommand = new RelayCommand(OnBackward);
@@ -97,7 +97,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         _primaryItemPreview = new WorldRenderer(
             _loadedLevelPreviews[0].Preview.Value.World,
             _loadedLevelPreviews[0].Preview.Value.RenderSystems,
-            game.GraphicsDevice
+            uiServices.GraphicsDevice
         );
         _primaryItemBackground = null;
         _secondaryItemIndex = null;
@@ -112,7 +112,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         PrimaryItemPreview = new WorldRenderer(
             _loadedLevelPreviews[value].Preview.Value.World,
             _loadedLevelPreviews[value].Preview.Value.RenderSystems,
-            Game.GraphicsDevice
+            UiServices.GraphicsDevice
         );
     }
 
@@ -123,14 +123,14 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
             : new WorldRenderer(
                 _loadedLevelPreviews[value.Value].Preview.Value.World,
                 _loadedLevelPreviews[value.Value].Preview.Value.RenderSystems,
-                Game.GraphicsDevice
+                UiServices.GraphicsDevice
             );
     }
 
     private void OnSelectItem(int idx)
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
 
         var session = _modSessionHandle.Value.LoadLevel(_loadedLevelPreviews[idx].Info);
@@ -138,7 +138,7 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
         // 关卡声明了音乐就换成它；未声明则维持主题音乐
         _music = session.Music ?? _music;
 
-        Game.ScreenManager.Forward(
+        UiServices.ScreenManager.Forward(
             typeof(LevelPlayPage),
             new LevelPlayPageContext(session, PageBackground, idx),
             typeof(GamePlayTransitionScreen)
@@ -148,15 +148,15 @@ internal partial class LevelsViewModel : ViewModelBase, IMenuLikeViewModel
     private void OnBackward()
     {
         // 避免在正在过渡时触发过渡
-        if (Game.ScreenManager.Transitioning)
+        if (UiServices.ScreenManager.Transitioning)
             return;
-        Game.ScreenManager.Backward();
+        UiServices.ScreenManager.Backward();
     }
 
     public override void OnActivated()
     {
         if (_music is { } music)
-            Game.Music.Play(music, TimeSpan.FromSeconds(1));
+            UiServices.Music.Play(music, TimeSpan.FromSeconds(1));
     }
 
     public override void Update(GameTime gameTime)

@@ -9,6 +9,7 @@ using Myra.Graphics2D.TextureAtlases;
 using Nine.Animations;
 using OpenSolarMax.Game.Screens.Pages;
 using OpenSolarMax.Game.Screens.Transitions;
+using OpenSolarMax.Game.Sessions;
 using OpenSolarMax.Game.UI;
 using Svg;
 
@@ -27,25 +28,28 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
 
     private Task<MainMenuPageContext>? _levelPreviewsLoadTask;
 
-    public InitializationViewModel(SolarMax game)
-        : base(game)
+    private readonly GameSession _gameSession;
+
+    public InitializationViewModel(GameSession gameSession, IUiServices uiServices)
+        : base(uiServices)
     {
+        _gameSession = gameSession;
         _startLoadingCommand = new RelayCommand(OnStartLoading);
     }
 
     private void OnStartLoading()
     {
         _levelPreviewsLoadTask = Task.Factory.StartNew(
-            () => Load(new Progress<float>(v => Progress = v), Game),
+            () => Load(new Progress<float>(v => Progress = v), _gameSession),
             CancellationToken.None,
             TaskCreationOptions.None,
-            Game.BackgroundScheduler
+            UiServices.BackgroundScheduler
         );
     }
 
-    private static MainMenuPageContext Load(IProgress<float> progress, SolarMax game)
+    private static MainMenuPageContext Load(IProgress<float> progress, GameSession gameSession)
     {
-        var levelModInfos = game.GameSession.Mods;
+        var levelModInfos = gameSession.Mods;
         var previewableLevelMods = levelModInfos.Select(info =>
         {
             // TODO: 若未指定预览文件则加载缺省图片
@@ -92,7 +96,7 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
 
             return new PreviewableLevelMod(info, fadablePreview, background);
         });
-        return new MainMenuPageContext([.. previewableLevelMods]);
+        return new MainMenuPageContext(gameSession, [.. previewableLevelMods]);
     }
 
     private class Smooth : ICurve<float>
@@ -115,7 +119,7 @@ internal partial class InitializationViewModel : ViewModelBase, ILoaderViewModel
         )
         {
             LoadCompleted = true;
-            Game.ScreenManager.Forward(typeof(MainMenuPage), _levelPreviewsLoadTask.Result);
+            UiServices.ScreenManager.Forward(typeof(MainMenuPage), _levelPreviewsLoadTask.Result);
         }
     }
 }

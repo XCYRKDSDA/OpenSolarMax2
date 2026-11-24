@@ -11,8 +11,8 @@ internal record LevelPlayPageContext(
     int LevelIndex
 );
 
-internal class LevelPlayPage(LevelPlayPageContext ctx, SolarMax game)
+internal class LevelPlayPage(LevelPlayPageContext ctx, IUiServices uiServices)
     : LevelPlayView(
-        new LevelPlayViewModel(ctx.LevelSession, ctx.Background, ctx.LevelIndex, game),
-        game
+        new LevelPlayViewModel(ctx.LevelSession, ctx.Background, ctx.LevelIndex, uiServices),
+        uiServices
     ) { }

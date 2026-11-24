@@ -2,14 +2,14 @@ using Nine.Screens;
 
 namespace OpenSolarMax.Game.Screens;
 
-internal class ScreenFactory(SolarMax game) : IScreenFactory
+internal class ScreenFactory(IUiServices uiServices) : IScreenFactory
 {
     public IScreen CreateScreen(Type screenType, object? args = null)
     {
         if (args is null)
-            return (IScreen)Activator.CreateInstance(screenType, game)!;
+            return (IScreen)Activator.CreateInstance(screenType, uiServices)!;
         else
-            return (IScreen)Activator.CreateInstance(screenType, args, game)!;
+            return (IScreen)Activator.CreateInstance(screenType, args, uiServices)!;
     }
 
     public ITaskLike<IScreen> CreateScreen2(Type screenType, Task<object?> contextTask)
@@ -28,12 +28,12 @@ internal class ScreenFactory(SolarMax game) : IScreenFactory
         if (args is null)
         {
             return (ITransitionScreen)
-                Activator.CreateInstance(screenType, prevScreen, nextScreen, game)!;
+                Activator.CreateInstance(screenType, prevScreen, nextScreen, uiServices)!;
         }
         else
         {
             return (ITransitionScreen)
-                Activator.CreateInstance(screenType, prevScreen, nextScreen, args, game)!;
+                Activator.CreateInstance(screenType, prevScreen, nextScreen, args, uiServices)!;
         }
     }
 
@@ -47,12 +47,12 @@ internal class ScreenFactory(SolarMax game) : IScreenFactory
         if (args is null)
         {
             return (ITransitionScreen)
-                Activator.CreateInstance(screenType, prevScreen, nextScreenTask, game)!;
+                Activator.CreateInstance(screenType, prevScreen, nextScreenTask, uiServices)!;
         }
         else
         {
             return (ITransitionScreen)
-                Activator.CreateInstance(screenType, prevScreen, nextScreenTask, args, game)!;
+                Activator.CreateInstance(screenType, prevScreen, nextScreenTask, args, uiServices)!;
         }
     }
 }

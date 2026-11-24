@@ -30,7 +30,7 @@ internal sealed class ModSession : IDisposable
     private readonly ImmutableArray<ContentMod> _contentMods;
     private readonly IAssetsManager _localAssets;
     private readonly IConfigurationRoot _localConfigs;
-    private readonly SolarMax _game;
+    private readonly IGameServices _services;
 
     private readonly SafeFmodEventDescription? _music;
 
@@ -61,7 +61,7 @@ internal sealed class ModSession : IDisposable
         ImmutableDictionary<string, DeclarationSchemaInfo> declarationSchemaInfos,
         BakedBehaviorsInfo gameplayBehaviors,
         BakedBehaviorsInfo previewBehaviors,
-        SolarMax game
+        IGameServices services
     )
     {
         _behaviorMods = behaviorMods;
@@ -69,7 +69,7 @@ internal sealed class ModSession : IDisposable
         ModInfo = info;
         _localAssets = localAssets;
         _localConfigs = localConfigs;
-        _game = game;
+        _services = services;
 
         // 解析主题音乐；模组未声明则为 null
         _music = info.Music is { } music
@@ -114,7 +114,7 @@ internal sealed class ModSession : IDisposable
             behaviors.ConceptInfos.Values,
             new Dictionary<Type, object>
             {
-                [typeof(GraphicsDevice)] = _game.GraphicsDevice,
+                [typeof(GraphicsDevice)] = _services.GraphicsDevice,
                 [typeof(IAssetsManager)] = _localAssets,
                 [typeof(IConfigurationRoot)] = _localConfigs,
             }
@@ -160,7 +160,7 @@ internal sealed class ModSession : IDisposable
             [typeof(IConfigurationRoot)] = effectiveConfigs,
         };
         if (injectFmod)
-            dynamicArguments[typeof(MusicManager)] = _game.Music;
+            dynamicArguments[typeof(MusicManager)] = _services.Music;
 
         var hookImplMethods = behaviors.HookImplMethods.ToDictionary(
             kv => kv.Key,
@@ -178,8 +178,8 @@ internal sealed class ModSession : IDisposable
             behaviors.SystemTypes.Render,
             new Dictionary<Type, object>(dynamicArguments)
             {
-                [typeof(GraphicsDevice)] = _game.GraphicsDevice,
-                [typeof(ShapeBatch)] = _game.ShapeBatch,
+                [typeof(GraphicsDevice)] = _services.GraphicsDevice,
+                [typeof(ShapeBatch)] = _services.ShapeBatch,
             },
             hookImplMethods
         );
@@ -192,7 +192,7 @@ internal sealed class ModSession : IDisposable
         {
             world.Query(
                 new QueryDescription().WithAll<FMOD.Studio.System>(),
-                (ref FMOD.Studio.System fmodSystem) => fmodSystem = _game.FmodSystem
+                (ref FMOD.Studio.System fmodSystem) => fmodSystem = _services.FmodSystem
             );
         }
 
