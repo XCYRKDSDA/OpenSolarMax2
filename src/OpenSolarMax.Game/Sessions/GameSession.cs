@@ -13,7 +13,7 @@ using Zio.FileSystems;
 
 namespace OpenSolarMax.Game.Sessions;
 
-internal sealed class GameSession : IDisposable
+public sealed class GameSession : IDisposable
 {
     private readonly IGameServices _services;
     private readonly ModsManager _modsManager;

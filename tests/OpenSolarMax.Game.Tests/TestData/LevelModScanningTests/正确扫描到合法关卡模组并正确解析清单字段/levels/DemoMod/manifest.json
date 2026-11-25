@@ -1,0 +1,11 @@
+{
+  "type": "levels",
+  "fullName": "DemoMod",
+  "shortName": "演示模组",
+  "author": "tests",
+  "version": "1.0",
+  "description": "测试关卡模组",
+  "link": "https://example.invalid",
+  "music": "theme.bank",
+  "backgroundScrolling": { "firstFocus": 0 }
+}

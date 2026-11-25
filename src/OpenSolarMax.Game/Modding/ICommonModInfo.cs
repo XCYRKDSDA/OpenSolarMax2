@@ -2,7 +2,7 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal interface ICommonModInfo
+public interface ICommonModInfo
 {
     /// <summary>
     /// 模组所在的目录

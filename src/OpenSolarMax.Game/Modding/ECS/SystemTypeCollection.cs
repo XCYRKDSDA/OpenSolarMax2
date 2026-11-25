@@ -20,7 +20,7 @@ internal class SystemTypeCollection
 /// </summary>
 /// <param name="Simulate">所有世界仿真系统类型</param>
 /// <param name="Render">所有渲染系统类型</param>
-internal record ImmutableSystemTypeCollection(
+public record ImmutableSystemTypeCollection(
     ImmutableHashSet<Type> Simulate,
     ImmutableHashSet<Type> Render
 );

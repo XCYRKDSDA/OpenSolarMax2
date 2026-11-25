@@ -16,7 +16,7 @@ using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Sessions;
 
-internal sealed class ModSession : IDisposable
+public sealed class ModSession : IDisposable
 {
     private sealed record BehaviorBranch(
         BakedBehaviorsInfo Behaviors,

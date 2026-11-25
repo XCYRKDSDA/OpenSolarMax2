@@ -3,7 +3,7 @@ using Zio;
 
 namespace OpenSolarMax.Game.Modding;
 
-internal record LevelModInfo(
+public record LevelModInfo(
     DirectoryEntry Directory,
     string FullName,
     string ShortName,

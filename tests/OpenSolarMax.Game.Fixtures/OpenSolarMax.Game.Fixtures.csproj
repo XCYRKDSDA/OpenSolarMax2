@@ -4,10 +4,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>OpenSolarMax.Tests.Common</RootNamespace>
+    <RootNamespace>OpenSolarMax.Game.Fixtures</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenSolarMax.Game\OpenSolarMax.Game.csproj" />
   </ItemGroup>
 </Project>
