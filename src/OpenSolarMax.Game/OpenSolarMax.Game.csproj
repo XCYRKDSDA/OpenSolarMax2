@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenSolarMax.Ecs\OpenSolarMax.Ecs.csproj" />
     <ProjectReference Include="..\..\third_party\Nine\Nine\Nine.MG.csproj" />
     <ProjectReference Include="..\..\third_party\FMOD\FMOD.csproj" />
     <ProjectReference Include="..\..\third_party\Arch\src\Arch\Arch.csproj">

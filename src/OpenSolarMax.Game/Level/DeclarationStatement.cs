@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Ecs.Declaration;
 
 namespace OpenSolarMax.Game.Level;
 

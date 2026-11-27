@@ -3,8 +3,8 @@ using Arch.Core;
 using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using OneOf;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Ecs.Concept;
+using OpenSolarMax.Ecs.Configuration;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;

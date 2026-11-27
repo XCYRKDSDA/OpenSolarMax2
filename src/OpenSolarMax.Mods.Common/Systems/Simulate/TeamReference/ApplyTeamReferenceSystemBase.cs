@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
 using OpenSolarMax.Mods.Common.Components;
 
 namespace OpenSolarMax.Mods.Common.Systems;

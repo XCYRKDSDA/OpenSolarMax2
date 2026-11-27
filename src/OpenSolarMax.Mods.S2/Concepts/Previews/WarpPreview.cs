@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
-using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Configuration;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Concept;
+using OpenSolarMax.Ecs.Configuration;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 

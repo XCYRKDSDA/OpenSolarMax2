@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Nine.Assets;
 using Nine.Assets.Serialization;
-using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Ecs.Declaration;
 using OpenSolarMax.Game.Utils;
 using Zio;
 

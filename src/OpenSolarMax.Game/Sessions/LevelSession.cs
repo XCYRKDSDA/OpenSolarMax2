@@ -1,7 +1,7 @@
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
 
 namespace OpenSolarMax.Game.Sessions;
 

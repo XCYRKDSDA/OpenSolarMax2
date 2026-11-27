@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.Common.Utils;

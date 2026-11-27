@@ -2,7 +2,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Microsoft.Xna.Framework;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Ecs.Concept;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
 

@@ -5,8 +5,8 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding.Configuration;
-using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Ecs.Configuration;
+using OpenSolarMax.Ecs.UI;
 
 namespace OpenSolarMax.Mods.S2.Components;
 

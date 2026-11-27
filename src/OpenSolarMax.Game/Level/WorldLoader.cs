@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Arch.Core;
 using Arch.Core.Extensions;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Declaration;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Concept;
+using OpenSolarMax.Ecs.Declaration;
 
 namespace OpenSolarMax.Game.Level;
 

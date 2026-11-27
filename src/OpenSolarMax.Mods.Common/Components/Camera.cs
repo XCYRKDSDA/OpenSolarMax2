@@ -1,4 +1,4 @@
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
 
 namespace OpenSolarMax.Mods.Common.Components;
 

@@ -175,8 +175,8 @@ public class RelationShipGenerator : ISourceGenerator
         var sceneAttribute =
             (info.Attr.Scenes & ConceptScenes.Preview) != 0
                 ? (info.Attr.Scenes & ConceptScenes.Gameplay) != 0
-                    ? "[global::OpenSolarMax.Game.Modding.BothForGameplayAndPreview]\n"
-                    : "[global::OpenSolarMax.Game.Modding.OnlyForPreview]\n"
+                    ? "[global::OpenSolarMax.Ecs.BothForGameplayAndPreview]\n"
+                    : "[global::OpenSolarMax.Ecs.OnlyForPreview]\n"
                 : string.Empty;
 
         var conceptCs = _conceptTemplate

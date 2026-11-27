@@ -4,8 +4,8 @@ using Microsoft.Xna.Framework;
 using Nine.Assets;
 using Nine.Graphics;
 using OneOf;
-using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Concept;
 using OpenSolarMax.Mods.Common.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;

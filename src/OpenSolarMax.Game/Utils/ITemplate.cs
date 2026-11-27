@@ -1,5 +1,6 @@
 using Arch.Buffer;
 using Arch.Core;
+using OpenSolarMax.Ecs;
 
 namespace OpenSolarMax.Game.Utils;
 

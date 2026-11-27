@@ -3,9 +3,9 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework.Input;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Concept;
+using OpenSolarMax.Ecs.UI;
 using OpenSolarMax.Mods.S2.Components;
 using OpenSolarMax.Mods.S2.Concepts;
 

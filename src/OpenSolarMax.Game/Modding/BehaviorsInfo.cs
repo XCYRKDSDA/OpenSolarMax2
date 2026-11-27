@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Reflection;
-using OpenSolarMax.Game.Modding.Declaration;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Declaration;
 
 namespace OpenSolarMax.Game.Modding;
 

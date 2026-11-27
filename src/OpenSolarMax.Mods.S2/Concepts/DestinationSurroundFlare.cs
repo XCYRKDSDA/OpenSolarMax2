@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Nine.Animations;
 using Nine.Assets;
 using Nine.Graphics;
-using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Ecs.Concept;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Concepts;
 using OpenSolarMax.Mods.Common.Utils;

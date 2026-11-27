@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenSolarMax.Game.Modding.Declaration;
+using OpenSolarMax.Ecs.Declaration;
 
 namespace OpenSolarMax.Game.Level;
 

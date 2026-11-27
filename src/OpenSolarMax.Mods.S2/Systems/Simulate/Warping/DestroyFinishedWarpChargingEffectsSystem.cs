@@ -4,7 +4,7 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using FMOD.Studio;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
 using OpenSolarMax.Mods.Common.Components;
 using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;

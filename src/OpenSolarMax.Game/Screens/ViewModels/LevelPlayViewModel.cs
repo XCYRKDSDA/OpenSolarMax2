@@ -6,8 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.UI;
 using OpenSolarMax.Game.Sessions;
 
 namespace OpenSolarMax.Game.Screens.ViewModels;

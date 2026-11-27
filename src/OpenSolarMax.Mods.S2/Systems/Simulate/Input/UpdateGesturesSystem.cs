@@ -4,9 +4,9 @@ using Arch.System.SourceGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using OpenSolarMax.Game.Modding.Configuration;
-using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Configuration;
+using OpenSolarMax.Ecs.UI;
 using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.S2.Components;
 using InputGestureState = OneOf.OneOf<

@@ -5,20 +5,20 @@ public static partial class ConceptNames
     public const string @NAME@ = "@NAME@";
 }
 
-@SCENE_ATTRIBUTE@[global::OpenSolarMax.Game.Modding.Concept.Define(ConceptNames.@NAME@)]
-public abstract class @NAME@Definition : global::OpenSolarMax.Game.Modding.Concept.IDefinition
+@SCENE_ATTRIBUTE@[global::OpenSolarMax.Ecs.Concept.Define(ConceptNames.@NAME@)]
+public abstract class @NAME@Definition : global::OpenSolarMax.Ecs.Concept.IDefinition
 {
     public static global::Arch.Core.Signature Signature { get; } = new(typeof(@RELATIONSHIP_TYPE@));
 }
 
-@SCENE_ATTRIBUTE@[global::OpenSolarMax.Game.Modding.Concept.Describe(ConceptNames.@NAME@)]
-public class @NAME@Description : global::OpenSolarMax.Game.Modding.Concept.IDescription
+@SCENE_ATTRIBUTE@[global::OpenSolarMax.Ecs.Concept.Describe(ConceptNames.@NAME@)]
+public class @NAME@Description : global::OpenSolarMax.Ecs.Concept.IDescription
 {
 @PROPERTIES@
 }
 
-@SCENE_ATTRIBUTE@[global::OpenSolarMax.Game.Modding.Concept.Apply(ConceptNames.@NAME@)]
-public class @NAME@Applier : global::OpenSolarMax.Game.Modding.Concept.IApplier<@NAME@Description>
+@SCENE_ATTRIBUTE@[global::OpenSolarMax.Ecs.Concept.Apply(ConceptNames.@NAME@)]
+public class @NAME@Applier : global::OpenSolarMax.Ecs.Concept.IApplier<@NAME@Description>
 {
     public void Apply(
         global::Arch.Buffer.CommandBuffer commandBuffer,

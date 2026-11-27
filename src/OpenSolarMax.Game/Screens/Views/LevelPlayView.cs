@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Nine.Screens;
-using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Ecs.UI;
 using OpenSolarMax.Game.Screens.Transitions;
 using OpenSolarMax.Game.Screens.ViewModels;
 using OpenSolarMax.Game.UI;

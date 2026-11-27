@@ -5,10 +5,10 @@ using CsToml.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Myra.Graphics2D.UI;
 using Nine.Assets;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Declaration;
-using OpenSolarMax.Game.Modding.ECS;
-using OpenSolarMax.Game.Modding.UI;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Concept;
+using OpenSolarMax.Ecs.Declaration;
+using OpenSolarMax.Ecs.UI;
 using Zio;
 using Zio.FileSystems;
 

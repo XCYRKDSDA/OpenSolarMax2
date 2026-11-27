@@ -1,5 +1,5 @@
 using Arch.Core;
-using OpenSolarMax.Game.Modding.ECS;
+using OpenSolarMax.Ecs;
 using OpenSolarMax.Mods.Common.Systems;
 using OpenSolarMax.Mods.Common.Systems.Timing;
 using OpenSolarMax.Mods.S2.Components;

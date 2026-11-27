@@ -7,12 +7,12 @@ using BitFaster.Caching.Lru;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework.Graphics;
 using Nine.Assets;
+using OpenSolarMax.Ecs;
+using OpenSolarMax.Ecs.Concept;
+using OpenSolarMax.Ecs.Declaration;
 using OpenSolarMax.Game.Audio;
 using OpenSolarMax.Game.Level;
 using OpenSolarMax.Game.Modding;
-using OpenSolarMax.Game.Modding.Concept;
-using OpenSolarMax.Game.Modding.Declaration;
-using OpenSolarMax.Game.Modding.ECS;
 
 namespace OpenSolarMax.Game.Sessions;
 

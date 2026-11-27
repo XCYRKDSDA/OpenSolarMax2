@@ -1,7 +1,7 @@
 using Arch.Buffer;
 using Arch.Core;
 using OneOf;
-using OpenSolarMax.Game.Modding.Concept;
+using OpenSolarMax.Ecs.Concept;
 using OpenSolarMax.Mods.S2.Components;
 
 namespace OpenSolarMax.Mods.S2.Concepts;
