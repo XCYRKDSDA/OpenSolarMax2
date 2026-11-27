@@ -5,12 +5,14 @@
     <Project Path="third_party/Arch/src/Arch/Arch.csproj" />
   </Folder>
   <Project Path="src/OpenSolarMax.Content.SourceGenerators/OpenSolarMax.Content.SourceGenerators.csproj" />
+  <Project Path="src/OpenSolarMax.Ecs/OpenSolarMax.Ecs.csproj" />
   <Project Path="src/OpenSolarMax.Game/OpenSolarMax.Game.csproj" />
   <Project Path="src/OpenSolarMax.Launcher/OpenSolarMax.Launcher.csproj" />
   <Project Path="src/OpenSolarMax.Mods.Common.SourceGenerators/OpenSolarMax.Mods.Common.SourceGenerators.csproj" />
   <Project Path="src/OpenSolarMax.Mods.Common/OpenSolarMax.Mods.Common.csproj" />
   <Project Path="src/OpenSolarMax.Mods.S2/OpenSolarMax.Mods.S2.csproj" />
   <Folder Name="/tests/">
+    <Project Path="tests/OpenSolarMax.Ecs.Tests/OpenSolarMax.Ecs.Tests.csproj" />
     <Project Path="tests/OpenSolarMax.Game.Fixtures/OpenSolarMax.Game.Fixtures.csproj" />
     <Project Path="tests/OpenSolarMax.Game.Tests/OpenSolarMax.Game.Tests.csproj" />
   </Folder>

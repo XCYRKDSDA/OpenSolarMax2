@@ -1,0 +1,25 @@
+using Arch.Buffer;
+using Microsoft.Xna.Framework;
+using OpenSolarMax.Ecs;
+
+namespace TopologyCase;
+
+{{ for i in 1..6 }}
+public struct C{{ i }} { }
+{{ end }}
+
+{{ for system in systems }}
+{{ for attr in system.attributes }}
+[{{ attr }}]
+{{ end }}
+public sealed class {{ system.name }} : {{ system.interface }}
+{
+{{ if system.interface == "ITickSystem" }}
+    public void Update(GameTime gameTime) { }
+{{ else if system.interface == "IDelayedCalcSystem" }}
+    public void Update(CommandBuffer commandBuffer) { }
+{{ else if system.interface == "ICalcSystem" }}
+    public void Update() { }
+{{ end }}
+}
+{{ end }}
